@@ -1,0 +1,8 @@
+.vs/
+.vscode/
+build/**
+.DS_Store
+*.DS_Store
+__pycache__
+*.o
+.exclude_rosetta-io_file
