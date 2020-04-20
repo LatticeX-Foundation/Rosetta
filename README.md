@@ -1,4 +1,5 @@
-<p align="center"><img width="90%" src=doc/_static/figs/LOGO.png alt="Rosetta logo" /></p>
+
+![Rosetta logo](doc/_static/figs/LOGO.png)
 
 [![github license](https://img.shields.io/badge/license-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.en.html)
 

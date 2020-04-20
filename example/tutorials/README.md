@@ -1,2 +1,2 @@
 
-Tutorials, ref [here](../../doc/TUTORIALS_EN.md).
+Tutorials, ref [here](../../doc/TUTORIALS.md).
