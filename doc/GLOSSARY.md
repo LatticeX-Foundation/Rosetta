@@ -1,11 +1,15 @@
 # Glossary
 
-[toc]
+- [Glossary](#glossary)
+  - [Overview](#overview)
+  - [Terms and definitions](#terms-and-definitions)
+
+----
 
 ## Overview
 This document will maintain and continually update various terms and abbreviations appeared in the Rosetta framework.
 
-### Terms and definitions
+## Terms and definitions
 
 - **Secure Multi-Party Computation (MPC)**
 A field of cryptography. Multiple participants joinly compute functions, each participant will get the result at the end of the protocol, while no additional information beyond the result will be leaked during the entire process.
