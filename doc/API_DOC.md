@@ -1,6 +1,39 @@
 # Rosetta Operations API
 
-[toc]
+- [Rosetta Operations API](#rosetta-operations-api)
+  - [Overview](#overview)
+    - [Terms and definition](#terms-and-definition)
+    - [Common notes](#common-notes)
+  - [MpcOps API](#mpcops-api)
+    - [Computational MpcOps](#computational-mpcops)
+      - [`MpcAdd(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcaddx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcSub(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcsubx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcmulx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcfloordivx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcdivx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcdividex-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpctruedivx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcrealdivx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcequalx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcGreater(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcgreaterx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcgreaterequalx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcLess(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpclessx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcLessEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpclessequalx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`](#mpcmatmula-b-transposeafalse-transposebfalse-namenone)
+      - [`MpcPow(x, y, name=None, lh_is_const=False, rh_is_const=True)`](#mpcpowx-y-namenone-lhisconstfalse-rhisconsttrue)
+      - [`MpcLog(x, name=None)`](#mpclogx-namenone)
+      - [`MpcLog1p(x, name=None)`](#mpclog1px-namenone)
+      - [`MpcHLog(x, name=None)`](#mpchlogx-namenone)
+      - [`MpcSigmoid(x, name=None)`](#mpcsigmoidx-namenone)
+      - [`MpcRelu(x, name=None)`](#mpcrelux-namenone)
+      - [`MpcReluPrime(x, name=None)`](#mpcreluprimex-namenone)
+      - [`MpcAbs(x, name=None)`](#mpcabsx-namenone)
+      - [`MpcAbsPrime(x, name=None)`](#mpcabsprimex-namenone)
+      - [`MpcMax(input_tensor, axis=None, name=None)`](#mpcmaxinputtensor-axisnone-namenone)
+      - [`MpcMean(input_tensor, axis=None, name=None)`](#mpcmeaninputtensor-axisnone-namenone)
+      - [`MpcReveal(a, reveal_party=-1)`](#mpcreveala-revealparty-1)
+    - [I/O MpcOps](#io-mpcops)
+      - [`MpcSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`](#mpcsavev2prefix-tensornames-shapeandslices-tensors-namenone)
 
 ## Overview
 
@@ -270,7 +303,7 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   
 
-#### `MpcMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`**
+#### `MpcMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`
 
   Multiplies matrix `a` by matrix `b`, producing `a` * `b`.
 

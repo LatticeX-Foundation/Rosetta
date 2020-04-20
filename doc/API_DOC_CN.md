@@ -1,19 +1,52 @@
 # Rosetta 算子API文档
 
-[toc]
+- [Rosetta 算子API文档](#rosetta-%e7%ae%97%e5%ad%90api%e6%96%87%e6%a1%a3)
+  - [概述](#%e6%a6%82%e8%bf%b0)
+    - [术语和定义](#%e6%9c%af%e8%af%ad%e5%92%8c%e5%ae%9a%e4%b9%89)
+    - [通用的说明](#%e9%80%9a%e7%94%a8%e7%9a%84%e8%af%b4%e6%98%8e)
+  - [MpcOps API](#mpcops-api)
+    - [计算类MpcOps](#%e8%ae%a1%e7%ae%97%e7%b1%bbmpcops)
+      - [`MpcAdd(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcaddx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcSub(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcsubx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcmulx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcfloordivx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcdivx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcdividex-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpctruedivx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcrealdivx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcequalx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcGreater(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcgreaterx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcgreaterequalx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcLess(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpclessx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcLessEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpclessequalx-y-namenone-lhisconstfalse-rhisconstfalse)
+      - [`MpcMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`](#mpcmatmula-b-transposeafalse-transposebfalse-namenone)
+      - [`MpcPow(x, y, name=None, lh_is_const=False, rh_is_const=True)`](#mpcpowx-y-namenone-lhisconstfalse-rhisconsttrue)
+      - [`MpcLog(x, name=None)`](#mpclogx-namenone)
+      - [`MpcLog1p(x, name=None)`](#mpclog1px-namenone)
+      - [`MpcHLog(x, name=None)`](#mpchlogx-namenone)
+      - [`MpcSigmoid(x, name=None)`](#mpcsigmoidx-namenone)
+      - [`MpcRelu(x, name=None)`](#mpcrelux-namenone)
+      - [`MpcReluPrime(x, name=None)`](#mpcreluprimex-namenone)
+      - [`MpcAbs(x, name=None)`](#mpcabsx-namenone)
+      - [`MpcAbsPrime(x, name=None)`](#mpcabsprimex-namenone)
+      - [`MpcMax(input_tensor, axis=None, name=None)`](#mpcmaxinputtensor-axisnone-namenone)
+      - [`MpcMean(input_tensor, axis=None, name=None)`](#mpcmeaninputtensor-axisnone-namenone)
+      - [`MpcReveal(a, reveal_party=-1)`](#mpcreveala-revealparty-1)
+    - [I/O MpcOps](#io-mpcops)
+      - [`MpcSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`](#mpcsavev2prefix-tensornames-shapeandslices-tensors-namenone)
+
 
 ## 概述
 
-在Rosetta框架中，用户在`import latticex.rosetta` 后，不需要修改现有TensorFlow程序中的代码便可以直接的在各自拥有的隐私数据集上进行基于MPC的多方协同的人工智能模型训练或推断[可以参考我们的tutorial文档***(TODO: 放tutorial链接)***]。支持这些上层便利性的主要组件是我们在Rosetta内部基于TensorFlow的自定义算子库扩展机制实现了支持MPC功能的新算子(Operation)。为与原生TensorFlow中的API算子(下文直接简称其为`Ops`)相区分，我们称这些自定义的算子为`MpcOps` 。
+在Rosetta框架中，用户在`import latticex.rosetta` 后，不需要修改现有TensorFlow程序中的代码便可以直接的在各自拥有的隐私数据集上进行基于MPC的多方协同的人工智能模型训练或推断（可以参考我们的[tutorial文档](TUTORIALS_CN.md)）。支持这些上层便利性的主要组件是我们在Rosetta内部基于TensorFlow的自定义算子库扩展机制实现了支持MPC功能的新算子(Operation)。为与原生TensorFlow中的API算子(下文直接简称其为`Ops`)相区分，我们称这些自定义的算子为`MpcOps` 。
 
 这里我们介绍`Rosetta v0.1.0`版本中所支持的各个`MpcOps`的接口使用方法。大部分的`MpcOps` 的原型都与TensorFlow中的`Ops`一致，只有在极少数的情况下，我们对对应的`Ops`进行了更多MPC相关功能的扩展（比如`SaveV2`算子等）。
 
-如果你需要自己基于Rosetta的底层API构建自己特定的隐私保护模型，或者对我们的底层实现感兴趣，你都可以参考本文档。此外，在源代码目录`python/latticex/rosetta/mpc/decorator/test_cases`等处的单元测试实例代码也有助于理解各`MpcOps`的使用。
+如果你需要自己基于Rosetta的底层API构建自己特定的隐私保护模型，或者对我们的底层实现感兴趣，你都可以参考本文档。此外，在源代码中的一些单元测试实例代码也有助于理解各`MpcOps`的使用。
 
 ### 术语和定义
 
-
-这些需要整体说一下MPC下关于secret sharing等术语的说明，或者直接reference我们提供的整体个术语说明的文档。
+在本文档中我们尽量使用易懂的方式介绍各个接口。为了表述的简介，会涉及‘秘密分享’等少量的术语，请参考我们的[术语表](GLOSSARY_CN.md)。
 
 ### 通用的说明
 
@@ -371,7 +404,7 @@
 
   
 
-#### `MpcSigmoid(x, name=None)`**
+#### `MpcSigmoid(x, name=None)`
 
   逐元素计算`sigmoid`函数，即$\frac{1}{1+e^{-x}}$。任意维度的 `x` 都是支持的。
 
