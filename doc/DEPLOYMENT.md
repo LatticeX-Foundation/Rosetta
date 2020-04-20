@@ -5,7 +5,7 @@
     - [System components](#system-components)
     - [TensorFlow](#tensorflow)
     - [Rosetta](#rosetta)
-      - [Source code](#source-code)
+      - [Source code installation](#source-code-installation)
   - [Deployment testing](#deployment-testing)
     - [Example](#example)
   - [Preparation](#preparation)
@@ -14,6 +14,7 @@
       - [Stand-alone testing](#stand-alone-testing)
       - [Multi-machine testing](#multi-machine-testing)
 
+----
 
 In this document, we will describe how to install the Rosetta library with source code from scratch, and how to set up the environment to deploy and test the privacy-preserving machine learning application.
 
@@ -71,7 +72,7 @@ We leave the details of TensorFlow installation in a separate document:[TensorFl
 
 Currently, `Rosetta` is only supported to be installed from source code. We are working on its installation with binary packages, and  will release it as soon as possible.
 
-#### building and installing from Source code
+#### Source code installation
 
 Since we have wraped all the steps in a script, so just get the source code and install it as follows:
 
