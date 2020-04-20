@@ -34,6 +34,7 @@
       - [`MpcReveal(a, reveal_party=-1)`](#mpcreveala-revealparty-1)
     - [I/O MpcOps](#io-mpcops)
       - [`MpcSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`](#mpcsavev2prefix-tensornames-shapeandslices-tensors-namenone)
+
 ## Overview
 
 By using Rosetta framework, users can directly perform training or inference task on all of their respective dataset without leaking any privacy to others just after adding a single code `import latticex.rosetta`  at the header of your existing TensorFlow programs (see our [tutorial documentation](TUTORIALS.md) for more details). The main magic component that supports these upper-level conveniences is our implementation of a new suites of MPC-enabled `Operation` based on TensorFlow's flexiable extension mechanism for introducing new operation library. To distinguish it from the native TensorFlow API Operation (hereinafter referred to directly as `Ops`), we refer to these customized Operation as `MpcOps`.
