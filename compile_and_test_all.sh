@@ -44,15 +44,15 @@ function run_stage_3() {
 function run_stage_4() {
     echo "stage 4: build and install .whl for python"
     cd ${curdir}
-    python setup.py build_ext
-    python setup.py bdist_wheel
+    python3 setup.py build_ext
+    python3 setup.py bdist_wheel
 
     pip_cmd=pip3
-    
+
     if [ $USER == "root" ]; then
         ${pip_cmd} install dist/*.whl
     else
-        #python setup.py build_ext install --prefix=~/.local
+        #python3 setup.py build_ext install --prefix=~/.local
         ${pip_cmd} install dist/*.whl --user
     fi
 

@@ -12,7 +12,7 @@ function run_tf() {
         return
     fi
     echo -e "\nrun ${script_name} ..."
-    python ${script_name} >log/${name}-tf.log 2>&1
+    python3 ${script_name} >log/${name}-tf.log 2>&1
     sleep 0.5
 }
 
@@ -25,18 +25,18 @@ function run_rtt() {
     fi
     echo -e "\nrun ${script_name} ..."
     # chmod +x ${script_name}
-    python ${script_name} --party_id=2 >log/${name}-2.log 2>&1 &
-    python ${script_name} --party_id=1 >log/${name}-1.log 2>&1 &
-    python ${script_name} --party_id=0 >log/${name}-0.log 2>&1
+    python3 ${script_name} --party_id=2 >log/${name}-2.log 2>&1 &
+    python3 ${script_name} --party_id=1 >log/${name}-1.log 2>&1 &
+    python3 ${script_name} --party_id=0 >log/${name}-0.log 2>&1
     sleep 0.5
 }
 
 function run_stat() {
     # compare tf and rosetta
     echo -e "\nrun model_plot ..."
-    python model_plot.py --sname $1
+    python3 model_plot.py --sname $1
     echo -e "\nrun model_metrixs ..."
-    python model_metrixs.py --sname $1 --model $2
+    python3 model_metrixs.py --sname $1 --model $2
 
     sleep 0.5
 }

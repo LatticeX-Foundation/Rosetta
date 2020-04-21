@@ -14,7 +14,7 @@ function test_lr_tf() {
         return
     fi
     echo -e "\nrun ${script_name} ..."
-    python ${script_name} --epochs=${epochs} --dims=${dims} >log/${name}-tf.log 2>&1
+    python3 ${script_name} --epochs=${epochs} --dims=${dims} >log/${name}-tf.log 2>&1
     sleep 0.5
 }
 
@@ -29,9 +29,9 @@ function test_lr_rtt() {
     fi
     echo -e "\nrun ${script_name} ..."
     # chmod +x ${script_name}
-    python ${script_name} --party_id=2 --epochs=${epochs} --dims=${dims} >log/${name}-2.log 2>&1 &
-    python ${script_name} --party_id=1 --epochs=${epochs} --dims=${dims} >log/${name}-1.log 2>&1 &
-    python ${script_name} --party_id=0 --epochs=${epochs} --dims=${dims} >log/${name}-0.log 2>&1
+    python3 ${script_name} --party_id=2 --epochs=${epochs} --dims=${dims} >log/${name}-2.log 2>&1 &
+    python3 ${script_name} --party_id=1 --epochs=${epochs} --dims=${dims} >log/${name}-1.log 2>&1 &
+    python3 ${script_name} --party_id=0 --epochs=${epochs} --dims=${dims} >log/${name}-0.log 2>&1
     sleep 0.5
 }
 
@@ -45,7 +45,7 @@ function test_lr() {
 
     # compare tf and rosetta
     echo -e "\nrun lr_diff ..."
-    python lr_diff.py --sname $1 --epochs $2
+    python3 lr_diff.py --sname $1 --epochs $2
 
     sleep 0.5
 }
