@@ -5,7 +5,7 @@
   - [System requirements](#system-requirements)
   - [System software installation](#system-software-installation)
   - [Source code installation](#source-code-installation)
-  - [Installation inspection](#installation-inspection)
+  - [Installation verification](#installation-verification)
 
 ## Description of documentation
 
@@ -93,12 +93,14 @@ Once the installation is complete, check again for compliance with the system re
     ````
     > TensorFlow source code installation can be referenced to [official documentation][tensorflow-source-install] 
 
-## Installation inspection
+## Installation verification
 
 After installation, check TensorFlow availability.
 
+> Note: Please switch to a directory other than the TensorFlow source code for installation verification.
+
 ```bash
-python -c 'import tensorflow as tf;print(tf.__version__)'
+python3 -c 'import tensorflow as tf;print(tf.__version__)'
 ````
 
 Output: `v1.14.0` indicates successful installation.

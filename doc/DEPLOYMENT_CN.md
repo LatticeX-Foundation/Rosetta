@@ -179,19 +179,19 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 ```bash
 mkdir log
 # MPC player 2
-python millionaire.py --party_id=2
+python3 millionaire.py --party_id=2
 ```
 - **`P1`节点**
 ```bash
 mkdir log
 # MPC player 1
-python millionaire.py --party_id=1
+python3 millionaire.py --party_id=1
 ```
 - **`P0`节点**
 ```bash
 mkdir log
 # MPC player 0
-python millionaire.py --party_id=0
+python3 millionaire.py --party_id=0
 ```
 
 执行完成后，如果可以查看到类似输出: 
