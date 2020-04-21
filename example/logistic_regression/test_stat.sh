@@ -27,9 +27,9 @@ function test_mpc_llr() {
     fi
     echo -e "\nrun mpc case: ${script_name} ..."
 
-    python ${script_name} --party_id=2 --epochs=${epochs} --dims=${dims} --learn_rate=${lr} >log/D${dims}-E${epochs}-LR${lr}-2.log 2>&1 &
-    python ${script_name} --party_id=1 --epochs=${epochs} --dims=${dims} --learn_rate=${lr} >log/D${dims}-E${epochs}-LR${lr}-1.log 2>&1 &
-    python ${script_name} --party_id=0 --epochs=${epochs} --dims=${dims} --learn_rate=${lr} >log/D${dims}-E${epochs}-LR${lr}-0.log 2>&1
+    python3 ${script_name} --party_id=2 --epochs=${epochs} --dims=${dims} --learn_rate=${lr} >log/D${dims}-E${epochs}-LR${lr}-2.log 2>&1 &
+    python3 ${script_name} --party_id=1 --epochs=${epochs} --dims=${dims} --learn_rate=${lr} >log/D${dims}-E${epochs}-LR${lr}-1.log 2>&1 &
+    python3 ${script_name} --party_id=0 --epochs=${epochs} --dims=${dims} --learn_rate=${lr} >log/D${dims}-E${epochs}-LR${lr}-0.log 2>&1
     sleep 0.5
 }
 
@@ -46,7 +46,7 @@ function test_plain_llr() {
     fi
     echo -e "\nrun plain case: ${script_name} ..."
 
-    python ${script_name} --epochs=${epochs} --dims=${dims} --learn_rate=${lr} > log/D${dims}-E${epochs}-LR${lr}-plain.log 2>&1
+    python3 ${script_name} --epochs=${epochs} --dims=${dims} --learn_rate=${lr} > log/D${dims}-E${epochs}-LR${lr}-plain.log 2>&1
 }
 
 function get_trained_params() {
@@ -76,9 +76,9 @@ function get_trained_params() {
     echo -e "${GREEN}b: ${NOCOLOR}"$'\n'"${mpc_b}"
     echo -e "${GREEN}acc:${NOCOLOR} "$'\n'"${mpc_acc}"
 
-    delta_W=`python -c "import numpy as np;print(np.double($plain_W)-np.double($mpc_W))"`
-    delta_b=`python -c "import numpy as np;print(np.double($plain_b)-np.double($mpc_b))"`
-    delta_acc=`python -c "import numpy as np;print(np.double($plain_acc)-np.double($mpc_acc), '%')"`
+    delta_W=`python3 -c "import numpy as np;print(np.double($plain_W)-np.double($mpc_W))"`
+    delta_b=`python3 -c "import numpy as np;print(np.double($plain_b)-np.double($mpc_b))"`
+    delta_acc=`python3 -c "import numpy as np;print(np.double($plain_acc)-np.double($mpc_acc), '%')"`
     echo -e "${name}-D${dims}-E${epochs}-LR${lr} 'plain-mpc' ${GREEN}delta_W:${NOCOLOR}: "$'\n'"${RED} ${delta_W} ${NOCOLOR}"
     echo -e "${name}-D${dims}-E${epochs}-LR${lr} 'plain-mpc' ${GREEN}delta_b:${NOCOLOR}: "$'\n'"${RED} ${delta_b} ${NOCOLOR}"
     echo -e "${name}-D${dims}-E${epochs}-LR${lr} 'plain-mpc' ${GREEN}delta_acc:${NOCOLOR}: "$'\n'"${RED} ${delta_acc} ${NOCOLOR}"

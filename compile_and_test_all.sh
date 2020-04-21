@@ -47,12 +47,8 @@ function run_stage_4() {
     python setup.py build_ext
     python setup.py bdist_wheel
 
-    pv=$(python -c 'import sys; print(sys.version_info[0])')
-    pip_cmd=pip
-    if [ $pv == '3' ]; then
-        pip_cmd=pip3
-    fi
-
+    pip_cmd=pip3
+    
     if [ $USER == "root" ]; then
         ${pip_cmd} install dist/*.whl
     else

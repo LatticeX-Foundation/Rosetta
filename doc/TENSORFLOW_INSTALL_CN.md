@@ -97,8 +97,10 @@ sudo pip3 install --upgrade pip
 
 安装完成后，检验TensorFlow可用性：
 
+> 注意：请切换到TensorFlow源码之外的目录进行安装检验
+
 ```bash
-python -c 'import tensorflow as tf;print(tf.__version__)'
+python3 -c 'import tensorflow as tf;print(tf.__version__)'
 ```
 
 输出：`v1.14.0`表示安装成功。

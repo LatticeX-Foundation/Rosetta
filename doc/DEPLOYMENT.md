@@ -178,21 +178,21 @@ Run the `Millionaire Problem` example:
 ```bash
 mkdir log
 # MPC player 2
-python millionaire.py --party_id=2
+python3 millionaire.py --party_id=2
 ````
 - **`P1`node**
 
 ```bash
 mkdir log
 # MPC player 1
-python millionaire.py --party_id=1
+python3 millionaire.py --party_id=1
 ````
 - **`P0` node**
 
 ```bash
 mkdir log
 # MPC player 0
-python millionaire.py --party_id=0
+python3 millionaire.py --party_id=0
 ````
 
 After execution, output should be like this: 
