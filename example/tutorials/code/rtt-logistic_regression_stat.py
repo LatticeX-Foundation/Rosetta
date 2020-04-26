@@ -23,8 +23,6 @@ file_x = '../dsets/P' + str(rtt.mpc_player.id) + "/cls_train_x.csv"
 file_y = '../dsets/P' + str(rtt.mpc_player.id) + "/cls_train_y.csv"
 real_X, real_Y = rtt.MpcDataSet(label_owner=0).load_XY(file_x, file_y)
 # ######################################## difference from tensorflow
-real_X = real_X[:100, :]
-real_Y = real_Y[:100, :]
 DIM_NUM = real_X.shape[1]
 
 X = tf.placeholder(tf.float64, [None, DIM_NUM])

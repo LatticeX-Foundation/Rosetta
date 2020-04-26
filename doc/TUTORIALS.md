@@ -11,7 +11,7 @@
   - [Linear Regression](#linear-regression)
     - [TensorFlow Version](#tensorflow-version-1)
     - [Rosetta Basic Version](#rosetta-basic-version)
-    - [Rosetta Version-with Reveal](#rosetta-version-with-reveal)
+    - [Rosetta Version-with `Reveal`](#rosetta-version-with-reveal)
     - [Comparison and Evaluation 1](#comparison-and-evaluation-1)
     - [Comparison and Evaluation 2](#comparison-and-evaluation-2)
     - [Model Saving](#model-saving)
@@ -34,6 +34,8 @@ In order to simplify the description of this tutorial, the examples below are ba
 ## Quick Start
 
 All of the following content is based on the previous installation and deployment you have completed. For saving time, please make sure that your environment is already `OK`.
+
+Unless otherwise noted, all commands are run in the path of `example/tutorials/code/`.
 
 <br/>
 
@@ -409,7 +411,7 @@ Y_pred: [[1.22580022e+14]
 
 Don't be panic, what you're seeing are `random` values in [`Secret sharing` scheme](GLOSSARY.md), rather than plaintext values, because Rosetta is protecting the privacy of your own data right now.
 
-#### Rosetta Version-with Reveal
+#### Rosetta Version-with `Reveal`
 
 The `sharing value` output in the previous section is not human-readable. For testing, debugging, comparison with plain text ans so on, we provide a `reveal` interface to get the plain text value.
 

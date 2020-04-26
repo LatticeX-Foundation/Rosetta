@@ -33,7 +33,7 @@ static inline void test_debug_print(
   }
 
   vector<double> vd;
-  convert_mytype_to_double(vt, vd);
+  convert_mpctype_to_double(vt, vd);
   print_vec(vd, size, "double");
   cout << "----------------" << endl;
 }
@@ -55,6 +55,7 @@ void usage();
 
 void testMyType();
 void testTypeConvert();
+void testTypeConvert2();
 void testEachOpComm();
 void testPRZS();
 void testPrivateInput();

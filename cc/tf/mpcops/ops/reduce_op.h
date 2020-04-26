@@ -77,7 +77,7 @@ class MpcReduceOp : public MpcOpKernel {
  public:
   explicit MpcReduceOp(OpKernelConstruction* context) : MpcOpKernel(context) {
     OP_REQUIRES_OK(context, context->GetAttr("keep_dims", &keep_dims_));
-    cout << "keep_dims:" << keep_dims_ << endl;
+    //cout << "keep_dims:" << keep_dims_ << endl;
   }
   // axis is None (-1)
   // now, only supports at most 2 dims
@@ -168,7 +168,7 @@ class MpcReduceOp : public MpcOpKernel {
 
     size_t size = inputx.size();
     vector<mpc_t> a, b(shape_size), c(size);
-    //convert_double_to_mytype(inputx, a);
+    //convert_double_to_mpctype(inputx, a);
     tf_convert_double_to_mpctype(inputx, a);
 
     // return each row's max/mean/sum/... value
@@ -195,7 +195,7 @@ class MpcReduceOp : public MpcOpKernel {
 #endif
 
     vector<double> outputz(size);
-    //convert_mytype_to_double(b, outputz);
+    //convert_mpctype_to_double(b, outputz);
     tf_convert_mpctype_to_double(b, outputz);
 
     out_flat.setZero();

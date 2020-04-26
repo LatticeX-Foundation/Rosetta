@@ -1,3 +1,33 @@
+# ==============================================================================
+# Copyright 2020 The LatticeX Foundation
+# This file is part of the Rosetta library.
+#
+# The Rosetta library is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# The Rosetta library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
+# =============================================================================="
+
+"""Rosetta is an open source privacy-preserving machine learning framework.
+
+Rosetta is a privacy-preserving framework based on [TensorFlow](https://www.tensorflow.org). 
+It integrates with mainstream privacy-preserving computation technologies, inlcuding crypography, 
+federated learning and trusted execution environment. Rosetta aims to provide privacy-preserving 
+solutions for artificial intellegence without requiring expertise in cryptogprahy, federated 
+learning and trusted execution environment. 
+
+Rosetta reuses the APIs of TensorFlow and allows to transfer traditional TensorFlow codes 
+into a privacy-preserving manner with minimal changes. E.g., just add the following line.
+"""
+
 import glob
 import shutil
 import os
@@ -106,7 +136,8 @@ class BuildExt(build_ext):
 From here.
 """
 
-__version__ = '0.1.0'
+DOCLINES = __doc__.split('\n')
+__version__ = 'v0.1.1'
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 include_dirs = []
@@ -138,9 +169,7 @@ library_dirs.append("./build/lib")
 
 # compile flags and definitions
 extra_cflags = []
-#extra_cflags += TF_CFLG
-extra_cflags.append(TF_CFLG[0])
-extra_cflags.append('-D_GLIBCXX_USE_CXX11_ABI=1')
+extra_cflags += TF_CFLG
 extra_cflags.append('-DSML_USE_UINT64=1')  # mpc
 extra_cflags.append('-fPIC')  # general
 extra_cflags.append('-Wno-unused-function')  # general
@@ -182,13 +211,14 @@ for file_name in so_libs:
     shutil.copy(file_name, "python/latticex/")
 
 setup(
-    name='latticex',
+    name='latticex-rosetta',
     version=__version__,
     author='LatticeX Foundation',
-    author_email='support@platon.network',
-    url='',
-    description='LatticeX Rosetta Based On Tensorflow',
-    long_description='',
+    author_email='rosetta@latticex.foundation',
+    url='https://www.platon.network/',
+    download_url='https://github.com/LatticeX-Foundation/Rosetta',
+    description=DOCLINES[0],
+    long_description='\n'.join(DOCLINES[2:]),
     package_dir={'': 'python'},  # where to find package
     packages=find_packages(
         'python', exclude=['contrib', 'build', 'docs', 'tests', 'test-cases']),
@@ -197,8 +227,28 @@ setup(
     include_package_data=True,
     install_requires=['pybind11>=2.4', 'pandas'],
     setup_requires=['pybind11>=2.4'],
-    #cmdclass={'build_ext': BuildExt},
     zip_safe=False,
+    # PyPI package information.
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Education',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Mathematics',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Topic :: Software Development',
+        'Topic :: Software Development :: Libraries',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+    ],
+    license='LGPLv3',
+    keywords='privacy-preserving machine learning',
 )
 
 # after setup clean the libs

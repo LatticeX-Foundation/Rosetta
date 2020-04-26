@@ -1,7 +1,15 @@
 
 # Release Notes
 
-[toc]
+- [Release Notes](#release-notes)
+  - [Introduction](#introduction)
+  - [Rosetta v0.1.0](#rosetta-v010)
+    - [Features](#features)
+    - [Supported Platforms](#supported-platforms)
+    - [Known Problems](#known-problems)
+  - [Additional Information](#additional-information)
+
+----
 
 ## Introduction
 This document will maintain and continually update the release notes of each version of Rosetta. If you have questions or comments, please contact us via rosetta@latticex.foundation.

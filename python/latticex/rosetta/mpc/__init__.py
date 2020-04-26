@@ -28,7 +28,10 @@ from latticex.rosetta.mpc.ops.nn_util import *
 from latticex.rosetta.mpc.decorator import *
 # nn_utils depends on decorator
 from latticex.rosetta.mpc.ops.nn_util import *
-
+# for static replacement of Saver
+from latticex.rosetta.mpc.ops.training.io_saver import *
+# for static replacement of apply_gradient_descent
+from latticex.rosetta.mpc.ops.training.mpc_apply_gradient_descent import *
 # utils
 from latticex.rosetta.mpc.utils.common import *
 from latticex.rosetta.mpc.utils.dataset import *

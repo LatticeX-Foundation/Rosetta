@@ -31,12 +31,12 @@ SSLClient::SSLClient(const std::string& ip, int port) : TCPClient(ip, port) {
   ERR_load_crypto_strings();
   SSL_load_error_strings();
 
-  ctx = SSL_CTX_new(SSLv23_client_method());
-  if (ctx == nullptr) {
+  ctx_ = SSL_CTX_new(SSLv23_client_method());
+  if (ctx_ == nullptr) {
     ERR_print_errors_fp(stdout);
     exit(1);
   }
-  ssl = SSL_new(ctx);
+  ssl_ = SSL_new(ctx_);
 
   cout << "ssl client init ssl library done!" << endl;
 }
@@ -44,9 +44,9 @@ SSLClient::SSLClient(const std::string& ip, int port) : TCPClient(ip, port) {
 SSLClient::~SSLClient() {
   close();
 
-  if (ctx != nullptr) {
-    SSL_CTX_free(ctx);
-    ctx = nullptr;
+  if (ctx_ != nullptr) {
+    SSL_CTX_free(ctx_);
+    ctx_ = nullptr;
   }
 }
 

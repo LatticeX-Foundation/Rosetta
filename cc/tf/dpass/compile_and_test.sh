@@ -20,9 +20,7 @@ TF_LFLG=$(python3 -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_l
 #########################
 ## compile libtf-pass.so
 #########################
-#cflags=" -g "
-cflags=" -O2 "
-g++ ${cflags} -std=c++11 -shared *.cc -o ${libpath}/libtf-dpass.so ${TF_CFLG[@]} \
+g++ -O2 -std=c++11 -shared *.cc -o ${libpath}/libtf-dpass.so ${TF_CFLG[@]} \
     -I. -I ${TF_INC} -L ${TF_LIB} ${TF_LFLG[@]} -fPIC -Wl,--rpath='$ORIGIN/..:$ORIGIN'
 cd ${curdir}
 

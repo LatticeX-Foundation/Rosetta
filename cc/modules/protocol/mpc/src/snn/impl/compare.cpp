@@ -59,7 +59,7 @@ int Equal::funcEqual(const vector<mpc_t> &a, const vector<mpc_t> &b, vector<mpc_
     c[i] = A[i] + B[i] - FloatToMpcType(1)/2;
   }
 
-  cout << ":) mpc equal ok." << endl;
+  //cout << ":) mpc equal ok." << endl;
   return 0;
 }
 
@@ -115,7 +115,7 @@ int Greater::funcGreater(const vector<mpc_t> &a, const vector<mpc_t> &b, vector<
     c[i] = FloatToMpcType(1)/2 - B[i];
   }
 
-  cout << ":) mpc Greater ok." << endl;
+  //cout << ":) mpc Greater ok." << endl;
   return 0;
 }
 
@@ -167,7 +167,7 @@ int Less::funcLess(const vector<mpc_t> &a, const vector<mpc_t> &b, vector<mpc_t>
     c[i] = FloatToMpcType(1)/2 - A[i];
   }
 
-  cout << ":) mpc Less ok." << endl;
+  //cout << ":) mpc Less ok." << endl;
   return 0;
 }
 
@@ -202,7 +202,7 @@ int GreaterEqual::funcGreaterEqual(const vector<mpc_t> &a, const vector<mpc_t> &
   ////funcRELUPrime3PC(cmp, c, size);
   GetMpcOpInner(ReluPrime)->Run3PC(cmp, c, size);
 
-  cout << "------> :) => mpc GreaterEqual ok. <= <------" << endl;
+  //cout << "------> :) => mpc GreaterEqual ok. <= <------" << endl;
   return 0;
 }
 
@@ -238,7 +238,7 @@ int LessEqual::funcLessEqual(const vector<mpc_t> &a, const vector<mpc_t> &b, vec
     ////funcRELUPrime3PC(cmp, c, size);
     GetMpcOpInner(ReluPrime)->Run3PC(cmp, c, size);
 
-    cout << "------> :) => mpc LessEqual ok. <= <------" << endl;
+    //cout << "------> :) => mpc LessEqual ok. <= <------" << endl;
   return 0;
 }
 // clang-format on

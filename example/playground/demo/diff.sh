@@ -26,7 +26,7 @@ function test_lr_rtt() {
         return
     fi
     echo -e "\nrun ${script_name} ..."
-    # chmod +x ${script_name}
+    chmod +x ${script_name}
     python3 ${script_name} --party_id=2 --epochs=${epochs} --dims=${dims} >log/${name}-2.log 2>&1 &
     python3 ${script_name} --party_id=1 --epochs=${epochs} --dims=${dims} >log/${name}-1.log 2>&1 &
     python3 ${script_name} --party_id=0 --epochs=${epochs} --dims=${dims} >log/${name}-0.log 2>&1

@@ -42,7 +42,7 @@ class MpcLog1pOp : public MpcOpKernel {
 
     vector<mpc_t> shared_x_vec(input_ele_nums);
     vector<mpc_t> shared_z_vec(input_ele_nums);
-    //convert_double_to_mytype(inputx, shared_x_vec);
+    //convert_double_to_mpctype(inputx, shared_x_vec);
     tf_convert_double_to_mpctype(inputx, shared_x_vec);
     tfGetMpcOp(Log)->Run1p(shared_x_vec, shared_z_vec, input_ele_nums);
 
@@ -59,7 +59,7 @@ class MpcLog1pOp : public MpcOpKernel {
     }
 #endif
     vector<double> outputz(input_ele_nums);
-    //convert_mytype_to_double(shared_z_vec, outputz);
+    //convert_mpctype_to_double(shared_z_vec, outputz);
     tf_convert_mpctype_to_double(shared_z_vec, outputz);
     out_flat.setZero();
     for (int i = 0; i < input_ele_nums; ++i) {
@@ -73,7 +73,7 @@ REGISTER_OP("MpcLog1p")
   .Input("x: T")
   .Output("y: T")
   .Attr("T: {float, double, int32, int64, uint32, uint64}")
-  .SetShapeFn(shape_inference::UnchangedShape)
+  // .SetShapeFn(shape_inference::UnchangedShape)
   .Doc(R"doc(
 MpcLog1pOp
 )doc");

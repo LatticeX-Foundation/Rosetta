@@ -35,9 +35,8 @@ bool TCPClient::connect(int64_t timeout) {
   cout << "client[" << cid_ << "] connect to server[" << ip_ << ":" << port_ << "]" << endl;
   int err = -1;
 
-  int size = 1024 * 1024;
-  set_sendbuf(fd_, size);
-  set_recvbuf(fd_, size);
+  set_sendbuf(fd_, default_buffer_size());
+  set_recvbuf(fd_, default_buffer_size());
   set_nodelay(fd_, 1);
   //set_linger(fd_);
 
@@ -65,7 +64,7 @@ bool TCPClient::connect(int64_t timeout) {
     conn_ = new SSLConnection(fd_, 0, false);
   else
     conn_ = new Connection(fd_, 0, false);
-  conn_->ctx = ctx;
+  conn_->ctx_ = ctx_;
 
   // send client id to client
   int ret = ::write(fd_, (const char*)&cid_, 4);

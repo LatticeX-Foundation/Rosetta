@@ -7,6 +7,7 @@
 ----
 
 ## Overview
+
 This document will maintain and continually update various terms and abbreviations appeared in the Rosetta framework.
 
 ## Terms and definitions

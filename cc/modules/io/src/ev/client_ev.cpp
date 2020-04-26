@@ -106,8 +106,8 @@ bool TCPClient::connect(int64_t timeout) {
         fd_ = tcp_connect_to_server(ip_, port_);
         //cout << "fd:" << fd_ << " BEGIN CONNECT TO SERVER 2... " << iccc << endl;
         if (client->is_ssl_socket_) {
-          auto& ctx = client->ctx;
-          auto& ssl = client->ssl;
+          auto& ctx = client->ctx_;
+          auto& ssl = client->ssl_;
 #if 1
           bev = bufferevent_openssl_socket_new(base, fd_, ssl, BUFFEREVENT_SSL_CONNECTING, flags);
 #else
@@ -120,15 +120,14 @@ bool TCPClient::connect(int64_t timeout) {
         //! Basic socket connection end
 
         conn_ = new Connection(fd_, 0, false);
-        conn_->bev = tps_->bev;
-        conn_->ref_ptr = (void*)this;
-        conn_->thread_ptr = (void*)tps_;
+        conn_->bev_ = tps_->bev;
+        conn_->obj_ptr_ = (void*)this;
+        conn_->thread_ptr_ = (void*)tps_;
 
         //cout << "BEGIN CONNECT TO SERVER 3... " << iccc << endl;
         // set read/write max size
-        size_t size = 1024 * 1024 * 2;
-        bufferevent_set_max_single_read(bev, size);
-        bufferevent_set_max_single_write(bev, size);
+        bufferevent_set_max_single_read(bev, client->default_buffer_size());
+        bufferevent_set_max_single_write(bev, client->default_buffer_size());
 
         // set callback
         bufferevent_setcb(bev, onRead, NULL, onEvent, this);

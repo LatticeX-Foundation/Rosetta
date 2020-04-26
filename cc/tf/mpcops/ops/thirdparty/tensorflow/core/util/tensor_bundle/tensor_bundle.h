@@ -78,10 +78,7 @@ limitations under the License.
 #include "tensorflow/core/platform/file_system.h"
 #include "tensorflow/core/platform/macros.h"
 #include "tensorflow/core/platform/types.h"
-// Modified by PlatON
-//#include "tensorflow/core/util/tensor_bundle/naming.h"
-#include "naming.h"
-
+#include "tensorflow/core/lib/core/stringpiece.h"
 #include "tensorflow/core/util/tensor_slice_set.h"
 
 namespace tensorflow {

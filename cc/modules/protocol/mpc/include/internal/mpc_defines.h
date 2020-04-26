@@ -110,6 +110,7 @@ extern int SAVER_MODE;
     + (signed_mpc_t)(((a) - (signed_mpc_t)(a)) * (1L << FLOAT_PRECISION))))
 #define MpcTypeToFloat(a) ((double((signed_mpc_t)(a))) / (1L << FLOAT_PRECISION))
 
+#define USE_CAST_SCHEMA 0
 #define USE_BITCOPY_SCHEMA 0
 #if USE_BITCOPY_SCHEMA
 union mpc_f {
@@ -134,10 +135,14 @@ static inline double MpcTypeToFloatBC(mpc_t t){
   // memcpy((char*)&d, (const char*)&t, sizeof(t));
   // return d;
 }
+#elif USE_CAST_SCHEMA
+#define MpcTypeToFloatBC(a) (double((signed_mpc_t)(a)))
+#define FloatToMpcTypeBC(a) ((mpc_t)(((signed_mpc_t)(a))))
 #else
 #define FloatToMpcTypeBC FloatToMpcType
 #define MpcTypeToFloatBC MpcTypeToFloat
 #endif
+
 
 /* 
     @brief: Customized for polynomial interpolation coefficients so that 
@@ -182,14 +187,14 @@ const __m128i BIT128 = _mm_setr_epi8(128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 
 
 // for debug
-#define MPC_DEBUG_USE_FIXED_AESKEY  0
+#define MPC_DEBUG_USE_FIXED_AESKEY  1
 #define MPC_DEBUG                   0
 
 // for basic operations
 #define USE_PIECE_WISE_SIGMOID 1
 
 // for mpcop
-#define OPEN_MPCOP_DEBUG_AND_CHECK 1
+#define OPEN_MPCOP_DEBUG_AND_CHECK 0
 
 // for use IO with msg_id_t
 #define USE_NETIO_WITH_MESSAGEID 1

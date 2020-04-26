@@ -153,6 +153,9 @@ class Logger {
   void log_to_stdout(bool flag = true) {
     to_stdout = flag;
   }
+  void set_level(int level){
+    level_ = static_cast<LogLevel>(level);
+  }
   void set_filename(const std::string& filename) {
     if (filename.empty() || (filename == filename_)) {
       return;
@@ -162,8 +165,9 @@ class Logger {
       return;
     }
     utils::create_directories(filename);
-    string filenametmp = filename + "-" + std::to_string(pid_);
-    if (false) {
+    //string filenametmp = filename + "-" + std::to_string(pid_);
+    string filenametmp = filename;
+        if (false) {
       // try open
       ofstream ofiletemp;
       ofiletemp.open(filenametmp);
@@ -181,6 +185,8 @@ class Logger {
       usleep(1000);
     }
     ofile.open(filename_);
+    //ofile.open(filename_, ios::out|ios::app);
+    //ofile.seekp(0,ios::end);
   }
   std::string filename_ = "default";
 
@@ -222,8 +228,8 @@ class Logger {
   LogLevel Level() {
     return level_;
   }
-
-  LogLevel level_ = LogLevel::Debug;
+  
+  LogLevel level_ = LogLevel::Info;
 
   std::thread thread_;
   std::mutex to_file_mtx_;

@@ -12,16 +12,15 @@ mkdir -p ${bindir}
 
 # compile c++
 cd ${builddir}
-cmake ../cc/ -DUSE_OMP=1 -DCMAKE_INSTALL_PREFIX=.install && make -j8 all && make install
-#cmake ../cc/ -DUSE_OMP=1 -DCMAKE_INSTALL_PREFIX=.install -DCMAKE_BUILD_TYPE=Debug && make -j8 all && make install
+TF_CFLGS=$(python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_compile_flags()[1])')
+cmake ../cc/ ${TF_CFLGS} -DUSE_OMP=1 -DCMAKE_INSTALL_PREFIX=.install && make -j8 all && make install
+#cmake ../cc/ ${TF_CFLGS} -DUSE_OMP=1 -DCMAKE_INSTALL_PREFIX=.install -DCMAKE_BUILD_TYPE=Debug && make -j8 all && make install
 
 # prepare
 cd ${bindir}
 cp -f ${ccdir}/conf/CONFIG*.json ./
 cp -rf ${ccdir}/certs ./
 mkdir -p log out key
-
-# run all tests (including common, io, op, ..)
 
 echo "run protocol_mpc_SNN"
 killall -q protocol_mpc_SNN

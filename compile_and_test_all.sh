@@ -48,11 +48,10 @@ function run_stage_4() {
     python3 setup.py bdist_wheel
 
     pip_cmd=pip3
-
     if [ $USER == "root" ]; then
         ${pip_cmd} install dist/*.whl
     else
-        #python3 setup.py build_ext install --prefix=~/.local
+        #python setup.py build_ext install --prefix=~/.local
         ${pip_cmd} install dist/*.whl --user
     fi
 

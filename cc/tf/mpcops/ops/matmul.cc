@@ -111,9 +111,9 @@ class MpcMatmulOp : public MpcOpKernel {
     }
 
     vector<mpc_t> a(m * K, 0), b(K * n, 0), c(m * n, 0);
-    //convert_double_to_mytype(inputx, a);
+    //convert_double_to_mpctype(inputx, a);
     tf_convert_double_to_mpctype(inputx, a);
-    //convert_double_to_mytype(inputy, b);
+    //convert_double_to_mpctype(inputy, b);
     tf_convert_double_to_mpctype(inputy, b);
     tfGetMpcOp(MatMul)->Run(a, b, c, m, K, n, transpose_a_ ? 1 : 0, transpose_b_ ? 1 : 0);
 
@@ -137,7 +137,7 @@ class MpcMatmulOp : public MpcOpKernel {
 #endif
 
     vector<double> outputz(m * n);
-    //convert_mytype_to_double(c, outputz);
+    //convert_mpctype_to_double(c, outputz);
     tf_convert_mpctype_to_double(c, outputz);
 
     out_flat.setZero();

@@ -114,7 +114,12 @@ class Socket {
     int ret = ::setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (const void*)&size, sizeof(size));
     return ret;
   }
+  size_t default_buffer_size_ = 1024 * 1024 * 10;
+  size_t default_buffer_size() {
+    return default_buffer_size_;
+  }
 
+ protected:
   // SO_LINGER for TIME_WAIT
   int set_linger(int fd) {
     struct linger l;

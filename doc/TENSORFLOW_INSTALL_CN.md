@@ -4,12 +4,13 @@
   - [文档说明](#%e6%96%87%e6%a1%a3%e8%af%b4%e6%98%8e)
   - [系统要求](#%e7%b3%bb%e7%bb%9f%e8%a6%81%e6%b1%82)
   - [系统软件安装](#%e7%b3%bb%e7%bb%9f%e8%bd%af%e4%bb%b6%e5%ae%89%e8%a3%85)
+  - [二进制安装](#%e4%ba%8c%e8%bf%9b%e5%88%b6%e5%ae%89%e8%a3%85)
   - [源码安装](#%e6%ba%90%e7%a0%81%e5%ae%89%e8%a3%85)
   - [安装检验](#%e5%ae%89%e8%a3%85%e6%a3%80%e9%aa%8c)
 
 ## 文档说明
 
-本文档作为安装TensorFlow环境参考，TensorFlow指定版本为`v1.14.0`，当前仅支持源码方式安装，二进制方式即将推出。
+本文档作为安装TensorFlow环境参考，TensorFlow指定版本为`v1.14.0`。
 
 ## 系统要求
 
@@ -46,6 +47,18 @@ sudo pip3 install --upgrade pip
 
 安装完成后，再次检查是否符合系统要求，保证安装的正确性。
 
+## 二进制安装
+
+TensorFlow二进制安装使用TensorFlow官方上传到pypi的二进制whl包。
+
+```bash
+# Optional, to depress the warning of tensorflow
+pip3 install numpy==1.16.4 --user
+# install tensorflow
+pip3 install tensorflow==1.14.0 --user
+```
+
+> Tensorflow二进制安装可以参考[官方文档](https://www.tensorflow.org/install/pip)
 
 ## 源码安装
 

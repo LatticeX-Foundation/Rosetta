@@ -42,16 +42,6 @@
 
 extern int partyNum;
 
-extern AESObject* aes_randseed;
-extern AESObject* aes_common;
-extern AESObject* aes_indep;
-extern AESObject* aes_a_1;
-extern AESObject* aes_a_2;
-extern AESObject* aes_b_1;
-extern AESObject* aes_b_2;
-extern AESObject* aes_c_1;
-extern ParallelAESObject* aes_parallel;
-
 extern small_mpc_t additionModPrime[PRIME_NUMBER][PRIME_NUMBER];
 extern small_mpc_t multiplicationModPrime[PRIME_NUMBER][PRIME_NUMBER];
 
