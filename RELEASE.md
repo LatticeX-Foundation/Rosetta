@@ -3,8 +3,10 @@
 
 - [Release Notes](#release-notes)
   - [Introduction](#introduction)
-  - [Rosetta v0.1.0](#rosetta-v010)
+  - [Rosetta v0.1.1](#rosetta-v011)
     - [Features](#features)
+  - [Rosetta v0.1.0](#rosetta-v010)
+    - [Features](#features-1)
     - [Supported Platforms](#supported-platforms)
     - [Known Problems](#known-problems)
   - [Additional Information](#additional-information)
@@ -14,6 +16,10 @@
 ## Introduction
 This document will maintain and continually update the release notes of each version of Rosetta. If you have questions or comments, please contact us via rosetta@latticex.foundation.
 
+## Rosetta v0.1.1
+
+### Features
+1. Binary installation of TensorFlow is supported.
 
 ## Rosetta v0.1.0
 
