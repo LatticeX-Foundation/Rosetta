@@ -143,12 +143,12 @@ Write a configuration file `CONFIG.json` with the following template:
       "HOST": "127.0.0.1"
     },   
     "P2":{
-      "NAME":{"PartyC(P2)",
+      "NAME":"PartyC(P2)",
       "HOST": "127.0.0.1"
     },
     "SERVER_CERT": "certs/server-nopass.cert",
     "SERVER_PRIKEY": "certs/server-prikey",
-    "SERVER_PRIKEY_PASSWORD":""",
+    "SERVER_PRIKEY_PASSWORD":"",
     "SAVER_MODE":4
 }
 ````

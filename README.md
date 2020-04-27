@@ -7,7 +7,7 @@
 
 ## Overview
 
-Rosetta is a privacy-preserving framework based on [TensorFlow](https://www.tensorflow.org). It integrates with mainstream privacy-preserving computation technologies, inlcuding crypography, federated learning and trusted execution environment. Rosetta aims to provide privacy-preserving solutions for artificial intellegence without requiring expertise in cryptogprahy, federated learning and trusted execution environment. Rosetta reuses the APIs of TensorFlow and allows to transfer traditional TensorFlow codes into a privacy-preserving manner with minimal changes. E.g., just add the following line.
+Rosetta is a privacy-preserving framework based on [TensorFlow](https://www.tensorflow.org). It integrates with mainstream privacy-preserving computation technologies, including crypography, federated learning and trusted execution environment. Rosetta aims to provide privacy-preserving solutions for artificial intellegence without requiring expertise in cryptogprahy, federated learning and trusted execution environment. Rosetta reuses the APIs of TensorFlow and allows to transfer traditional TensorFlow codes into a privacy-preserving manner with minimal changes. E.g., just add the following line.
 
 ```python
 import latticex.rosetta
