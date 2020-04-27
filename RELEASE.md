@@ -14,10 +14,6 @@
 ## Introduction
 This document will maintain and continually update the release notes of each version of Rosetta. If you have questions or comments, please contact us via rosetta@latticex.foundation.
 
-## Rosetta v0.1.1
-
-### Features
-1. Binary intallation of TensorFlow is supported.
 
 ## Rosetta v0.1.0
 
@@ -60,7 +56,7 @@ This document will maintain and continually update the release notes of each ver
 
 7. Support for specifying the type (plaintext or ciphertext) of model to save;
 
-8. Support for specifying where to save the model (Party0\Party1\Party2\all Partys);
+8. Support for specifying where to save the model (Party0\Party1\Party2\all Parties);
 
 
 ### Supported Platforms

@@ -74,7 +74,7 @@ Currently, `Rosetta` is only supported to be installed from source code. We are 
 
 #### Source code installation
 
-Since we have wraped all the steps in a script, so just get the source code and install it as follows:
+Since we have warped all the steps in a script, so just get the source code and install it as follows:
 
 ```bash
 # clone rosetta git repository
@@ -87,7 +87,7 @@ cd Rosetta && bash compile_and_test_all.sh
 
 After Installing Rosetta, we can test whether it works or not. We can do this by building a demo of the [millionaire problem][millionaire-problem]. `Rosetta` uses a 3-party `MPC` model that requires the deployment of three computing nodes, which can be deployed on real multiple machines or be simulated in s single machine with multi-processes.
 
-> `Rosetta` is based on TensorFlow. And currently, we does NOT support its distrbuted execution model.
+> `Rosetta` is based on TensorFlow. And currently, we does NOT support its distributed execution model.
 
 ### Example
 
@@ -137,18 +137,18 @@ Write a configuration file `CONFIG.json` with the following template:
     "P0":{
       "NAME": "PartyA(P0)",
       "HOST": "127.0.0.1"
-    },   
+    },
     "P1":{
       "NAME": "PartyB(P1)",
       "HOST": "127.0.0.1"
-    },   
+    },
     "P2":{
-      "NAME":{"PartyC(P2)",
+      "NAME":"PartyC(P2)",
       "HOST": "127.0.0.1"
     },
     "SERVER_CERT": "certs/server-nopass.cert",
     "SERVER_PRIKEY": "certs/server-prikey",
-    "SERVER_PRIKEY_PASSWORD":""",
+    "SERVER_PRIKEY_PASSWORD":"",
     "SAVER_MODE":4
 }
 ````
@@ -171,7 +171,7 @@ Perform stand-alone testing in the Millionaire directory, Firstly, configure the
 
 Run the `Millionaire Problem` example:
 
-> Note: The console will be prompted for your private inputs at the begining.
+> Note: The console will be prompted for your private inputs at the beginning.
 
 - **`P2`node**
 

@@ -11,7 +11,7 @@
   - [Linear Regression](#linear-regression)
     - [TensorFlow Version](#tensorflow-version-1)
     - [Rosetta Basic Version](#rosetta-basic-version)
-    - [Rosetta Version-with `Reveal`](#rosetta-version-with-reveal)
+    - [Rosetta Version-with Reveal](#rosetta-version-with-reveal)
     - [Comparison and Evaluation 1](#comparison-and-evaluation-1)
     - [Comparison and Evaluation 2](#comparison-and-evaluation-2)
     - [Model Saving](#model-saving)
@@ -99,9 +99,9 @@ Let‘s be a little more specific. In the following example, we will introduce t
 
 #### TensorFlow Version
 
-For comparison，Let's just solve this probolem without taking their privacy into consideration at first. 
+For comparison，Let's just solve this problem without taking their privacy into consideration at first. 
 
-This is trival, every child can do this in less than one second. But in order to compare with `rosetta`, here we write a toy program in `tensorflow` style:
+This is trivial, every child can do this in less than one second. But in order to compare with `rosetta`, here we write a toy program in `tensorflow` style:
 
 The first step is to import the package:
 
@@ -216,11 +216,11 @@ The result indicates that `Alice` has more wealth than `Bob`.
 
 <br/>
 
-Of course, `Rosetta` can not only be used to solve simple pronlems  like `Millionaire's Problem`. Next, let’s see how we can tackle real problems in `Meachine Learning` with the help of `Rosetta` framework.
+Of course, `Rosetta` can not only be used to solve simple problems  like `Millionaire's Problem`. Next, let’s see how we can tackle real problems in `Machine Learning` with the help of `Rosetta` framework.
 
 ## Privacy-Preserving Machine Learning
 
-We will talk about the combination of `Privacy-Preserving` and` Meachine Learning (ML)` in this part. Let's start with the simplest machine learning model: `Linear Regression`.
+We will talk about the combination of `Privacy-Preserving` and` Machine Learning (ML)` in this part. Let's start with the simplest machine learning model: `Linear Regression`.
 
 ### Linear Regression
 
@@ -266,7 +266,7 @@ We highlight codes that are different from `rosetta`, and we will focus more on 
 file_x = '../dsets/ALL/reg_train_x.csv'
 file_y = '../dsets/ALL/reg_train_y.csv'
 real_X, real_Y = pd.read_csv(file_x).to_numpy(), pd.read_csv(file_y).to_numpy()
-# ######################################## difference from tensorflow
+# ######################################## difference from rosettta
 DIM_NUM = real_X.shape[1]
 ```
 
@@ -411,13 +411,13 @@ Y_pred: [[1.22580022e+14]
 
 Don't be panic, what you're seeing are `random` values in [`Secret sharing` scheme](GLOSSARY.md), rather than plaintext values, because Rosetta is protecting the privacy of your own data right now.
 
-#### Rosetta Version-with `Reveal`
+#### Rosetta Version-with Reveal
 
 The `sharing value` output in the previous section is not human-readable. For testing, debugging, comparison with plain text ans so on, we provide a `reveal` interface to get the plain text value.
 
 <font style = "color: red"> Reminder:please be cautious when using this reveal interface in a production environment. </font>
 
-Let's modify the previous (basic version) program with addtion of `reveal`, and see what effect it has. The new program is as follows:
+Let's modify the previous (basic version) program with addition of `reveal`, and see what effect it has. The new program is as follows:
 
 ```py
 # ########### for test, reveal
@@ -608,7 +608,7 @@ Regarding the saving of the plaintext result, you can choose to save at node 0, 
 `SAVER_MODE` is a flag of a bitmap combination, and its meaning is as follows
 
 ```
-// 0: Save the ciphertext. (And the number 1 ~ 7 below indicates which specific parties to  save the plain text files)
+// 0: Save the cipher text. (And the number 1 ~ 7 below indicates which specific parties to  save the plain text files)
 // 1: P0,
 // 2: P1,
 // 4: P2,

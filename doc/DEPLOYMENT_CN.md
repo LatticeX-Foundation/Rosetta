@@ -136,19 +136,19 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 {
     "BASE_PORT":32000,
     "P0":{
-      "NAME":"PartyA(P0)",
-      "HOST":"127.0.0.1"
-    },   
+      "NAME": "PartyA(P0)",
+      "HOST": "127.0.0.1"
+    },
     "P1":{
-      "NAME":"PartyB(P1)",
-      "HOST":"127.0.0.1"
-    },   
+      "NAME": "PartyB(P1)",
+      "HOST": "127.0.0.1"
+    },
     "P2":{
       "NAME":"PartyC(P2)",
-      "HOST":"127.0.0.1"
+      "HOST": "127.0.0.1"
     },
-    "SERVER_CERT":"certs/server-nopass.cert",
-    "SERVER_PRIKEY":"certs/server-prikey",
+    "SERVER_CERT": "certs/server-nopass.cert",
+    "SERVER_PRIKEY": "certs/server-prikey",
     "SERVER_PRIKEY_PASSWORD":"",
     "SAVER_MODE":4
 }
@@ -177,7 +177,7 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 - **`P2`节点**
 ```bash
 mkdir log
-# MPC player 2
+# MPC player 2
 python3 millionaire.py --party_id=2
 ```
 - **`P1`节点**
