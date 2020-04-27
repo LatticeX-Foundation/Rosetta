@@ -21,14 +21,14 @@ namespace rosetta {
 namespace io {
 size_t TCPClient::send(const char* data, size_t len, int64_t timeout) {
   if (timeout < 0) {
-    timeout = INT64_MAX;
+    timeout = 999999999999L;
   }
 
   if (conn_ == nullptr) {
     cerr << "client fatal error !" << endl;
     throw;
   }
-  int n = conn_->send(data, len);
+  int n = conn_->send(data, len, timeout);
   if (n != len) {
     cerr << "client n != len (" << n << " != " << len << ")" << endl;
     throw;

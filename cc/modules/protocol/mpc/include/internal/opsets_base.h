@@ -18,128 +18,12 @@
 #pragma once
 
 #include "mpc_helper.h"
-
-#include "AESObject.h"
 #include "mpc_tools.h"
+#include "aesobjects.h"
 
 extern int partyNum;
-// public aes key
-extern std::string key_0;
-extern std::string key_a;
-extern std::string key_b;
-extern std::string key_c;
-extern std::string key_ab;
-extern std::string key_ac;
-extern std::string key_bc;
-extern std::string key_cd;
-
 namespace rosetta {
 namespace mpc {
-/**
- * This class('s objects) will be cached by a map <msg-id, objs>\n
- * Because OP-call-chain grouped by msg-id,\n
- * so, each different msg-id will use an unique aesobjects\n
- */
-class AESObjects {
-  static mutex msgid_aesobjs_mtx_;
-  static map<msg_id_t, std::shared_ptr<AESObjects>> msgid_aesobjs_;
-
- public:
-  static std::shared_ptr<AESObjects> Get(const msg_id_t& msg_id) {
-    unique_lock<mutex> lck(msgid_aesobjs_mtx_);
-    auto iter = msgid_aesobjs_.find(msg_id);
-    if (iter != msgid_aesobjs_.end()) {
-      return iter->second;
-    }
-
-    auto aesobjs = std::make_shared<AESObjects>();
-    aesobjs->init_aes(partyNum, msg_id);
-    msgid_aesobjs_[msg_id] = aesobjs;
-    return msgid_aesobjs_[msg_id];
-  }
-
- private:
-  int init_aes(int pid, const msg_id_t& msg_id) {
-    ///! xor local key string with global key and msg id
-    string skey = msg_id.str(); // msg id
-    auto fxor = [skey](const std::string& gstr) -> std::string {
-      std::string tkey = gstr; // temp key
-      tkey.resize(32);
-#if MPC_DEBUG_USE_FIXED_AESKEY
-      return tkey;
-#endif
-      // todo: optimize, this way not unique
-      for (int i = 0; i < (int)skey.length(); i++) {
-        int index = i % (tkey.length());
-        int a = (int)tkey[index];
-        int b = (int)skey[i];
-        int c = (a ^ b) % 16;
-        if (c < 10)
-          tkey[index] = (char)c + '0';
-        else
-          tkey[index] = (char)(c - 10) + 'a';
-      }
-      return tkey;
-    };
-    std::string k0 = fxor(key_0);
-    std::string ka = fxor(key_a);
-    std::string kb = fxor(key_b);
-    std::string kc = fxor(key_c);
-    std::string kab = fxor(key_ab);
-    std::string kac = fxor(key_ac);
-    std::string kbc = fxor(key_bc);
-    std::string kcd = fxor(key_cd);
-
-    /*********************** AES SETUP and SYNC *************************/
-    // P0 --> "KEYS":["keyA","keyAB","keyAC","null"]
-    // P1 --> "KEYS":["keyB","keyAB","null","keyBC"]
-    // P2 --> "KEYS":["keyC","keyCD","keyAC","keyBC"]
-    // clang-format off
-    vector<vector<string>> KEY = {
-      {ka, kab, kac, ""}, 
-      {kb, kab, "", kbc},
-      {kc, kcd, kac, kbc}
-    };
-    vector<vector<string>> KSTR = {
-      {"A", "AB", "AC", "NUL"}, 
-      {"B", "AB", "NUL", "BC"},
-      {"C", "CD", "AC", "BC"}
-    };
-    // clang-format on
-
-#define INIT_AES_OBJECT(obj, i)                                                           \
-  if (false) {                                                                            \
-    log_info << "P" << pid << " key[" << i << "]: " << KEY[pid][i] << " of " #obj " key(" \
-             << KSTR[pid][i] << ")" << endl;                                              \
-  }                                                                                       \
-  obj = std::make_shared<AESObject>();                                                    \
-  obj->Init(KEY[pid][i])
-
-    INIT_AES_OBJECT(aes_indep, 0);
-    INIT_AES_OBJECT(aes_common, 1);
-    INIT_AES_OBJECT(aes_a_1, 2);
-    INIT_AES_OBJECT(aes_b_1, 2);
-    INIT_AES_OBJECT(aes_c_1, 2);
-    INIT_AES_OBJECT(aes_a_2, 3);
-    INIT_AES_OBJECT(aes_b_2, 3);
-#undef INIT_AES_OBJECT
-
-    aes_randseed = std::make_shared<AESObject>();
-    aes_randseed->Init(k0);
-
-    return 0;
-  }
-
- public:
-  std::shared_ptr<AESObject> aes_randseed = nullptr; // A and B and C
-  std::shared_ptr<AESObject> aes_common = nullptr; // A and B
-  std::shared_ptr<AESObject> aes_indep = nullptr; // A or B or C
-  std::shared_ptr<AESObject> aes_a_1 = nullptr; // A and C
-  std::shared_ptr<AESObject> aes_a_2 = nullptr; // B and C
-  std::shared_ptr<AESObject> aes_b_1 = nullptr; // A and C
-  std::shared_ptr<AESObject> aes_b_2 = nullptr; // B and C
-  std::shared_ptr<AESObject> aes_c_1 = nullptr; // A and C
-};
 
 class OpBase_ {
   OpBase_& operator=(const OpBase_&) = delete;
@@ -187,9 +71,7 @@ class OpBase_ {
   }
 
  public:
-  mpc_t random_seed() {
-    return aes_randseed->get64Bits();
-  }
+  mpc_t random_seed() { return aes_randseed->get64Bits(); }
 
   // from tools.hpp beg
   template <typename T>
@@ -364,6 +246,35 @@ class OpBase_ {
     if (r_type == "INDEP") {
       for (size_t i = 0; i < size; ++i) {
         share_1[i] = aes_indep->get64Bits();
+        share_2[i] = FloatToMpcType(r[i] % 2) - share_1[i];
+      }
+    }
+  }
+
+  // Returns \Z_L shares of LSB of r.
+  void sharesOfLSB2(
+    vector<mpc_t>& share_1, vector<mpc_t>& share_2, const vector<mpc_t>& r, size_t size,
+    string r_type) {
+    assert((r_type == "COMMON" or r_type == "INDEP" or r_type == "a_1") && 
+    "invalid randomness type for sharesOfLSB");
+
+    if (r_type == "COMMON") {
+      for (size_t i = 0; i < size; ++i) {
+        share_1[i] = aes_common->get64Bits();
+        share_2[i] = FloatToMpcType(r[i] % 2) - share_1[i];
+      }
+    }
+
+    if (r_type == "INDEP") {
+      for (size_t i = 0; i < size; ++i) {
+        share_1[i] = aes_indep->get64Bits();
+        share_2[i] = FloatToMpcType(r[i] % 2) - share_1[i];
+      }
+    }
+
+    if (r_type == "a_1") {
+      for (size_t i = 0; i < size; ++i) {
+        share_1[i] = aes_a_1->get64Bits();
         share_2[i] = FloatToMpcType(r[i] % 2) - share_1[i];
       }
     }

@@ -15,8 +15,8 @@ void testBinaryOp(string keystr, int thread_nums) {
   size_t size = fa.size();
 
   vector<mpc_t> va, vb, vc(size);
-  convert_double_to_mytype(fa, va);
-  convert_double_to_mytype(fb, vb);
+  convert_double_to_mpctype(fa, va);
+  convert_double_to_mpctype(fb, vb);
 
   auto f = [&](int tid) {
     msg_id_t key(keystr + "Single");

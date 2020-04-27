@@ -54,29 +54,40 @@ class MpcDataSet(object):
     def __init__(self, p2_owns_data: bool = False,
                  label_owner: int = 0,
                  dataset_type: MpcDatasetType = MpcDatasetType.COMMON_N_V_SPLIT):
+        self.id_ = mpc_player.id
         self.p2_owns_data_ = p2_owns_data
+        self.label_owner_ = label_owner
         self.dataset = _rtt.dataset.DataSet(
             mpc_player, p2_owns_data, label_owner, dataset_type.value)
 
         if dataset_type != MpcDatasetType.COMMON_N_V_SPLIT:
             raise Exception("only supports COMMON_N_V_SPLIT")
 
-    def __get_numpy(self, file: str, *args, **kwargs):
+    def __get_numpy(self, file: str, is_x: bool, *args, **kwargs):
         arr = None
         try:
             df = pd.read_csv(file, *args, **kwargs)
             arr = df.to_numpy()
+        except FileNotFoundError as e:
+            if is_x:
+                if self.id_ == 0 or self.id_ == 1 or (self.p2_owns_data_ and self.id_ == 2):
+                    print(e)
+                    raise
+            else:
+                if self.label_owner_ == self.id_:
+                    print(e)
+                    raise
         except Exception as e:
-            print(e)
-            arr = None
+            pass
+            # print(e)
         return arr
 
     def load_X(self, file: str, *args, **kwargs):
-        inp = self.__get_numpy(file, *args, **kwargs)
+        inp = self.__get_numpy(file, is_x=True, *args, **kwargs)
         return self.private_input_x(inp)
 
     def load_Y(self, file: str, *args, **kwargs):
-        inp = self.__get_numpy(file, *args, **kwargs)
+        inp = self.__get_numpy(file, is_x=False, *args, **kwargs)
         return self.private_input_y(inp)
 
     def load_XY(self, fileX: str, fileY: str = '', *args, **kwargs):

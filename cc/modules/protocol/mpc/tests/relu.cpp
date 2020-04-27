@@ -16,9 +16,11 @@ void debugReluPrime() {
   size_t size = 10;
   vector<mpc_t> inputs(size, 0);
 
-  if (partyNum == PARTY_A)
-    for (size_t i = 0; i < size; ++i)
-      inputs[i] = aes_indep->get8Bits() - aes_indep->get8Bits();
+  if (partyNum == PARTY_A) {
+    op->populateRandomVector(inputs, size, "INDEP", "POSITIVE");
+    //for (size_t i = 0; i < size; ++i)
+    //  inputs[i] = aes_indep->get8Bits() - aes_indep->get8Bits();
+  }
 
   if (THREE_PC) {
     vector<mpc_t> outputs(size, 0);

@@ -55,13 +55,10 @@ class TCPServer : public Socket {
   }
   void set_server_cert(string server_cert) {
     server_cert_ = server_cert;
-    cout << "ssssserver_cert_:" << server_cert_ << endl;
   }
   void set_server_prikey(string server_prikey, string password = "") {
     server_prikey_ = server_prikey;
     server_prikey_password_ = password;
-    cout << "ssssserver_prikey_:" << server_prikey_ << endl;
-    cout << "ssssserver_prikey_password_:" << server_prikey_password_ << endl;
   }
 
  protected:
@@ -88,7 +85,7 @@ class TCPServer : public Socket {
 #endif
 
  protected:
-  SSL_CTX* ctx = nullptr;
+  SSL_CTX* ctx_ = nullptr;
   mutex connections_mtx_;
   map<int, Connection*> connections_;
   char* main_buffer_ = nullptr;
@@ -100,6 +97,9 @@ class TCPServer : public Socket {
   string server_prikey_;
   string server_prikey_password_;
 
+  std::condition_variable init_cv_;
+  std::mutex init_mtx_;
+
 #if USE_LIBEVENT_AS_BACKEND
   ////////////////// event
  protected:
@@ -108,9 +108,6 @@ class TCPServer : public Socket {
 
   thread* thread_ = nullptr;
   thread_params* tps_ = nullptr;
-
-  std::condition_variable init_cv_;
-  std::mutex init_mtx_;
 
  private:
   /// callbacks here

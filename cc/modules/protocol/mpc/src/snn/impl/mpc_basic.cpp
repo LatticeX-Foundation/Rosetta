@@ -42,7 +42,8 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     vector<small_mpc_t> bit_shares_r_2(size * BIT_SIZE);
     vector<mpc_t> LSB_shares_1(size);
     vector<mpc_t> LSB_shares_2(size);
-
+    
+#define OPT_VALUE 2
 #if 0
     for (size_t i = 0; i < size; ++i) {
       r1[i] = aes_indep->randModuloOdd();
@@ -57,7 +58,7 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     sendVector<small_mpc_t>(bit_shares_r_2, PARTY_B, size * BIT_SIZE);
     sendTwoVectors<mpc_t>(r1, LSB_shares_1, PARTY_A, size, size);
     sendTwoVectors<mpc_t>(r2, LSB_shares_2, PARTY_B, size, size);
-#else
+#elif OPT_VALUE == 1
     populateRandomVector<mpc_t>(r1, size, "a_1", "POSITIVE");
     populateRandomVector<mpc_t>(r2, size, "a_2", "POSITIVE");
     for (size_t i = 0; i < size; ++i) {
@@ -75,6 +76,26 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     sendVector<small_mpc_t>(bit_shares_r_2, PARTY_B, size * BIT_SIZE);
     sendVector<mpc_t>(LSB_shares_1, PARTY_A, size);
     sendVector<mpc_t>(LSB_shares_2, PARTY_B, size);
+#else
+    populateRandomVector<mpc_t>(r1, size, "a_1", "POSITIVE");
+    populateRandomVector<mpc_t>(r2, size, "a_2", "POSITIVE");
+    for (size_t i = 0; i < size; ++i) {
+      if (r1[i] == MINUS_ONE)
+        r1[i]--;
+      if (r2[i] == MINUS_ONE)
+        r2[i]--;
+    }
+
+    addModuloOdd<mpc_t, mpc_t>(r1, r2, r, size);
+    //sharesOfBits(bit_shares_r_1, bit_shares_r_2, r, size, "INDEP");//PRSS, user a
+    sharesOfBits(bit_shares_r_1, bit_shares_r_2, r, size, "a_1"); //PRSS, user a
+    //sharesOfLSB(LSB_shares_1, LSB_shares_2, r, size, "INDEP");
+    sharesOfLSB2(LSB_shares_1, LSB_shares_2, r, size, "a_1");
+
+    //sendVector<small_mpc_t>(bit_shares_r_1, PARTY_A, size * BIT_SIZE);//PRSS saved
+    sendVector<small_mpc_t>(bit_shares_r_2, PARTY_B, size * BIT_SIZE);
+    //sendVector<mpc_t>(LSB_shares_1, PARTY_A, size);//r1 saved ?
+    sendVector<mpc_t>(LSB_shares_2, PARTY_B, size);//
 #endif
   }
 
@@ -83,7 +104,7 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     vector<mpc_t> temp(size);
     receiveVector<small_mpc_t>(bit_shares, PARTY_C, size * BIT_SIZE);
     receiveTwoVectors<mpc_t>(ri, LSB_shares, PARTY_C, size, size);
-#else
+#elif OPT_VALUE == 1
     vector<mpc_t> temp(size);
     receiveVector<small_mpc_t>(bit_shares, PARTY_C, size * BIT_SIZE);
     receiveVector<mpc_t>(LSB_shares, PARTY_C, size);
@@ -92,6 +113,26 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
       populateRandomVector<mpc_t>(ri, size, "a_1", "POSITIVE");
     else
       populateRandomVector<mpc_t>(ri, size, "a_2", "POSITIVE");
+
+    for (size_t i = 0; i < size; ++i) {
+      if (ri[i] == MINUS_ONE)
+        ri[i] -= 1;
+    }
+#else
+    vector<mpc_t> temp(size);
+    if (partyNum == PARTY_A)
+    {
+      populateRandomVector<mpc_t>(ri, size, "a_1", "POSITIVE");
+      gen_side_shareOfBits(bit_shares, size, "a_1");
+      //receiveVector<mpc_t>(LSB_shares, PARTY_C, size);
+      populateRandomVector<mpc_t>(LSB_shares, size, "a_1", "POSITIVE");
+    }
+    else
+    {
+      populateRandomVector<mpc_t>(ri, size, "a_2", "POSITIVE");
+      receiveVector<small_mpc_t>(bit_shares, PARTY_C, size * BIT_SIZE);
+      receiveVector<mpc_t>(LSB_shares, PARTY_C, size);
+    }
 
     for (size_t i = 0; i < size; ++i) {
       if (ri[i] == MINUS_ONE)
@@ -136,7 +177,7 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     // theta_shares is the same as gamma (in older versions);
     // LSB_shares is the same as delta (in older versions);
 #if 0
-	receiveVector<mpc_t>(theta_shares, PARTY_C, size);
+	  receiveVector<mpc_t>(theta_shares, PARTY_C, size);
 #else
     if (partyNum == PARTY_A)
       receiveVector<mpc_t>(theta_shares, PARTY_C, size);

@@ -21,7 +21,7 @@ namespace rosetta {
 namespace io {
 Connection* TCPServer::find_connection(int cid, int64_t& timeout) {
   if (timeout < 0) {
-    timeout = INT64_MAX;
+    timeout = 999999999999L;
   }
 
   using namespace std::chrono;
@@ -35,12 +35,12 @@ Connection* TCPServer::find_connection(int cid, int64_t& timeout) {
     if (conn != nullptr)
       break;
 
-    std::this_thread::sleep_for(milliseconds(1000));
+    std::this_thread::sleep_for(milliseconds(100));
 
     auto time_end = system_clock::now();
     elapsed = duration_cast<duration<int64_t, std::milli>>(time_end - time_beg).count();
 
-    if ((icounter % 10 == 0) || (verbose_ > 1)) {
+    if ((icounter % 100 == 0) || (verbose_ > 1)) {
       std::cout << "receive data from cid[" << cid << "] counter:" << icounter << std::endl;
     }
   } while (elapsed < timeout);
@@ -53,7 +53,7 @@ Connection* TCPServer::find_connection(int cid, int64_t& timeout) {
 
   timeout = timeout - elapsed;
   if (timeout < 0)
-    timeout = 1;
+    timeout = 0;
 
   return conn;
 }
@@ -73,21 +73,21 @@ Connection* TCPServer::find_connection(int cid) {
 size_t TCPServer::send(int cid, const char* data, size_t len, int64_t timeout) {
   if (verbose_ > 3)
     cout << "cid:" << cid << " send 1" << endl;
+
   auto conn = find_connection(cid, timeout);
   if (conn == nullptr)
     return 0;
+
   if (verbose_ > 3)
     cout << "cid:" << cid << " send 2" << endl;
 
   int ret = conn->send(data, len);
   return ret;
 }
-/**
- * @todo not completed supports this api
- */
+
 size_t TCPServer::recv(int cid, char* data, size_t len, int64_t timeout) {
   if (timeout < 0) {
-    timeout = INT64_MAX;
+    timeout = 999999999999L;
   }
 
   if (verbose_ > 3)
@@ -102,7 +102,7 @@ size_t TCPServer::recv(int cid, char* data, size_t len, int64_t timeout) {
 
   int ret = conn->recv(data, len, timeout);
   if (ret != len) {
-    cerr << "server: ret != len" << endl;
+    cerr << "cid:" << cid << " ret != len " << ret << " != " << len << endl;
     throw;
   }
   if (verbose_ > 3)
@@ -119,33 +119,33 @@ size_t TCPServer::send(
   if (conn == nullptr)
     return 0;
 
-  // todo: add mutex here
+  //! @todo: add a mutex here
   conn->send(msg_id.data(), msg_id_t::Size());
   int ret = conn->send(data, len);
   return ret;
 }
 size_t TCPServer::recv(int cid, const msg_id_t& msg_id, char* data, size_t len, int64_t timeout) {
   if (timeout < 0) {
-    timeout = INT64_MAX;
+    timeout = 999999999999L;
   }
 
   if (verbose_ > 3)
-    cout << "msgid cid:" << cid << " recv 1" << endl;
+    cout << "msgid: " << msg_id << " cid:" << cid << " recv 1" << endl;
 
   auto conn = find_connection(cid, timeout);
   if (conn == nullptr)
     return 0;
 
   if (verbose_ > 3)
-    cout << "msgid cid:" << cid << " recv 2" << endl;
+    cout << "msgid " << msg_id << " cid:" << cid << " recv 2" << endl;
 
   int ret = conn->recv(msg_id, data, len, timeout);
   if (ret != len) {
-    cerr << "server: ret != len" << endl;
+    cerr << "msgid " << msg_id << " cid:" << cid << " ret != len " << ret << " != " << len << endl;
     throw;
   }
   if (verbose_ > 3)
-    cout << "msgid cid:" << cid << " recv 3" << endl;
+    cout << "msgid " << msg_id << " cid:" << cid << " recv 3" << endl;
   return ret;
 }
 } // namespace io

@@ -200,7 +200,7 @@ class SyncAesKey : public OpBase {
   int Run(int partyA, int partyB, std::string& key_send, std::string& key_recv) {
     MPCOP_RETURN(funcSyncAesKey(partyA, partyB, key_send, key_recv));
   }
-
+  
  private:
   // A's send to B
   int funcSyncAesKey(int partyA, int partyB, std::string& key_send, std::string& key_recv);
@@ -247,7 +247,7 @@ class PRZS : public OpBase {
   int funPRZS(int party0, int party1, vector<double>& shares) {
     vector<mpc_t> ss(shares.size());
     funPRZS(party0, party1, ss);
-    convert_mytype_to_double(ss, shares);
+    convert_mpctype_to_double(ss, shares);
     return 0;
   }
   int funPRZS(int party0, int party1, mpc_t& shares) {
@@ -291,7 +291,7 @@ class PrivateInput : public OpBase {
   int funPrivateInput(int party, const vector<double>& v, vector<double>& shares) {
     vector<mpc_t> ss(shares.size());
     funPrivateInput(party, v, ss);
-    convert_mytype_to_double(ss, shares);
+    convert_mpctype_to_double(ss, shares);
     return 0;
   }
   int funPrivateInput(int party, double v, mpc_t& shares) {
@@ -425,11 +425,21 @@ class Reconstruct2PC : public OpBase {
     MPCOP_RETURN(funcReconstruct2PC(a, size, out, recv_party));
   }
 
+  int Run(const mpc_t& a, mpc_t& out, int recv_party = PARTY_A) {
+    MPCOP_RETURN(funcReconstruct2PC(a, out, recv_party));
+  }
+
   int RunV2(const vector<mpc_t>& a, size_t size, vector<mpc_t>& out, int recv_party = PARTY_A) {
     MPCOP_RETURN(reconstrct_general(a, size, out, recv_party));
   }
 
  private:
+  int funcReconstruct2PC(const mpc_t& a, mpc_t& out, int recv_party) {
+    vector<mpc_t> va = {a}, vo(1);
+    funcReconstruct2PC(va, 1, vo, recv_party);
+    out = vo[0];
+    return 0;
+  }
   int funcReconstruct2PC(const vector<mpc_t>& a, size_t size, string str);
   int funcReconstruct2PC(const vector<mpc_t>& a, size_t size, vector<mpc_t>& out, int recv_party);
 
@@ -668,6 +678,9 @@ class BinaryOp : public OpBase {
 
  public:
   virtual ~BinaryOp() = default;
+  int Run(const mpc_t& a, const mpc_t& b, mpc_t& c) {
+    MPCOP_RETURN(funcBinaryOp(a, b, c));
+  }
   int Run(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
     MPCOP_RETURN(funcBinaryOp(a, b, c, size));
   }
@@ -681,13 +694,21 @@ class BinaryOp : public OpBase {
   }
 
  protected:
+  virtual int funcBinaryOp(const mpc_t& a, const mpc_t& b, mpc_t& c) {
+    vector<mpc_t> va = {a};
+    vector<mpc_t> vb = {b};
+    vector<mpc_t> vc = {c};
+    funcBinaryOp(va, vb, vc, 1);
+    c = vc[0];
+    return 0;
+  }
   virtual int funcBinaryOp(
     const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) = 0;
   virtual int funcBinaryOp(
     const vector<double>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
     vector<mpc_t> va(a.size(), 0);
     if (partyNum == PARTY_A) {
-      convert_double_to_mytype(a, va);
+      convert_double_to_mpctype(a, va);
     }
     return funcBinaryOp(va, b, c, size);
   }
@@ -695,7 +716,7 @@ class BinaryOp : public OpBase {
     const vector<mpc_t>& a, const vector<double>& b, vector<mpc_t>& c, size_t size) {
     vector<mpc_t> vb(b.size(), 0);
     if (partyNum == PARTY_A) {
-      convert_double_to_mytype(b, vb);
+      convert_double_to_mpctype(b, vb);
     }
     return funcBinaryOp(a, vb, c, size);
   }
@@ -732,7 +753,7 @@ class DotProduct : public BinaryOp {
   virtual int funcBinaryOp(
     const vector<double>& fa, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
     vector<mpc_t> a(fa.size(), 0);
-    convert_double_to_mytype(fa, a);
+    convert_double_to_mpctype(fa, a);
     c.resize(a.size());
     for (size_t i = 0; i < size; i++) {
       c[i] = a[i] * b[i];
@@ -769,7 +790,7 @@ class DivBase : public BinaryOp {
       funcBinaryOp(a, b, c, size);
     }
     vector<mpc_t> a(fa.size(), 0);
-    convert_double_to_mytype(fa, a);
+    convert_double_to_mpctype(fa, a);
     for (size_t i = 0; i < size; i++) {
       c[i] = a[i] * c[i];
     }
@@ -785,7 +806,7 @@ class DivBase : public BinaryOp {
       tb[i] = 1.0 / fb[i];
     }
     vector<mpc_t> b(tb.size(), 0);
-    convert_double_to_mytype(tb, b);
+    convert_double_to_mpctype(tb, b);
     c.resize(a.size());
     for (size_t i = 0; i < size; i++) {
       c[i] = a[i] * b[i];
@@ -884,7 +905,6 @@ class Log : public OpBase {
   */
   int mpc_log_hd(const vector<mpc_t>& shared_X, vector<mpc_t>& shared_Y, size_t vec_size);
 
-
   //private:
   int funcLog(const mpc_t& a, mpc_t& b) {
     mpc_log_v2(a, b);
@@ -936,8 +956,6 @@ class Log : public OpBase {
   	@brief: secret-sahred version of logarithm with three-segment polynomial
   */
   void mpc_log_v2(const mpc_t& shared_X, mpc_t& shared_Y);
-
-
 };
 
 class CompareOp : public OpBase {

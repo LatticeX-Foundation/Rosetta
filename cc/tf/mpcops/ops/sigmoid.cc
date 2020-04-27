@@ -40,7 +40,7 @@ class MpcSigmoidOp : public MpcOpKernel {
 
     vector<mpc_t> a(input_ele_nums);
     vector<mpc_t> b(input_ele_nums);
-    //convert_double_to_mytype(inputx, a);
+    //convert_double_to_mpctype(inputx, a);
     tf_convert_double_to_mpctype(inputx, a);
     tfGetMpcOp(Sigmoid)->Run(a, b, input_ele_nums);
 
@@ -59,7 +59,7 @@ class MpcSigmoidOp : public MpcOpKernel {
 #endif
     out_flat.setZero();
     vector<double> outputz(input_ele_nums);
-    //convert_mytype_to_double(b, outputz);
+    //convert_mpctype_to_double(b, outputz);
     tf_convert_mpctype_to_double(b, outputz);
 
     for (int i = 0; i < input_ele_nums; i++) {
@@ -76,7 +76,7 @@ REGISTER_OP("MpcSigmoid")
   .Input("x: T")
   .Output("y: T")
   .Attr("T: {float, double, int32, int64, uint32, uint64}")
-  .SetShapeFn(shape_inference::UnchangedShape)
+  // .SetShapeFn(shape_inference::UnchangedShape)
   .Doc(R"doc(
 MpcSigmoidOp
 )doc");

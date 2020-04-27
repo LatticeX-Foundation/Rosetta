@@ -34,21 +34,16 @@ static SSL_CTX* evssl_init(
 
   ctx = SSL_CTX_new(SSLv23_server_method());
 
-  //! if have a password (default 123456) for cert.
+  //! set a password (if have).
   SSL_CTX_set_default_passwd_cb_userdata(ctx, (void*)server_prikey_password.c_str());
 
-  string cert = server_cert; //"certs/server-nopass.cert";
-  string key = server_prikey; // "certs/server-prikey";
-
-  if (!SSL_CTX_use_certificate_chain_file(ctx, cert.c_str())) {
-    //cerr << "please use certs/generate.sh to generata private key & cert." << endl;
-    cerr << "SSL_CTX_use_certificate_file " << cert << endl;
+  if (!SSL_CTX_use_certificate_chain_file(ctx, server_cert.c_str())) {
+    cerr << "error: SSL_CTX_use_certificate_file " << server_cert << endl;
     return nullptr;
   }
 
-  if (!SSL_CTX_use_PrivateKey_file(ctx, key.c_str(), SSL_FILETYPE_PEM)) {
-    cerr << "SSL_CTX_use_PrivateKey_file " << cert << endl;
-    //cerr << "please use certs/generate.sh to generata private key & cert." << endl;
+  if (!SSL_CTX_use_PrivateKey_file(ctx, server_prikey.c_str(), SSL_FILETYPE_PEM)) {
+    cerr << "error: SSL_CTX_use_PrivateKey_file " << server_prikey << endl;
     return nullptr;
   }
 
@@ -60,8 +55,8 @@ static SSL_CTX* evssl_init(
 
 bool SSLServer::init_ssl() {
   init_ssl_locking();
-  ctx = evssl_init(server_cert_, server_prikey_, server_prikey_password_);
-  if (ctx == NULL) {
+  ctx_ = evssl_init(server_cert_, server_prikey_, server_prikey_password_);
+  if (ctx_ == NULL) {
     ERR_print_errors_fp(stderr);
     exit(0);
   }
@@ -74,9 +69,9 @@ SSLServer::SSLServer() {
 SSLServer::~SSLServer() {
   stop();
 
-  if (ctx != nullptr) {
-    SSL_CTX_free(ctx);
-    ctx = nullptr;
+  if (ctx_ != nullptr) {
+    SSL_CTX_free(ctx_);
+    ctx_ = nullptr;
   }
 }
 

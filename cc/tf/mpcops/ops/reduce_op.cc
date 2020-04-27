@@ -124,7 +124,7 @@ Status ReductionShape2(InferenceContext* c) {
     .Attr("keep_dims: bool = false")         \
     .Attr("T: numbertype")                   \
     .Attr("Tidx: {int32, int64} = DT_INT32") \
-    .SetShapeFn(shape_inference::ReductionShape2)
+    // .SetShapeFn(shape_inference::ReductionShape2)
 
 REGISTER_MPC_REDUCE_OP(MpcMean).Doc(R"doc(
     MpcMean

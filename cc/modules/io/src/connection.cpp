@@ -21,8 +21,8 @@ namespace rosetta {
 namespace io {
 
 Connection::Connection(int _fd, int _events, bool _is_server) {
-  fd = _fd;
-  events = _events;
+  fd_ = _fd;
+  events_ = _events;
   is_server_ = _is_server;
   buffer_ = make_shared<cycle_buffer>(1024 * 1024 * 10);
 }
@@ -34,6 +34,40 @@ SSLConnection::~SSLConnection() {
   }
 }
 
+size_t Connection::send(const char* data, size_t len, int64_t timeout) {
+  if (is_server()) {
+    cerr << "not supports server's send at present!" << endl;
+    throw;
+  }
+
+  int n = 0;
+#if USE_LIBEVENT_AS_BACKEND
+  struct evbuffer* output = bufferevent_get_output(bev_);
+  n = evbuffer_add(output, data, len);
+  if (n == 0)
+    n = len;
+#else
+  n = writen(fd_, data, len);
+#endif
+  return n;
+}
+
+size_t Connection::recv(char* data, size_t len, int64_t timeout) {
+  int n = 0;
+  if (is_server()) {
+    n = buffer_->read(data, len);
+  } else {
+#if USE_LIBEVENT_AS_BACKEND
+    struct evbuffer* intput = bufferevent_get_input(bev_);
+    n = evbuffer_remove(intput, data, len);
+    if (n == 0)
+      n = len;
+#else
+    n = readn(fd_, data, len);
+#endif
+  }
+  return n;
+}
 size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t timeout) {
   if (!is_server()) {
     cerr << "not supports client's recv at present!" << endl;
@@ -72,7 +106,6 @@ size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t 
 
     {
       // remove `one` empty <msg_id, buffer>
-      // 120s
       for (auto iter = mapbuffer_.begin(); iter != mapbuffer_.end(); ++iter) {
         if (iter->second->can_remove(20.0)) {
           if (verbose_ > 0) {
@@ -90,7 +123,7 @@ size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t 
       if (verbose_ > 1) {
         cout << "(!buffer_->can_read(len1)): len1:" << len1 << endl;
       }
-      usleep(100);
+      usleep(50);
       retry = true;
       continue;
     }
@@ -111,7 +144,7 @@ size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t 
     buffer_->read(tmp.data(), msg_id_t::Size()); // msg id
     if (mapbuffer_.find(tmp) == mapbuffer_.end()) {
       if (verbose_ > 1) {
-        cout << "server recv fd:" << fd << " enter msgid:" << tmp << endl;
+        cout << "server recv fd:" << fd_ << " enter msgid:" << tmp << endl;
       }
       mapbuffer_[tmp] = make_shared<cycle_buffer>(1024 * 1024 * 10);
     }

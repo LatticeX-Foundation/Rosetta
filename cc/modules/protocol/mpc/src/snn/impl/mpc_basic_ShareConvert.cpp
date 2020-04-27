@@ -122,13 +122,28 @@ int ShareConvert::funcShareConvertMPC(vector<mpc_t>& a, size_t size) {
     // for (size_t i = 0; i < size; ++i)
     //   etaP[i] = 1 - etaP[i];
 
+#if 0
     sharesModuloOdd<small_mpc_t>(eta_shares_1, eta_shares_2, etaP, size, "INDEP");
     sendVector<mpc_t>(eta_shares_1, PARTY_A, size);
     sendVector<mpc_t>(eta_shares_2, PARTY_B, size);
+#else
+    sharesModuloOdd<small_mpc_t>(eta_shares_1, eta_shares_2, etaP, size, "a_1");
+    sendVector<mpc_t>(eta_shares_2, PARTY_B, size);
+#endif
   }
 
   if (PRIMARY) {
+    //gen share or receive from Party-C
+#if 0
     receiveVector<mpc_t>(eta_shares, PARTY, size);
+#else
+    if (partyNum == PARTY_A) {
+      gen_side_sharesModuloOdd<small_mpc_t>(eta_shares, size, "a_1");
+    } else {
+      receiveVector<mpc_t>(eta_shares, PARTY, size);
+    }
+#endif
+
     funcXORModuloOdd2PC(etaDP, eta_shares, theta_shares, size);
     addModuloOdd<mpc_t, small_mpc_t>(theta_shares, betai, theta_shares, size);
     subtractModuloOdd<mpc_t, mpc_t>(theta_shares, delta_shares, theta_shares, size);

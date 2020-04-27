@@ -26,8 +26,8 @@ int initialize_mpc(const Params_Fields& params);
 int uninitialize_mpc();
 int partyid();
 
-void convert_mytype_to_double(const vector<mpc_t>& vec1, vector<double>& vec2);
-void convert_double_to_mytype(const vector<double>& vec1, vector<mpc_t>& vec2);
+void convert_mpctype_to_double(const vector<mpc_t>& vec1, vector<double>& vec2);
+void convert_double_to_mpctype(const vector<double>& vec1, vector<mpc_t>& vec2);
 void convert_mytype_to_double_bc(const vector<mpc_t>& vec1, vector<double>& vec2);
 void convert_double_to_mytype_bc(const vector<double>& vec1, vector<mpc_t>& vec2);
 

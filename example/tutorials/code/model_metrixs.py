@@ -25,7 +25,7 @@ parser.add_argument('--model', type=str, help="model", default='logistic')
 args, unparsed = parser.parse_known_args()
 # ##################################################
 
-csvprefix = "./log/" + args.sname
+csvprefix = "./log/"
 tfcsvprefix = "./log/tf-" + args.sname + "/tf"
 rttcsvprefix = "./log/rtt-" + args.sname + "/rtt"
 
@@ -46,6 +46,16 @@ if args.model == 'logistic':
     emetrixs = score_logistic_regression(
         predYrtt.to_numpy(), Y.to_numpy(), tag='rosetta')
     print(pretty(emetrixs))
+
+    # hist
+    plt.title("tensorflow rosetta")
+    plt.xlabel("Probability")
+    plt.ylabel("Frequency")
+    plt.hist(predYtf.to_numpy(), bins=50, label="TensorFlow")
+    plt.hist(predYrtt.to_numpy(), bins=50, label="Rosetta")
+    plt.legend()
+    plt.savefig(csvprefix+"/" + args.sname + "-hist.png")
+    plt.clf()
 
 
 if args.model == 'linear':

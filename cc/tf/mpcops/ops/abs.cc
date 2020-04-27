@@ -43,7 +43,7 @@ class MpcAbsOp : public MpcOpKernel {
 
     size_t size = inputx.size();
     vector<mpc_t> a, b(size);
-    //convert_double_to_mytype(inputx, a);
+    //convert_double_to_mpctype(inputx, a);
     tf_convert_double_to_mpctype(inputx, a);
     tfGetMpcOp(SigmoidCrossEntropy)->ABS(a, b, size);
 
@@ -63,7 +63,7 @@ class MpcAbsOp : public MpcOpKernel {
 
     out_flat.setZero();
     vector<double> outputz(size);
-    //convert_mytype_to_double(b, outputz);
+    //convert_mpctype_to_double(b, outputz);
     tf_convert_mpctype_to_double(b, outputz);
 
     for (int i = 0; i < x.dim_size(0); i++) {
@@ -99,7 +99,7 @@ class MpcAbsPrimeOp : public MpcOpKernel {
 
     size_t size = inputx.size();
     vector<mpc_t> a, b(size);
-    //convert_double_to_mytype(inputx, a);
+    //convert_double_to_mpctype(inputx, a);
     tf_convert_double_to_mpctype(inputx, a);
     tfGetMpcOp(SigmoidCrossEntropy)->ABSPrime(a, b, size);
 
@@ -119,7 +119,7 @@ class MpcAbsPrimeOp : public MpcOpKernel {
 
     out_flat.setZero();
     vector<double> outputz(size);
-    //convert_mytype_to_double(b, outputz);
+    //convert_mpctype_to_double(b, outputz);
     tf_convert_mpctype_to_double(b, outputz);
 
     for (int i = 0; i < x.dim_size(0); i++) {
@@ -135,7 +135,7 @@ REGISTER_OP("MpcAbs")
     .Input("x: T")
     .Output("y: T")
     .Attr("T: {float, double, int32, int64, uint32, uint64}")
-    .SetShapeFn(shape_inference::UnchangedShape)
+    // .SetShapeFn(shape_inference::UnchangedShape)
     .Doc(R"doc(
 MpcAbsOp, |X|
 )doc");
@@ -144,7 +144,7 @@ REGISTER_OP("MpcAbsPrime")
     .Input("x: T")
     .Output("y: T")
     .Attr("T: {float, double, int32, int64, uint32, uint64}")
-    .SetShapeFn(shape_inference::UnchangedShape)
+    // .SetShapeFn(shape_inference::UnchangedShape)
     .Doc(R"doc(
 MpcAbsPrime, 
 )doc");

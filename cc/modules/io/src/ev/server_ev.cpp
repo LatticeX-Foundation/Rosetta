@@ -37,7 +37,7 @@ bool TCPServer::start(int port, int64_t timeout) {
 
   tps_ = new thread_params;
   thread_ = new std::thread(
-    [&](TCPServer* client, thread_params* tps_) {
+    [&](TCPServer* server, thread_params* tps_) {
       auto& base = tps_->base;
       auto& bev = tps_->bev;
       base = event_base_new();
@@ -51,7 +51,7 @@ bool TCPServer::start(int port, int64_t timeout) {
 
       // set timeout
       struct event* timeout_event = event_new(base, -1, EV_TIMEOUT, onTimeout, this);
-      struct timeval t = client->gettv(100000000);
+      struct timeval t = server->gettv(100000000);
       event_add(timeout_event, &t);
 
       // parse addr
@@ -166,7 +166,7 @@ void TCPServer::onSignal(evutil_socket_t sig, short what, void* ctx) {
 
 void TCPServer::onRead(struct bufferevent* bev, void* ctx) {
   Connection* conn = static_cast<Connection*>(ctx);
-  TCPServer* server = static_cast<TCPServer*>(conn->ref_ptr);
+  TCPServer* server = static_cast<TCPServer*>(conn->obj_ptr_);
 
   struct evbuffer* input = bufferevent_get_input(bev);
   int len = evbuffer_get_length(input);
@@ -252,8 +252,8 @@ void TCPServer::onAccept(
   TCPServer* server = static_cast<TCPServer*>(ctx);
   {
     // options
-    server->set_sendbuf(fd, 1024 * 1024);
-    server->set_recvbuf(fd, 1024 * 1024);
+    server->set_sendbuf(fd, server->default_buffer_size());
+    server->set_recvbuf(fd, server->default_buffer_size());
     server->set_nodelay(fd, 1);
   }
 
@@ -271,7 +271,7 @@ void TCPServer::onAccept(
   if (server->is_ssl_socket_) {
     SSL_CTX* server_ctx;
     SSL* client_ctx;
-    server_ctx = (SSL_CTX*)server->ctx;
+    server_ctx = (SSL_CTX*)server->ctx_;
     client_ctx = SSL_new(server_ctx);
     bev = bufferevent_openssl_socket_new(
       evconnlistener_get_base(listener), fd, client_ctx, BUFFEREVENT_SSL_ACCEPTING, flags);
@@ -302,10 +302,10 @@ void TCPServer::onAccept(
   }
 
   Connection* conn = new Connection(fd, 0, true);
-  conn->ref_ptr = (void*)server;
-  conn->bev = bev;
-  conn->client_ip = string(ip);
-  conn->client_port = port;
+  conn->obj_ptr_ = (void*)server;
+  conn->bev_ = bev;
+  conn->client_ip_ = string(ip);
+  conn->client_port_ = port;
 
   // set callback
   bufferevent_setcb(bev, onRead, NULL, onEvent, conn);

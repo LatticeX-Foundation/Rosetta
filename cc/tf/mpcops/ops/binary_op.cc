@@ -28,7 +28,7 @@ namespace tensorflow {
     .Attr("T: {float, double, int32, int64, uint32, uint64}") \
     .Attr("lh_is_const: bool = false")                        \
     .Attr("rh_is_const: bool = false")                        \
-    .SetShapeFn(shape_inference::BroadcastBinaryOpShapeFn)
+    // .SetShapeFn(shape_inference::BroadcastBinaryOpShapeFn)
 
 #define REGISTER_MPC_BINARY_CMP_OP(name)                      \
   REGISTER_OP(#name)                                          \
@@ -38,7 +38,7 @@ namespace tensorflow {
     .Attr("T: {float, double, int32, int64, uint32, uint64}") \
     .Attr("lh_is_const: bool = false")                        \
     .Attr("rh_is_const: bool = false")                        \
-    .SetShapeFn(shape_inference::BroadcastBinaryOpShapeFn)
+    // .SetShapeFn(shape_inference::BroadcastBinaryOpShapeFn)
 
 REGISTER_MPC_BINARY_OP(MpcPow).Doc(R"doc(
     MpcPow

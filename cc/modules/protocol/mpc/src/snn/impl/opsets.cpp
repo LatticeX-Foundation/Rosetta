@@ -22,10 +22,3 @@
 mutex g_key_stat_mtx;
 map<string, op_debug_stat*> g_key_stat; // messagekey --> statiticsFOR DEBUG
 #endif
-
-namespace rosetta {
-namespace mpc {
-mutex AESObjects::msgid_aesobjs_mtx_;
-map<msg_id_t, std::shared_ptr<AESObjects>> AESObjects::msgid_aesobjs_;
-} // namespace mpc
-} // namespace rosetta

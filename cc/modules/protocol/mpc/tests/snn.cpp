@@ -20,6 +20,7 @@ int main(int argc, char* argv[]) {
     usage();
     testMyType();
     testTypeConvert();
+    testTypeConvert2();
     testEachOpComm();
     testPRZS();
     testPrivateInput();

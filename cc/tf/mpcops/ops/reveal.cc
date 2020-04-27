@@ -52,7 +52,7 @@ class MpcRevealOp : public MpcOpKernel {
 
     size_t size = inputx.size();
     vector<mpc_t> a, b(size);
-    //convert_double_to_mytype(inputx, a);
+    //convert_double_to_mpctype(inputx, a);
     tf_convert_double_to_mpctype(inputx, a);
 
 
@@ -60,7 +60,7 @@ class MpcRevealOp : public MpcOpKernel {
       tfGetMpcOp(Reconstruct2PC)->Run(a, size, b, PARTY_A);
 
       vector<double> outputz(size);
-      convert_mytype_to_double(b, outputz);
+      convert_mpctype_to_double(b, outputz);
 
       if (PARTY_A == partyNum) {
         for (int i = 0; i < size; i++) {
@@ -73,7 +73,7 @@ class MpcRevealOp : public MpcOpKernel {
       tfGetMpcOp(Reconstruct2PC)->Run(a, size, b, PARTY_B);
 
       vector<double> outputz(size);
-      convert_mytype_to_double(b, outputz);
+      convert_mpctype_to_double(b, outputz);
 
       if (PARTY_B == partyNum) {
         for (int i = 0; i < size; i++) {
@@ -92,7 +92,7 @@ REGISTER_OP("MpcReveal")
   .Output("y: T")
   .Attr("T: {float, double, int32, int64, uint32, uint64}")
   .Attr("reveal_party: int = -1")
-  .SetShapeFn(shape_inference::UnchangedShape)
+  // .SetShapeFn(shape_inference::UnchangedShape)
   .Doc(R"doc(
 MpcRevealOp
 )doc");

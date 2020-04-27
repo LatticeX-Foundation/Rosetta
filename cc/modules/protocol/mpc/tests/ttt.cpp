@@ -52,7 +52,7 @@ void testSigmoid2() {
   vector<double> rd = {-2.02, -1, -0.88, -0.5, -0.25, 0, 0.25, 0.5, 0.897, 1, 1.2};
   vector<mpc_t> r(rd.size());
   vector<mpc_t> o(rd.size());
-  convert_double_to_mytype(rd, r);
+  convert_double_to_mpctype(rd, r);
 
   test_debug_print(oprec, r, 16, "Sigmoid 0");
   op->Run(r, o, rd.size());
@@ -66,7 +66,7 @@ void testMax2() {
 
   vector<double> a = {-0.01, 0.45, -0.34, 1.23, -0.72, 0.99, 1, -0.1, -0.5, 0, 2.3, 0.7}; // 3 x 4
   vector<mpc_t> va(a.size());
-  convert_double_to_mytype(a, va);
+  convert_double_to_mpctype(a, va);
   vector<mpc_t> vmax(va.size());
   vector<mpc_t> vmaxi(va.size());
 
@@ -83,7 +83,7 @@ void testMean2() {
   vector<double> a = {-0.01, 0.45, -0.34, 1.23, -0.72, 0.99, -1, -0.1, -0.5, 0, 2.3, 0.7}; // 3 x 4
   //vector<double> a = {0.1, 0.2, 0.5, 0.4, -0.72, 0.99, 1, -0.1, -0.5, 0, 2.3, 0.7}; // 3 x 4
   vector<mpc_t> va(a.size());
-  convert_double_to_mytype(a, va);
+  convert_double_to_mpctype(a, va);
   vector<mpc_t> vmean(va.size());
 
   test_debug_print(oprec, va, 16, "Mean va");
@@ -97,7 +97,7 @@ void testRelu2() {
 
   vector<double> a = {-0.01, 0.45, -0.34, 1.23, -0.72, 0.99, 1, -0.1, -0.5, 0, 2.3, 0.7}; // 3 x 4
   vector<mpc_t> va(a.size());
-  convert_double_to_mytype(a, va);
+  convert_double_to_mpctype(a, va);
   vector<mpc_t> vb(va.size());
 
   test_debug_print(oprec, va, 16, "Relu va");
@@ -108,7 +108,7 @@ void testRelu2() {
     output_function();
     vector<double> a = {-0.01, 0.45, -0.34, 1.23, -0.72, 0.99, 1, -0.1, -0.5, 0, 2.3, 0.7}; // 3 x 4
     vector<mpc_t> va(a.size());
-    convert_double_to_mytype(a, va);
+    convert_double_to_mpctype(a, va);
     vector<mpc_t> vb(va.size());
 
     test_debug_print(oprec, va, 16, "Relu va");
@@ -120,7 +120,7 @@ void testRelu2() {
     output_function();
     vector<double> a = {-0.01, 0, 0, 0, 0, 0.99, 1, -0.1, -0.5, 0, 2.3, 0.7}; // 3 x 4
     vector<mpc_t> va(a.size());
-    convert_double_to_mytype(a, va);
+    convert_double_to_mpctype(a, va);
     vector<mpc_t> vb(va.size());
 
     test_debug_print(oprec, va, 16, "Relu2 va");

@@ -34,6 +34,7 @@ set_target_properties(mpc-op PROPERTIES FOLDER "protocol/mpc"
 list(APPEND LINKLIBS mpc-op)
 install_libraries(mpc-op)
 
+# tests
 set(proj protocol_mpc_SNN)
 file(GLOB srcss tests/*.cpp)
 add_executable(${proj} ${srcss})

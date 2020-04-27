@@ -15,4 +15,4 @@ find . -name "log" -type d|xargs rm -rf
 rm -rf .eggs
 rm -rf build dist tmp
 
-rm -rf python/latticex.egg-info
+rm -rf python/latticex_rosetta.egg-info

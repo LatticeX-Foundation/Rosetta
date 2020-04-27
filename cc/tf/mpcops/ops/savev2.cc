@@ -23,7 +23,6 @@
 #include <string>
 #include <vector>
 
-#include "thirdparty/tensorflow/core/kernels/save_restore_tensor.h"
 #include "thirdparty/tensorflow/core/util/tensor_bundle/tensor_bundle.h"
 
 #include "tensorflow/core/framework/bounds_check.h"
@@ -31,15 +30,14 @@
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/framework/types.pb.h"
-//#include "tensorflow/core/kernels/save_restore_tensor.h"
 #include "tensorflow/core/lib/core/status.h"
 #include "tensorflow/core/lib/io/path.h"
 #include "tensorflow/core/platform/env.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/types.h"
 #include "tensorflow/core/util/saved_tensor_slice_util.h"
-//#include "tensorflow/core/util/tensor_bundle/tensor_bundle.h"
 #include "tensorflow/core/util/tensor_slice_reader.h"
+#include "tensorflow/core/util/tensor_slice_writer.h"
 
 namespace tensorflow {
 
@@ -144,7 +142,7 @@ class MpcSaveV2Op : public MpcOpKernel{
       }
 
       vector<mpc_t> inner_tensor_cipher(ele_nums, 0);
-      //convert_double_to_mytype(curr_flat_vec, inner_tensor_cipher);
+      //convert_double_to_mpctype(curr_flat_vec, inner_tensor_cipher);
       tf_convert_double_to_mpctype(curr_flat_vec, inner_tensor_cipher);
       //=================MPC========================
       vector<mpc_t> inner_tensor_cipher_recons = inner_tensor_cipher;
@@ -169,7 +167,7 @@ class MpcSaveV2Op : public MpcOpKernel{
         tfGetMpcOp(Reconstruct2PC)->RunV2(inner_tensor_cipher, ele_nums, inner_tensor_cipher_recons, PARTY_C);
       }     
       vector<double> curr_plain_flat_vec(ele_nums,0);
-      convert_mytype_to_double(inner_tensor_cipher_recons, curr_plain_flat_vec);
+      convert_mpctype_to_double(inner_tensor_cipher_recons, curr_plain_flat_vec);
       for(int j = 0; j < ele_nums; ++j) {
         inner_tensor_plain(j) = curr_plain_flat_vec[j];
       }

@@ -52,7 +52,7 @@ void testPrivateInput() {
     print_vec(rt, 8, "oppi mpc_t vector rt(reveal)");
 
     vector<double> rv(size);
-    convert_mytype_to_double(rt, rv);
+    convert_mpctype_to_double(rt, rv);
     print_vec(rv, 8, "oppi mpc_t vector rv(reveal)");
   }
   {

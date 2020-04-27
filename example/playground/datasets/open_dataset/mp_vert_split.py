@@ -18,11 +18,11 @@ BIG_NUM = 2 ** 62
 def float_to_mpc_type(fi):
     int_p = int(fi)
     decimal_p = fi - int_p
-    res = int(int_p * ( 1 << FLOAT_POINT)) + int(decimal_p * (1 << FLOAT_POINT))
+    res = int(int_p * ( 2 << FLOAT_POINT)) + int(decimal_p * (2 << FLOAT_POINT))
     return int(res)
 
 def mpc_to_float(mi):
-    fi = mi / (1 << FLOAT_POINT)
+    fi = mi / (2 << FLOAT_POINT)
     #print(fi)
     return fi
 

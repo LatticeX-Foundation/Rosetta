@@ -68,8 +68,8 @@ class TCPClient : public Socket {
   int cid_ = 0; // client id
   int sid_ = 0; // server id (connect to)
 
-  SSL_CTX* ctx = nullptr;
-  SSL* ssl = nullptr;
+  SSL_CTX* ctx_ = nullptr;
+  SSL* ssl_ = nullptr;
 
 #if USE_LIBEVENT_AS_BACKEND
   // only for libevent

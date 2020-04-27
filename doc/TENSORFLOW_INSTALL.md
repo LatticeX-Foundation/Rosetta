@@ -4,12 +4,13 @@
   - [Description of documentation](#description-of-documentation)
   - [System requirements](#system-requirements)
   - [System software installation](#system-software-installation)
+  - [Binary installation](#binary-installation)
   - [Source code installation](#source-code-installation)
   - [Installation verification](#installation-verification)
 
 ## Description of documentation
 
-This document serves as a reference for installing the TensorFlow environment, TensorFlow specified version is `v1.14.0`, currently only supports source installation, binary method will be available soon.
+This document serves as a reference for installing the TensorFlow environment, TensorFlow specified version is `v1.14.0`.
 
 ## System requirements
 
@@ -46,6 +47,18 @@ sudo pip3 install --upgrade pip
 
 Once the installation is complete, check again for compliance with the system requirements to ensure proper installation.
 
+## Binary installation
+
+The TensorFlow binary installation uses the binary `.whl` package that TensorFlow officially uploads to pypi.
+
+```bash
+# Optional, to depress the warning of tensorflow
+pip3 install numpy==1.16.4 --user
+# install tensorflow
+pip3 install tensorflow==1.14.0 --user
+````
+
+> Tensorflow binary installation can refer to [official documentation](https://www.tensorflow.org/install/pip)
 
 ## Source code installation
 

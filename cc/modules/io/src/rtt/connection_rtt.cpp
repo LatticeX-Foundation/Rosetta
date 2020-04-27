@@ -27,7 +27,7 @@ void SSLConnection::handshake() {
   if (ssl_ == nullptr) {
     {
       // new ssl
-      ssl_ = SSL_new(ctx);
+      ssl_ = SSL_new(ctx_);
       if (ssl_ == nullptr) {
         cerr << "SSLConnection::handshake() SSL_new failed!" << endl;
         exit(0);
@@ -35,7 +35,7 @@ void SSLConnection::handshake() {
     }
     {
       // set fd to ssl
-      int r = SSL_set_fd(ssl_, fd);
+      int r = SSL_set_fd(ssl_, fd_);
       if (is_server()) {
         SSL_set_accept_state(ssl_);
       } else {

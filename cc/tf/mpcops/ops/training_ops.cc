@@ -68,15 +68,45 @@ class MpcApplyGradientDescentOp : public MpcOpKernel {
                                 delta.shape().DebugString()));
     
     // Step 2: 
-    //cout << "======MPC part =======" <<endl;
-    // Attention!：No need to call SNN module because the ADD and SUB are all local.
+    //cout << "======DEBUG: AGD MPC part =======" <<endl;
+    // Attention!：In this version, we still need to convert the nums to MpcType
     auto new_var = var.flat<T>();
     auto alpha_flat = alpha.scalar<T>();
     auto delta_flat = delta.flat<T>();
 
-    //cout << "alpha: " << alpha_flat() <<endl;
-    new_var -= delta_flat * alpha_flat();
-   
+    auto ele_nums = delta.NumElements();
+  #if USE_MPC_OP
+      vector<double> input_alpha(ele_nums);
+      vector<double> input_delta(ele_nums);
+      vector<double> input_var(ele_nums);
+      for(auto i = 0; i < ele_nums; ++i) {
+        // original alpha is scalar!
+        input_alpha[i] = alpha_flat();
+        input_delta[i] = delta_flat(i);
+        input_var[i] = new_var(i); 
+      }
+      //vector<mpc_t> mpc_alpha_vec(ele_nums);
+      vector<mpc_t> mpc_delta_vec(ele_nums);
+      vector<mpc_t> mpc_var_vec(ele_nums);
+      vector<mpc_t> mpc_res_vec(ele_nums);
+      //tf_convert_double_to_mpctype(input_alpha, mpc_alpha_vec);
+      tf_convert_double_to_mpctype(input_delta, mpc_delta_vec);      
+      tf_convert_double_to_mpctype(input_var, mpc_var_vec);
+
+      //cout << "alpha: " << alpha_flat() <<endl;
+      //new_var -= delta_flat * alpha_flat();
+      //reuse the MUL when left-side-hand is local const:
+      tfGetMpcOp(Mul)->Run(input_alpha, mpc_delta_vec, mpc_res_vec, ele_nums);
+      tfGetMpcOp(Sub)->Run(mpc_var_vec, mpc_res_vec, mpc_res_vec, ele_nums);
+
+      vector<double> output_var(ele_nums);
+      tf_convert_mpctype_to_double(mpc_res_vec, output_var);
+      new_var.setZero();
+      for(int i = 0; i < ele_nums; ++i){
+        new_var(i) = output_var[i];
+      }
+  #endif
+    //cout << "======DEBUG: AGD MPC part END=======" <<endl; 
     if (ctx->input_dtype(0) != DT_RESOURCE) {
       ctx->forward_ref_input_to_ref_output(0, 0);
     }
@@ -157,11 +187,13 @@ REGISTER_OP("MpcApplyGradientDescent")
     .Output("out: Ref(T)")
     .Attr("T: numbertype")
     .Attr("use_locking: bool = false")
-    .SetShapeFn(ApplyGradientDescentShapeFn)
+    // .SetShapeFn(ApplyGradientDescentShapeFn)
     .Doc(R"doc(
 MpcApplyGradientDescentOp
 )doc");
 
 REGISTER_MPCOP_KERNELS_ALL_TYPES(MpcApplyGradientDescent, MpcApplyGradientDescentOp)
+
+VAR_REGISTER_MPCOP_KERNELS_ALL_TYPES(ResourceMpcApplyGradientDescent, MpcApplyGradientDescentOp)
 
 } // namespace tensorflow

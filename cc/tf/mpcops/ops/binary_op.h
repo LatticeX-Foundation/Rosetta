@@ -378,27 +378,33 @@ class MpcBinaryOp : public MpcOpKernel {
     vector<mpc_t> a, b, c(size);
     tf_convert_double_to_mpctype(input0, a);
     tf_convert_double_to_mpctype(input1, b);
-    //convert_double_to_mytype(input0, a);
-    //convert_double_to_mytype(input1, b);
+    //convert_double_to_mpctype(input0, a);
+    //convert_double_to_mpctype(input1, b);
 
     Functor functor(baseop());
     if (functor.opname() == "Pow") {
+      lh_is_const_ = false;
+      rh_is_const_ = true;
+    }
+    if (lh_is_const_) {
+      functor(input0, b, c, size);
+    } else if (rh_is_const_) {
       functor(a, input1, c, size);
     } else {
-      if (lh_is_const_) {
-        functor(input0, b, c, size);
-      } else if (rh_is_const_) {
-        functor(a, input1, c, size);
-      } else {
-        functor(a, b, c, size);
-      }
+      functor(a, b, c, size);
     }
 
 #if PRINT_REVEAL
     {
       vector<double> vc;
-      debug_print_reveal(a, vc, "input a");
-      debug_print_reveal(b, vc, "input b");
+      if (lh_is_const_)
+        debug_print_reveal(input0, "input a");
+      else
+        debug_print_reveal(a, vc, "input a");
+      if (rh_is_const_)
+        debug_print_reveal(input1, "input b");
+      else
+        debug_print_reveal(b, vc, "input b");
       debug_print_reveal(c, vc, "output c");
     }
 #endif
@@ -408,7 +414,7 @@ class MpcBinaryOp : public MpcOpKernel {
 
     if (!StandaloneOutT) {
       vector<double> output(size);
-      //convert_mytype_to_double(c, output);
+      //convert_mpctype_to_double(c, output);
       tf_convert_mpctype_to_double(c, output);
 
       for (int i = 0; i < rows; i++) {

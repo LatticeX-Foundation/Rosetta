@@ -40,3 +40,4 @@ history
 zc
 .exclude_cb_file
 err.txt
+python/latticex_rosetta.egg-info

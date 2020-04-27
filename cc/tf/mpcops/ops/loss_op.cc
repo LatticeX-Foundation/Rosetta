@@ -53,9 +53,9 @@ class MpcSigmoidCrossEntropyOp : public MpcOpKernel {
     vector<mpc_t> shared_labels_vec(input_ele_nums);
 
     vector<mpc_t> shared_z_vec(input_ele_nums);
-    //convert_double_to_mytype(inputx, shared_logits_vec);
+    //convert_double_to_mpctype(inputx, shared_logits_vec);
     tf_convert_double_to_mpctype(inputx, shared_logits_vec);
-    //convert_double_to_mytype(inputy, shared_labels_vec);
+    //convert_double_to_mpctype(inputy, shared_labels_vec);
     tf_convert_double_to_mpctype(inputy, shared_labels_vec);
 
     tfGetMpcOp(SigmoidCrossEntropy)->Run(shared_logits_vec, shared_labels_vec, shared_z_vec, input_ele_nums);
@@ -74,7 +74,7 @@ class MpcSigmoidCrossEntropyOp : public MpcOpKernel {
     }
 #endif
     vector<double> outputz(input_ele_nums);
-    //convert_mytype_to_double(shared_z_vec, outputz);
+    //convert_mpctype_to_double(shared_z_vec, outputz);
     tf_convert_mpctype_to_double(shared_z_vec, outputz);
     out_flat.setZero();
     for(int i = 0; i < input_ele_nums; ++i) {

@@ -40,38 +40,8 @@ mpc_t FloatToMpcType3(double d) {
   return t;
 }
 
-template <typename T>
-void print_hex(T d) {
-  cout << "------:" << d << " hex:" << ios::hex << d << " mem:";
-  char* p = (char*)&d;
-  for (int i = 0; i < sizeof(d); i++) {
-    printf("%02x ", p[i] & 0xFF);
-  }
-  cout << endl;
-};
 void testTypeConvert() {
-  {
-    cout.setf(ios::fixed);
-    {
-      union mpc_f {
-        double d;
-        mpc_t t;
-      };
-
-      mpc_f a;
-      a.d = 0.0012;
-      print_hex(a.d);
-      print_hex(a.t);
-
-      mpc_t t = FloatToMpcTypeBC(a.d);
-      print_hex(t);
-
-      double d = MpcTypeToFloatBC(t);
-      print_hex(d);
-
-      cout.unsetf(ios::fixed);
-    }
-  }
+  cout.setf(ios::fixed);
 
   cout << FLOAT_PRECISION << endl;
   cout << FLOAT_PRECISION << endl;

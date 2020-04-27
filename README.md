@@ -16,10 +16,27 @@ The current version integerates the secure multi-party computation protocols for
 
 ## Installation
 
-For now, Rosetta runs on Ubuntu 18.04, and is based on TensorFlow 1.14 with CPUs. Windows is not currently supported.
+For now, Rosetta runs on Ubuntu 18.04, and is based on TensorFlow 1.14 with CPUs. Windows is not currently supported. In short, It takes the following 3 steps to install Rosetta.
 
-First, you shoud check that your local system meets our requirement. And then, install the native TensorFlow before building Rosetta from source. After that, you can use an example to check everything runs OK. You can check [Deployment Guide](doc/DEPLOYMENT.md) for the detailed steps of building from source code and installation.
+First, you shoud check that your local system meets our base enviroment requirement. 
 
+And then, install the native TensorFlow. You can either install it from its source code or with the help of Python's `pip` package manager. The easiest way to do this is just as follows:
+```bash
+# install tensorflow
+pip3 install tensorflow==1.14.0
+````
+
+The last step is to build and install Rosetta from source code. We have provided an all-in-one script to ease the process. All you need to do is:
+
+ ```bash
+# clone rosetta git repository
+git clone https://github.com/LatticeX-Foundation/Rosetta.git
+cd Rosetta
+# compile, install and run test cases
+bash compile_and_test_all.sh
+````
+
+After installation, you can use an example to check everything runs OK. Please refer to [Deployment Guide](doc/DEPLOYMENT.md) for the detailed steps of configuration, installation and deployment of Rosetta.
 
 ## Usage
 The following is a simple example for the famous Millionaires' problem using Rosetta.

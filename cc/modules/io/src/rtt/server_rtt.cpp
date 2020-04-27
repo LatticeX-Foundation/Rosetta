@@ -31,9 +31,9 @@ namespace {
 void epoll_add(int efd, Connection* conn) {
   struct epoll_event ev;
   memset(&ev, 0, sizeof(ev));
-  ev.events = conn->events;
+  ev.events = conn->events_;
   ev.data.ptr = conn;
-  int r = epoll_ctl(efd, EPOLL_CTL_ADD, conn->fd, &ev);
+  int r = epoll_ctl(efd, EPOLL_CTL_ADD, conn->fd_, &ev);
   if (r != 0) {
     cerr << "epoll_ctl add failed. errno:" << errno << " " << strerror(errno) << endl;
   }
@@ -42,9 +42,9 @@ void epoll_add(int efd, Connection* conn) {
 void epoll_mod(int efd, Connection* conn) {
   struct epoll_event ev;
   memset(&ev, 0, sizeof(ev));
-  ev.events = conn->events;
+  ev.events = conn->events_;
   ev.data.ptr = conn;
-  int r = epoll_ctl(efd, EPOLL_CTL_MOD, conn->fd, &ev);
+  int r = epoll_ctl(efd, EPOLL_CTL_MOD, conn->fd_, &ev);
   if (r != 0) {
     cerr << "epoll_ctl mod failed. errno:" << errno << " " << strerror(errno) << endl;
   }
@@ -53,9 +53,9 @@ void epoll_mod(int efd, Connection* conn) {
 void epoll_del(int efd, Connection* conn) {
   struct epoll_event ev;
   memset(&ev, 0, sizeof(ev));
-  ev.events = conn->events;
+  ev.events = conn->events_;
   ev.data.ptr = conn;
-  int r = epoll_ctl(efd, EPOLL_CTL_DEL, conn->fd, &ev);
+  int r = epoll_ctl(efd, EPOLL_CTL_DEL, conn->fd_, &ev);
   if (r != 0) {
     cerr << "epoll_ctl del failed. errno:" << errno << " " << strerror(errno) << endl;
   }
@@ -77,9 +77,8 @@ int TCPServer::create_server(int port) {
   ret = set_reuseaddr(fd, option_reuseaddr() ? 1 : 0);
   ret = set_reuseport(fd, option_reuseport() ? 1 : 0);
 
-  int size = 1024 * 1024;
-  set_sendbuf(fd, size);
-  set_recvbuf(fd, size);
+  set_sendbuf(fd, default_buffer_size());
+  set_recvbuf(fd, default_buffer_size());
 
   //set_linger(fd);
   set_nodelay(fd, 1);
@@ -113,9 +112,8 @@ void TCPServer::handle_accept(Connection* conn) {
   }
   //cout << "accept cfd: " << cfd << endl;
 
-  int size = 1024 * 1024;
-  set_sendbuf(cfd, size);
-  set_recvbuf(cfd, size);
+  set_sendbuf(cfd, default_buffer_size());
+  set_recvbuf(cfd, default_buffer_size());
   set_nodelay(cfd, 1);
 
   Connection* tc = nullptr;
@@ -124,7 +122,7 @@ void TCPServer::handle_accept(Connection* conn) {
   else
     tc = new Connection(cfd, EPOLL_EVENTS, true);
 
-  tc->ctx = ctx;
+  tc->ctx_ = ctx_;
 
   // recv client id from client
   int cid = 0;
@@ -148,7 +146,7 @@ void TCPServer::handle_accept(Connection* conn) {
 void TCPServer::handle_error(Connection* conn) {
   //cout << __FUNCTION__ << " errno:" << errno << endl;
   //epoll_del(epollfd_, conn);
-  //close(conn->fd);
+  //close(conn->fd_);
 }
 
 void TCPServer::handle_write(Connection* conn) {
@@ -156,7 +154,7 @@ void TCPServer::handle_write(Connection* conn) {
 }
 
 void TCPServer::handle_read(Connection* conn) {
-  if (conn->fd == listenfd_) {
+  if (conn->fd_ == listenfd_) {
     handle_accept(conn);
     return;
   }
@@ -169,7 +167,7 @@ void TCPServer::handle_read(Connection* conn) {
   int a = 0;
   while (true) {
     a++;
-    ssize_t len = conn->readImpl(conn->fd, main_buffer_, 8192);
+    ssize_t len = conn->readImpl(conn->fd_, main_buffer_, 8192);
     if (len > 0) { // Normal
       conn->buffer_->write(main_buffer_, len);
     } else if (len == 0) { // EOF
@@ -180,7 +178,7 @@ void TCPServer::handle_read(Connection* conn) {
       if (false) { // for double check
         struct tcp_info info;
         int len = sizeof(info);
-        getsockopt(conn->fd, IPPROTO_TCP, TCP_INFO, &info, (socklen_t*)&len);
+        getsockopt(conn->fd_, IPPROTO_TCP, TCP_INFO, &info, (socklen_t*)&len);
         cout << "getsockopt info.tcpi_state: " << to_string(info.tcpi_state) << endl;
         if (info.tcpi_state == TCP_CLOSE) {
           cout << "info.tcpi_state == TCP_CLOSE" << endl;
@@ -190,7 +188,7 @@ void TCPServer::handle_read(Connection* conn) {
       if (false) { // for double check
         sockaddr_in peer, local;
         socklen_t alen = sizeof(peer);
-        int ret = getpeername(conn->fd, (sockaddr*)&peer, &alen);
+        int ret = getpeername(conn->fd_, (sockaddr*)&peer, &alen);
         cout << "getpeername ret:" << ret << ", errno:" << errno << endl;
         if (ret = -1 && errno == ENOTCONN) {
           cout << "ret = -1 && errno == ENOTCONN" << endl;
@@ -198,8 +196,8 @@ void TCPServer::handle_read(Connection* conn) {
       }
 
       if (verbose_ > 1)
-        cout << "fd: " << conn->fd << " server read 0 , client close. errno: " << errno << endl;
-      close(conn->fd);
+        cout << "fd: " << conn->fd_ << " server read 0 , client close. errno: " << errno << endl;
+      close(conn->fd_);
       return;
     } else { // Error or Interrupt
       if (errno == EINTR) {
@@ -212,7 +210,7 @@ void TCPServer::handle_read(Connection* conn) {
         //continue;
         break;
       }
-      cout << "fd: " << conn->fd << " server 2 read errno: " << errno << endl;
+      cout << "fd: " << conn->fd_ << " server 2 read errno: " << errno << endl;
       break;
     }
   }
@@ -294,7 +292,13 @@ bool TCPServer::start(int port, int64_t timeout) {
   init();
   return true;
 }
-void TCPServer::as_server() {}
+void TCPServer::as_server() {
+  //! @todo not supported for now
+  std::unique_lock<std::mutex> lock(init_mtx_);
+  init_cv_.wait(lock, [this]() { return !running_; });
+  init_cv_.wait_for(lock, std::chrono::seconds(1), []() { return false; });
+}
+
 bool TCPServer::stop() {
   if (stoped_)
     return true;

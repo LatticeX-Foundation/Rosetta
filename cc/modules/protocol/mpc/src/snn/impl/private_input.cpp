@@ -28,7 +28,7 @@ int PrivateInput::funPrivateInput(int party, const vector<double>& v, vector<mpc
 
     if (partyNum == PARTY_C) {
       vector<mpc_t> vs(v.size());
-      convert_double_to_mytype(v, vs);
+      convert_double_to_mpctype(v, vs);
       for (size_t i = 0; i < vs.size(); ++i)
         shares[i] = shares[i] + vs[i];
 
@@ -47,7 +47,7 @@ int PrivateInput::funPrivateInput(int party, const vector<double>& v, vector<mpc
 
     if (partyNum == party) {
       vector<mpc_t> vs(v.size());
-      convert_double_to_mytype(v, vs);
+      convert_double_to_mpctype(v, vs);
       for (size_t i = 0; i < vs.size(); ++i)
         shares[i] = shares[i] + vs[i];
     }

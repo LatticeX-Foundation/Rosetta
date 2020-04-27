@@ -40,10 +40,11 @@ using namespace std;
  * 
  * Provides NetIO/SSLNetIO/ParallelNetIO/SSLParallelNetIO
  * 
- * Note, the supports of SSL have not totally completed.
+ * Note:
  * 
- * The Client send and the Server receive. [supported]
- * The Client receive and the Server send. [unsupported]
+ * Only the receiving of the server and the sending of the client are totally supported. 
+ * 
+ * The receiving of the client and the sending of the server are not totally supported.
  */
 namespace rosetta {
 namespace io {
@@ -56,14 +57,45 @@ class BasicIO {
  public:
   virtual ~BasicIO();
   BasicIO() = default;
+  /**
+   * Constructor for create an IO.
+   * 
+   * \param parties how many parties are involved  \n
+   * \param party id of the current party \n
+   * \param thread_nums tow many threds will open in each connection \n
+   * \param base_port the base port for server \n
+   * \param ips the ips for all servers, in order \n
+   */
   BasicIO(int parties, int party, int thread_nums, int base_port, const vector<string>& ips);
 
  public:
-  void close();
+  /**
+   * init the server and clients.
+   */
   bool init();
+  /**
+   * close the connections.
+   */
+  void close();
+  /**
+   * sync each party, used in non-parallel io.
+   */
   void sync();
+  /**
+   * sync each party, used in parallel io.
+   * 
+   * \param msg_id the id user for parallel io
+   */
   void sync_with(const msg_id_t& msg_id);
+  /**
+   * get the statistics (counts and elpased of recv/send).
+   * 
+   * \param str a helper message for print
+   */
   void statistics(string str = "");
+  /**
+   * reset all statistics to initialized value.
+   */
   void clear_statistics();
 
   /**
@@ -85,11 +117,19 @@ class BasicIO {
   }
 
   /**
-   * about certifications
+   * set server certification
+   * 
+   * \param server_cert the file path of server certification
    */
   void set_server_cert(string server_cert) {
     server_cert_ = server_cert;
   }
+  /**
+   * set server private key
+   * 
+   * \param server_cert the file path of server private key \n
+   * \param password optional. the password for server private key \n
+   */
   void set_server_prikey(string server_prikey, string password = "") {
     server_prikey_ = server_prikey;
     server_prikey_password_ = password;
@@ -105,30 +145,77 @@ class BasicIO {
    * tid: thread id \n
    * connid: connection id (not supported now) \n
    */
+  /**
+   * thread version \n
+   * receive len size data from the client which id is party. \n
+   * 
+   * \param party receive from \n
+   * \param data the buffer for receiving, must be allocated first \n
+   * \param len legth size bytes will be received \n
+   * \param tid thread id \n
+   */
   int recv(int party, char* data, size_t len, int tid = 0);
+  /**
+   * thread version \n
+   * send len size data to the server which id is party. \n
+   * 
+   * \param party send to \n
+   * \param data the buffer will be sent \n
+   * \param len legth size bytes will be sent \n
+   * \param tid thread id \n
+   */
   int send(int party, const char* data, size_t len, int tid = 0);
+  /**
+   * thread version \n
+   * current party send len size data to the server which id is not current party. \n
+   */
   int broadcast(const char* data, size_t len, int tid = 0);
 
+  /**
+   * thread version \n
+   * 
+   * \see recv
+   */
   template <typename T>
   int recv(int party, vector<T>& data, size_t n, int tid = 0);
+  /**
+   * thread version \n
+   */
   template <typename T>
   int send(int party, const vector<T>& data, size_t n, int tid = 0);
+  /**
+   * thread version \n
+   */
   template <typename T>
   int broadcast(const vector<T>& data, size_t n, int tid = 0);
 
  public:
   /**
    * message-id version \n
-   * choice 1. in the future, will combine 'thread version' to this version
    */
   int recv(int party, char* data, size_t len, const msg_id_t& msg_id);
+  /**
+   * message-id version \n
+   */
   int send(int party, const char* data, size_t len, const msg_id_t& msg_id);
+  /**
+   * message-id version \n
+   */
   int broadcast(const char* data, size_t len, const msg_id_t& msg_id);
 
+  /**
+   * message-id version \n
+   */
   template <typename T>
   int recv(int party, vector<T>& data, size_t n, const msg_id_t& msg_id);
+  /**
+   * message-id version \n
+   */
   template <typename T>
   int send(int party, const vector<T>& data, size_t n, const msg_id_t& msg_id);
+  /**
+   * message-id version \n
+   */
   template <typename T>
   int broadcast(const vector<T>& data, size_t n, const msg_id_t& msg_id);
 
@@ -156,6 +243,9 @@ class BasicIO {
 
 #include "internal/net_io.hpp"
 
+/**
+ * General Net IO.
+ */
 class NetIO : public BasicIO<TCPServer, TCPClient> {
  public:
   virtual ~NetIO() = default;
@@ -163,6 +253,9 @@ class NetIO : public BasicIO<TCPServer, TCPClient> {
       : BasicIO(parties, party, thread_nums, base_port, ips) {}
 };
 
+/**
+ * General Net IO with SSL.
+ */
 class SSLNetIO : public BasicIO<SSLServer, SSLClient> {
  public:
   virtual ~SSLNetIO() = default;
@@ -170,6 +263,9 @@ class SSLNetIO : public BasicIO<SSLServer, SSLClient> {
       : BasicIO(parties, party, thread_nums, base_port, ips) {}
 };
 
+/**
+ * Parallel Net IO.
+ */
 class ParallelNetIO : public BasicIO<TCPServer, TCPClient> {
  public:
   virtual ~ParallelNetIO() = default;
@@ -179,6 +275,9 @@ class ParallelNetIO : public BasicIO<TCPServer, TCPClient> {
   }
 };
 
+/**
+ * Parallel Net IO with SSL.
+ */
 class SSLParallelNetIO : public BasicIO<SSLServer, SSLClient> {
  public:
   virtual ~SSLParallelNetIO() = default;

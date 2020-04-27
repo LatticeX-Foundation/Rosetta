@@ -278,16 +278,20 @@ void debugSS() {
   if (THREE_PC) {
     vector<mpc_t> selector(size, 0);
 
-    if (partyNum == PARTY_A)
-      for (size_t i = 0; i < size; ++i)
-        selector[i] = (mpc_t)(aes_indep->getBit() << FLOAT_PRECISION);
+    if (partyNum == PARTY_A) {
+      opsss->populateRandomVector(selector, size, "INDEP", "POSITIVE");
+      //for (size_t i = 0; i < size; ++i)
+      //  selector[i] = (mpc_t)(aes_indep->getBit() << FLOAT_PRECISION);
+    }
 
     if (PRIMARY)
       oprec->Run(selector, size, "selector");
 
     if (partyNum == PARTY_A)
-      for (size_t i = 0; i < size; ++i)
-        inputs[i] = (mpc_t)aes_indep->get8Bits();
+      for (size_t i = 0; i < size; ++i) {
+        opsss->populateRandomVector(inputs, size, "INDEP", "POSITIVE");
+        //inputs[i] = (mpc_t)aes_indep->get8Bits();
+      }
 
     opsss->Run3PC(inputs, selector, outputs, size);
 

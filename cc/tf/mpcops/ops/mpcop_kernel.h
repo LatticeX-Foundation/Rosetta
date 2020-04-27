@@ -57,16 +57,29 @@ typedef Eigen::GpuDevice GPUDevice;
   REGISTER_KERNEL_BUILDER(                      \
     Name(#name).Device(DEVICE_CPU).TypeConstraint<type>("T"), cls<Eigen::ThreadPoolDevice, type>);
 
+// Added by SJJ: for reosurcevariable on ApplyGradientDescent only, for now.
+#define VAR_REGISTER_MPCOP_KERNELS(name, cls, type) \
+  REGISTER_KERNEL_BUILDER(                      \
+    Name(#name).Device(DEVICE_CPU).HostMemory("var").TypeConstraint<type>("T"), cls<Eigen::ThreadPoolDevice, type>);
+
+
 // now, only support float64 for input
 #define REGISTER_MPCOP_KERNELS_ALL_TYPES(name, cls) \
   REGISTER_MPCOP_KERNELS(name, cls, float)          \
   REGISTER_MPCOP_KERNELS(name, cls, double)         \
   REGISTER_MPCOP_KERNELS(name, cls, int)
 
+#define VAR_REGISTER_MPCOP_KERNELS_ALL_TYPES(name, cls) \
+  VAR_REGISTER_MPCOP_KERNELS(name, cls, float)          \
+  VAR_REGISTER_MPCOP_KERNELS(name, cls, double)         \
+  VAR_REGISTER_MPCOP_KERNELS(name, cls, int)
+
+
 #define REGISTER_MPCOP_KERNELS_BINARYOP(name, cls, type, bop) \
   REGISTER_KERNEL_BUILDER(                                    \
     Name(#name).Device(DEVICE_CPU).TypeConstraint<type>("T"), \
     cls<Eigen::ThreadPoolDevice, type, bop>);
+
 
 // now, only support float64 for input
 #define REGISTER_MPCOP_KERNELS_ALL_TYPES_BINARYOP(name, cls, bop) \
@@ -253,9 +266,15 @@ class MpcOpKernel : public OpKernel {
 
     out.clear();
     out.resize(size);
-    convert_mytype_to_double(out2, out);
+    convert_mpctype_to_double(out2, out);
     print_vec(out, 7);
 
+    cout << __FUNCTION__ << "================= " << endl;
+  }
+
+  void debug_print_reveal(const vector<double>& in, std::string msg = "") {
+    cout << __FUNCTION__ << "================= " << msg << endl;
+    print_vec(in, 7);
     cout << __FUNCTION__ << "================= " << endl;
   }
 };

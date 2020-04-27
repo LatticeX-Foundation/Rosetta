@@ -37,39 +37,8 @@ struct Connection {
   }
 
  public:
-  size_t send(const char* data, size_t len, int64_t timeout = -1L) {
-    if (is_server()) {
-      cerr << "not supports server's send at present!" << endl;
-      throw;
-    }
-
-    int n = 0;
-#if USE_LIBEVENT_AS_BACKEND
-    struct evbuffer* output = bufferevent_get_output(bev);
-    n = evbuffer_add(output, data, len);
-    if (n == 0)
-      n = len;
-#else
-    n = writen(fd, data, len);
-#endif
-    return n;
-  }
-  size_t recv(char* data, size_t len, int64_t timeout = -1L) {
-    int n = 0;
-    if (is_server()) {
-      n = buffer_->read(data, len);
-    } else {
-#if USE_LIBEVENT_AS_BACKEND
-      struct evbuffer* intput = bufferevent_get_input(bev);
-      n = evbuffer_remove(intput, data, len);
-      if (n == 0)
-        n = len;
-#else
-      n = readn(fd, data, len);
-#endif
-    }
-    return n;
-  }
+  size_t send(const char* data, size_t len, int64_t timeout = -1L);
+  size_t recv(char* data, size_t len, int64_t timeout = -1L);
   size_t recv(const msg_id_t& msg_id, char* data, size_t len, int64_t timeout = -1L);
 
   // Read & Write
@@ -101,11 +70,11 @@ struct Connection {
   State state_;
 
   int verbose_ = 0;
-  int fd = -1;
-  int events = 0;
+  int fd_ = -1;
+  int events_ = 0;
   bool is_server_ = false;
-  string client_ip = "";
-  int client_port = 0;
+  string client_ip_ = "";
+  int client_port_ = 0;
 
   //! buffer manage
   //! for all messages
@@ -117,12 +86,12 @@ struct Connection {
 #if USE_LIBEVENT_AS_BACKEND
   bool has_set_client_id = false;
   mutex set_client_id_mtx_;
-  void* thread_ptr = nullptr; // do not delete this pointer in this class
-  void* ref_ptr = nullptr; // do not delete this pointer in this class
-  struct bufferevent* bev = nullptr; // buffevent, do not delete this pointer in this class
+  void* thread_ptr_ = nullptr; // do not delete this pointer in this class
+  void* obj_ptr_ = nullptr; // do not delete this pointer in this class
+  struct bufferevent* bev_ = nullptr; // buffevent, do not delete this pointer in this class
 #endif
 
-  SSL_CTX* ctx = nullptr; // do not delete this pointer in this class
+  SSL_CTX* ctx_ = nullptr; // do not delete this pointer in this class
 };
 
 class SSLConnection : public Connection {
@@ -143,7 +112,7 @@ class SSLConnection : public Connection {
       rd = SSL_read(ssl_, data, len);
       int ssle = SSL_get_error(ssl_, rd);
       if (rd < 0 && ssle != SSL_ERROR_WANT_READ) {
-        cerr << "ssl readImpl error" << endl;
+        cerr << "ssl readImpl error:" << errno << endl;
       }
     }
     return rd;
@@ -155,7 +124,7 @@ class SSLConnection : public Connection {
       wd = SSL_write(ssl_, data, len);
       int ssle = SSL_get_error(ssl_, wd);
       if (wd < 0 && ssle != SSL_ERROR_WANT_WRITE) {
-        cerr << "ssl writeImpl error" << endl;
+        cerr << "ssl writeImpl error:" << errno << endl;
       }
     }
     return wd;

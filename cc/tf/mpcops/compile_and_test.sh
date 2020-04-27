@@ -12,10 +12,10 @@ mkdir -p ${libpath}
 
 TF_INC=$(python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
 TF_LIB=$(python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_lib())')
-TF_CFLG=$(python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_compile_flags())')
-TF_LFLG=$(python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_link_flags()[1])')
+TF_CFLGS=$(python3 -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_compile_flags()))')
+TF_LFLG=$(python3 -c 'import tensorflow as tf; print(" ".join(tf.sysconfig.get_link_flags()))')
 
-TF_CFLGS="-D_GLIBCXX_USE_CXX11_ABI=1"
+#TF_CFLGS="-D_GLIBCXX_USE_CXX11_ABI=1"
 
 # mpc includes and libs
 MPC_INC=" -DSML_USE_UINT64=1"
