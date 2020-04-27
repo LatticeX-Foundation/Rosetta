@@ -37,7 +37,7 @@
 
 ## Overview
 
-By using Rosetta framework, users can directly perform training or inference task on all of their respective dataset without leaking any privacy to others just after adding a single code `import latticex.rosetta`  at the header of your existing TensorFlow programs (see our [tutorial documentation](TUTORIALS.md) for more details). The main magic component that supports these upper-level conveniences is our implementation of a new suites of MPC-enabled `Operation` based on TensorFlow's flexiable extension mechanism for introducing new operation library. To distinguish it from the native TensorFlow API Operation (hereinafter referred to directly as `Ops`), we refer to these customized Operation as `MpcOps`.
+By using Rosetta framework, users can directly perform training or inference task on all of their respective dataset without leaking any privacy to others just after adding a single code `import latticex.rosetta`  at the header of your existing TensorFlow programs (see our [tutorial documentation](TUTORIALS.md) for more details). The main magic component that supports these upper-level conveniences is our implementation of a new suites of MPC-enabled `Operation` based on TensorFlow's flexible extension mechanism for introducing new operation library. To distinguish it from the native TensorFlow API Operation (hereinafter referred to directly as `Ops`), we refer to these customized Operation as `MpcOps`.
 
 Here we describe how to use the various `MpcOps` interfaces supported in the `Rosetta v0.1.0` version. Most of interface signature of these `MpcOps` is consistent with the corresponding `Ops`' in TensorFlow, and only in a few cases have we extended the native one with more MPC-related functionality (e.g., the `SaveV2` operation, etc.).
 
@@ -45,7 +45,7 @@ If you need to build your own specific privacy protection model based on Rosetta
 
 ### Terms and definition
 
-We will try to represent each `MpcOp` interface in an clear and easy-to-understand way as far as we can. Occasionally, we will use some cryptographic terms for concision, wich you can refer to [glossary document](GLOSSARY.md) for their definition if you are not sure.
+We will try to represent each `MpcOp` interface in an clear and easy-to-understand way as far as we can. Occasionally, we will use some cryptographic terms for concision, which you can refer to [glossary document](GLOSSARY.md) for their definition if you are not sure.
 
 ### Common notes
 
@@ -317,7 +317,7 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   - **`transpose_a(optional)`**: If `True`, `a` is transposed before multiplication. Its default value is `Flase`.
 
-  - **`transpose_b(optional)`**: If `True`, `b` is transposed before multiplication.Its defaut value is `False`.
+  - **`transpose_b(optional)`**: If `True`, `b` is transposed before multiplication.Its default value is `False`.
 
   **Returns:**
 
@@ -367,7 +367,7 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   $$ln(x)=\begin{cases} 85873.96716*x^3 -8360.491679*x^2 + 284.0022382*x -6.805568387& x \in (0.0001, 0.05) \\ 3.404663323 * x^3 -8.668159044*x^2 + 8.253302766*x -3.0312942 & x \in [0.05, 1.2) \\ -0.022636005*x^2+0.463403306*x-0.147409486 & x \in [1.2, 10.0) \end{cases}$$
 
-   **If your want to use the general and high-precision mathmetical natural logarithm, you should use `MpcHLog`.**
+   **If your want to use the general and high-precision mathematical natural logarithm, you should use `MpcHLog`.**
 
   
 
@@ -405,7 +405,7 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   
 
-  *NOTE*:  This is for computing general and high-precision mathmetical natural logarithm for all $x$ in domain. **This `MpcOp` is much more time-consuming, so avoid to use this as you can.** 
+  *NOTE*:  This is for computing general and high-precision mathematical natural logarithm for all $x$ in domain. **This `MpcOp` is much more time-consuming, so avoid to use this as you can.** 
 
   
 
@@ -541,7 +541,7 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
   **Args:**
 
   - **`a`**: A  `Tensor` in Tensorflow, whose values are in shared status. 
-  - **`reveal_party(optional)`**: Configure which party can get the plaintext output, It can be set to: $0$, meaning that only party `P0` can get the plaintext output values; $1$, meaning that only party `P1` can get the  plaintext output values. **By default, it is set to `-1`, meaning that both `P0` and `P1` can get the plaintext putput values.**
+  - **`reveal_party(optional)`**: Configure which party can get the plaintext output, It can be set to: $0$, meaning that only party `P0` can get the plaintext output values; $1$, meaning that only party `P1` can get the  plaintext output values. **By default, it is set to `-1`, meaning that both `P0` and `P1` can get the plaintext output values.**
 
   **Returns:**
   
@@ -551,7 +551,7 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
 #### `MpcSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`
 
-  This is the underlying Operation to save tensors in V2 checkpoint format. In native TensorFlow, its corresponding operation, `save_v2`,  which has the identical interface signature, is also wrapped by the `tf.train.Saver()` interface, rather than being called directly.  **Unlike the native `Saver`, this `MpcOp` can save the plaintext tensors in files only in specific parties by configuration.** In Rosetta, by default, you have no need to use this `MpcOp` neither, becasue our `Static Pass` functionality (see its definition in [glossary](GLOSSARY.md)) can help you perform the correct replacement intrinsically.
+  This is the underlying Operation to save tensors in V2 checkpoint format. In native TensorFlow, its corresponding operation, `save_v2`,  which has the identical interface signature, is also wrapped by the `tf.train.Saver()` interface, rather than being called directly.  **Unlike the native `Saver`, this `MpcOp` can save the plaintext tensors in files only in specific parties by configuration.** In Rosetta, by default, you have no need to use this `MpcOp` neither, because our `Static Pass` functionality (see its definition in [glossary](GLOSSARY.md)) can help you perform the correct replacement intrinsically.
 
   The configurational option in `Rosetta v0.1.0` is the `SAVER_MODE` keyword in `CONFIG.json`.  Its  value os parsed as a 3-bit Flag for $[P2\ P1 \ P0]$, so it can be one of the following:
 

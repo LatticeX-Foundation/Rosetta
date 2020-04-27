@@ -13,7 +13,7 @@ This document will maintain and continually update various terms and abbreviatio
 ## Terms and definitions
 
 - **Secure Multi-Party Computation (MPC)**
-A field of cryptography. Multiple participants joinly compute functions, each participant will get the result at the end of the protocol, while no additional information beyond the result will be leaked during the entire process.
+A field of cryptography. Multiple participants jointly compute functions, each participant will get the result at the end of the protocol, while no additional information beyond the result will be leaked during the entire process.
 
 - **Zero-Knowledge Proof (ZKP)**
 A field of cryptography. It involves in two participants: prover and verifier. The prover could convince the verifier without leaking additional information.
@@ -27,10 +27,10 @@ An artificial intelligence algorithm. Multiple participants jointly train models
 - **Trusted Execution Environment (TEE)**
 It is a secure area of a main processor. It guarantees code and data loaded inside to be protected with respect to confidentiality and integrity.
 - **Secret Sharing（SS）**
-A method to implement secure multi-party computation. The data is divided to differnt shares. Each participant owns one of the shares, and one the share is uniformly random and independent of the data.
+A method to implement secure multi-party computation. The data is divided to different shares. Each participant owns one of the shares, and one the share is uniformly random and independent of the data.
 
 - **Pass**
-It is orininally a part of the compiler. In Rosetta it is used to replace and optimize native TensorFlow operations with the privacy operations.
+It is originally a part of the compiler. In Rosetta it is used to replace and optimize native TensorFlow operations with the privacy operations.
 
 - **Static Pass**
 It is a specific Pass. In Rosetta, it replaces operations with privacy operations before the directed graph is executed.
