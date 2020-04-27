@@ -1,5 +1,5 @@
 
-<p align="center"><img width="90%" src=“https://i.loli.net/2020/04/27/g7tx4fLE6XvCjlO.png” alt="Rosetta logo" /></p>
+<p align="center"><img width="90%" src=“http://assets.processon.com/chart_image/5e96fc42f346fb4bdd6de6b4.png” alt="Rosetta logo" /></p>
 
 [![github license](https://img.shields.io/badge/license-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.en.html)
 
