@@ -1,5 +1,5 @@
 
-<p align="center"><img width="90%" src=doc/_static/figs/LOGO.png alt="Rosetta logo" /></p>
+<p align="center"><img width="90%" src=“http://assets.processon.com/chart_image/5e96fc42f346fb4bdd6de6b4.png” alt="Rosetta logo" /></p>
 
 [![github license](https://img.shields.io/badge/license-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.en.html)
 
@@ -16,17 +16,17 @@ The current version integrates the secure multi-party computation protocols for 
 
 ## Installation
 
-For now, Rosetta runs on Ubuntu 18.04, and is based on TensorFlow 1.14 with CPUs. Windows is not currently supported. In short, It takes the following 3 steps to install Rosetta.
+For now, Rosetta runs on Ubuntu 18.04, and is based on TensorFlow 1.14 with CPUs. Windows is not currently supported. Install Rosetta as follows.
 
-First, you should check that your local system meets our base environment requirement. 
+Please check that your local system meets our base environment requirement. 
 
-And then, install the native TensorFlow. You can either install it from its source code or with the help of Python's `pip` package manager. The easiest way to do this is just as follows:
+Install the native TensorFlow with the following codes. Note that you could also install it from source code, check [here](doc/TENSORFLOW_INSTALL.md) for details.
 ```bash
 # install tensorflow
 pip3 install tensorflow==1.14.0
 ````
 
-The last step is to build and install Rosetta from source code. We have provided an all-in-one script to ease the process. All you need to do is:
+Build and install Rosetta with our all-in-one script as follows.
 
  ```bash
 # clone rosetta git repository
@@ -36,7 +36,7 @@ cd Rosetta
 bash compile_and_test_all.sh
 ````
 
-After installation, you can use an example to check everything runs OK. Please refer to [Deployment Guide](doc/DEPLOYMENT.md) for the detailed steps of configuration, installation and deployment of Rosetta.
+You could use an example to check everything runs OK. Please refer to [Deployment Guide](doc/DEPLOYMENT.md) for the detailed steps of configuration, installation and deployment of Rosetta.
 
 ## Usage
 The following is a simple example for the famous Millionaires' problem using Rosetta.
