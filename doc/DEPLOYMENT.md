@@ -74,7 +74,7 @@ Currently, `Rosetta` is only supported to be installed from source code. We are 
 
 #### Source code installation
 
-Since we have warped all the steps in a script, so just get the source code and install it as follows:
+Since we have wraped all the steps in a script, so just get the source code and install it as follows:
 
 ```bash
 # clone rosetta git repository
@@ -104,10 +104,10 @@ mkdir millionaire0 millionaire1 millionaire2
 ````
 - Download the demo
 
-Download from https://github.com/LatticeX-Foundation/Rosetta/example/millionaire) to `millionaire0`, `millionaire1`, `millionaire2` directory for `P0`, `P1`, `P2` respectively.
+Download the [python script](../example/millionaire/millionaire.py) to `millionaire0`, `millionaire1`, `millionaire2` directory for `P0`, `P1`, `P2` respectively.
 
 ```bash
-wget https://github.com/LatticeX-Foundation/Rosetta/example/millionaire/millionaire.py
+wget https://github.com/LatticeX-Foundation/Rosetta/tree/master/example/millionaire/millionaire.py
 ```
 
 - Generate server key and certificate
@@ -123,7 +123,7 @@ if [ ! -f "${HOME}/.rnd" ]; then openssl rand -writerand ${HOME}/.rnd; fi
 # generate sign request
 openssl req -new -subj '/C=BY/ST=Belarus/L=Minsk/O=Rosetta SSL IO server/OU=Rosetta server unit/CN=server' -key certs/server-prikey -out certs/cert.req
 # sign certificate with cert.req
-openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out certs/server-nopass.cer
+openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out certs/server-nopass.cert
 ```
 
 > **Note: We you deploy your system with Rosetta in production environment, be certain to use real trusted third-party certificates.**
@@ -153,7 +153,7 @@ Write a configuration file `CONFIG.json` with the following template:
 }
 ````
 Field Description: 
-- `BASE_PORT`: Communication start port
+- `BASE_PORT`: Communication starting port. `P0`, `P1`, `P2` will listen on their local port `BASE_PORT`, `BASE_PORT + 1` and `BASE_PORT + 2` respectively. So please MAKE SURE THEY ARE NOT IN USE WHEN CONFIGURED.
 - `P0`, `P1`, `P2`: `Three-Parties-MPC` players `P0`, `P1`, `P2`
 - `NAME`: `MPC` player name tag
 - `HOST`: host address
