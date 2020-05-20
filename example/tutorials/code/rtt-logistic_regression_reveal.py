@@ -20,7 +20,7 @@ learning_rate = 0.0002
 # ######################################## difference from tensorflow
 file_x = '../dsets/P' + str(rtt.mpc_player.id) + "/cls_train_x.csv"
 file_y = '../dsets/P' + str(rtt.mpc_player.id) + "/cls_train_y.csv"
-real_X, real_Y = rtt.MpcDataSet(label_owner=0).load_XY(file_x, file_y)
+real_X, real_Y = rtt.MpcDataSet(label_owner=0).load_XY(file_x, file_y, header=None)
 # ######################################## difference from tensorflow
 real_X = real_X[:100, :]
 real_Y = real_Y[:100, :]
