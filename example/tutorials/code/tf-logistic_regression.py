@@ -20,7 +20,7 @@ learning_rate = 0.0002
 # ######################################## difference from rosettta
 file_x = '../dsets/ALL/cls_train_x.csv'
 file_y = '../dsets/ALL/cls_train_y.csv'
-real_X, real_Y = pd.read_csv(file_x).to_numpy(), pd.read_csv(file_y).to_numpy()
+real_X, real_Y = pd.read_csv(file_x, header=None).to_numpy(), pd.read_csv(file_y, header=None).to_numpy()
 # ######################################## difference from rosettta
 real_X = real_X[:100, :]
 real_Y = real_Y[:100, :]
