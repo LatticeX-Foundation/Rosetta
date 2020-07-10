@@ -44,6 +44,8 @@ std::string PbtxtFilename(std::string kind, int idx, int sub_idx);
 std::string GraphFilenamePrefix(std::string, int);
 
 std::string GraphFilenamePrefix(std::string, int, int);
+
+bool DumpAllGraphs();
 }  // namespace rosetta
 
 };  // namespace tensorflow

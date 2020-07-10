@@ -17,11 +17,11 @@
 // ==============================================================================
 #pragma once
 
-#include "comm.h"
+#include "cc/modules/io/include/internal/comm.h"
 
-#include "connection.h"
-#include "socket.h"
-#include "msg_id.h"
+#include "cc/modules/io/include/internal/connection.h"
+#include "cc/modules/io/include/internal/socket.h"
+#include "cc/modules/io/include/internal/msg_id.h"
 
 namespace rosetta {
 namespace io {

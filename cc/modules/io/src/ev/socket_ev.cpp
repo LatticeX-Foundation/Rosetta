@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "internal/socket.h"
+#include "cc/modules/io/include/internal/socket.h"
 
 #if USE_LIBEVENT_AS_BACKEND
 namespace rosetta {

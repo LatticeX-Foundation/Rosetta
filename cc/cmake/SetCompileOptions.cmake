@@ -53,6 +53,11 @@ else()
   #set(PEDANTIC_COMPILE_FLAGS "${COMMON_COMPILE_FLAGS} -Wshadow -pedantic")
 
   # below warnings will be solved later
+  set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-error=restrict")
+  #set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-error=pessimizing-move")
+  set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-error=array-bounds")
+  set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-error=format-overflow=")
+  set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-format-overflow")
   set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-maybe-uninitialized")
   set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-unused-but-set-variable")
   set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-unused-variable")
@@ -64,6 +69,7 @@ else()
   set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-int-in-bool-context")
   set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-unknown-pragmas")
   set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-parentheses")
+  set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-restrict")
   
   IF(USE_OMP)
       set(OMP_FLAGS "${CMAKE_C_FLAGS} -fopenmp")
@@ -72,7 +78,7 @@ else()
       SET(PG_FLAGS "-pg -ggdb3")
   ENDIF()
 
-  #SET(COMM_FLAGS "-pthread -msse4.1 -maes -msse2 -mrdseed -Wall -lpthread -fPIC -mpclmul -fpermissive")
+  SET(COMM_FLAGS "-pthread -msse4.1 -maes -msse2 -mrdseed -Wall -lpthread -fPIC -mpclmul -fpermissive")
   SET(COMM_FLAGS "-pthread -march=native -mrdseed -Wall -lpthread -fPIC -mpclmul")
   SET(COMM_FLAGS "${COMM_FLAGS} ${OMP_FLAGS} ${PG_FLAGS} ${NO_WARN_FLAGS}")
 

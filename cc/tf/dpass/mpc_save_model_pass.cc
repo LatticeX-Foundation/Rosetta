@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "mpc_base_pass.h"
+#include "cc/tf/dpass/mpc_base_pass.h"
 
 namespace tensorflow {
 namespace rosetta {
@@ -42,7 +42,8 @@ class MPCSaveModelPass : public MpcBasePass {
       return Status::OK();
 
     // Dump the graph before replace the SaveV2 OP
-    //DumpGraphs(options, 0, "BeforeRunMpcSaveModelPass", "Before Run MpcSaveV2 Pass");
+    if (DumpAllGraphs())
+      DumpGraphs(options, 0, "BeforeRunMpcSaveModelPass", "Before Run MpcSaveV2 Pass");
 
     // Replace SaveV2 OP with MpcSaveV2 OP
     std::vector<Node*> replaced_nodes;
@@ -113,7 +114,8 @@ class MPCSaveModelPass : public MpcBasePass {
     ROSETTA_VLOG(4) << "MpcSaveV2 outputs:" << MpcSaveV2->num_outputs();
 
     // Dump the graph after replace the SaveV2 OP
-    //DumpGraphs(options, 0, "AfterRunMpcSaveModelPass", "After Run MpcSaveV2 Pass");
+    if (DumpAllGraphs())
+      DumpGraphs(options, 0, "AfterRunMpcSaveModelPass", "After Run MpcSaveV2 Pass");
 
     return Status::OK();
   }
@@ -122,8 +124,8 @@ class MPCSaveModelPass : public MpcBasePass {
 
 }
 
-REGISTER_OPTIMIZATION(OptimizationPassRegistry::POST_REWRITE_FOR_EXEC, 0,
-                      rosetta::MPCSaveModelPass);
+// REGISTER_OPTIMIZATION(OptimizationPassRegistry::POST_REWRITE_FOR_EXEC, 0,
+//                       rosetta::MPCSaveModelPass);
 };
 
 

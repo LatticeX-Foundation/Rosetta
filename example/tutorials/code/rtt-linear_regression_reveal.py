@@ -12,18 +12,21 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 np.random.seed(0)
 
-EPOCHES = 100
+EPOCHES = 10
 BATCH_SIZE = 16
 learning_rate = 0.0002
 
+rtt.activate("SecureNN")
+mpc_player_id = rtt.py_protocol_handler.get_party_id()
+
 # real data
 # ######################################## difference from tensorflow
-file_x = '../dsets/P' + str(rtt.mpc_player.id) + "/reg_train_x.csv"
-file_y = '../dsets/P' + str(rtt.mpc_player.id) + "/reg_train_y.csv"
-real_X, real_Y = rtt.MpcDataSet(label_owner=1).load_XY(file_x, file_y)
+file_x = '../dsets/P' + str(mpc_player_id) + "/reg_train_x.csv"
+file_y = '../dsets/P' + str(mpc_player_id) + "/reg_train_y.csv"
+real_X, real_Y = rtt.SecureDataSet(
+    label_owner=1).load_XY(file_x, file_y, header=None)
 # ######################################## difference from tensorflow
 DIM_NUM = real_X.shape[1]
-
 
 X = tf.placeholder(tf.float64, [None, DIM_NUM])
 Y = tf.placeholder(tf.float64, [None, 1])
@@ -53,9 +56,9 @@ init = tf.global_variables_initializer()
 print(init)
 
 # ########### for test, reveal
-reveal_W = rtt.MpcReveal(W)
-reveal_b = rtt.MpcReveal(b)
-reveal_Y = rtt.MpcReveal(pred_Y)
+reveal_W = rtt.SecureReveal(W)
+reveal_b = rtt.SecureReveal(b)
+reveal_Y = rtt.SecureReveal(pred_Y)
 # ########### for test, reveal
 
 with tf.Session() as sess:

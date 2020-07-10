@@ -16,11 +16,11 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #pragma once
-#include "comm.h"
+#include "cc/modules/io/include/internal/comm.h"
 
-#include "connection.h"
-#include "socket.h"
-#include "msg_id.h"
+#include "cc/modules/io/include/internal/connection.h"
+#include "cc/modules/io/include/internal/socket.h"
+#include "cc/modules/io/include/internal/msg_id.h"
 
 namespace rosetta {
 namespace io {
@@ -79,15 +79,15 @@ class TCPServer : public Socket {
 
  protected:
   Connection* listen_conn_ = nullptr;
-  thread loop_thread_;
+  std::thread loop_thread_;
   int epollfd_ = -1;
   int listenfd_ = -1;
 #endif
 
  protected:
   SSL_CTX* ctx_ = nullptr;
-  mutex connections_mtx_;
-  map<int, Connection*> connections_;
+  std::mutex connections_mtx_;
+  std::map<int, Connection*> connections_;
   char* main_buffer_ = nullptr;
   int port_ = 0;
   int stop_ = 0;

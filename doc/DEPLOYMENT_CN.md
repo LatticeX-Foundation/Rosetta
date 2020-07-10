@@ -106,10 +106,10 @@ mkdir millionaire0 millionaire1 millionaire2
 
 - 下载百万富翁问题范例
 
-下载https://github.com/LatticeX-Foundation/Rosetta/example/millionaire/millionaire.py 到`millionaire0`、`millionaire1`、`millionaire2`工作目录.
+下载范例[Python程序](../example/millionaire/millionaire.py) 到`millionaire0`、`millionaire1`、`millionaire2`工作目录.
 
 ```bash
-wget https://github.com/LatticeX-Foundation/Rosetta/example/millionaire/millionaire.py
+wget https://github.com/LatticeX-Foundation/Rosetta/tree/master/example/millionaire/millionaire.py
 ```
 - 生成证书和key
 `P0`、`P1`、`P2`分别生成ssl服务端证书和key，执行命令: 
@@ -154,7 +154,8 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 }
 ```
 字段说明: 
-- `BASE_PORT`: 通信起始端口
+- `BASE_PORT`: 通信起始端口. `P0`, `P1`, `P2` 将分别监听本地的 `BASE_PORT`、 `BASE_PORT+1` 和 `BASE_PORT+2` 端口。所以请在配置时务必保证端口没有被占用。
+  
 - `P0`、`P1`、`P2`: 别为三方`MPC`联合训练player `P0`，`P1`，`P2`
 - `NAME`: `MPC` player名字标识
 - `HOST`: 主机地址

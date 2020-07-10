@@ -29,7 +29,7 @@
 #include "tensorflow/core/lib/strings/str_util.h"
 #include "tensorflow/core/platform/default/logging.h"
 #include "tensorflow/core/platform/protobuf.h"
-#include "rosetta_utils.h"
+#include "cc/tf/dpass/rosetta_utils.h"
 
 namespace tensorflow {
 
@@ -63,6 +63,8 @@ std::string GraphFilenamePrefix(std::string kind, int idx, int sub_idx) {
      << std::setw(4) << sub_idx;
   return ss.str();
 }
+
+bool DumpAllGraphs() { return std::getenv("ROSETTA_TF_DUMP_GRAPHS") != nullptr; }
 
 }  // namespace rosetta
 

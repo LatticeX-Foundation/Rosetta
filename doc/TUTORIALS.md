@@ -157,7 +157,14 @@ import latticex.rosetta as rtt
 import tensorflow as tf
 ```
 
-The second step is to set how much wealth each has privately.
+
+The second step is activate protocol.
+
+```py
+rtt.rtt.activate("SecureNN")
+```
+
+The third step is to set how much wealth each has privately.
 
 We use the built-in `rtt.private_console_input` to get the private data entered by the user in the terminal.
 
@@ -166,7 +173,7 @@ Alice = tf.Variable(rtt.private_console_input(0))
 Bob = tf.Variable(rtt.private_console_input(1))
 ```
 
-The third step is exactly the same as `tensorflow`.
+The forth step is exactly the same as `tensorflow`.
 
 ```py
 res = tf.greater(Alice, Bob)
@@ -183,12 +190,12 @@ The above output of `res` is a `sharing` value in [Secret-Sharing scheme](GLOSSA
 > The `sharing` value is a random number essentially. an original true value x, is randomly split into two 64-bit values ​​x0, x1 (with x = x0 + x1), which are held by P0 and P1, respectively.
 
 
-How do we know the plaintext value? We provide a `reveal` interface to get the plain text value for convenience in debugging and testing. Just add it after the third step:
+How do we know the plaintext value? We provide a `reveal` interface to get the plain text value for convenience in debugging and testing. Just add it after the forth step:
 
 ```py
 with tf.Session() as sess:
     # ...
-    ret = rtt.MpcReveal(res)
+    ret = rtt.SecureReveal(res)
     print('ret:', sess.run(ret))  # ret: 1.0
 ```
 
@@ -212,7 +219,7 @@ The result indicates that `Alice` has more wealth than `Bob`.
 
 <br/>
 
-> For a description of all operators supported by `rosetta` including `MpcReveal`, please refer to our [API Document](./API_DOC.md).
+> For a description of all operators supported by `rosetta` including `SecureReveal`, please refer to our [API Document](./API_DOC.md).
 
 <br/>
 
@@ -356,6 +363,14 @@ import latticex.rosetta as rtt
 
 **Yes, it's that simple!** You don't need to modify any already written code. Even if you don’t have any knowledge of cryptography, you can use it easily. The only difference is about the how to set your private data.
 
+- Activate protocol
+
+```py
+rtt.rtt.activate("SecureNN")
+```
+
+> Note: The protocol must be activated before any `MPC` related `API` can be used.
+
 
 - Load dataset
 
@@ -364,14 +379,14 @@ Please refers to the appendix at the end of this article for the dataset descrip
 
 We have highlighted the spots that are different from `tensorflow`. In contrast to the native `tensorflow` version without data privacy. Except for the importing of the `rosetta` package, only these several lines are different.
 
-`rosetta` provides a class, `MpcDataSet`, specifically for handling private data sets. Check the relevant source code for details.
+`rosetta` provides a class, `SecureDataSet`, specifically for handling private data sets. Check the relevant source code for details.
 
 ```py
 # real data
 # ######################################## difference from tensorflow
 file_x = '../dsets/P' + str(rtt.mpc_player.id) + "/reg_train_x.csv"
 file_y = '../dsets/P' + str(rtt.mpc_player.id) + "/reg_train_y.csv"
-real_X, real_Y = rtt.MpcDataSet(label_owner=1).load_XY(file_x, file_y)
+real_X, real_Y = rtt.SecureDataSet(label_owner=1).load_XY(file_x, file_y)
 # ######################################## difference from tensorflow
 DIM_NUM = real_X.shape[1]
 ```
@@ -383,6 +398,7 @@ Please refer to [rtt-linear_regression.py](../example/tutorials/code/rtt-linear_
 OK. Now let's briefly summarize the difference from the `tensorflow` version:
 
 - Importing `rosetta` package.
+- Activate protocol.
 - Loading data sets.
 
 <br/>
@@ -421,9 +437,9 @@ Let's modify the previous (basic version) program with addition of `reveal`, and
 
 ```py
 # ########### for test, reveal
-reveal_W = rtt.MpcReveal(W)
-reveal_b = rtt.MpcReveal(b)
-reveal_Y = rtt.MpcReveal(pred_Y)
+reveal_W = rtt.SecureReveal(W)
+reveal_b = rtt.SecureReveal(b)
+reveal_Y = rtt.SecureReveal(pred_Y)
 # ########### for test, reveal
 
 with tf.Session() as sess:

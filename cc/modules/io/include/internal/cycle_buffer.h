@@ -17,7 +17,7 @@
 // ==============================================================================
 #pragma once
 
-#include "simple_timer.h"
+#include "cc/modules/common/include/utils/simple_timer.h"
 
 #include <cstring>
 #include <iostream>
@@ -38,8 +38,8 @@ struct cycle_buffer {
   int32_t n_ = 0; // buffer size
   int32_t remain_space_ = 0;
   char* buffer_ = nullptr;
-  mutex mtx_;
-  condition_variable cv_;
+  std::mutex mtx_;
+  std::condition_variable cv_;
   int verbose_ = 0;
 
   /// a timer for rm empty <msgid -> buffer>
@@ -71,7 +71,7 @@ struct cycle_buffer {
  public:
   // if i can read length size buffer
   bool can_read(int32_t length) {
-    unique_lock<mutex> lck(mtx_);
+    std::unique_lock<std::mutex> lck(mtx_);
     return (n_ - remain_space_ >= length);
   }
   bool can_remove(double t) {

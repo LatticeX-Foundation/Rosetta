@@ -1,6 +1,12 @@
 cmake_minimum_required (VERSION 3.10)
 project(rosetta)
 
+set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+set(CMAKE_HAVE_THREADS_LIBRARY 1)
+set(CMAKE_USE_WIN32_THREADS_INIT 0)
+set(CMAKE_USE_PTHREADS_INIT 1)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+
 # setup directory where we should look for cmake modules files
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(GlobalSettings)
@@ -19,3 +25,4 @@ endif()
 
 # modules
 add_subdirectory(modules)
+add_subdirectory(tf)

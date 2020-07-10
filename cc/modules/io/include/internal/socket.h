@@ -17,7 +17,7 @@
 // ==============================================================================
 #pragma once
 
-#include "comm.h"
+#include "cc/modules/io/include/internal/comm.h"
 
 #include <stdio.h>
 #include <string.h>

@@ -1,5 +1,4 @@
-
-<p align="center"><img width="90%" src=“http://assets.processon.com/chart_image/5e96fc42f346fb4bdd6de6b4.png” alt="Rosetta logo" /></p>
+![LOGO](https://mmbiz.qpic.cn/mmbiz_png/dV0Pt26LydDKo3HFIeH8afhT8XCmZibWhmj4vuVyuyGQrb0U4vIicibd5xjQKPOib7ibhFRWia9mdbz8uyricY9ZbDgXg/640)
 
 [![github license](https://img.shields.io/badge/license-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.en.html)
 
@@ -21,43 +20,53 @@ For now, Rosetta runs on Ubuntu 18.04, and is based on TensorFlow 1.14 with CPUs
 Please check that your local system meets our base environment requirement. 
 
 Install the native TensorFlow with the following codes. Note that you could also install it from source code, check [here](doc/TENSORFLOW_INSTALL.md) for details.
+
 ```bash
 # install tensorflow
 pip3 install tensorflow==1.14.0
-````
+```
 
 Build and install Rosetta with our all-in-one script as follows.
 
- ```bash
+```bash
 # clone rosetta git repository
 git clone https://github.com/LatticeX-Foundation/Rosetta.git
 cd Rosetta
 # compile, install and run test cases
 bash compile_and_test_all.sh
-````
+```
 
 You could use an example to check everything runs OK. Please refer to [Deployment Guide](doc/DEPLOYMENT.md) for the detailed steps of configuration, installation and deployment of Rosetta.
 
 ## Usage
-The following is a simple example for the famous Millionaires' problem using Rosetta.
+
+The following is a simple example for matrix multiplication using Rosetta.
+
 
 ```python
+#!/usr/bin/env python3
+
+# Import rosetta package
 import latticex.rosetta as rtt
 import tensorflow as tf
 
-#define inputs (from console)
-Alice = tf.Variable(rtt.private_console_input(0))
-Bob = tf.Variable(rtt.private_console_input(1))
+# You can activate a backend protocol, here use SecureNN
+rtt.activate("SecureNN")
 
-#define computation
-res = tf.greater(Alice, Bob)
+# Get private data from Alice (input x), Bob (input y)
+x = tf.Variable(rtt.private_input(0, [[1, 2], [2, 3]])) # Alice private_input x
+y = tf.Variable(rtt.private_input(1, [[1, 2], [2, 3]])) # Bob private_input y
 
-#run computation
+# Define matmul operation
+res = tf.matmul(x, y)
+
+# Start execution
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     res = sess.run(res)
-    # reveal the result
-    print('ret:', sess.run(rtt.MpcReveal(res))) 
+
+    # Get the result of Rosetta matmul
+    print('matmul:', sess.run(rtt.SecureReveal(res)))  # matmul: [[b'14.000000' b'20.000000'] [b'20.000000' b'29.000000']]
 ```
 For more details, please check [Tutorials](doc/TUTORIALS.md) and [Examples](./example).
 

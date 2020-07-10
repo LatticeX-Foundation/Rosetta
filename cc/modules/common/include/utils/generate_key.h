@@ -30,14 +30,13 @@ using namespace std;
 #define STORE_AS_BINARY 0
 #define PRF_KEY_BYTES 16
 
-#include "logger.h"
-
-static string gen_key_str(uint32_t seed = 0) {
+#include "cc/modules/common/include/utils/logger.h"
+static inline string gen_key_str(uint32_t seed = 0) {
   std::random_device rd;
   std::mt19937 mt(rd());
 
   if (seed != 0)
-    mt.seed(seed); // pseudo-random
+    mt.seed(seed);
 
   unsigned char key[PRF_KEY_BYTES] = {0};
   for (size_t i = 0; i < PRF_KEY_BYTES; i++) {
@@ -46,6 +45,7 @@ static string gen_key_str(uint32_t seed = 0) {
 
   char const hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
                               '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
   std::string s;
   for (size_t i = 0; i < PRF_KEY_BYTES; i++) {
     s += hex_chars[(key[i] & 0xF0) >> 4];
@@ -55,7 +55,7 @@ static string gen_key_str(uint32_t seed = 0) {
   return s;
 }
 
-static void gen_key(const string& filename, uint32_t seed = 0) {
+static inline void gen_key_file(const string& filename, uint32_t seed = 0) {
   mkdir("key", 0777);
 
   ofstream ofile(filename, ios::out);
@@ -68,5 +68,5 @@ static void gen_key(const string& filename, uint32_t seed = 0) {
   ofile.write((const char*)s.c_str(), PRF_KEY_BYTES * 2);
   ofile.close();
 
-  log_cout << "Generate " << filename << " OK.\n\n";
+  log_debug << "Generate " << filename << " OK.\n\n";
 }

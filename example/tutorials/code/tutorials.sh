@@ -4,6 +4,14 @@
 
 mkdir -p log
 
+function install_requred() {
+    sklearn=`pip3 show sklearn && pip3 show pandas`
+    if [ $? -ne 0 ]; then
+        echo "install required python package ..."
+        pip3 install sklearn pandas --user
+    fi
+}
+
 function run_tf() {
     name=$1
     script_name=./tf-${name}.py
@@ -58,11 +66,18 @@ function run_x() {
 }
 
 function run_all() {
+    # check and install required packages
+    install_requred
+
     echo "run all tutorials examples"
     # #########################################################
     # basic
     run_x rtt quickstart
 
+    # matmul
+    run_x tf matmul
+    run_x rtt matmul
+	
     # millionaire
     run_x tf millionaire
     run_x rtt millionaire

@@ -17,12 +17,12 @@
 // ==============================================================================
 #pragma once
 
-#include "internal/comm.h"
-#include "internal/msg_id.h"
-#include "internal/simple_buffer.h"
-#include "internal/server.h"
-#include "internal/client.h"
-#include "internal/stat.h"
+#include "cc/modules/io/include/internal/comm.h"
+#include "cc/modules/io/include/internal/msg_id.h"
+#include "cc/modules/io/include/internal/simple_buffer.h"
+#include "cc/modules/io/include/internal/server.h"
+#include "cc/modules/io/include/internal/client.h"
+#include "cc/modules/io/include/internal/stat.h"
 
 #include <atomic>
 #include <condition_variable>
@@ -67,6 +67,22 @@ class BasicIO {
    * \param ips the ips for all servers, in order \n
    */
   BasicIO(int parties, int party, int thread_nums, int base_port, const vector<string>& ips);
+  /**
+   * Constructor for create an IO.
+   * 
+   * \param ports the ports for servers, respectively \n
+   * 
+   * ips.size() == ports.size() >= 2
+   */
+  BasicIO(
+    int parties,
+    int party,
+    int thread_nums,
+    const vector<int>& ports,
+    const vector<string>& ips);
+
+ protected:
+  virtual bool init_inner() { return true; }
 
  public:
   /**
@@ -112,18 +128,14 @@ class BasicIO {
    * @endcode
    * \see internal/stat.h
    */
-  NetStat net_stat() {
-    return NetStat(net_stat_st_);
-  }
+  NetStat net_stat() { return NetStat(net_stat_st_); }
 
   /**
    * set server certification
    * 
    * \param server_cert the file path of server certification
    */
-  void set_server_cert(string server_cert) {
-    server_cert_ = server_cert;
-  }
+  void set_server_cert(string server_cert) { server_cert_ = server_cert; }
   /**
    * set server private key
    * 
@@ -248,9 +260,8 @@ class BasicIO {
  */
 class NetIO : public BasicIO<TCPServer, TCPClient> {
  public:
+  using BasicIO<TCPServer, TCPClient>::BasicIO;
   virtual ~NetIO() = default;
-  NetIO(int parties, int party, int thread_nums, int base_port, const vector<string>& ips)
-      : BasicIO(parties, party, thread_nums, base_port, ips) {}
 };
 
 /**
@@ -258,9 +269,8 @@ class NetIO : public BasicIO<TCPServer, TCPClient> {
  */
 class SSLNetIO : public BasicIO<SSLServer, SSLClient> {
  public:
+  using BasicIO<SSLServer, SSLClient>::BasicIO;
   virtual ~SSLNetIO() = default;
-  SSLNetIO(int parties, int party, int thread_nums, int base_port, const vector<string>& ips)
-      : BasicIO(parties, party, thread_nums, base_port, ips) {}
 };
 
 /**
@@ -268,10 +278,13 @@ class SSLNetIO : public BasicIO<SSLServer, SSLClient> {
  */
 class ParallelNetIO : public BasicIO<TCPServer, TCPClient> {
  public:
+  using BasicIO<TCPServer, TCPClient>::BasicIO;
   virtual ~ParallelNetIO() = default;
-  ParallelNetIO(int parties, int party, int thread_nums, int base_port, const vector<string>& ips)
-      : BasicIO(parties, party, thread_nums, base_port, ips) {
+
+ protected:
+  virtual bool init_inner() {
     parallel_ = true;
+    return true;
   }
 };
 
@@ -280,11 +293,13 @@ class ParallelNetIO : public BasicIO<TCPServer, TCPClient> {
  */
 class SSLParallelNetIO : public BasicIO<SSLServer, SSLClient> {
  public:
+  using BasicIO<SSLServer, SSLClient>::BasicIO;
   virtual ~SSLParallelNetIO() = default;
-  SSLParallelNetIO(
-    int parties, int party, int thread_nums, int base_port, const vector<string>& ips)
-      : BasicIO(parties, party, thread_nums, base_port, ips) {
+
+ protected:
+  virtual bool init_inner() {
     parallel_ = true;
+    return true;
   }
 };
 
