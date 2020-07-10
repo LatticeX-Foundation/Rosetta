@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "internal/server.h"
+#include "cc/modules/io/include/internal/server.h"
+#include "cc/modules/common/include/utils/helper.h"
 
 #if !USE_LIBEVENT_AS_BACKEND
 namespace rosetta {
@@ -80,7 +81,7 @@ int TCPServer::create_server(int port) {
   set_sendbuf(fd, default_buffer_size());
   set_recvbuf(fd, default_buffer_size());
 
-  //set_linger(fd);
+  set_linger(fd);
   set_nodelay(fd, 1);
 
   ret = ::bind(fd, (struct sockaddr*)&addr, sizeof(struct sockaddr));
@@ -93,7 +94,7 @@ int TCPServer::create_server(int port) {
   if (ret != 0) {
     cerr << "listen failed. errno:" << errno << " " << strerror(errno) << endl;
   }
-  cout << "fd " << fd << " listening at " << port << endl;
+  log_debug << "fd " << fd << " listening at " << port << endl;
 
   return fd;
 }
@@ -324,7 +325,7 @@ bool TCPServer::stop() {
 
   ::close(epollfd_);
 
-  cout << "server stopped!" << endl;
+  log_debug << "server stopped!" << endl;
   return true;
 }
 

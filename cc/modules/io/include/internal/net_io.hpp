@@ -37,18 +37,16 @@ BasicIO<Server, Client>::~BasicIO() {
 
 template <typename Server, typename Client>
 BasicIO<Server, Client>::BasicIO(
-  int parties, int party, int thread_nums, int base_port, const vector<string>& ips)
+  int parties,
+  int party,
+  int thread_nums,
+  int base_port,
+  const vector<string>& ips)
     : parties_(parties),
       party_(party),
       thread_nums_(thread_nums),
       base_port_(base_port),
-      ips_(ips) {}
-
-template <typename Server, typename Client>
-bool BasicIO<Server, Client>::init() {
-  if (verbose_ > 0)
-    cout << "init all beg" << endl;
-
+      ips_(ips) {
   // init ports, each party has one port, which is `base_port + party_id`
   ports_.resize(parties_, 0);
   for (int i = 0; i < parties_; i++) {
@@ -56,6 +54,23 @@ bool BasicIO<Server, Client>::init() {
   }
   if (verbose_ > 1)
     cout << "init ports end" << endl;
+}
+
+template <typename Server, typename Client>
+BasicIO<Server, Client>::BasicIO(
+  int parties,
+  int party,
+  int thread_nums,
+  const vector<int>& ports,
+  const vector<string>& ips)
+    : parties_(parties), party_(party), thread_nums_(thread_nums), ports_(ports), ips_(ips) {}
+
+template <typename Server, typename Client>
+bool BasicIO<Server, Client>::init() {
+  if (verbose_ > 0)
+    cout << "init all beg" << endl;
+
+  init_inner();
 
   // init server with each party's port
   server = make_shared<Server>();
@@ -101,10 +116,35 @@ bool BasicIO<Server, Client>::init() {
   if (verbose_ > 1)
     cout << "init clients end" << endl;
 
-  cout << "init all end" << endl;
+  //cout << "init all network connections succeed!" << endl;
   return true;
 }
 
+// template <typename Server, typename Client>
+// void BasicIO<Server, Client>::sync_with(const msg_id_t& msg_id) {
+//   string msg("1");
+//   char buf[2] = {0};
+//   for (int i = 0; i < parties_; i++) {
+//     for (int j = 0; j < thread_nums_; j++) {
+//       if (party_ != i) {
+//         if (verbose_ > 1) {
+//           cout << "sync parties:" << parties_ << ", party:" << party_ << ", i:" << i << ", j:" << j
+//                << " with msg id:" << msg_id << "," << parallel_ << endl;
+//         }
+//         if (parallel_) {
+//           send(i, msg.data(), 1, msg_id);
+//           recv(i, buf, 1, msg_id);
+//         } else {
+//           send(i, msg.data(), 1, j);
+//           recv(i, buf, 1, j);
+//         }
+//       }
+//     }
+//   }
+//   if (verbose_ > 0)
+//     cout << "sync ok" << endl;
+// }
+// NOTE: send all first, then recv
 template <typename Server, typename Client>
 void BasicIO<Server, Client>::sync_with(const msg_id_t& msg_id) {
   string msg("1");
@@ -118,9 +158,23 @@ void BasicIO<Server, Client>::sync_with(const msg_id_t& msg_id) {
         }
         if (parallel_) {
           send(i, msg.data(), 1, msg_id);
-          recv(i, buf, 1, msg_id);
         } else {
           send(i, msg.data(), 1, j);
+        }
+      }
+    }
+  }
+
+  for (int i = 0; i < parties_; i++) {
+    for (int j = 0; j < thread_nums_; j++) {
+      if (party_ != i) {
+        if (verbose_ > 1) {
+          cout << "sync parties:" << parties_ << ", party:" << party_ << ", i:" << i << ", j:" << j
+               << " with msg id:" << msg_id << "," << parallel_ << endl;
+        }
+        if (parallel_) {
+          recv(i, buf, 1, msg_id);
+        } else {
           recv(i, buf, 1, j);
         }
       }
@@ -239,7 +293,10 @@ int BasicIO<Server, Client>::recv(int party, vector<T>& data, size_t n, const ms
 template <typename Server, typename Client>
 template <typename T>
 int BasicIO<Server, Client>::send(
-  int party, const vector<T>& data, size_t n, const msg_id_t& msg_id) {
+  int party,
+  const vector<T>& data,
+  size_t n,
+  const msg_id_t& msg_id) {
   return send(party, (const char*)data.data(), n * sizeof(T), msg_id);
 }
 template <typename Server, typename Client>

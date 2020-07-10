@@ -25,9 +25,9 @@
 #include "tensorflow/core/graph/node_builder.h"
 #include "tensorflow/core/graph/graph_constructor.h"
 
-#include "rosetta_log.h"
-#include "tf_graph_writer.h"
-#include "rosetta_utils.h"
+#include "cc/tf/dpass/rosetta_log.h"
+#include "cc/tf/dpass/tf_graph_writer.h"
+#include "cc/tf/dpass/rosetta_utils.h"
 
 namespace tensorflow {
 namespace rosetta {
@@ -44,7 +44,7 @@ class MpcBasePass : public GraphOptimizationPass {
         // Checked if the graph has exist the name op node, 
         // exist return true, otherwise return false.
         bool IsExistTheOP(const GraphOptimizationPassOptions& options,
-                        std::string op_type_name) {
+                        const std::string &op_type_name) {
             for (auto node : options.graph->get()->op_nodes()) {
                 if (node->type_string() == op_type_name)
                     return true;

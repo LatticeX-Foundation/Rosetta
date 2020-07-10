@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "mpc_base_pass.h"
+#include "cc/tf/dpass/mpc_base_pass.h"
 
 namespace tensorflow {
 namespace rosetta {
@@ -78,7 +78,8 @@ class MPCOptApplyXPass : public MpcBasePass {
   Status ReplaceApplyGradientDescentOp(const GraphOptimizationPassOptions& options) {
     
     // Dump the graph before replace the ApplyGradientDescent OP
-    DumpGraphs(options, 0, "BeforeRunMpcOptApplyXPass", "Before Run ApplyGradientDescent Pass");
+    if (DumpAllGraphs())
+      DumpGraphs(options, 0, "BeforeRunMpcOptApplyXPass", "Before Run ApplyGradientDescent Pass");
 
     // Replace ApplyGradientDescent OP with MpcApplyGradientDescent OP
     std::vector<Node*> replaced_nodes;
@@ -161,7 +162,8 @@ class MPCOptApplyXPass : public MpcBasePass {
     }
 
     // Dump the graph after replace the ApplyGradientDescent OP
-    DumpGraphs(options, 0, "AfterRunMpcOptApplyXPass", "After Run MpcApplyGradientDescent Pass");
+    if (DumpAllGraphs())
+      DumpGraphs(options, 0, "AfterRunMpcOptApplyXPass", "After Run MpcApplyGradientDescent Pass");
 
     return Status::OK();
   }

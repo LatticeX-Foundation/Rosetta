@@ -12,15 +12,19 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 np.random.seed(0)
 
-EPOCHES = 100
+EPOCHES = 10
 BATCH_SIZE = 16
 learning_rate = 0.0002
 
+rtt.activate("SecureNN")
+mpc_player_id = rtt.py_protocol_handler.get_party_id()
+
 # real data
 # ######################################## difference from tensorflow
-file_x = '../dsets/P' + str(rtt.mpc_player.id) + "/cls_train_x.csv"
-file_y = '../dsets/P' + str(rtt.mpc_player.id) + "/cls_train_y.csv"
-real_X, real_Y = rtt.MpcDataSet(label_owner=0).load_XY(file_x, file_y, header=None)
+file_x = '../dsets/P' + str(mpc_player_id) + "/cls_train_x.csv"
+file_y = '../dsets/P' + str(mpc_player_id) + "/cls_train_y.csv"
+real_X, real_Y = rtt.SecureDataSet(
+    label_owner=0).load_XY(file_x, file_y, header=None)
 # ######################################## difference from tensorflow
 real_X = real_X[:100, :]
 real_Y = real_Y[:100, :]
@@ -53,16 +57,16 @@ print(train)
 
 # save
 saver = tf.train.Saver(var_list=None, max_to_keep=5, name='v2')
-os.makedirs("./log/ckpt"+str(rtt.mpc_player.id), exist_ok=True)
+os.makedirs("./log/ckpt"+str(mpc_player_id), exist_ok=True)
 
 # init
 init = tf.global_variables_initializer()
 print(init)
 
 # ########### for test, reveal
-reveal_W = rtt.MpcReveal(W)
-reveal_b = rtt.MpcReveal(b)
-reveal_Y = rtt.MpcReveal(pred_Y)
+reveal_W = rtt.SecureReveal(W)
+reveal_b = rtt.SecureReveal(b)
+reveal_Y = rtt.SecureReveal(pred_Y)
 # ########### for test, reveal
 
 with tf.Session() as sess:
@@ -84,7 +88,7 @@ with tf.Session() as sess:
                 print("I,E,B:{:0>4d},{:0>4d},{:0>4d} weight:{} \nbias:{}".format(
                     j, e, i, xW, xb))
 
-    saver.save(sess, './log/ckpt'+str(rtt.mpc_player.id)+'/model')
+    saver.save(sess, './log/ckpt'+str(mpc_player_id)+'/model')
 
     # predict
     Y_pred = sess.run(pred_Y, feed_dict={X: real_X, Y: real_Y})

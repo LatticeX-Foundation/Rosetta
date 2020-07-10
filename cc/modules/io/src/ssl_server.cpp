@@ -15,22 +15,27 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "internal/server.h"
+#include "cc/modules/io/include/internal/server.h"
+#include "cc/modules/common/include/utils/helper.h"
 
 int init_ssl_locking();
 namespace rosetta {
 namespace io {
 
 static SSL_CTX* evssl_init(
-  string server_cert, string server_prikey, string server_prikey_password) {
+  string server_cert,
+  string server_prikey,
+  string server_prikey_password) {
   SSL_CTX* ctx = nullptr;
 
   //! Initialize the OpenSSL library
   SSL_load_error_strings();
   SSL_library_init();
 
-  if (!RAND_poll())
-    return nullptr;
+  // disable
+  //if (!RAND_poll()) {
+  //  return nullptr;
+  //}
 
   ctx = SSL_CTX_new(SSLv23_server_method());
 
@@ -49,7 +54,7 @@ static SSL_CTX* evssl_init(
 
   SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
 
-  cout << "ssl server init ssl library & load cert done!" << endl;
+  log_debug << "ssl server init ssl library & load cert done!" << endl;
   return ctx;
 }
 
@@ -62,9 +67,7 @@ bool SSLServer::init_ssl() {
   }
   return true;
 }
-SSLServer::SSLServer() {
-  is_ssl_socket_ = true;
-}
+SSLServer::SSLServer() { is_ssl_socket_ = true; }
 
 SSLServer::~SSLServer() {
   stop();

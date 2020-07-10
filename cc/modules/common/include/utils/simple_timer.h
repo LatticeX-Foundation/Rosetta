@@ -16,7 +16,6 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #pragma once
-
 #include <chrono>
 
 class SimpleTimer {
@@ -28,9 +27,7 @@ class SimpleTimer {
 
   virtual ~SimpleTimer() {}
 
-  void start() {
-    begin = std::chrono::system_clock::now();
-  }
+  void start() { begin = std::chrono::system_clock::now(); }
 
   double stop() {
     end = std::chrono::system_clock::now();
@@ -48,15 +45,14 @@ class SimpleTimer {
   long long int us_elapse() const {
     auto ending = std::chrono::system_clock::now();
     std::chrono::duration<long long int, std::micro> elapsed_microseconds =
-        std::chrono::duration_cast<std::chrono::duration<long long int, std::micro>>(
-            ending - begin);
+      std::chrono::duration_cast<std::chrono::duration<long long int, std::micro>>(ending - begin);
     return elapsed_microseconds.count();
   }
 
   long long int ns_elapse() const {
     auto ending = std::chrono::system_clock::now();
     std::chrono::duration<long long int, std::nano> elapsed_microseconds =
-        std::chrono::duration_cast<std::chrono::duration<long long int, std::nano>>(ending - begin);
+      std::chrono::duration_cast<std::chrono::duration<long long int, std::nano>>(ending - begin);
     return elapsed_microseconds.count();
   }
 

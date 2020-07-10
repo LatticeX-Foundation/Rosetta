@@ -16,7 +16,7 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 
-#include "tf_graph_writer.h"
+#include "cc/tf/dpass/tf_graph_writer.h"
 
 #include <fstream>
 #include <iomanip>

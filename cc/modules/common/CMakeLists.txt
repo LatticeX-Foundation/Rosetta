@@ -16,6 +16,12 @@ if(UNIX)
   list(APPEND LINKLIBS ${LIBRT_LIBRARIES})
 endif()
 
+set(__SO_VERSION__ ${SO_VERSION})
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/version.cpp.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/version.cpp"
+)
+
 # Library
 file(GLOB_RECURSE LIB_HEADER_FILES "include/*.h")
 file(GLOB_RECURSE LIB_SOURCE_FILES "src/*.cpp")
@@ -25,3 +31,13 @@ target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" P
 target_link_libraries(common ${LINKLIBS})
 set_target_properties(common PROPERTIES FOLDER libraries)
 list(APPEND LINKLIBS common)
+
+
+# Tests
+file(GLOB TESTS_HEADER_FILES "tests/*.h")
+file(GLOB TESTS_SOURCE_FILES "tests/*.cpp")
+set_source_files_properties(${TESTS_SOURCE_FILES} PROPERTIES COMPILE_FLAGS "${PEDANTIC_COMPILE_FLAGS}")
+add_executable(common-tests ${TESTS_HEADER_FILES} ${TESTS_SOURCE_FILES} ${Catch2})
+target_include_directories(common-tests PRIVATE ${Catch2})
+target_link_libraries(common-tests ${LINKLIBS})
+set_target_properties(common-tests PROPERTIES FOLDER tests)

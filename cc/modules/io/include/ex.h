@@ -15,7 +15,9 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "net_io.h"
+#pragma once
+
+#include "cc/modules/io/include/net_io.h"
 
 /**
  * This header for io tests and examples
@@ -38,19 +40,3 @@ typedef ParallelNetIO ParallelIO;
 } // namespace rosetta
 
 using namespace rosetta::io;
-
-// helpers
-template <typename T>
-static inline void rand_vec(vector<T>& vec, int length) {
-  vec.clear();
-  vec.resize(length);
-
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<T> dis(
-    std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
-
-  for (int i = 0; i < length; i++) {
-    vec[i] = dis(gen);
-  }
-}

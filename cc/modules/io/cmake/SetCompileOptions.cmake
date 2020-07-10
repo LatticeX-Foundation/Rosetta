@@ -1,5 +1,5 @@
 # C++ standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
 # Compiler warnings
 

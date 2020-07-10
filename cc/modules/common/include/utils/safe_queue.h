@@ -17,10 +17,10 @@
 // ==============================================================================
 #pragma once
 
-/*
-** thread safe queue based on <queue>
-** header-only
-*/
+/**
+ * thread safe queue based on <queue>
+ * header-only
+ */
 
 #include <chrono>
 #include <queue>
@@ -35,12 +35,8 @@ class safe_queue {
   bool push(const T& v, int32_t timeout = -1);
   bool push(T&& v, int32_t timeout = -1);
   bool pop(T& v, int32_t timeout = -1);
-  size_t size() {
-    return queue_.size();
-  }
-  bool empty() {
-    return queue_.empty();
-  }
+  size_t size() { return queue_.size(); }
+  bool empty() { return queue_.empty(); }
 
  private:
   std::mutex mtx_;

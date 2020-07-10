@@ -3,6 +3,7 @@
 
 - [Release Notes](#release-notes)
   - [Introduction](#introduction)
+  - [Rosetta v0.2.0](#rosetta-v020)
   - [Rosetta v0.1.1](#rosetta-v011)
     - [Features](#features)
   - [Rosetta v0.1.0](#rosetta-v010)
@@ -15,6 +16,15 @@
 
 ## Introduction
 This document will maintain and continually update the release notes of each version of Rosetta. If you have questions or comments, please contact us via rosetta@latticex.foundation.
+
+## Rosetta v0.2.0
+1. Refactor the whole architecture so that each layer has a clearer boundary. Especially, an abstract protocol layer is added to decouple cryptographic protocols and TensorFlow Ops, so that TensorFlow does not depend on specific protocols and vise verse.
+
+2. Support custom data types by mainly utilizing `tf.string`. This will enable us to have arbitrary length and format of internal ciphertext.
+   
+3. Some APIs, such as `activate`, are added and refined to support better control on selection and configuration of backend protocol. In this version, you can configure IP ports, host addresses, save mode flag and protocol precision as JSON string by calling `activate` in your program.
+   
+4. Some known bugs are fixed.
 
 ## Rosetta v0.1.1
 

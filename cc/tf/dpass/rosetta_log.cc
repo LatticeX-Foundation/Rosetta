@@ -16,7 +16,7 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 
-#include "rosetta_log.h"
+#include "cc/tf/dpass/rosetta_log.h"
 #include <cstdlib>
 
 using namespace std;

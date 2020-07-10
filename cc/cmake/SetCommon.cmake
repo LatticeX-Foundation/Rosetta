@@ -27,6 +27,11 @@ link_directories(${CMAKE_BINARY_DIR}/lib)
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
 
+# include default
+message(STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../)
+
+
 # default build type [is Release]
 IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE "Release")

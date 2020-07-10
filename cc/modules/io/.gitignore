@@ -1,8 +1,12 @@
 .vs/
 .vscode/
-build/**
+build/
+.install/
 .DS_Store
 *.DS_Store
 __pycache__
 *.o
-.exclude_rosetta-io_file
+
+.exclude_io_file
+RECONNECT.md
+history

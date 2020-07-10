@@ -4,64 +4,64 @@
   - [Overview](#overview)
     - [Terms and definition](#terms-and-definition)
     - [Common notes](#common-notes)
-  - [MpcOps API](#mpcops-api)
-    - [Computational MpcOps](#computational-mpcops)
-      - [`MpcAdd(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcaddx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcSub(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcsubx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcmulx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcfloordivx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcdivx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcdividex-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpctruedivx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcrealdivx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcequalx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcGreater(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcgreaterx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcgreaterequalx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcLess(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpclessx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcLessEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpclessequalx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`](#mpcmatmula-b-transposeafalse-transposebfalse-namenone)
-      - [`MpcPow(x, y, name=None, lh_is_const=False, rh_is_const=True)`](#mpcpowx-y-namenone-lhisconstfalse-rhisconsttrue)
-      - [`MpcLog(x, name=None)`](#mpclogx-namenone)
-      - [`MpcLog1p(x, name=None)`](#mpclog1px-namenone)
-      - [`MpcHLog(x, name=None)`](#mpchlogx-namenone)
-      - [`MpcSigmoid(x, name=None)`](#mpcsigmoidx-namenone)
-      - [`MpcRelu(x, name=None)`](#mpcrelux-namenone)
-      - [`MpcReluPrime(x, name=None)`](#mpcreluprimex-namenone)
-      - [`MpcAbs(x, name=None)`](#mpcabsx-namenone)
-      - [`MpcAbsPrime(x, name=None)`](#mpcabsprimex-namenone)
-      - [`MpcMax(input_tensor, axis=None, name=None)`](#mpcmaxinputtensor-axisnone-namenone)
-      - [`MpcMean(input_tensor, axis=None, name=None)`](#mpcmeaninputtensor-axisnone-namenone)
-      - [`MpcReveal(a, reveal_party=-1)`](#mpcreveala-revealparty-1)
-    - [I/O MpcOps](#io-mpcops)
-      - [`MpcSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`](#mpcsavev2prefix-tensornames-shapeandslices-tensors-namenone)
+  - [SecureOps API](#secureops-api)
+    - [Computational SecureOps](#computational-secureops)
+      - [`SecureAdd(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#secureaddx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureSub(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securesubx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securemulx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securefloordivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securedividex-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securetruedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securerealdivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#secureequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureGreater(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securegreaterx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securegreaterequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureLess(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelessx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureLessEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelessequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`](#securematmula-b-transpose_afalse-transpose_bfalse-namenone)
+      - [`SecurePow(x, y, name=None, lh_is_const=False, rh_is_const=True)`](#securepowx-y-namenone-lh_is_constfalse-rh_is_consttrue)
+      - [`SecureLog(x, name=None)`](#securelogx-namenone)
+      - [`SecureLog1p(x, name=None)`](#securelog1px-namenone)
+      - [`SecureHLog(x, name=None)`](#securehlogx-namenone)
+      - [`SecureSigmoid(x, name=None)`](#securesigmoidx-namenone)
+      - [`SecureRelu(x, name=None)`](#securerelux-namenone)
+      - [`SecureReluPrime(x, name=None)`](#securereluprimex-namenone)
+      - [`SecureAbs(x, name=None)`](#secureabsx-namenone)
+      - [`SecureAbsPrime(x, name=None)`](#secureabsprimex-namenone)
+      - [`SecureMax(input_tensor, axis=None, name=None)`](#securemaxinput_tensor-axisnone-namenone)
+      - [`SecureMean(input_tensor, axis=None, name=None)`](#securemeaninput_tensor-axisnone-namenone)
+      - [`SecureReveal(a, reveal_party=-1)`](#securereveala-reveal_party-1)
+    - [I/O SecureOps](#io-secureops)
+      - [`SecureSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`](#securesavev2prefix-tensor_names-shape_and_slices-tensors-namenone)
 
 ## Overview
 
-By using Rosetta framework, users can directly perform training or inference task on all of their respective dataset without leaking any privacy to others just after adding a single code `import latticex.rosetta`  at the header of your existing TensorFlow programs (see our [tutorial documentation](TUTORIALS.md) for more details). The main magic component that supports these upper-level conveniences is our implementation of a new suites of MPC-enabled `Operation` based on TensorFlow's flexible extension mechanism for introducing new operation library. To distinguish it from the native TensorFlow API Operation (hereinafter referred to directly as `Ops`), we refer to these customized Operation as `MpcOps`.
+By using Rosetta framework, users can directly perform training or inference task on all of their respective dataset without leaking any privacy to others just after adding a single code `import latticex.rosetta`  at the header of your existing TensorFlow programs (see our [tutorial documentation](TUTORIALS.md) for more details). The main magic component that supports these upper-level conveniences is our implementation of a new suites of MPC-enabled `Operation` based on TensorFlow's flexible extension mechanism for introducing new operation library. To distinguish it from the native TensorFlow API Operation (hereinafter referred to directly as `Ops`), we refer to these customized Operation as `SecureOps`.
 
-Here we describe how to use the various `MpcOps` interfaces supported in the `Rosetta v0.1.0` version. Most of interface signature of these `MpcOps` is consistent with the corresponding `Ops`' in TensorFlow, and only in a few cases have we extended the native one with more MPC-related functionality (e.g., the `SaveV2` operation, etc.).
+Here we describe how to use the various `SecureOps` interfaces supported in the `Rosetta v0.1.0` version. Most of interface signature of these `SecureOps` is consistent with the corresponding `Ops`' in TensorFlow, and only in a few cases have we extended the native one with more MPC-related functionality (e.g., the `SaveV2` operation, etc.).
 
-If you need to build your own specific privacy protection model based on Rosetta's underlying API, or are interested in our extending our `MpcOps` set, this is the right place you should start with. In addition, unit tests in the source code can also help you to understand the usage of the various `MpcOps`.
+If you need to build your own specific privacy protection model based on Rosetta's underlying API, or are interested in our extending our `SecureOps` set, this is the right place you should start with. In addition, unit tests in the source code can also help you to understand the usage of the various `SecureOps`.
 
 ### Terms and definition
 
-We will try to represent each `MpcOp` interface in an clear and easy-to-understand way as far as we can. Occasionally, we will use some cryptographic terms for concision, which you can refer to [glossary document](GLOSSARY.md) for their definition if you are not sure.
+We will try to represent each `SecureOp` interface in an clear and easy-to-understand way as far as we can. Occasionally, we will use some cryptographic terms for concision, which you can refer to [glossary document](GLOSSARY.md) for their definition if you are not sure.
 
 ### Common notes
 
-1. Unlike the input and output `Tensor` of `Ops` in native TensorFlow, the parameters and return values of `MpcOps` are considered to be a **shared value** in a secret state, unless an explicit declaration is made that an input value is an explicit constant (see the related `MpsOps` interface declaration below). You may not use these 'garbled' values directly.
+1. Unlike the input and output `Tensor` of `Ops` in native TensorFlow, the parameters and return values of `SecureOps` are considered to be a **shared value** in a secret state, unless an explicit declaration is made that an input value is an explicit constant (see the related `MpsOps` interface declaration below). You may not use these 'garbled' values directly.
 
-2. On data type (`dtype`) of  `MpcOps` input and output `tensor`, **Rosetta's Python frontend will uniformly convert them as `tf.float64' in the current version.**
+2. On data type (`dtype`) of  `SecureOps` input and output `tensor`, **Rosetta's Python frontend will uniformly convert them as `tf.float64' in the current version.**
 
-3. For binary operators such as `MpcAdd`, the current `Rosetta v0.1.0` does not support the `Tensor` with dimension more than 2, while for unary operators such as `MpcRelu`, their tensor shape is not restricted.
+3. For binary operators such as `SecureAdd`, the current `Rosetta v0.1.0` does not support the `Tensor` with dimension more than 2, while for unary operators such as `SecureRelu`, their tensor shape is not restricted.
   
   
 
-## MpcOps API
+## SecureOps API
 
-### Computational MpcOps
+### Computational SecureOps
 
-#### `MpcAdd(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureAdd(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   Returns `x + y` element-wise.
 
@@ -77,12 +77,12 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   ​	A `Tensor`. Has the same type as `x`.
 
-  *NOTE:* broadcasting is supported for this MpcOp.
+  *NOTE:* broadcasting is supported for this SecureOp.
   
   
 
 
-#### `MpcSub(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureSub(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   Returns `x - y` element-wise.
 
@@ -98,11 +98,11 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   ​	A `Tensor`. Has the same type as `x`.
 
-  *NOTE:* broadcasting is supported for this MpcOp.
+  *NOTE:* broadcasting is supported for this SecureOp.
   
 
   
-#### `MpcMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   Returns `x * y` element-wise.
 
@@ -118,12 +118,12 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   ​	A `Tensor`. Has the same type as `x`.
 
-  *NOTE:* broadcasting is supported for this MpcOp.
+  *NOTE:* broadcasting is supported for this SecureOp.
 
   
 
 
-#### `MpcFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`  
+#### `SecureFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`  
 
   Integral floor divison of `x` by `y` in shared status element-wise, rounding toward the most negative integer. For example,$6 / 4 = 1$ and $(-6) / 4 = -2$.
 
@@ -139,18 +139,18 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   ​	A `Tensor`. Has the same type as `x`.
 
-  *NOTE:* broadcasting is supported for this MpcOp.
+  *NOTE:* broadcasting is supported for this SecureOp.
   
   
 
 
-#### `MpcDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
-  Alias for `MpcFloorDiv`. Please refer to `MpcFloorDiv`. we recommend you to use `MpcFloorDiv` as you can.
+  Alias for `SecureFloorDiv`. Please refer to `SecureFloorDiv`. we recommend you to use `SecureFloorDiv` as you can.
 
     
 
-#### `MpcDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   Computes Python style division of `x` by `y` element-wise.
 
@@ -168,25 +168,25 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
   
   *NOTE:* 
     
-  - broadcasting is supported for this MpcOp.
-  - due to its intrinsic algorithm complexity in MPC style to meet the security guarantee, **this MpcOp is comparatively much more time-consuming. So you may aviod to use this MpcOp as possible as you can.**
-  - this MpcOp is just the same as `MpcRealDiv` and `MpcTrueDiv`.
+  - broadcasting is supported for this SecureOp.
+  - due to its intrinsic algorithm complexity in MPC style to meet the security guarantee, **this SecureOp is comparatively much more time-consuming. So you may aviod to use this SecureOp as possible as you can.**
+  - this SecureOp is just the same as `SecureRealDiv` and `SecureTrueDiv`.
   
   
 
-#### `MpcTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
   
-  Alias for `MpcDivide`. Please refer to `MpcDivide`.
+  Alias for `SecureDivide`. Please refer to `SecureDivide`.
 
   
   
-#### `MpcRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
-  Alias for `MpcDivide`. Please refer to `MpcDivide`.
+  Alias for `SecureDivide`. Please refer to `SecureDivide`.
 
   
 
-#### `MpcEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   Returns the truth value of `(x == y)` element-wise, as $0.0$ for false and $1.0$ for true.
 
@@ -204,14 +204,14 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   *NOTE:* 
   
-   * broadcasting is supported for this MpcOp.
+   * broadcasting is supported for this SecureOp.
   
-   * The output values are still in the shared status, just like other `MpcOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
+   * The output values are still in the shared status, just like other `SecureOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
   
      
 
 
-#### `MpcGreater(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureGreater(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   Returns the truth value of `(x > y)` element-wise, as $0.0$ for false and $1.0$ for true.
 
@@ -229,12 +229,12 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   *NOTE:* 
 
-   * broadcasting is supported for this MpcOp.
-   * The output values are still in the shared status, just like other `MpcOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
+   * broadcasting is supported for this SecureOp.
+   * The output values are still in the shared status, just like other `SecureOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
 
 
 
-#### `MpcGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   Returns the truth value of `(x >= y)` element-wise, as 0 for false and 1 for true.
 
@@ -252,12 +252,12 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   *NOTE:* 
 
-   * broadcasting is supported for this MpcOp.
-   * The output values are still in the shared status, just like other `MpcOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause of your source code directly.**
+   * broadcasting is supported for this SecureOp.
+   * The output values are still in the shared status, just like other `SecureOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause of your source code directly.**
 
   
 
-#### `MpcLess(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureLess(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   Returns the truth value of `(x < y)` element-wise, as 0 for false and 1 for true.
 
@@ -275,12 +275,12 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   *NOTE:* 
 
-   * Broadcasting is supported for this MpcOp.
-   * The output values are still in the shared status, just like other `MpcOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
+   * Broadcasting is supported for this SecureOp.
+   * The output values are still in the shared status, just like other `SecureOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
 
 
 
-#### `MpcLessEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureLessEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   Returns the truth value of `(x <= y)` element-wise, as 0 for false and 1 for true.
 
@@ -298,12 +298,12 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   *NOTE:* 
 
-   * Broadcasting is supported for this MpcOp.
-   * The output values are still in the shared status, just like other `MpcOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
+   * Broadcasting is supported for this SecureOp.
+   * The output values are still in the shared status, just like other `SecureOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
 
   
 
-#### `MpcMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`
+#### `SecureMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`
 
   Multiplies matrix `a` by matrix `b`, producing `a` * `b`.
 
@@ -325,11 +325,11 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   
 
-  *NOTE:*  Just like other binary `MpcOps`, **in the current version, only at most 2-dimension input `Tensor` is supported.**
+  *NOTE:*  Just like other binary `SecureOps`, **in the current version, only at most 2-dimension input `Tensor` is supported.**
 
 
 
-#### `MpcPow(x, y, name=None, lh_is_const=False, rh_is_const=True)`
+#### `SecurePow(x, y, name=None, lh_is_const=False, rh_is_const=True)`
 
   Returns $x^ y$ element-wise. 
 
@@ -348,7 +348,7 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
   
 
 
-#### `MpcLog(x, name=None)`
+#### `SecureLog(x, name=None)`
 
   Computes natural logarithm of `x` element-wise. Any dimension of `x` is supported. This is optimized version for $x \in [0.0001, 10]$, so **DO NOT** use it for other $x$.
 
@@ -363,15 +363,15 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   
 
-  *NOTE*: The inner implementation of this `MpcLog` is optimized for efficiency by polynomial interpolation. for  $x \in [0.0001, 10]$, which are often used in machine learning tasks. And its average absolute error  is less than  $0.01$. The detailed segmental polynomials we use is:
+  *NOTE*: The inner implementation of this `SecureLog` is optimized for efficiency by polynomial interpolation. for  $x \in [0.0001, 10]$, which are often used in machine learning tasks. And its average absolute error  is less than  $0.01$. The detailed segmental polynomials we use is:
 
   $$ln(x)=\begin{cases} 85873.96716*x^3 -8360.491679*x^2 + 284.0022382*x -6.805568387& x \in (0.0001, 0.05) \\ 3.404663323 * x^3 -8.668159044*x^2 + 8.253302766*x -3.0312942 & x \in [0.05, 1.2) \\ -0.022636005*x^2+0.463403306*x-0.147409486 & x \in [1.2, 10.0) \end{cases}$$
 
-   **If your want to use the general and high-precision mathematical natural logarithm, you should use `MpcHLog`.**
+   **If your want to use the general and high-precision mathematical natural logarithm, you should use `SecureHLog`.**
 
   
 
-#### `MpcLog1p(x, name=None)`
+#### `SecureLog1p(x, name=None)`
 
   Computes natural logarithm of `x+1` element-wise. Any dimension of `x` is supported.
 
@@ -386,11 +386,11 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   
 
-  *NOTE*:  The inner implementation of this `MpcLog1p` is based on `MpcLog`, you may refer to `MpcLog` for more information.
+  *NOTE*:  The inner implementation of this `SecureLog1p` is based on `SecureLog`, you may refer to `SecureLog` for more information.
 
   
 
-#### `MpcHLog(x, name=None)`
+#### `SecureHLog(x, name=None)`
 
   Computes natural logarithm of `x` element-wise. Any dimension of `x` is supported.
 
@@ -405,11 +405,11 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   
 
-  *NOTE*:  This is for computing general and high-precision mathematical natural logarithm for all $x$ in domain. **This `MpcOp` is much more time-consuming, so avoid to use this as you can.** 
+  *NOTE*:  This is for computing general and high-precision mathematical natural logarithm for all $x$ in domain. **This `SecureOp` is much more time-consuming, so avoid to use this as you can.** 
 
   
 
-#### `MpcSigmoid(x, name=None)`
+#### `SecureSigmoid(x, name=None)`
 
   Computes the sigmoid function, which means  $\frac{1}{1+e^{-x}}$  element-wise. Any dimension of `x` is supported.
 
@@ -422,15 +422,15 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   ​	A `Tensor`. Has the same type as `x`.
 
-  *NOTE:*  The inner implementation of this `MpcSigmoid` is  optimized for efficiency by using polynomial interpolation. The segmental linear polynomials we use is as follows: 
+  *NOTE:*  The inner implementation of this `SecureSigmoid` is  optimized for efficiency by using polynomial interpolation. The piecewise linear polynomials we use is as follows: 
 
-  $$sigmoid(x)=\begin{cases} 0 & x \in (-\infty,-4] \\ 0.0484792 * x + 0.1998976 & x \in [-2, 0) \\ 0.1928931 * x + 0.4761351 & x \in [0,2) \\ 0.0484792 * x + 0.8001024 & x \in [2,4) \\ 1 & x \in [4, \infty) \end{cases}$$
+  $$sigmoid(x)=\begin{cases} 0 & x \in (-\infty,-4] \\ 0.0484792 * x + 0.1998976 & x \in [-4, -2) \\ 0.1928931 * x + 0.4761351 & x \in [-2, 0) \\ 0.1928931 * x + 0.5238649 & x \in [0, 2) \\ 0.0484792 * x + 0.8001024 & x \in [2,4) \\ 1 & x \in [4, \infty) \end{cases}$$
 
   .
 
   
 
-#### `MpcRelu(x, name=None)`
+#### `SecureRelu(x, name=None)`
 
   Computes rectified linear functionality, which means $max(x, 0)$ element-wise.  Any dimension of `x` is supported.
 
@@ -445,7 +445,7 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   
 
-#### `MpcReluPrime(x, name=None)`
+#### `SecureReluPrime(x, name=None)`
 
   Computes derivation of rectified linear functionality, which means $1$ if $x >= 0$, otherwise $0$.  Any dimension of `x` is supported.
 
@@ -460,7 +460,7 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   
 
-#### `MpcAbs(x, name=None)`
+#### `SecureAbs(x, name=None)`
 
   Computes absolute value of each value in `x`.  Any dimension of `x` is supported.
 
@@ -475,7 +475,7 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
 
 
-#### `MpcAbsPrime(x, name=None)`
+#### `SecureAbsPrime(x, name=None)`
 
   Computes derivation of  absolute value of each value in `x`, which means $1$ if $x > 0$, otherwise $-1$. Any dimension of `x` is supported.
 
@@ -490,7 +490,7 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   
 
-#### `MpcMax(input_tensor, axis=None, name=None)`
+#### `SecureMax(input_tensor, axis=None, name=None)`
 
   Computes the maximum of elements across dimensions of a tensor.  **in the current version, only 2-dimension input `Tensor` is supported.**
 
@@ -514,7 +514,7 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   
 
-#### `MpcMean(input_tensor, axis=None, name=None)`
+#### `SecureMean(input_tensor, axis=None, name=None)`
 
   Computes the mean of elements across dimensions of a tensor.  **in the current version, only 2-dimension input `Tensor` is supported.**
 
@@ -534,9 +534,9 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
 
   
 
-#### `MpcReveal(a, reveal_party=-1)`
+#### `SecureReveal(a, reveal_party=-1)`
 
-  This auxiliary `MpcOp` can reveal the plaintext value of the `Tensor` `a`. **Since the output of this interface can be plaintext, be cautious and reach a consensus among all the parties when using this in production environment.**  
+  This auxiliary `SecureOp` can reveal the plaintext value of the `Tensor` `a`. **Since the output of this interface can be plaintext, be cautious and reach a consensus among all the parties when using this in production environment.**  
 
   **Args:**
 
@@ -547,11 +547,11 @@ We will try to represent each `MpcOp` interface in an clear and easy-to-understa
   
   A `tensor`, of which values can be in plaintext as configured.
 
-### I/O MpcOps
+### I/O SecureOps
 
-#### `MpcSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`
+#### `SecureSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`
 
-  This is the underlying Operation to save tensors in V2 checkpoint format. In native TensorFlow, its corresponding operation, `save_v2`,  which has the identical interface signature, is also wrapped by the `tf.train.Saver()` interface, rather than being called directly.  **Unlike the native `Saver`, this `MpcOp` can save the plaintext tensors in files only in specific parties by configuration.** In Rosetta, by default, you have no need to use this `MpcOp` neither, because our `Static Pass` functionality (see its definition in [glossary](GLOSSARY.md)) can help you perform the correct replacement intrinsically.
+  This is the underlying Operation to save tensors in V2 checkpoint format. In native TensorFlow, its corresponding operation, `save_v2`,  which has the identical interface signature, is also wrapped by the `tf.train.Saver()` interface, rather than being called directly.  **Unlike the native `Saver`, this `SecureOp` can save the plaintext tensors in files only in specific parties by configuration.** In Rosetta, by default, you have no need to use this `SecureOp` neither, because our `Static Pass` functionality (see its definition in [glossary](GLOSSARY.md)) can help you perform the correct replacement intrinsically.
 
   The configurational option in `Rosetta v0.1.0` is the `SAVER_MODE` keyword in `CONFIG.json`.  Its  value os parsed as a 3-bit Flag for $[P2\ P1 \ P0]$, so it can be one of the following:
 

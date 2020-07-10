@@ -21,6 +21,8 @@ import os
 import tensorflow as tf
 import getopt
 
+from latticex.rosetta.controller.common_util import rtt_get_logger
+
 # set output buffer to zero
 class ZeroBufferOut(object):
     def __init__(self, stream):
@@ -36,46 +38,27 @@ class ZeroBufferOut(object):
 sys.stdout = ZeroBufferOut(sys.stdout)
 
 
-tf_mpcop_lib = os.path.dirname(__file__) + '/../libtf-mpcop.so'
 tf_dpass_lib = os.path.dirname(__file__) + '/../libtf-dpass.so'
-
-
-def debug_print(info):
-    # if os.environ.has_key('ROSETTA_DEBUG') and os.environ['ROSETTA_DEBUG'] == 'ON':
-    #     print(info)
-    print(info)
-
 
 dpass = None
 if 'ROSETTA_DPASS' in os.environ and os.environ['ROSETTA_DPASS'] == 'OFF':
-    debug_print('NOT load library: {}, disable dynamic pass.'.format(tf_dpass_lib))
+    rtt_get_logger().debug('NOT load library: {}, disable dynamic pass.'.format(tf_dpass_lib))
 else:
     dpass = tf.load_op_library(tf_dpass_lib)
-    debug_print('load library: {}'.format(tf_dpass_lib))
+    rtt_get_logger().debug('load library: {}'.format(tf_dpass_lib))
 
 __doc__ = """
     This is LatticeX Rosetta.
 """
 
+# RTT
+from latticex.rosetta.rtt import *
 # MPC
-from latticex.rosetta.mpc import *
+from latticex.rosetta.secure import *
 # ZK for the future
 # HE for the future
 
-# A simple way to cope commandline arguments
-# ########################### commandline arguments
-import argparse
-parser = argparse.ArgumentParser(description="LatticeX Rosetta")
-parser.add_argument('--party_id', type=int, help="Party ID",
-                    required=True, choices=[0, 1, 2])
-parser.add_argument('--cfgfile', type=str, help="Config File",
-                    default=os.path.abspath('.') + "/CONFIG.json")
-args, unparsed = parser.parse_known_args()
-# ###########################
-party_id = args.party_id
-cfgfile = args.cfgfile
-print('party id: {} with config json file: {}'.format(party_id, cfgfile))
+from latticex.rosetta.controller import *
 
-# The users must provide a 'CONFIG.json' in the run-directory
-# We will read the config json file, named CONFIG.json, in the current directory
-mpc_player.init_mpc(party_id, cfgfile)
+from latticex.rosetta.controller import backend_handler
+

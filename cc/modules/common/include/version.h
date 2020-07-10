@@ -17,10 +17,5 @@
 // ==============================================================================
 #pragma once
 
-namespace rosetta {
-namespace common {
-
-const char version[] = "0.1.0";
-
-} // namespace common
-} // namespace rosetta
+#include <string>
+std::string get_version();

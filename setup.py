@@ -19,13 +19,13 @@
 """Rosetta is an open source privacy-preserving machine learning framework.
 
 Rosetta is a privacy-preserving framework based on [TensorFlow](https://www.tensorflow.org). 
-It integrates with mainstream privacy-preserving computation technologies, inlcuding crypography, 
+It integrates with mainstream privacy-preserving computation technologies, including crypography, 
 federated learning and trusted execution environment. Rosetta aims to provide privacy-preserving 
 solutions for artificial intellegence without requiring expertise in cryptogprahy, federated 
 learning and trusted execution environment. 
 
 Rosetta reuses the APIs of TensorFlow and allows to transfer traditional TensorFlow codes 
-into a privacy-preserving manner with minimal changes. E.g., just add the following line.
+into a privacy-preserving manner with minimal changes. E.g., just add the one line to enable Rosetta execution.
 """
 
 import glob
@@ -137,10 +137,11 @@ From here.
 """
 
 DOCLINES = __doc__.split('\n')
-__version__ = 'v0.1.1'
+__version__ = '0.2.0'
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 include_dirs = []
+include_dirs.append(root_dir)
 include_dirs.append('.')
 include_dirs.append('include')
 
@@ -154,12 +155,14 @@ include_dirs.append(ccdir+"/modules/common/include")
 include_dirs.append(ccdir+"/modules/common/include/utils")
 include_dirs.append(ccdir+"/modules/io/include")
 include_dirs.append(ccdir+"/modules/protocol/mpc/include")
-include_dirs.append(ccdir+"/modules/protocol/mpc/src/snn")
-
+include_dirs.append(ccdir+"/modules/protocol/mpc/snn/src")
+# added in V0.2.0
+include_dirs.append(ccdir+"/modules/protocol/public")
 
 # thirdparty includes
 include_dirs.append(ccdir+"/third_party/rapidjson/include")
 include_dirs.append(ccdir+"/third_party/pybind11/include")
+include_dirs.append(ccdir+"/third_party/spdlog-1.6.1/include")
 
 # libraries search path
 library_dirs = ['.']
@@ -173,17 +176,15 @@ extra_cflags += TF_CFLG
 extra_cflags.append('-DSML_USE_UINT64=1')  # mpc
 extra_cflags.append('-fPIC')  # general
 extra_cflags.append('-Wno-unused-function')  # general
+extra_cflags.append('-Wno-sign-compare')
+
+extra_cflags.append('-std=c++11')  # temp c++11
 
 
 extra_lflags = []
 extra_lflags += TF_LFLG
 
 link_rpath = "$ORIGIN/..:$ORIGIN"
-# for i in range(len(sys.path)):
-#     if i == len(sys.path)-1 or sys.path[i] == '':
-#         link_rpath += sys.path[i]
-#     else:
-#         link_rpath += sys.path[i] + ':'
 extra_lflags.append('-Wl,-rpath={}'.format(link_rpath))
 
 print('extra_lflags', extra_lflags)
@@ -194,9 +195,11 @@ print('include_dirs', include_dirs)
 ext_modules = [
     Extension(
         'latticex/_rosetta',
-        ['cc/tf/misc/_rosetta.cc'],
+        ['cc/python_export/_rosetta.cc'],
+        # cc_files,
         include_dirs=include_dirs,
-        libraries=['tf-mpcop', 'tf-dpass', 'mpc-op', 'mpc-io'],
+        libraries=['tf-dpass', 'mpc-snn', 'mpc-io', 'mpc-comm',
+                   'protocol-base', 'protocol-api'],
         library_dirs=library_dirs,
         extra_compile_args=extra_cflags,
         extra_link_args=extra_lflags,
@@ -225,7 +228,7 @@ setup(
     ext_modules=ext_modules,
     # Add in any packaged data.
     include_package_data=True,
-    install_requires=['pybind11>=2.4', 'pandas'],
+    install_requires=['numpy', 'pandas'],
     setup_requires=['pybind11>=2.4'],
     zip_safe=False,
     # PyPI package information.

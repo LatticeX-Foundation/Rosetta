@@ -16,7 +16,8 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 
-#include "internal/client.h"
+#include "cc/modules/io/include/internal/client.h"
+#include "cc/modules/common/include/utils/helper.h"
 
 #if !USE_LIBEVENT_AS_BACKEND
 namespace rosetta {
@@ -32,13 +33,13 @@ bool TCPClient::connect(int64_t timeout) {
   server.sin_addr.s_addr = inet_addr(ip_.c_str());
   server.sin_port = htons(port_);
 
-  cout << "client[" << cid_ << "] connect to server[" << ip_ << ":" << port_ << "]" << endl;
+  log_debug << "client[" << cid_ << "] connect to server[" << ip_ << ":" << port_ << "]" << endl;
   int err = -1;
 
   set_sendbuf(fd_, default_buffer_size());
   set_recvbuf(fd_, default_buffer_size());
   set_nodelay(fd_, 1);
-  //set_linger(fd_);
+  set_linger(fd_);
 
   while (1) {
     ::connect(fd_, (struct sockaddr*)&server, sizeof(server));
@@ -85,13 +86,13 @@ bool TCPClient::connect(int64_t timeout) {
 
 void TCPClient::close() {
   if (connected_) {
-    cout << "client closing." << endl;
+    log_debug << "client closing." << endl;
     connected_ = false;
 
     delete conn_;
     conn_ = nullptr;
     ::close(fd_);
-    cout << "client closed." << endl;
+    log_debug << "client closed." << endl;
   }
 }
 } // namespace io
