@@ -18,6 +18,9 @@ cp -r certs ${bindir}/
 
 # test
 cd ${bindir}
+echo "run mpc-io-tests"
+./mpc-io-tests-test_net_io | grep -E "passed|failed"
+./mpc-io-tests-test_parallel_net_io | grep -E "passed|failed"
 
 # Done!
 cd ${curdir}

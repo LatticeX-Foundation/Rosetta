@@ -4,7 +4,6 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 from util import read_dataset
-import argparse
 
 np.set_printoptions(suppress=True)
 
@@ -12,7 +11,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 np.random.seed(0)
 
-EPOCHES = 100
+EPOCHES = 10
 BATCH_SIZE = 16
 learning_rate = 0.0002
 
@@ -20,7 +19,8 @@ learning_rate = 0.0002
 # ######################################## difference from rosettta
 file_x = '../dsets/ALL/cls_train_x.csv'
 file_y = '../dsets/ALL/cls_train_y.csv'
-real_X, real_Y = pd.read_csv(file_x, header=None).to_numpy(), pd.read_csv(file_y, header=None).to_numpy()
+real_X, real_Y = pd.read_csv(file_x, header=None).to_numpy(
+), pd.read_csv(file_y, header=None).to_numpy()
 # ######################################## difference from rosettta
 real_X = real_X[:100, :]
 real_Y = real_Y[:100, :]

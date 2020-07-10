@@ -14,9 +14,11 @@ find_package(Threads REQUIRED)
 
 
 # OpenSSL
+#set(OPENSSL_USE_STATIC_LIBS TRUE)
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 link_libraries(${OPENSSL_LIBRARIES})
+
 
 ############################### Begin
 # libraries
@@ -29,14 +31,12 @@ if(USE_LIBEVENT)
 target_link_libraries(${LIBNAME} PUBLIC event event_core event_extra event_pthreads event_openssl)
 endif()
 
-# examples
-function(compile_examples projname)
-    set(proj ${LIBNAME}-examples-${projname})
-    add_executable(${proj} ./examples/${projname}.cpp) 
+# tests
+function(compile_tests projname)
+    set(proj ${LIBNAME}-tests-${projname})
+    add_executable(${proj} ./tests/${projname}.cpp ./tests/test.cpp) 
     target_link_libraries(${proj} ${LIBNAME})
 endfunction()
-compile_examples(net_broadcast)
-compile_examples(net_interactive)
-compile_examples(net_multiclients)
-compile_examples(net_sync)
-compile_examples(net_msgid)
+compile_tests(test_net_io)
+compile_tests(test_parallel_net_io)
+############################### End

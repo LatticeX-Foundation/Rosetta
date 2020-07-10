@@ -1,114 +1,132 @@
 #!/bin/bash
-
 # find . -name '*.sh' | xargs chmod 755
 # find . -name '*.py' | xargs chmod 755
 
 # for debug
-# set -x
-
+set -x
+bash ./kill.sh
 # This script for compiling all c++ projects and python-setup project
 # Also runing all tests
 
 curdir=$(pwd)
 ccdir=${curdir}/cc/
-mpcopdir=${curdir}/cc/tf/mpcops/
-dynamic_pass=${curdir}/cc/tf/dpass/
-cctf_misc=${curdir}/cc/tf/misc/
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
 
 # run a compile-and-run stage
-function run_stage_1() {
-    echo "stage 1: compile and test all c++ basic libraries, io, op, etc."
+function run_stage_prepare() {
+    echo -e "stage 0: cmake build and dependencies install."
     cd ${ccdir}
     bash ./compile_and_test.sh
     cd ${curdir}
-    echo "run stage 1 ok."
+    echo -e "${GREEN}run stage prepare ok.${NC}"
+}
+
+function run_stage_1() {
+    echo -e "stage 1: compile and test core c++ libraries, io, op, protocol etc."
+    cd ${ccdir}
+    bash ./compile_and_test.sh modules
+    cd ${curdir}
+    echo -e "${GREEN}run stage 1 ok.${NC}"
 }
 
 function run_stage_2() {
-    echo "stage 2: compile MPC operations for tensorflow"
-    cd ${mpcopdir}
-    bash ./compile_and_test.sh
+    echo -e "stage 2: compile MPC libraries for tensorflow"
+    cd ${ccdir}
+    bash ./compile_and_test.sh tf
+
     cd ${curdir}
-    echo "run stage 2 ok."
+    echo -e "${GREEN}run stage 2 ok.${NC}"
 }
 
 function run_stage_3() {
-    echo "stage 3: compile dynamic pass for tensorflow"
+    echo -e "stage 3: compile dynamic pass for tensorflow, [run stage2] !"
+    return
+
     cd ${dynamic_pass}
     bash ./compile_and_test.sh
+    echo -e "${GREEN}compile dynamic pass ok.${NC}"
+
     cd ${curdir}
-    echo "run stage 3 ok."
+    echo -e "${GREEN}run stage 3 ok.${NC}"
 }
 
 function run_stage_4() {
-    echo "stage 4: build and install .whl for python"
+    echo -e "stage 4: build and install .whl for python"
     cd ${curdir}
+
     python3 setup.py build_ext
     python3 setup.py bdist_wheel
 
-    pip_cmd=pip3
+    pv=$(python3 -c 'import sys; print(sys.version_info[0])')
+    pip_cmd=pip
+    if [ $pv == '3' ]; then
+        pip_cmd=pip3
+    fi
+
     if [ $USER == "root" ]; then
         ${pip_cmd} install dist/*.whl
     else
-        #python setup.py build_ext install --prefix=~/.local
         ${pip_cmd} install dist/*.whl --user
     fi
 
     cd ${curdir}
-    echo "run stage 4 ok."
+    echo -e "${GREEN}run stage 4 ok.${NC}"
 }
 
 # run all the stages
 function run_all() {
+    run_stage_prepare
     run_stage_1
     run_stage_2
     run_stage_3
     run_stage_4
 
-    echo "run all the stages ok."
+    echo -e "run all the stages ok."
 }
 
 # get choice, default choice means run all the stages
-stage_choice=0
+stage_choice=x
 if [ $# -ge 1 ]; then
     stage_choice=$1
-    echo "run stage: ${stage_choice}..."
+    echo -e "run stage: ${stage_choice}..."
 else
-    echo "run all the stages..."
+    echo -e "run all the stages..."
 fi
 
 # main
 function run_main() {
-    echo "start to run..."
+    echo -e "start to run..."
     case "${stage_choice}" in
-    0)
-        echo "run stage 1, 2, 3, 4 one by one..."
+    x)
+        echo -e "run stage 1, 2, 3, 4 one by one..."
         run_all
         ;;
+    0)
+        echo -e "run stage prepare, cmake build..."
+        run_stage_prepare
+        ;;
     1)
-        echo "choice is stage 1, sml compilation or test."
+        echo -e "choice is stage 1, sml compilation or test."
         run_stage_1
         ;;
     2)
-        echo "choice is stage 2, compile mpcop (c++)."
+        echo -e "choice is stage 2, tensorflow libraries compilation or test."
         run_stage_2
         ;;
-    3)
-        echo "choice is stage 3, compiler dynamic pass (c++)."
-        run_stage_3
-        ;;
     4)
-        echo "choice is stage 4, compile setup.py."
+        echo -e "choice is stage 4, compile setup.py."
         run_stage_4
         ;;
     *)
-        echo "bad choice of stage!!!"
+        echo -e "bad choice of stage!!!"
         exit 1
         ;;
     esac
 
-    echo "ending."
+    echo -e "ending."
 }
 
 run_main

@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "internal/connection.h"
+#include "cc/modules/io/include/internal/connection.h"
 
 namespace rosetta {
 namespace io {
@@ -205,7 +205,7 @@ int Connection::readn(int connfd, char* vptr, int n) {
         nread = 0;
       } else {
         if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-          usleep(10000);
+          usleep(200);
           continue;
         }
         cout << __FUNCTION__ << " errno:" << errno << endl;
@@ -235,7 +235,7 @@ int Connection::writen(int connfd, const char* vptr, size_t n) {
         if (errno == EINTR) {
           nwritten = 0;
         } else if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-          usleep(10000);
+          usleep(200);
           continue;
         }
         nwritten = 0;

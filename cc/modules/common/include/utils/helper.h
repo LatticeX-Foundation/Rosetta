@@ -30,29 +30,19 @@
 using namespace std;
 using std::vector;
 
-#include "logger.h"
+#include "cc/modules/common/include/utils/logger.h"
 
 ////////////////////////////////////////////////
-static uint32_t byteswap_uint32(uint32_t a) {
-  return (
-      (((a >> 24) & 0xff) << 0) | (((a >> 16) & 0xff) << 8) | (((a >> 8) & 0xff) << 16) |
-      (((a >> 0) & 0xff) << 24));
+static inline std::vector<std::string> split(const std::string& src, char delim) {
+  std::stringstream ss(src);
+  std::string item;
+  std::vector<std::string> elems;
+  while (std::getline(ss, item, delim)) {
+    elems.push_back(std::move(item));
+  }
+  return elems;
 }
 
-static uint8_t* read_file(const char* szFile) {
-  ifstream file(szFile, ios::binary | ios::ate);
-  if (!file.is_open())
-    printf("can't open file %s\n", szFile);
-  streamsize size = file.tellg();
-  file.seekg(0, ios::beg);
-
-  if (size == -1)
-    return nullptr;
-
-  uint8_t* buffer = new uint8_t[size];
-  file.read((char*)buffer, size);
-  return buffer;
-}
 ////////////////////////////////////////////////
 template <typename... T>
 size_t ARG_COUNT(T... args) {
@@ -72,17 +62,46 @@ void print(T v, ARG... args) {
 }
 
 ////////////////////////////////////////////////
-
-inline void rand_vec(vector<int64_t>& vec, int length, int bit_size) {
+inline void rand_vec(vector<int64_t>& vec, int vec_size, int bit_size) {
   vec.clear();
-  vec.resize(length);
+  vec.resize(vec_size);
 
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<uint> dis(0, (1L << (bit_size - 1)) - 1);
 
-  for (int i = 0; i < length; i++) {
+  for (int i = 0; i < vec_size; i++) {
     vec[i] = dis(gen) - (1L << (bit_size - 2));
+  }
+}
+
+template <typename T>
+static inline void rand_vec2(vector<T>& vec, int length) {
+  vec.clear();
+  vec.resize(length);
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<T> dis(
+    std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+  for (int i = 0; i < length; i++) {
+    vec[i] = dis(gen);
+  }
+}
+
+template <typename T>
+static inline void rand_vec3(vector<T>& vec, int length) {
+  vec.clear();
+  vec.resize(length);
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<T> dis(
+    std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+  for (int i = 0; i < length; i++) {
+    vec[i] = dis(gen);
   }
 }
 
@@ -120,9 +139,33 @@ inline void print_vec(const vector<T>& a, int length = -1, string msg = "") {
     length = a.size();
   cout << msg << ": size [" << a.size() << "]" << endl;
   for (int i = 0; i < length; i++) {
+    cout << a[i] << endl;
+    // cout << setw(22) << a[i];
+    // if (i > 0 && (((i + 1) & 0x7) == 0))
+    //   cout << endl;
+  }
+  cout << endl;
+}
+template <>
+inline void print_vec(const vector<string>& a, int length, string msg) {
+  if (length < 0 || length > a.size())
+    length = a.size();
+  cout << msg << ": size [" << a.size() << "]" << endl;
+  for (int i = 0; i < length; i++) {
+    cout << a[i] << endl;
+  }
+  cout << endl;
+}
+
+template <>
+inline void print_vec(const vector<uint8_t>& a, int length, string msg) {
+  if (length < 0 || length > a.size())
+    length = a.size();
+  cout << msg << ": size [" << a.size() << "]" << endl;
+  for (int i = 0; i < length; i++) {
     // cout << setw(22) << (myType2)a[i];
-    cout << setw(22) << a[i];
-    if ((i & 0x7) == 0x7)
+    cout << setw(22) << std::to_string(a[i]);
+    if (i > 0 && ((i & 0x7) == 0))
       cout << endl;
   }
   cout << endl;
@@ -143,7 +186,7 @@ inline void print_vec(const vector<vector<T>>& a, int r = 7, int c = 7, string m
     for (int j = 0; j < c; j++) {
       // cout << setw(22) << (myType2)a[i][j];
       cout << setw(22) << a[i][j];
-      if ((j & 0x7) == 0x7)
+      if (j > 0 && ((j & 0x7) == 0))
         cout << endl;
     }
     cout << endl;
@@ -165,8 +208,9 @@ inline void add_vec(vector<T>& out, vector<T> in_1, vector<T> in_2) {
 
 template <class T>
 inline void sub_vec(
-    vector<T>& out, const vector<T>& in_1,
-    const vector<T>& in_2) // out = in_1 - in_2
+  vector<T>& out,
+  const vector<T>& in_1,
+  const vector<T>& in_2) // out = in_1 - in_2
 {
   assert(in_1.size() == in_2.size());
   out.clear();
@@ -180,8 +224,9 @@ inline void sub_vec(
 
 template <class T>
 inline void sub_vec(
-    vector<vector<T>>& out, const vector<vector<T>>& in_1,
-    const vector<vector<T>>& in_2) // out = in_1 - in_2
+  vector<vector<T>>& out,
+  const vector<vector<T>>& in_1,
+  const vector<vector<T>>& in_2) // out = in_1 - in_2
 {
   assert(in_1.size() == in_2.size());
   out.clear();
@@ -208,3 +253,119 @@ inline void multiply_vec(vector<T>& out, vector<T> in_1, vector<T> in_2) {
 }
 
 ////////////////////////////////////////////////
+//! @todo optimized
+template <typename T>
+inline string get_hex_str(T t) {
+  char buf[8] = {0};
+  char* p = (char*)&t;
+  string s;
+  for (int i = 0; i < sizeof(T); i++) {
+    sprintf(buf, "%02x", p[i] & 0xFF);
+    s.append(buf);
+  }
+  return s;
+};
+
+//! @todo optimized
+template <typename T>
+inline T from_hex_str(string s) {
+  T t;
+  unsigned char* p = (unsigned char*)&t;
+  for (int i = 0; i < sizeof(T); i++) {
+    char c = toupper(s[2 * i]);
+    if (c >= '0' && c <= '9') {
+      p[i] = ((c - '0') << 4);
+    } else if (c >= 'A' && c <= 'F') {
+      p[i] = ((c - 'A' + 10) << 4);
+    }
+
+    c = toupper(s[2 * i + 1]);
+    if (c >= '0' && c <= '9') {
+      p[i] |= (c - '0');
+    } else if (c >= 'A' && c <= 'F') {
+      p[i] |= (c - 'A' + 10);
+    }
+  }
+  return t;
+}
+
+////////////////////////////////////////////////
+template <typename T>
+static void zero_vec2d(vector<vector<T>>& v, int r, int c) {
+  v.clear();
+  v.resize(r);
+  for (int i = 0; i < r; i++) {
+    v[i].resize(c, 0);
+  }
+}
+
+template <typename T>
+static void clear_vec2d(vector<vector<T>>& v) {
+  v.clear();
+  v.resize(0);
+  vector<vector<T>>().swap(v);
+}
+
+template <typename T>
+static void clear_vec1d(vector<T>& v) {
+  v.clear();
+  v.resize(0);
+  vector<T>().swap(v);
+}
+
+//////////////////////////
+
+/**
+ * size: bytes
+ */
+static string fmt_mem_size(uint64_t size) {
+  stringstream sss;
+  if (size > 1024 * 1024 * 1024) // G
+  {
+    sss << 1.0 * size / (1024 * 1024 * 1024) << "G ";
+  }
+  if (size > 1024 * 1024) // M
+  {
+    sss << 1.0 * size / (1024 * 1024) << "M ";
+  }
+  if (size > 1024) // K
+  {
+    sss << 1.0 * size / 1024 << "K ";
+  }
+  sss << size << "B";
+  return sss.str();
+}
+
+/**
+ * us: microseconds
+ */
+static string fmt_time(int64_t us) {
+  stringstream sss;
+  sss << setw(11) << us << "(us) [ ";
+  if (us > 3600 * 1000 * 1000L) // Hour
+  {
+    sss << us / (3600 * 1000 * 1000L) << " h ";
+    us %= (3600 * 1000 * 1000L);
+  }
+  if (us > 60 * 1000 * 1000) // minutes
+  {
+    sss << us / (60 * 1000 * 1000) << " m ";
+    us %= (60 * 1000 * 1000);
+  }
+  if (us > 1000 * 1000) // second
+  {
+    sss << us / (1000 * 1000) << " s ";
+    us %= (1000 * 1000);
+  }
+  if (us > 1000) // millisecond
+  {
+    sss << us / 1000 << " ms ";
+    us %= 1000;
+  }
+  if (us > 0) // microsecond
+  {
+    sss << us << " us ";
+  }
+  sss << "]";
+  return sss.str();
+}

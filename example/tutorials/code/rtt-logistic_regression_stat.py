@@ -13,16 +13,22 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 np.random.seed(0)
 
-EPOCHES = 100
+EPOCHES = 20
 BATCH_SIZE = 16
 learning_rate = 0.0002
 
+rtt.activate("SecureNN")
+mpc_player_id = rtt.py_protocol_handler.get_party_id()
+
 # real data
 # ######################################## difference from tensorflow
-file_x = '../dsets/P' + str(rtt.mpc_player.id) + "/cls_train_x.csv"
-file_y = '../dsets/P' + str(rtt.mpc_player.id) + "/cls_train_y.csv"
-real_X, real_Y = rtt.MpcDataSet(label_owner=0).load_XY(file_x, file_y, header=None)
+file_x = '../dsets/P' + str(mpc_player_id) + "/cls_train_x.csv"
+file_y = '../dsets/P' + str(mpc_player_id) + "/cls_train_y.csv"
+real_X, real_Y = rtt.SecureDataSet(
+    label_owner=0).load_XY(file_x, file_y, header=None)
 # ######################################## difference from tensorflow
+real_X = real_X[:500, :]
+real_Y = real_Y[:500, :]
 DIM_NUM = real_X.shape[1]
 
 X = tf.placeholder(tf.float64, [None, DIM_NUM])
@@ -54,14 +60,14 @@ init = tf.global_variables_initializer()
 print(init)
 
 # ########### for test, reveal
-reveal_W = rtt.MpcReveal(W)
-reveal_b = rtt.MpcReveal(b)
-reveal_Y = rtt.MpcReveal(pred_Y)
+reveal_W = rtt.SecureReveal(W)
+reveal_b = rtt.SecureReveal(b)
+reveal_Y = rtt.SecureReveal(pred_Y)
 # ########### for test, reveal
 
 # #############################################################
 # save to csv for comparing, for debug
-if rtt.mpc_player.id == 0:
+if mpc_player_id == 0:
     scriptname = os.path.basename(sys.argv[0]).split(".")[0]
     csvprefix = "./log/" + scriptname
     os.makedirs(csvprefix, exist_ok=True)
@@ -87,12 +93,14 @@ with tf.Session() as sess:
                 rW, rb = sess.run([reveal_W, reveal_b])
                 print("I,E,B:{:0>4d},{:0>4d},{:0>4d} weight:{} \nbias:{}".format(
                     j, e, i, rW, rb))
-                if rtt.mpc_player.id == 0:
-                    savecsv("{}-{:0>4d}-{}.csv".format(csvprefix, j, "W"), rW)
-                    savecsv("{}-{:0>4d}-{}.csv".format(csvprefix, j, "b"), rb)
+                if mpc_player_id == 0:
+                    savecsv("{}-{:0>4d}-{}.csv".format(csvprefix,
+                                                       j, "W"), rW.astype(float))
+                    savecsv("{}-{:0>4d}-{}.csv".format(csvprefix,
+                                                       j, "b"), rb.astype(float))
 
     # predict
     Y_pred = sess.run(reveal_Y, feed_dict={X: real_X, Y: real_Y})
-    if rtt.mpc_player.id == 0:
+    if mpc_player_id == 0:
         print("Y_pred:", Y_pred)
-        savecsv("{}-pred-{}.csv".format(csvprefix, "Y"), Y_pred)
+        savecsv("{}-pred-{}.csv".format(csvprefix, "Y"), Y_pred.astype(float))

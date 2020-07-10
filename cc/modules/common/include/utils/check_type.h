@@ -15,106 +15,94 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#ifndef CHECK_TYPE_HPP___
-#define CHECK_TYPE_HPP___
+#pragma once
 
-#include <typeinfo> // typeid
-#include <sstream> // std::ostringstream, std::string
-#include <type_traits> // std::is_array
-#include <utility> // std::move
+#include <typeinfo>
+#include <sstream>
+#include <type_traits>
+#include <utility>
 #if defined(__GNUC__)
-#include <memory> // std::unique_ptr
-#include <cxxabi.h> // abi::__cxa_demangle
+#include <memory>
+#include <cxxabi.h>
 #endif
 
-// clang-format off
+// clang-format offx
 namespace private_check_type {
 
 template <typename T, bool IsBase = false>
 struct check;
 
-/*
-    Output state management
-*/
+/**
+ * Output state management
+ */
+class output {
+  bool is_compact_ = true;
 
-class output
-{
-    bool is_compact_ = true;
+  template <typename T>
+  bool check_empty(const T&) {
+    return false;
+  }
+  bool check_empty(const char* val) { return (!val) || (val[0] == 0); }
 
-    template <typename T>
-    bool check_empty(const T&) { return false; }
-    bool check_empty(const char* val)
-    {
-        return (!val) || (val[0] == 0);
-    }
+  template <typename T>
+  void out(const T& val) {
+    if (check_empty(val))
+      return;
+    if (!is_compact_)
+      sr_ += " ";
+    using ss_t = std::ostringstream;
+    sr_ += static_cast<ss_t&>(ss_t() << val).str();
+    is_compact_ = false;
+  }
 
-    template <typename T>
-    void out(const T& val)
-    {
-        if (check_empty(val)) return;
-        if (!is_compact_) sr_ += " ";
-        using ss_t = std::ostringstream;
-        sr_ += static_cast<ss_t&>(ss_t() << val).str();
-        is_compact_ = false;
-    }
+  std::string& sr_;
 
-    std::string& sr_;
+ public:
+  output(std::string& sr) : sr_(sr) {}
 
-public:
-    output(std::string& sr) : sr_(sr) {}
+  output& operator()(void) { return (*this); }
 
-    output& operator()(void) { return (*this); }
+  template <typename T1, typename... T>
+  output& operator()(const T1& val, const T&... args) {
+    out(val);
+    return operator()(args...);
+  }
 
-    template <typename T1, typename... T>
-    output& operator()(const T1& val, const T&... args)
-    {
-        out(val);
-        return operator()(args...);
-    }
-
-    output& compact(void)
-    {
-        is_compact_ = true;
-        return (*this);
-    }
+  output& compact(void) {
+    is_compact_ = true;
+    return (*this);
+  }
 };
 
 // ()
 
 template <bool>
-struct bracket
-{
-    output& out_;
+struct bracket {
+  output& out_;
 
-    bracket(output& out, const char* = nullptr) : out_(out)
-    { out_("(").compact(); }
+  bracket(output& out, const char* = nullptr) : out_(out) { out_("(").compact(); }
 
-    ~bracket(void)
-    { out_.compact()(")"); }
+  ~bracket(void) { out_.compact()(")"); }
 };
 
 template <>
-struct bracket<false>
-{
-    bracket(output& out, const char* str = nullptr)
-    { out(str); }
+struct bracket<false> {
+  bracket(output& out, const char* str = nullptr) { out(str); }
 };
 
 // [N]
 
 template <size_t N = 0>
-struct bound
-{
-    output& out_;
+struct bound {
+  output& out_;
 
-    bound(output& out) : out_(out) {}
-    ~bound(void)
-    {
-        if (N == 0) out_("[]");
-        else        out_("[").compact()
-                        ( N ).compact()
-                        ("]");
-    }
+  bound(output& out) : out_(out) {}
+  ~bound(void) {
+    if (N == 0)
+      out_("[]");
+    else
+      out_("[").compact()(N).compact()("]");
+  }
 };
 
 // (P1, P2, ...)
@@ -123,47 +111,36 @@ template <bool, typename... P>
 struct parameter;
 
 template <bool IsStart>
-struct parameter<IsStart>
-{
-    output& out_;
+struct parameter<IsStart> {
+  output& out_;
 
-    parameter(output& out) : out_(out) {}
-    ~parameter(void)
-    { bracket<IsStart> { out_ }; }
+  parameter(output& out) : out_(out) {}
+  ~parameter(void) { bracket<IsStart>{out_}; }
 };
 
 template <bool IsStart, typename P1, typename... P>
-struct parameter<IsStart, P1, P...>
-{
-    output& out_;
+struct parameter<IsStart, P1, P...> {
+  output& out_;
 
-    parameter(output& out) : out_(out) {}
-    ~parameter(void)
-    {
-        [this](bracket<IsStart>&&)
-        {
-            check<P1> { out_ };
-            parameter<false, P...> { out_.compact() };
-        } (bracket<IsStart> { out_, "," });
-    }
+  parameter(output& out) : out_(out) {}
+  ~parameter(void) {
+    [this](bracket<IsStart>&&) {
+      check<P1>{out_};
+      parameter<false, P...>{out_.compact()};
+    }(bracket<IsStart>{out_, ","});
+  }
 };
 
 // Do output at destruct
 
-struct at_destruct
-{
-    output&     out_;
-    const char* str_;
+struct at_destruct {
+  output& out_;
+  const char* str_;
 
-    at_destruct(output& out, const char* str = nullptr)
-        : out_(out)
-        , str_(str)
-    {}
-    ~at_destruct(void)
-    { out_(str_); }
+  at_destruct(output& out, const char* str = nullptr) : out_(out), str_(str) {}
+  ~at_destruct(void) { out_(str_); }
 
-    void set_str(const char* str = nullptr)
-    { str_ = str; }
+  void set_str(const char* str = nullptr) { str_ = str; }
 };
 
 /*
@@ -171,36 +148,31 @@ struct at_destruct
 */
 
 template <typename T, bool IsBase>
-struct check
-{
-    output out_;
-    check(const output& out) : out_(out)
-    {
-#   if defined(__GNUC__)
-        const char* typeid_name = typeid(T).name();
-        auto deleter = [](char* p)
-        {
-            if (p) free(p);
-        };
-        std::unique_ptr<char, decltype(deleter)> real_name
-        {
-            abi::__cxa_demangle(typeid_name, nullptr, nullptr, nullptr), deleter
-        };
-        out_(real_name ? real_name.get() : typeid_name);
-#   else
-        out_(typeid(T).name());
-#   endif
-    }
+struct check {
+  output out_;
+  check(const output& out) : out_(out) {
+#if defined(__GNUC__)
+    const char* typeid_name = typeid(T).name();
+    auto deleter = [](char* p) {
+      if (p)
+        free(p);
+    };
+    std::unique_ptr<char, decltype(deleter)> real_name{
+      abi::__cxa_demangle(typeid_name, nullptr, nullptr, nullptr), deleter};
+    out_(real_name ? real_name.get() : typeid_name);
+#else
+    out_(typeid(T).name());
+#endif
+  }
 };
 
-#define CHECK_TYPE__(OPT) \
-    template <typename T, bool IsBase> \
-    struct check<T OPT, IsBase> : check<T, true> \
-    { \
-        using base_t = check<T, true>; \
-        using base_t::out_; \
-        check(const output& out) : base_t(out) { out_(#OPT); } \
-    };
+#define CHECK_TYPE__(OPT)                                  \
+  template <typename T, bool IsBase>                       \
+  struct check<T OPT, IsBase> : check<T, true> {           \
+    using base_t = check<T, true>;                         \
+    using base_t::out_;                                    \
+    check(const output& out) : base_t(out) { out_(#OPT); } \
+  };
 
 CHECK_TYPE__(const)
 CHECK_TYPE__(volatile)
@@ -215,24 +187,23 @@ CHECK_TYPE__(*)
     Arrays
 */
 
-#define CHECK_TYPE_ARRAY__(CV_OPT, BOUND_OPT, ...) \
-    template <typename T, bool IsBase __VA_ARGS__> \
-    struct check<T CV_OPT [BOUND_OPT], IsBase> : check<T CV_OPT, !std::is_array<T>::value> \
-    { \
-        using base_t = check<T CV_OPT, !std::is_array<T>::value>; \
-        using base_t::out_; \
-    \
-        bound<BOUND_OPT> bound_   = out_; \
-        bracket<IsBase>  bracket_ = out_; \
-    \
-        check(const output& out) : base_t(out) {} \
-    };
+#define CHECK_TYPE_ARRAY__(CV_OPT, BOUND_OPT, ...)                                        \
+  template <typename T, bool IsBase __VA_ARGS__>                                          \
+  struct check<T CV_OPT[BOUND_OPT], IsBase> : check<T CV_OPT, !std::is_array<T>::value> { \
+    using base_t = check<T CV_OPT, !std::is_array<T>::value>;                             \
+    using base_t::out_;                                                                   \
+                                                                                          \
+    bound<BOUND_OPT> bound_ = out_;                                                       \
+    bracket<IsBase> bracket_ = out_;                                                      \
+                                                                                          \
+    check(const output& out) : base_t(out) {}                                             \
+  };
 
-#define CHECK_TYPE_ARRAY_CV__(BOUND_OPT, ...) \
-    CHECK_TYPE_ARRAY__(, BOUND_OPT, ,##__VA_ARGS__) \
-    CHECK_TYPE_ARRAY__(const, BOUND_OPT, ,##__VA_ARGS__) \
-    CHECK_TYPE_ARRAY__(volatile, BOUND_OPT, ,##__VA_ARGS__) \
-    CHECK_TYPE_ARRAY__(const volatile, BOUND_OPT, ,##__VA_ARGS__)
+#define CHECK_TYPE_ARRAY_CV__(BOUND_OPT, ...)              \
+  CHECK_TYPE_ARRAY__(, BOUND_OPT, , ##__VA_ARGS__)         \
+  CHECK_TYPE_ARRAY__(const, BOUND_OPT, , ##__VA_ARGS__)    \
+  CHECK_TYPE_ARRAY__(volatile, BOUND_OPT, , ##__VA_ARGS__) \
+  CHECK_TYPE_ARRAY__(const volatile, BOUND_OPT, , ##__VA_ARGS__)
 
 #define CHECK_TYPE_PLACEHOLDER__
 CHECK_TYPE_ARRAY_CV__(CHECK_TYPE_PLACEHOLDER__)
@@ -250,15 +221,14 @@ CHECK_TYPE_ARRAY_CV__(N, size_t N)
 */
 
 template <typename T, bool IsBase, typename... P>
-struct check<T(P...), IsBase> : check<T, true>
-{
-    using base_t = check<T, true>;
-    using base_t::out_;
+struct check<T(P...), IsBase> : check<T, true> {
+  using base_t = check<T, true>;
+  using base_t::out_;
 
-    parameter<true, P...> parameter_ = out_;
-    bracket<IsBase>       bracket_   = out_;
+  parameter<true, P...> parameter_ = out_;
+  bracket<IsBase> bracket_ = out_;
 
-    check(const output& out) : base_t(out) {}
+  check(const output& out) : base_t(out) {}
 };
 
 /*
@@ -266,37 +236,33 @@ struct check<T(P...), IsBase> : check<T, true>
 */
 
 template <typename T, bool IsBase, typename C>
-struct check<T C::*, IsBase> : check<T, true>
-{
-    using base_t = check<T, true>;
-    using base_t::out_;
+struct check<T C::*, IsBase> : check<T, true> {
+  using base_t = check<T, true>;
+  using base_t::out_;
 
-    check(const output& out) : base_t(out)
-    {
-        check<C> { out_ };
-        out_.compact()("::*");
-    }
+  check(const output& out) : base_t(out) {
+    check<C>{out_};
+    out_.compact()("::*");
+  }
 };
 
 /*
     Pointers to member functions
 */
 
-#define CHECK_TYPE_MEM_FUNC__(...) \
-    template <typename T, bool IsBase, typename C, typename... P> \
-    struct check<T(C::*)(P...) __VA_ARGS__, IsBase> \
-    { \
-        at_destruct cv_ = base_.out_; \
-        check<T(P...), true> base_; \
-        output& out_ = base_.out_; \
-    \
-        check(const output& out) : base_(out) \
-        { \
-            cv_.set_str(#__VA_ARGS__); \
-            check<C> { out_ }; \
-            out_.compact()("::*"); \
-        } \
-    };
+#define CHECK_TYPE_MEM_FUNC__(...)                              \
+  template <typename T, bool IsBase, typename C, typename... P> \
+  struct check<T (C::*)(P...) __VA_ARGS__, IsBase> {            \
+    at_destruct cv_ = base_.out_;                               \
+    check<T(P...), true> base_;                                 \
+    output& out_ = base_.out_;                                  \
+                                                                \
+    check(const output& out) : base_(out) {                     \
+      cv_.set_str(#__VA_ARGS__);                                \
+      check<C>{out_};                                           \
+      out_.compact()("::*");                                    \
+    }                                                           \
+  };
 
 CHECK_TYPE_MEM_FUNC__()
 CHECK_TYPE_MEM_FUNC__(const)
@@ -316,12 +282,8 @@ CHECK_TYPE_MEM_FUNC__(const volatile)
 */
 
 template <typename T>
-inline std::string check_type(void)
-{
-    std::string str;
-    private_check_type::check<T> { str };
-    return std::move(str);
+inline std::string check_type(void) {
+  std::string str;
+  private_check_type::check<T>{str};
+  return str;
 }
-
-#endif // CHECK_TYPE_HPP___
-// clang-format on

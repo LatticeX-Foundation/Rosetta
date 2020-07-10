@@ -15,13 +15,15 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "internal/msg_id.h"
+#include "cc/modules/io/include/internal/msg_id.h"
 
+#if 0
 // the following variables are used in the map version
 std::mutex map_msgid_mtx_;
 std::map<std::string, id_type> map_msgid_;
 id_type id_counter_;
 std::deque<id_type> reuseid_;
+#endif
 
 #include <openssl/sha.h>
 

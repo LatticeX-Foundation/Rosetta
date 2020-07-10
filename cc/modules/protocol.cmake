@@ -1,7 +1,4 @@
 if(NOT TARGET protocol)
+    add_subdirectory(protocol/public)
     add_subdirectory(protocol/mpc)
-    option(ROSETTA_SUPPORTS_PSI "" OFF)
-    if(ROSETTA_SUPPORTS_PSI)
-        add_subdirectory(protocol/psi)
-    endif()
 endif()

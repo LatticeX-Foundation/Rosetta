@@ -17,7 +17,7 @@
 // ==============================================================================
 #pragma once
 
-#include "comm.h"
+#include "cc/modules/io/include/internal/comm.h"
 
 namespace rosetta {
 namespace io {

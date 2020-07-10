@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "internal/client.h"
+#include "cc/modules/io/include/internal/client.h"
+#include "cc/modules/common/include/utils/helper.h"
 
 int init_ssl_locking();
 namespace rosetta {
@@ -36,9 +37,9 @@ SSLClient::SSLClient(const std::string& ip, int port) : TCPClient(ip, port) {
     ERR_print_errors_fp(stdout);
     exit(1);
   }
-  ssl_ = SSL_new(ctx_);
 
-  cout << "ssl client init ssl library done!" << endl;
+  ssl_ = SSL_new(ctx_);
+  log_debug << "ssl client init ssl library done!" << endl;
 }
 
 SSLClient::~SSLClient() {

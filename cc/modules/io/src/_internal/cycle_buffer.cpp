@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "internal/cycle_buffer.h"
+#include "cc/modules/io/include/internal/cycle_buffer.h"
 
 namespace rosetta {
 namespace io {

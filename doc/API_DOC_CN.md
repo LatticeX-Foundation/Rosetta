@@ -1,48 +1,48 @@
 # Rosetta 算子API文档
 
-- [Rosetta 算子API文档](#rosetta-%e7%ae%97%e5%ad%90api%e6%96%87%e6%a1%a3)
-  - [概述](#%e6%a6%82%e8%bf%b0)
-    - [术语和定义](#%e6%9c%af%e8%af%ad%e5%92%8c%e5%ae%9a%e4%b9%89)
-    - [通用的说明](#%e9%80%9a%e7%94%a8%e7%9a%84%e8%af%b4%e6%98%8e)
-  - [MpcOps API](#mpcops-api)
-    - [计算类MpcOps](#%e8%ae%a1%e7%ae%97%e7%b1%bbmpcops)
-      - [`MpcAdd(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcaddx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcSub(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcsubx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcmulx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcfloordivx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcdivx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcdividex-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpctruedivx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcrealdivx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcequalx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcGreater(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcgreaterx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpcgreaterequalx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcLess(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpclessx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcLessEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#mpclessequalx-y-namenone-lhisconstfalse-rhisconstfalse)
-      - [`MpcMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`](#mpcmatmula-b-transposeafalse-transposebfalse-namenone)
-      - [`MpcPow(x, y, name=None, lh_is_const=False, rh_is_const=True)`](#mpcpowx-y-namenone-lhisconstfalse-rhisconsttrue)
-      - [`MpcLog(x, name=None)`](#mpclogx-namenone)
-      - [`MpcLog1p(x, name=None)`](#mpclog1px-namenone)
-      - [`MpcHLog(x, name=None)`](#mpchlogx-namenone)
-      - [`MpcSigmoid(x, name=None)`](#mpcsigmoidx-namenone)
-      - [`MpcRelu(x, name=None)`](#mpcrelux-namenone)
-      - [`MpcReluPrime(x, name=None)`](#mpcreluprimex-namenone)
-      - [`MpcAbs(x, name=None)`](#mpcabsx-namenone)
-      - [`MpcAbsPrime(x, name=None)`](#mpcabsprimex-namenone)
-      - [`MpcMax(input_tensor, axis=None, name=None)`](#mpcmaxinputtensor-axisnone-namenone)
-      - [`MpcMean(input_tensor, axis=None, name=None)`](#mpcmeaninputtensor-axisnone-namenone)
-      - [`MpcReveal(a, reveal_party=-1)`](#mpcreveala-revealparty-1)
-    - [I/O MpcOps](#io-mpcops)
-      - [`MpcSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`](#mpcsavev2prefix-tensornames-shapeandslices-tensors-namenone)
+- [Rosetta 算子API文档](#rosetta-算子api文档)
+  - [概述](#概述)
+    - [术语和定义](#术语和定义)
+    - [通用的说明](#通用的说明)
+  - [SecureOps API](#secureops-api)
+    - [计算类SecureOps](#计算类secureops)
+      - [`SecureAdd(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#secureaddx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureSub(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securesubx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securemulx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securefloordivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securedividex-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securetruedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securerealdivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#secureequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureGreater(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securegreaterx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securegreaterequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureLess(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelessx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureLessEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelessequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`](#securematmula-b-transpose_afalse-transpose_bfalse-namenone)
+      - [`SecurePow(x, y, name=None, lh_is_const=False, rh_is_const=True)`](#securepowx-y-namenone-lh_is_constfalse-rh_is_consttrue)
+      - [`SecureLog(x, name=None)`](#securelogx-namenone)
+      - [`SecureLog1p(x, name=None)`](#securelog1px-namenone)
+      - [`SecureHLog(x, name=None)`](#securehlogx-namenone)
+      - [`SecureSigmoid(x, name=None)`](#securesigmoidx-namenone)
+      - [`SecureRelu(x, name=None)`](#securerelux-namenone)
+      - [`SecureReluPrime(x, name=None)`](#securereluprimex-namenone)
+      - [`SecureAbs(x, name=None)`](#secureabsx-namenone)
+      - [`SecureAbsPrime(x, name=None)`](#secureabsprimex-namenone)
+      - [`SecureMax(input_tensor, axis=None, name=None)`](#securemaxinput_tensor-axisnone-namenone)
+      - [`SecureMean(input_tensor, axis=None, name=None)`](#securemeaninput_tensor-axisnone-namenone)
+      - [`SecureReveal(a, reveal_party=-1)`](#securereveala-reveal_party-1)
+    - [I/O SecureOps](#io-secureops)
+      - [`SecureSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`](#securesavev2prefix-tensor_names-shape_and_slices-tensors-namenone)
 
 
 ## 概述
 
-在Rosetta框架中，用户在`import latticex.rosetta` 后，不需要修改现有TensorFlow程序中的代码便可以直接的在各自拥有的隐私数据集上进行基于MPC的多方协同的人工智能模型训练或推断（可以参考我们的[tutorial文档](TUTORIALS_CN.md)）。支持这些上层便利性的主要组件是我们在Rosetta内部基于TensorFlow的自定义算子库扩展机制实现了支持MPC功能的新算子(Operation)。为与原生TensorFlow中的API算子(下文直接简称其为`Ops`)相区分，我们称这些自定义的算子为`MpcOps` 。
+在Rosetta框架中，用户在`import latticex.rosetta` 后，不需要修改现有TensorFlow程序中的代码便可以直接的在各自拥有的隐私数据集上进行基于MPC的多方协同的人工智能模型训练或推断（可以参考我们的[tutorial文档](TUTORIALS_CN.md)）。支持这些上层便利性的主要组件是我们在Rosetta内部基于TensorFlow的自定义算子库扩展机制实现了支持Secure功能的新算子(Operation)。为与原生TensorFlow中的API算子(下文直接简称其为`Ops`)相区分，我们称这些自定义的算子为`SecureOps` 。
 
-这里我们介绍`Rosetta v0.1.0`版本中所支持的各个`MpcOps`的接口使用方法。大部分的`MpcOps` 的原型都与TensorFlow中的`Ops`一致，只有在极少数的情况下，我们对对应的`Ops`进行了更多MPC相关功能的扩展（比如`SaveV2`算子等）。
+这里我们介绍`Rosetta v0.1.0`版本中所支持的各个`SecureOps`的接口使用方法。大部分的`SecureOps` 的原型都与TensorFlow中的`Ops`一致，只有在极少数的情况下，我们对对应的`Ops`进行了更多MPC相关功能的扩展（比如`SaveV2`算子等）。
 
-如果你需要自己基于Rosetta的底层API构建自己特定的隐私保护模型，或者对我们的底层实现感兴趣，你都可以参考本文档。此外，在源代码中的一些单元测试实例代码也有助于理解各`MpcOps`的使用。
+如果你需要自己基于Rosetta的底层API构建自己特定的隐私保护模型，或者对我们的底层实现感兴趣，你都可以参考本文档。此外，在源代码中的一些单元测试实例代码也有助于理解各`SecureOps`的使用。
 
 ### 术语和定义
 
@@ -50,20 +50,20 @@
 
 ### 通用的说明
 
-1. 与原生TensorFlow中的 `Ops `的输入和输出 `Tensor `不同，`MpcOps `的参数和返回值被认为是一个**共享的值**，处于秘密共享状态，除非显式声明一个输入值是一个常数（参见下面的具体相关某一`MpsOps `的接口说明）。你一般不会直接使用这些 "乱码 "值。
+1. 与原生TensorFlow中的 `Ops `的输入和输出 `Tensor `不同，`SecureOps `的参数和返回值被认为是一个**共享的值**，处于秘密共享状态，除非显式声明一个输入值是一个常数（参见下面的具体相关某一`MpsOps `的接口说明）。你一般不会直接使用这些 "乱码 "值。
 
-2. 在 `MpcOps`的输入和输出`tensor`的数据类型 (`dtype`)上，**Rosetta的Python前台将统一转换为当前版本中的`tf.float64'。**
+2. 在 `SecureOps`的输入和输出`tensor`的数据类型 (`dtype`)上，**Rosetta的Python前台将统一转换为当前版本中的`tf.float64'。**
 
-3. 对于诸如 `MpcAdd`等二元运算符，当前的 `Rosetta v0.1.0 `不支持维度大于2的 `Tensor`参数，而对于诸如 `MpcRelu `等单元运算符，其 `Tensor Shape`不受限制。
+3. 对于诸如 `SecureAdd`等二元运算符，当前的 `Rosetta v0.1.0 `不支持维度大于2的 `Tensor`参数，而对于诸如 `SecureRelu `等单元运算符，其 `Tensor Shape`不受限制。
 
    
 
 
-## MpcOps API
+## SecureOps API
 
-### 计算类MpcOps
+### 计算类SecureOps
 
-#### `MpcAdd(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureAdd(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   逐个元素的执行加法操作，得到 `x+y `。
 
@@ -79,11 +79,11 @@
 
   一个 `Tensor`。类型与`x`相同。
 
-  *注意*: 这个MpcOp支持Tensorflow中的广播机制。
+  *注意*: 这个SecureOp支持Tensorflow中的广播机制。
   
   
 
-#### `MpcSub(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureSub(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   逐个元素的执行减法操作，得到 `x-y `。
 
@@ -99,11 +99,11 @@
 
   一个 `Tensor`。类型与`x`相同。
 
-  *注意*:这个MpcOp支持Tensorflow中的广播机制。
+  *注意*:这个SecureOp支持Tensorflow中的广播机制。
 
   
 
-#### `MpcMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   逐个元素的执行乘法操作，得到 `x*y `。
 
@@ -119,12 +119,12 @@
 
   一个 `Tensor`。类型与`x`相同。
 
-  *注意*:这个MpcOp支持Tensorflow中的广播机制。
+  *注意*:这个SecureOp支持Tensorflow中的广播机制。
 
   
 
 
-#### `MpcFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`  
+#### `SecureFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`  
 
   逐个对应元素的执行整除操作得到`x/y`，且结果向负数方向倾斜。比如$6 / 4 = 1$ 和 $(-6) / 4 = -2$。
 
@@ -140,18 +140,18 @@
 
   一个 `Tensor`。类型与`x`相同。
 
-  *注意*:这个MpcOp支持Tensorflow中的广播机制。
+  *注意*:这个SecureOp支持Tensorflow中的广播机制。
 
   
 
 
-#### `MpcDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
-  等价于 `MpcFloorDiv`. 请参考 `MpcFloorDiv`的接口说明。我们更推荐你使用`MpcFloorDiv` 而不是此接口以保持和TensorFlow的一致。
+  等价于 `SecureFloorDiv`. 请参考 `SecureFloorDiv`的接口说明。我们更推荐你使用`SecureFloorDiv` 而不是此接口以保持和TensorFlow的一致。
 
   
 
-#### `MpcDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   逐个元素的执行带小数结果的除法得到`x/y`. 
 
@@ -168,24 +168,24 @@
   一个 `Tensor`。类型与`x`相同。
 
   *注意*:
-  - 这个MpcOp支持Tensorflow中的广播机制。
-  - 由于在MPC下实现此算子本身的复杂度较高，此算子的计算时间开销和通讯数据量开销都相对更大。在具体的上层模型构建中，应该尽可能的避免直接使用此算子。
+  - 这个SecureOp支持Tensorflow中的广播机制。
+  - 由于在Secure下实现此算子本身的复杂度较高，此算子的计算时间开销和通讯数据量开销都相对更大。在具体的上层模型构建中，应该尽可能的避免直接使用此算子。
 
   
 
-#### `MpcTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
-  等价于 `MpcDivide`. 请参考 `MpcDivide`的接口说明.
-
-  
-
-#### `MpcRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
-
-  等价于 `MpcDivide`. 请参考 `MpcDivide`的接口说明.
+  等价于 `SecureDivide`. 请参考 `SecureDivide`的接口说明.
 
   
 
-#### `MpcEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+
+  等价于 `SecureDivide`. 请参考 `SecureDivide`的接口说明.
+
+  
+
+#### `SecureEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   返回 逐元素进行等价比较的结果`(x == y)` 。结果对应的真实值为$0.0$ 时表示不相等，$1.0$则表示相等。
 
@@ -203,14 +203,14 @@
 
   *注意:* 
 
-   - 这个MpcOp支持Tensorflow中的广播机制。
+   - 这个SecureOp支持Tensorflow中的广播机制。
 
    - 由于和其他计算类算子一样，结果是密文共享状态的值，**所以不可以直接的在后续程序中直接的对此算子的结果进行判断类型语句的处理！**
 
      
 
 
-#### `MpcGreater(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureGreater(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   返回逐元素进行“大于”比较的结果`(x > y)` 。结果对应的真实值为$0.0$ 时表示假，$1.0$则表示真。
 
@@ -228,13 +228,13 @@
 
   *注意:* 
 
-   * 这个MpcOp支持Tensorflow中的广播机制。
+   * 这个SecureOp支持Tensorflow中的广播机制。
 
    * 由于和其他计算类算子一样，结果是密文共享状态的值，**所以不可以直接的在后续程序中直接的对此算子的结果进行判断类型语句的处理！**
 
      
 
-#### `MpcGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   返回逐元素进行“大于等于”比较的结果`(x >= y)` 。结果对应的真实值为$0.0$ 时表示假，$1.0$则表示真。
 
@@ -252,13 +252,13 @@
 
   *注意:* 
 
-   * 这个MpcOp支持Tensorflow中的广播机制。
+   * 这个SecureOp支持Tensorflow中的广播机制。
 
    * 由于和其他计算类算子一样，结果是密文共享状态的值，**所以不可以直接的在后续程序中直接的对此算子的结果进行判断类型语句的处理！**
 
      
 
-#### `MpcLess(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureLess(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   返回逐元素进行“小于”比较的结果`(x < y)` 。结果对应的真实值为$0.0$ 时表示假，$1.0$则表示真。
 
@@ -276,12 +276,12 @@
 
   *注意:* 
 
-   * 这个MpcOp支持Tensorflow中的广播机制。
+   * 这个SecureOp支持Tensorflow中的广播机制。
    * 由于和其他计算类算子一样，结果是密文共享状态的值，**所以不可以直接的在后续程序中直接的对此算子的结果进行判断类型语句的处理！**
 
 
 
-#### `MpcLessEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+#### `SecureLessEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
   返回逐元素进行“小于等于”比较的结果`(x <= y)` 。结果对应的真实值为$0.0$ 时表示假，$1.0$则表示真。
 
@@ -299,12 +299,12 @@
 
   *注意:* 
 
-   * 这个MpcOp支持Tensorflow中的广播机制。
+   * 这个SecureOp支持Tensorflow中的广播机制。
    * 由于和其他计算类算子一样，结果是密文共享状态的值，**所以不可以直接的在后续程序中直接的对此算子的结果进行判断类型语句的处理！**
 
   
 
-#### `MpcMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`
+#### `SecureMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`
 
   执行矩阵乘法运算得到$a*b$。
 
@@ -324,11 +324,11 @@
 
   ​	一个 `Tensor`。类型与`x`相同。
 
-  *NOTE:*  如同其他二元运算 `MpcOps`一样, **当前版本仅支持最多2维的`Tensor`参数**。
+  *NOTE:*  如同其他二元运算 `SecureOps`一样, **当前版本仅支持最多2维的`Tensor`参数**。
 
 
 
-#### `MpcPow(x, y, name=None, lh_is_const=False, rh_is_const=True)`
+#### `SecurePow(x, y, name=None, lh_is_const=False, rh_is_const=True)`
 
   执行指数运算得到 $x^ y$。当前版本仅支持常整数指数。
 
@@ -347,9 +347,9 @@
   
 
 
-#### `MpcLog(x, name=None)`
+#### `SecureLog(x, name=None)`
 
-  逐元素计算自然对数$ln(x)$。任意维度的 `x` 都是支持的。本接口是为常见的 $x$ 处于 $[0.0001, 10]$时进行定制的。$x$不在此定义域内时，请使用`MpcHLog`。
+  逐元素计算自然对数$ln(x)$。任意维度的 `x` 都是支持的。本接口是为常见的 $x$ 处于 $[0.0001, 10]$时进行定制的。$x$不在此定义域内时，请使用`SecureHLog`。
 
   **参数:**
 
@@ -364,11 +364,11 @@
 
   $$ln(x)=\begin{cases} 85873.96716*x^3 -8360.491679*x^2 + 284.0022382*x -6.805568387& x \in (0.0001, 0.05) \\ 3.404663323 * x^3 -8.668159044*x^2 + 8.253302766*x -3.0312942 & x \in [0.05, 1.2) \\ -0.022636005*x^2+0.463403306*x-0.147409486 & x \in [1.2, 10.0) \end{cases}$$
 
-   **如果你需要使用更加通用和精度更好的自然对数计算，请参考 `MpcHLog`.**
+   **如果你需要使用更加通用和精度更好的自然对数计算，请参考 `SecureHLog`.**
 
   
 
-#### `MpcLog1p(x, name=None)`
+#### `SecureLog1p(x, name=None)`
 
   逐元素计算$ln(x+1)$ 。任意维度的 `x` 都是支持的。
 
@@ -381,11 +381,11 @@
   
   一个 `Tensor`。类型与`x`相同。
 
-  *注意*:  此算子内部是基于`MpcLog`实现的，所以实现细节请参考`MpcLog`。
+  *注意*:  此算子内部是基于`SecureLog`实现的，所以实现细节请参考`SecureLog`。
 
   
 
-#### `MpcHLog(x, name=None)`
+#### `SecureHLog(x, name=None)`
 
   逐元素计算$ln(x+1)$ 。任意维度的 `x` 都是支持的。
 
@@ -400,11 +400,11 @@
 
   
 
-  *注意*:  本算子主要是用于在定义域内任意参数值的计算。其内部的实现相比`MpcLog`要复杂，所以所需要的计算时间和通讯量也更高一些，在具体使用中，请尽量优先使用`MpcLog`。
+  *注意*:  本算子主要是用于在定义域内任意参数值的计算。其内部的实现相比`SecureLog`要复杂，所以所需要的计算时间和通讯量也更高一些，在具体使用中，请尽量优先使用`SecureLog`。
 
   
 
-#### `MpcSigmoid(x, name=None)`
+#### `SecureSigmoid(x, name=None)`
 
   逐元素计算`sigmoid`函数，即$\frac{1}{1+e^{-x}}$。任意维度的 `x` 都是支持的。
 
@@ -419,13 +419,14 @@
 
   *注意:*  此算子内部采用线性多项式拟合以提升性能。当前版本中具体使用的分段多项式如下: 
 
-  $$sigmoid(x)=\begin{cases} 0 & x \in (-\infty,-4] \\ 0.0484792 * x + 0.1998976 & x \in [-2, 0) \\ 0.1928931 * x + 0.4761351 & x \in [0,2) \\ 0.0484792 * x + 0.8001024 & x \in [2,4) \\ 1 & x \in [4, \infty) \end{cases}$$
+  $$sigmoid(x)=\begin{cases} 0 & x \in (-\infty,-4] \\ 0.0484792 * x + 0.1998976 & x \in [-4, -2) \\ 0.1928931 * x + 0.4761351 & x \in [-2, 0) \\ 0.1928931 * x + 0.5238649 & x \in [0, 2) \\ 0.0484792 * x + 0.8001024 & x \in [2,4) \\ 1 & x \in [4, \infty) \end{cases}$$
+
 
   .
 
   
 
-#### `MpcRelu(x, name=None)`
+#### `SecureRelu(x, name=None)`
 
   计算深度学习中常见的 `ReLU`函数,本质等价于$max(x, 0)$ 。  任意维度的 `x` 都是支持的。
 
@@ -440,7 +441,7 @@
 
   
 
-#### `MpcReluPrime(x, name=None)`
+#### `SecureReluPrime(x, name=None)`
 
   计算深度学习中常见的 `ReLU`函数的导数,本质等价与非负数返回1, 负数返回0。  任意维度的 `x` 都是支持的。
 
@@ -455,7 +456,7 @@
 
   
 
-#### `MpcAbs(x, name=None)`
+#### `SecureAbs(x, name=None)`
 
   逐元素计算绝对值函数$|x|$。计算深度学习中常见的 `ReLU`函数,本质等价于$max(x, 0)$ 。  任意维度的 `x` 都是支持的。
 
@@ -470,7 +471,7 @@
 
 
 
-#### `MpcAbsPrime(x, name=None)`
+#### `SecureAbsPrime(x, name=None)`
 
   逐元素计算绝对值函数$|x|$的导数，即等价于正数返回1，否则返回-1。任意维度的 `x` 都是支持的。
 
@@ -485,7 +486,7 @@
 
   
 
-#### `MpcMax(input_tensor, axis=None, name=None)`
+#### `SecureMax(input_tensor, axis=None, name=None)`
 
   计算在指定的轴上的最大元素。 **当前版本中，仅支持最多2维的`Tensor`参数**。将在用户指定的`axis`上对`input_tensor`进行降维。如果`axis`参数为`None`,则进行完全的降维，返回单个元素。
 
@@ -505,7 +506,7 @@
 
   
 
-#### `MpcMean(input_tensor, axis=None, name=None)`
+#### `SecureMean(input_tensor, axis=None, name=None)`
 
   计算在指定的轴上的平均值。 **当前版本中，仅支持最多2维的`Tensor`参数**。将在用户指定的`axis`上对`input_tensor`进行降维。如果`axis`参数为`None`,则进行完全的降维，返回单个元素。
 
@@ -524,9 +525,9 @@
 
   
 
-#### `MpcReveal(a, reveal_party=-1)`
+#### `SecureReveal(a, reveal_party=-1)`
 
-  该辅助性质的`MpcOp`主要用于恢复对应的真实值，主要用于调试和测试验证中。 **由于这个接口返回的是`a`对应的真实值，所以务必小心使用此接口，尤其是生产环境下，使用此接口前，在参与计算的多方之间对此要达成一致。**  
+  该辅助性质的`SecureOp`主要用于恢复对应的真实值，主要用于调试和测试验证中。 **由于这个接口返回的是`a`对应的真实值，所以务必小心使用此接口，尤其是生产环境下，使用此接口前，在参与计算的多方之间对此要达成一致。**  
 
   **参数:**
 
@@ -537,11 +538,11 @@
 
   一个 `Tensor`。根据配置参数，可以是明文值。
 
-### I/O MpcOps
+### I/O SecureOps
 
-#### `MpcSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`
+#### `SecureSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`
 
-  用于将`Tensor`变量按照TensorFlow中V2格式规范保存到文件中的底层算子。对应于原生TensorFlow中的`save_v2`函数,  这个函数一般不直接被调用，而是借助于更上层的 `tf.train.Saver()` 接口进行调用。此处`MpcSaveV2`和`save_v2`具有一致的接口原型。  **不同于 原生`Saver`的是, 这个 `MpcOp`可以根据用户的配置将`tensor_names`所代表的变量`Tensor`恢复为明文后再保存到指定的用户方文件中。**在Rosetta框架下, 默认情况下，用户也并不需要直接使用这一接口，基于我们的`静态优化编P`技术 (请参看 [术语表](GLOSSARY_CN.md)中的定义）可以自动的完成`Saver`上层接口的替换处理。
+  用于将`Tensor`变量按照TensorFlow中V2格式规范保存到文件中的底层算子。对应于原生TensorFlow中的`save_v2`函数,  这个函数一般不直接被调用，而是借助于更上层的 `tf.train.Saver()` 接口进行调用。此处`SecureSaveV2`和`save_v2`具有一致的接口原型。  **不同于 原生`Saver`的是, 这个 `SecureOp`可以根据用户的配置将`tensor_names`所代表的变量`Tensor`恢复为明文后再保存到指定的用户方文件中。**在Rosetta框架下, 默认情况下，用户也并不需要直接使用这一接口，基于我们的`静态优化编P`技术 (请参看 [术语表](GLOSSARY_CN.md)中的定义）可以自动的完成`Saver`上层接口的替换处理。
 
   该接口的行为可以通过对我们的配置文件`CONFIG.json`中`SAVER_MODE` 关键字进行配置而不需要修改代码进行配置。这个值可以被设为$0~7$， 内在的会被解析为 $[P2\ P1 \ P0]$ 的3-bit的FLAG数组。即这个值的行为如下：
 

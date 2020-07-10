@@ -5,7 +5,7 @@ To help you understand the concepts easily, most of the examples have two parts,
 In order to run the examples smoothly, some dependencies need to be installed, as follows:
 
 ```sh
-sudo pip3 install matplotlib sklearn
+pip3 install matplotlib sklearn --user
 ```
 
 Enjoy it.

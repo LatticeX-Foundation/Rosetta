@@ -160,7 +160,15 @@ import latticex.rosetta as rtt
 import tensorflow as tf
 ```
 
-第二步，设置各有多少财富。
+
+第二步，激活协议。此处选择 `SecureNN` 协议。
+
+```py
+rtt.rtt.activate("SecureNN")
+```
+
+
+第三步，设置各有多少财富。
 
 我们通过内置的 `rtt.private_console_input` 来获取用户在终端输入的私有数据。
 
@@ -169,7 +177,7 @@ Alice = tf.Variable(rtt.private_console_input(0))
 Bob = tf.Variable(rtt.private_console_input(1))
 ```
 
-第三步，与 `tensorflow` 完全一样。
+第四步，与 `tensorflow` 完全一样。
 
 ```py
 res = tf.greater(Alice, Bob)
@@ -186,12 +194,12 @@ with tf.Session() as sess:
 > `sharing` 值，即 `秘密分享` 值，一个原始值 x，随机拆分成两个 64bit 的值 x0, x1 （x = x0 + x1），分别由 P0 与 P1 执有。
 
 
-那如何知道明文值呢，我们提供了一个 `reveal` 接口，用来获取明文值。加在第三步的后面即可：
+那如何知道明文值呢，我们提供了一个 `reveal` 接口，用来获取明文值。加在第四步的后面即可：
 
 ```py
 with tf.Session() as sess:
     # ...
-    ret = rtt.MpcReveal(res)
+    ret = rtt.SecureReveal(res)
     print('ret:', sess.run(ret))  # ret: 1.0
 ```
 
@@ -215,7 +223,7 @@ ret: 1.0
 
 <br/>
 
-> 包括 `MpcReveal` 在内的所有 `rosetta` 支持的算子的说明，参考[AIP 文档](./API_DOC_CN.md)。
+> 包括 `SecureReveal` 在内的所有 `rosetta` 支持的算子的说明，参考[AIP 文档](./API_DOC_CN.md)。
 
 <br/>
 
@@ -363,6 +371,15 @@ import latticex.rosetta as rtt
 **是的，就是这么简单！** 你不需要修改任何已经写好的代码。即使你对 密码学 没有任何的知识，也可以使用。
 
 
+- 激活协议
+
+```py
+rtt.rtt.activate("SecureNN")
+```
+
+> 注：在使用任何 `MPC` 相关 `API` 之前必须先激活协议。
+
+
 - 加载数据集
 
 数据集说明参考本文最后的附录。
@@ -370,14 +387,14 @@ import latticex.rosetta as rtt
 
 我们标识了不同于 `tensorflow` 的地方，对照着 `tensorflow` 版本，除了导入了 `rosetta` 包外，就只有这一处是不同的。
 
-`rosetta` 提供了一个专门于处理私有数据集的类，`MpcDataSet`。详情查阅相关源代码。
+`rosetta` 提供了一个专门于处理私有数据集的类，`SecureDataSet`。详情查阅相关源代码。
 
 ```py
 # real data
 # ######################################## difference from tensorflow
 file_x = '../dsets/P' + str(rtt.mpc_player.id) + "/reg_train_x.csv"
 file_y = '../dsets/P' + str(rtt.mpc_player.id) + "/reg_train_y.csv"
-real_X, real_Y = rtt.MpcDataSet(label_owner=1).load_XY(file_x, file_y)
+real_X, real_Y = rtt.SecureDataSet(label_owner=1).load_XY(file_x, file_y)
 # ######################################## difference from tensorflow
 DIM_NUM = real_X.shape[1]
 ```
@@ -389,6 +406,7 @@ DIM_NUM = real_X.shape[1]
 OK，简单总结一下与 `tensorflow` 版本的区别：
 
 - 导入 `rosetta` 包。
+- 激活协议。
 - 数据集的加载。
 
 <br/>
@@ -428,9 +446,9 @@ Y_pred: [[1.22580022e+14]
 
 ```py
 # ########### for test, reveal
-reveal_W = rtt.MpcReveal(W)
-reveal_b = rtt.MpcReveal(b)
-reveal_Y = rtt.MpcReveal(pred_Y)
+reveal_W = rtt.SecureReveal(W)
+reveal_b = rtt.SecureReveal(b)
+reveal_Y = rtt.SecureReveal(pred_Y)
 # ########### for test, reveal
 
 with tf.Session() as sess:

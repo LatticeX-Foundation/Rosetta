@@ -17,10 +17,10 @@
 // ==============================================================================
 
 #pragma once
-#include "comm.h"
-#include "msg_id.h"
-#include "socket.h"
-#include "cycle_buffer.h"
+#include "cc/modules/io/include/internal/comm.h"
+#include "cc/modules/io/include/internal/msg_id.h"
+#include "cc/modules/io/include/internal/socket.h"
+#include "cc/modules/io/include/internal/cycle_buffer.h"
 
 namespace rosetta {
 namespace io {
@@ -67,7 +67,7 @@ struct Connection {
     Closed,
     Failed,
   };
-  State state_;
+  State state_ = State::Invalid;
 
   int verbose_ = 0;
   int fd_ = -1;
@@ -81,11 +81,11 @@ struct Connection {
   shared_ptr<cycle_buffer> buffer_ = nullptr;
   //! for one message which id is msg_id_t
   map<msg_id_t, shared_ptr<cycle_buffer>> mapbuffer_;
-  mutex mapbuffer_mtx_;
+  std::mutex mapbuffer_mtx_;
 
 #if USE_LIBEVENT_AS_BACKEND
   bool has_set_client_id = false;
-  mutex set_client_id_mtx_;
+  std::mutex set_client_id_mtx_;
   void* thread_ptr_ = nullptr; // do not delete this pointer in this class
   void* obj_ptr_ = nullptr; // do not delete this pointer in this class
   struct bufferevent* bev_ = nullptr; // buffevent, do not delete this pointer in this class
@@ -97,7 +97,7 @@ struct Connection {
 class SSLConnection : public Connection {
   using Connection::Connection;
   SSL* ssl_ = nullptr;
-  mutex ssl_rw_mtx_;
+  std::mutex ssl_rw_mtx_;
 
  public:
   ~SSLConnection();
@@ -108,7 +108,7 @@ class SSLConnection : public Connection {
   virtual ssize_t readImpl(int fd, char* data, size_t len) {
     int rd = 0;
     {
-      unique_lock<mutex> lck(ssl_rw_mtx_);
+      unique_lock<std::mutex> lck(ssl_rw_mtx_);
       rd = SSL_read(ssl_, data, len);
       int ssle = SSL_get_error(ssl_, rd);
       if (rd < 0 && ssle != SSL_ERROR_WANT_READ) {
@@ -120,7 +120,7 @@ class SSLConnection : public Connection {
   virtual ssize_t writeImpl(int fd, const char* data, size_t len) {
     int wd = 0;
     {
-      unique_lock<mutex> lck(ssl_rw_mtx_);
+      unique_lock<std::mutex> lck(ssl_rw_mtx_);
       wd = SSL_write(ssl_, data, len);
       int ssle = SSL_get_error(ssl_, wd);
       if (wd < 0 && ssle != SSL_ERROR_WANT_WRITE) {

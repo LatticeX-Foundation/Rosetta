@@ -18,19 +18,13 @@
 #pragma once
 
 /*
-** thread-safe
+** thread-safe log based on spdlog
 */
 
-#include "safe_queue.h"
-
-#include <ctime>
-#include <mutex>
-#include <thread>
+#include <cstring>
 #include <string>
-#include <fstream>
 #include <sstream>
 #include <iostream>
-#include <algorithm>
 using namespace std;
 
 #ifdef _WIN32
@@ -44,99 +38,53 @@ using namespace std;
 #include <sys/time.h>
 #endif
 
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
+
 #ifdef _WIN32
 #define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
 #else
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 #endif
 
-namespace utils {
-// temporary/simple cope
-static inline std::string local_time_for_log() {
-  time_t t = time(NULL);
-  struct tm* lt = localtime(&t);
-  struct timeval tval;
-  gettimeofday(&tval, NULL);
-
-  char buf[32] = {0};
-  strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", lt);
-  sprintf(buf, "%s.%03ld", buf, tval.tv_usec / 1000);
-  return std::string(buf);
+namespace LoggerLevel
+{
+enum LogEnum { Trace, Debug, Info, Warn, Error, Fatal };
 }
-
-static inline std::string base_name(const char* filepath) {
-  std::string s(filepath);
-  size_t pos = std::string::npos;
-  if ((pos = s.find_last_of("/")) != std::string::npos) {
-    s = s.substr(pos + 1);
-  }
-  return s;
-}
-
-// create_directories("/aa/bb/cc/")
-static int32_t create_directories(const std::string& directoryPath) {
-  char tmpDirPath[256] = {0};
-  for (uint32_t i = 0; i < directoryPath.length(); ++i) {
-    tmpDirPath[i] = directoryPath[i];
-    if (tmpDirPath[i] == '\\' || tmpDirPath[i] == '/') {
-      if (access(tmpDirPath, 0) != 0) {
-        int32_t ret = mkdir(tmpDirPath, 0777);
-        if (ret != 0) {
-          return ret;
-        }
-      }
-    }
-  }
-  return 0;
-}
-} // namespace utils
-
-#define USE_LOGGER_QUEUE 0
-typedef safe_queue<std::string> log_queue;
-
-enum class LogLevel { Cout, Trace, Debug, Info, Warn, Error, Fatal };
-static const char* slog_level[] = {"Cout ", "Trace", "Debug", "Info ", "Warn ", "Error", "Fatal"};
+using LogLevel = LoggerLevel::LogEnum;
 
 class Logger {
   class log_stream : public std::ostringstream {
     std::ostringstream oss_prefix_;
+    Logger& logger_;
+    LogLevel level_;
 
    public:
     log_stream(Logger& logger, LogLevel level, const char* file, const char* func, int line)
-        : logger_(logger) {
-      // FORMAT:
-      // *this << "[DATE TIME][PROCESS ID][THREAD ID][LOG LEVEL][FILENAME][FUNCTION][LINE] MESSAGE";
-      oss_prefix_ << "[" << utils::local_time_for_log() << "]"
-                  << "[" << logger_.pid_ << "]"
-                  << "[" << std::this_thread::get_id() << "]"
-                  << "[" << slog_level[static_cast<int>(level)] << "]"
-                  << "[" << utils::base_name(file) << "]"
-                  << "[" << func << "]"
-                  << "[" << line << "] ";
-    }
+        : logger_(logger), level_(level) {
+#ifndef NDEBUG
+      oss_prefix_ << "[" << file << ":" << line << "] ";
+#endif
+      }
+
     log_stream(const log_stream& ls) : logger_(ls.logger_) {}
     ~log_stream() {
-      //*this << std::endl; // can remove this line
-
       std::string s(std::move(str()));
-      if (s[s.length() - 1] != '\n')
-        s += "\n";
-
-      if (logger_.to_stdout)
-        std::cout << s; // maybe not to stdout
-
+      // if (s.empty() || (s[s.length() - 1] != '\n'))
+      //   s += "\n";
+      
+#ifndef NDEBUG
       s = oss_prefix_.str() + s;
-#if USE_LOGGER_QUEUE
-      logger_.queue_.push(std::move(s));
 #endif
-      {
-        std::unique_lock<std::mutex> lck(logger_.to_file_mtx_);
-        logger_.to_file(std::move(s));
+      if (logger_.to_stdout) {
+        //std::cout << str() << std::endl;
+        spdlog::log(static_cast<spdlog::level::level_enum>(level_), s.data());
       }
-    }
 
-   private:
-    Logger& logger_;
+      auto logger = spdlog::get("Rosetta"); 
+      if (logger_.to_file && logger.get())
+        logger->log(static_cast<spdlog::level::level_enum>(level_), s.data());
+    }
   };
 
  public:
@@ -146,120 +94,69 @@ class Logger {
   }
 
  public:
-  ofstream ofile;
-  bool to_stdout = false;
-
- public:
-  void log_to_stdout(bool flag = true) {
-    to_stdout = flag;
-  }
-  void set_level(int level){
+  void log_to_stdout(bool flag = true) { to_stdout = flag; }
+  void set_level(int level) { 
     level_ = static_cast<LogLevel>(level);
+    spdlog::set_level(static_cast<spdlog::level::level_enum>(level_));
   }
+
   void set_filename(const std::string& filename) {
-    if (filename.empty() || (filename == filename_)) {
-      return;
-    }
-    std::unique_lock<std::mutex> lck(to_file_mtx_);
     if (filename == filename_) {
       return;
     }
-    utils::create_directories(filename);
-    //string filenametmp = filename + "-" + std::to_string(pid_);
-    string filenametmp = filename;
-        if (false) {
-      // try open
-      ofstream ofiletemp;
-      ofiletemp.open(filenametmp);
-      if (ofiletemp.bad()) {
-        // set failed
-        return;
-      }
-      ofiletemp.close();
-    }
-    filename_ = filenametmp;
-    if (ofile.is_open()) {
-      ofile.flush();
-      ofile.clear();
-      ofile.close();
-      usleep(1000);
-    }
-    ofile.open(filename_);
-    //ofile.open(filename_, ios::out|ios::app);
-    //ofile.seekp(0,ios::end);
+
+    filename_ = filename;
+    to_file = true;
+    char buf[256] = {0};
+    snprintf(buf, 256, "%s.%d", filename_.data(), pid_);
+    auto logger = spdlog::basic_logger_mt("Rosetta", buf);//it will auto register
   }
-  std::string filename_ = "default";
+
+ private:
+  Logger() {
+    //mkdir("log", 0777);
+    pid_ = (int)getpid();
+    spdlog::set_automatic_registration(true);
+  };
 
  public:
-  Logger() {
-    mkdir("log", 0777);
-    pid_ = (int)getpid();
-    //ofile.open("default-" + std::to_string(pid_) + ".log");
-
-#if USE_LOGGER_QUEUE
-    thread_ = std::thread(&Logger::pop_from_queue, this);
-    thread_.detach();
-#endif
-  };
-  virtual ~Logger() {
-    release();
-  }
-  void release() {
-    ofile.close();
-  }
+  virtual ~Logger() { release(); }
+  void release() {}
 
   virtual log_stream operator()(LogLevel level, const char* file, const char* func, int line) {
     return log_stream(*this, level, file, func, line);
   }
 
-  void pop_from_queue() {
-    while (true) {
-      std::string s;
-      queue_.pop(s);
-    }
-  }
-  void to_file(const std::string& s) {
-    if (ofile.good()) {
-      ofile << s;
-      ofile.flush();
-    }
-  }
+  LogLevel Level() { return level_; }
 
-  LogLevel Level() {
-    return level_;
-  }
-  
-  LogLevel level_ = LogLevel::Info;
-
-  std::thread thread_;
-  std::mutex to_file_mtx_;
-  log_queue queue_;
+private:
+  LogLevel level_ = LoggerLevel::Info;
   int pid_;
+  std::string filename_;
+public:
+  bool to_stdout = true; //false;
+  bool to_file = false;
 };
 
 // clang-format off
-#define log_trace if (Logger::Get().Level() <= LogLevel::Trace) Logger::Get()(LogLevel::Trace, __FILE__, __FUNCTION__, __LINE__)
-#define log_debug if (Logger::Get().Level() <= LogLevel::Debug) Logger::Get()(LogLevel::Debug, __FILE__, __FUNCTION__, __LINE__)
-#define log_info  if (Logger::Get().Level() <= LogLevel::Info ) Logger::Get()(LogLevel::Info,  __FILE__, __FUNCTION__, __LINE__)
-#define log_warn  if (Logger::Get().Level() <= LogLevel::Warn ) Logger::Get()(LogLevel::Warn,  __FILE__, __FUNCTION__, __LINE__)
-#define log_error if (Logger::Get().Level() <= LogLevel::Error) Logger::Get()(LogLevel::Error, __FILE__, __FUNCTION__, __LINE__)
-#define log_fatal if (Logger::Get().Level() <= LogLevel::Fatal) Logger::Get()(LogLevel::Fatal, __FILE__, __FUNCTION__, __LINE__)
-//#define log_cout  if (Logger::Get().Level() <= LogLevel::Cout ) Logger::Get()(LogLevel::Cout, __FILE__, __FUNCTION__, __LINE__)
+#define log_trace if (Logger::Get().Level() <= LoggerLevel::Trace) Logger::Get()(LoggerLevel::Trace, __FILENAME__, __FUNCTION__, __LINE__)
+#define log_debug if (Logger::Get().Level() <= LoggerLevel::Debug) Logger::Get()(LoggerLevel::Debug, __FILENAME__, __FUNCTION__, __LINE__)
+#define log_info  if (Logger::Get().Level() <= LoggerLevel::Info ) Logger::Get()(LoggerLevel::Info,  __FILENAME__, __FUNCTION__, __LINE__)
+#define log_warn  if (Logger::Get().Level() <= LoggerLevel::Warn ) Logger::Get()(LoggerLevel::Warn,  __FILENAME__, __FUNCTION__, __LINE__)
+#define log_error if (Logger::Get().Level() <= LoggerLevel::Error) Logger::Get()(LoggerLevel::Error, __FILENAME__, __FUNCTION__, __LINE__)
+#define log_fatal if (Logger::Get().Level() <= LoggerLevel::Fatal) Logger::Get()(LoggerLevel::Fatal, __FILENAME__, __FUNCTION__, __LINE__)
+//#define log_cout  if (Logger::Get().Level() <= LoggerLevel::Cout ) Logger::Get()(LoggerLevel::Cout, __FILENAME__, __FUNCTION__, __LINE__)
 #define log_cout  cout
 // clang-format on
 
-/*
-Usage:
-log_debug << "1" << 2 << 2.718f << 3.1415926 << false;
-log_info << "log_info" << "";
-log_warn << "log_warn" << "";
-log_error << "log_error" << "";
-log_fatal << "log_fatal" << "";
-*/
-
 #include <stdarg.h>
 static void clog_log(
-  LogLevel level, const char* file, const char* func, int line, const char* fmt, ...) {
+  LogLevel level,
+  const char* file,
+  const char* func,
+  int line,
+  const char* fmt,
+  ...) {
   if (Logger::Get().Level() > level)
     return;
 
@@ -273,12 +170,12 @@ static void clog_log(
 }
 
 // clang-format off
-#define clog_log_trace(...)  clog_log(LogLevel::Trace, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#define clog_log_debug(...)  clog_log(LogLevel::Debug, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#define clog_log_info(...)   clog_log(LogLevel::Info , __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#define clog_log_warn(...)   clog_log(LogLevel::Warn , __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#define clog_log_error(...)  clog_log(LogLevel::Error, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
-#define clog_log_fatal(...)  clog_log(LogLevel::Fatal, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#define clog_log_trace(...)  clog_log(LoggerLevel::Trace, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#define clog_log_debug(...)  clog_log(LoggerLevel::Debug, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#define clog_log_info(...)   clog_log(LoggerLevel::Info , __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#define clog_log_warn(...)   clog_log(LoggerLevel::Warn , __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#define clog_log_error(...)  clog_log(LoggerLevel::Error, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#define clog_log_fatal(...)  clog_log(LoggerLevel::Fatal, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 // clang-format on
 
 #define LOGT clog_log_trace
