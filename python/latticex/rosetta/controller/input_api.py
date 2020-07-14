@@ -67,18 +67,76 @@ def private_input(party_id: int, inp):
     return _rtt.input.Input().private_input(party_id, inp)
 
 
-def private_console_input(party_id: int):
+def private_console_input(party_id: int, shape: tuple = None):
     """
     Just the same as private_input while the values will be fetched from console.
+
+    Args:
+        party_id: which party provide the private data
+        shape: only supports None, (m,), (m,n), which m, n is integer and greater 0. row first.
+
+    Usage:
+        >> rtt.private_console_input(0)
+        >> 1.2
+        will return 1.2
+        >> rtt.private_console_input(0, (2, 3))
+        >> 1e2 2 .3   4 5    6.6
+        will return [[100.0, 2.0, 0.3], [4.0, 5.0, 6.6]]
     """
     __check()
     partyid = py_protocol_handler.get_party_id()
-    if party_id == partyid:
-        instr = input("please input the private data (float or integer): ")
-        if isinstance(inp, float) or isinstance(inp, int):
-            inp = float(instr)
-        else:
-            raise Exception("unsupported type~")
+
+    org_shape = shape
+    if shape is None:
+        shape = (1,)
+
+    total_inputs = 1
+    for i in range(len(shape)):
+        if not (i < 2 and isinstance(shape[i], int) and shape[i] > 0):
+            raise Exception(
+                "shape, only supports None, (m,), (m,n), which m, n is integer and greater 0. row first.")
+        total_inputs *= shape[i]
+
+    if total_inputs == 1:
+        prompt = "please input the private data (float or integer): "
     else:
-        inp = 0
-    return private_input(party_id, inp)
+        prompt = "please input the private data (float or integer, {} items, separated by space): ".format(
+            total_inputs)
+
+    inp = []
+    if party_id == partyid:
+        tries = 3
+        while tries > 0:
+            inp_ok = True
+            inp = []
+            instr = input(prompt)
+            instr = instr.split(' ')
+            instr = [x for x in instr if len(x) > 0]
+            if len(instr) < total_inputs:
+                print("too few inputs, need {} item(s)".format(total_inputs))
+                inp_ok = False
+            else:
+                for i in range(total_inputs):
+                    try:
+                        inp.append(float(instr[i]))
+                    except Exception as e:
+                        print(e)
+                        print(
+                            "{}, unsupported type. only supports float or integer.".format(instr[i]))
+                        inp_ok = False
+                        break
+
+            if inp_ok:
+                break
+
+            tries -= 1
+            if tries == 0:
+                raise Exception("invalid inputs")
+    else:
+        inp = [0] * total_inputs
+
+    arr = private_input(party_id, inp)
+    lst = arr.reshape(shape).tolist()
+    if org_shape is None:
+        return lst[0]
+    return lst
