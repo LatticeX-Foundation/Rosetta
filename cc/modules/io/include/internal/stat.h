@@ -63,6 +63,17 @@ class NetStat {
     return ns;
   }
 
+  friend NetStat operator+(const NetStat& ns1, const NetStat& ns2) {
+    NetStat ns;
+    // clang-format off
+    ns.bytes_sent       = ns1.bytes_sent        + ns2.bytes_sent;
+    ns.bytes_received   = ns1.bytes_received    + ns2.bytes_received;
+    ns.message_sent     = ns1.message_sent      + ns2.message_sent;
+    ns.message_received = ns1.message_received  + ns2.message_received;
+    // clang-format on
+    return ns;
+  }
+
   friend ostream& operator<<(ostream& os, const NetStat& ns) {
     os << ns.fmt_string();
     return os;
