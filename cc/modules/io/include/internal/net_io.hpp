@@ -261,6 +261,8 @@ int BasicIO<Server, Client>::recv(int party, char* data, size_t len, const msg_i
   int ret = server->recv(party_cids_[party][0], msg_id, data, len);
   {
     net_stat_st_.message_received++;
+    net_stat_st_.bytes_received += sizeof(int32_t);
+    net_stat_st_.bytes_received += msg_id_t::Size();
     net_stat_st_.bytes_received += len;
   }
   return ret;
@@ -270,10 +272,6 @@ int BasicIO<Server, Client>::send(int party, const char* data, size_t len, const
   // todo: maybe add a mutex here
   simple_buffer buffer(msg_id, data, len);
   int ret = send(party, buffer.data(), buffer.len(), 0);
-  {
-    net_stat_st_.message_sent++;
-    net_stat_st_.bytes_sent += len;
-  }
   return ret;
 }
 template <typename Server, typename Client>
