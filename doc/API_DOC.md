@@ -125,7 +125,7 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
 
 #### `SecureFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`  
 
-  Integral floor divison of `x` by `y` in shared status element-wise, rounding toward the most negative integer. For example,$6 / 4 = 1$ and $(-6) / 4 = -2$.
+  Integral floor division of `x` by `y` in shared status element-wise, rounding toward the most negative integer. For example,$6 / 4 = 1$ and $(-6) / 4 = -2$.
 
   **Args:**
 
@@ -315,7 +315,7 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
 
   - **`name(optional)`**: A name for the operation (optional).
 
-  - **`transpose_a(optional)`**: If `True`, `a` is transposed before multiplication. Its default value is `Flase`.
+  - **`transpose_a(optional)`**: If `True`, `a` is transposed before multiplication. Its default value is `False`.
 
   - **`transpose_b(optional)`**: If `True`, `b` is transposed before multiplication.Its default value is `False`.
 
@@ -553,7 +553,7 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
 
   This is the underlying Operation to save tensors in V2 checkpoint format. In native TensorFlow, its corresponding operation, `save_v2`,  which has the identical interface signature, is also wrapped by the `tf.train.Saver()` interface, rather than being called directly.  **Unlike the native `Saver`, this `SecureOp` can save the plaintext tensors in files only in specific parties by configuration.** In Rosetta, by default, you have no need to use this `SecureOp` neither, because our `Static Pass` functionality (see its definition in [glossary](GLOSSARY.md)) can help you perform the correct replacement intrinsically.
 
-  The configurational option in `Rosetta v0.1.0` is the `SAVER_MODE` keyword in `CONFIG.json`.  Its  value os parsed as a 3-bit Flag for $[P2\ P1 \ P0]$, so it can be one of the following:
+  The configurational option in `Rosetta v0.2.0` is the `SAVER_MODE` keyword in `CONFIG.json`.  Its  value os parsed as a 3-bit Flag for $[P2\ P1 \ P0]$, so it can be one of the following:
 
   - $0$: every party saved the local shared value, rather than plaintext value. **This is the default action.**
   - $1$: the saved plaintext file will be stored in party `P0`.

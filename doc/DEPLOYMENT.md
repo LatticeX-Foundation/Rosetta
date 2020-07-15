@@ -74,7 +74,7 @@ Currently, `Rosetta` is only supported to be installed from source code. We are 
 
 #### Source code installation
 
-Since we have wraped all the steps in a script, so just get the source code and install it as follows:
+Since we have wrapped all the steps in a script, so just get the source code and install it as follows:
 
 ```bash
 # clone rosetta git repository
