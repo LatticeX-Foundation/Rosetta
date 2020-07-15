@@ -123,7 +123,7 @@ size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t 
       if (verbose_ > 1) {
         cout << "(!buffer_->can_read(len1)): len1:" << len1 << endl;
       }
-      usleep(50);
+      //usleep(50);
       retry = true;
       continue;
     }
@@ -134,7 +134,7 @@ size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t 
       if (verbose_ > 1) {
         cout << "(!buffer_->can_read(alen)): alen:" << alen << endl;
       }
-      usleep(10);
+      //usleep(10);
       continue;
     }
 
@@ -205,7 +205,7 @@ int Connection::readn(int connfd, char* vptr, int n) {
         nread = 0;
       } else {
         if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-          usleep(200);
+          //usleep(200);
           continue;
         }
         cout << __FUNCTION__ << " errno:" << errno << endl;
@@ -235,7 +235,7 @@ int Connection::writen(int connfd, const char* vptr, size_t n) {
         if (errno == EINTR) {
           nwritten = 0;
         } else if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-          usleep(200);
+          //usleep(200);
           continue;
         }
         nwritten = 0;
