@@ -1,44 +1,87 @@
 
-  vector<double> X = {-1.01, -2.00, 0, 1.3, 2.02, 3.14, +2, -0.01};
-  vector<double> Y = {-1.00, -2.01, 0, 1.3, 2.03, 3.12, -2, +0.01};
-  size_t size = X.size();
-  print_vec(X, 10, "X");
-  print_vec(Y, 10, "Y");
+  Logger::Get().log_to_stdout(true);
+  //////////////////////////////////////////////////////////////////
 
-  string msgid("Helix performance test");
-  cout << __FUNCTION__ << " " << msgid << endl;
+  stringstream ssheader;
+  // clang-format off
+      ssheader << "+---------------------+------------+------------+----------------------+------------+------------+------------+------------+" << endl;
+      ssheader << "|" << setw(21) << "OP "         << "|" << setw(12) << "times "
+               << "|" << setw(12) << "elapsed(s) " << "|" << setw(22) << "shape size "
+               << "|" << setw(12) << "sent data "  << "|" << setw(12) << "recv data "
+               << "|" << setw(12) << "sent msgs "  << "|" << setw(12) << "recv msgs "
+               << "|" << endl;
+      ssheader << "+---------------------+------------+------------+----------------------+------------+------------+------------+------------+";
+  // clang-format on
+  stringstream ssender;
+  // clang-format off
+      ssender  << "+---------------------+------------+------------+----------------------+------------+------------+------------+------------+";
+  // clang-format on
 
-  vector<string> strX, strY, strZ;
-  prot0.GetOps(msgid)->PrivateInput(0, X, strX);
-  print_vec(strX, 10, "strX");
-  prot0.GetOps(msgid)->PrivateInput(1, Y, strY);
-  print_vec(strY, 10, "strY");
-
-#define _perf_test_beg(op, times)                                                                  \
-  do {                                                                                             \
-    string tag = string("TIMER:") + string(#op) + " (times=" + to_string(times) + ") elapsed(s) "; \
-    SimpleTimer timer;                                                                             \
+#define _perf_test_beg(op, times)                                      \
+  do {                                                                 \
+    stringstream ss;                                                   \
+    ss << "|" << setw(20) << string(#op) << " |" << setw(11) << times; \
+    SimpleTimer timer;                                                 \
     for (int i = 0; i < times; i++) {
-#define _perf_test_end()                 \
-  }                                      \
-  cout << tag << timer.elapse() << endl; \
-  }                                      \
+#define _perf_test_end(shape)                                            \
+  }                                                                      \
+  timer.stop();                                                          \
+  ss << " |" << setw(11) << timer.elapse() << " |" << setw(21) << shape; \
+  ss << " |";                                                            \
+  cout << ss.str() << endl;                                              \
+  }                                                                      \
   while (0)
 
-#define binary_perf_test(op, times)                                     \
+#define binary_perf_test(op, times)                                    \
   _perf_test_beg(op, times) prot0.GetOps(msgid)->op(strX, strY, strZ); \
-  _perf_test_end()
+  _perf_test_end("k=" + to_string(strX.size()) + ",k=" + to_string(strY.size()))
 
-#define unary_perf_test(op, times)                                \
+#define unary_perf_test(op, times)                               \
   _perf_test_beg(op, times) prot0.GetOps(msgid)->op(strX, strZ); \
-  _perf_test_end()
+  _perf_test_end("k=" + to_string(strX.size()))
 
-#define reduce_perf_test(op, times, r, c)      \
-  _perf_test_beg(op, times) attr_type attr;    \
-  attr["rows"] = to_string(r);                 \
-  attr["cols"] = to_string(c);                 \
+#define reduce_perf_test(op, times, r, c)     \
+  _perf_test_beg(op, times) attr_type attr;   \
+  attr["rows"] = to_string(r);                \
+  attr["cols"] = to_string(c);                \
   prot0.GetOps(msgid)->op(strX, strZ, &attr); \
-  _perf_test_end()
+  _perf_test_end("r=" + to_string(r) + ",c=" + to_string(c))
+
+#define matmul_perf_test(op, times, m, K, n)        \
+  _perf_test_beg(op, times) attr_type attr;         \
+  attr["m"] = to_string(m);                         \
+  attr["k"] = to_string(K);                         \
+  attr["n"] = to_string(n);                         \
+  prot0.GetOps(msgid)->op(strX, strY, strZ, &attr); \
+  _perf_test_end("m=" + to_string(m) + ",K=" + to_string(K) + ",n=" + to_string(n))
+
+  //////////////////////////////////////////////////////////////////
+  vector<double> X, Y, Z;
+  vector<string> strX, strY, strZ;
+  string msgid("Helix performance test");
+  cout << __FUNCTION__ << " " << msgid << endl;
+  cout << ssheader.str() << endl;
+  /**
+   * for convenience,
+   * k = r * c = m * K = K * n
+   * so, only need set m and K.
+   */
+  int k, r, c, m, K, n = 1;
+
+  // case 1
+  m = K = 1;
+  // case 2
+  m = 33;
+  K = 44;
+  // .....
+  r = n = m;
+  c = K;
+  k = r * c;
+
+  random_vector(X, k, -3, 3);
+  random_vector(Y, k, -3, 3);
+  prot0.GetOps(msgid)->PrivateInput(0, X, strX);
+  prot0.GetOps(msgid)->PrivateInput(1, Y, strY);
 
   binary_perf_test(Add, 1000);
   binary_perf_test(Sub, 1000);
@@ -53,6 +96,9 @@
   binary_perf_test(Greater, 2);
   binary_perf_test(GreaterEqual, 2);
 
+  //binary_perf_test(Pow, 2);
+  binary_perf_test(SigmoidCrossEntropy, 2);
+
   unary_perf_test(Square, 2);
   unary_perf_test(Negative, 1000);
   unary_perf_test(Abs, 2);
@@ -64,33 +110,11 @@
   unary_perf_test(ReluPrime, 10);
   unary_perf_test(Sigmoid, 2);
 
-  reduce_perf_test(Mean, 100, 2, 4);
-  reduce_perf_test(Sum, 1000, 2, 4);
-  reduce_perf_test(AddN, 1000, 2, 4);
+  reduce_perf_test(Mean, 100, r, c);
+  reduce_perf_test(Sum, 1000, r, c);
+  reduce_perf_test(AddN, 1000, r, c);
+  reduce_perf_test(Max, 2, r, c);
+  reduce_perf_test(Min, 2, r, c);
 
-  {
-    // MatMul
-    SimpleTimer timer;
-    {
-      int times = 1000;
-      string tag = string("TIMER:Matmul (times=") + to_string(times) + ") elapsed(s) ";
-      attr_type attr;
-      attr["m"] = "2";
-      attr["k"] = "4";
-      attr["n"] = "2";
-      timer.start();
-      for (int i = 0; i < 5; i++) {
-        prot0.GetOps(msgid)->Matmul(strX, strY, strZ, &attr);
-      }
-      cout << tag << timer.elapse() << endl;
-    }
-  }
-
-  /*
-Pow
-
-Max
-Min
-
-Reveal
-*/
+  matmul_perf_test(Matmul, 100, m, K, n);
+  cout << ssender.str() << endl;
