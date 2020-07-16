@@ -149,8 +149,13 @@ size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t 
       mapbuffer_[tmp] = make_shared<cycle_buffer>(1024 * 1024 * 10);
     }
 
-    // write the real data
     size_t data_len = alen - len1 - msg_id_t::Size();
+    if ((tmp == msg_id) && (len == data_len) && (mapbuffer_[msg_id]->size() == 0)) {
+      int ret = buffer_->read(data, len);
+      return ret;
+    }
+
+    // write the real data
     const int NN = 4 * 1024;
     if (data_len > NN) {
       char* buff = new char[data_len];
@@ -161,17 +166,6 @@ size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t 
       char buff[NN] = {0};
       buffer_->read(buff, data_len);
       mapbuffer_[tmp]->write(buff, data_len);
-    }
-
-    // re-fetch
-    {
-      auto iter = mapbuffer_.find(msg_id);
-      if (iter != mapbuffer_.end()) { // got id
-        if (iter->second->can_read(len)) { // got data
-          ret = iter->second->read(data, len);
-          return ret;
-        }
-      }
     }
   } while (true);
 
