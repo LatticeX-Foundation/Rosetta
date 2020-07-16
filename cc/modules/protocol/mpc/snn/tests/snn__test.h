@@ -16,7 +16,7 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #pragma once
-#include "../include/_test_common.h"
+#include "cc/modules/protocol/mpc/comm/include/_test_common.h"
 
 #include "cc/modules/protocol/mpc/snn/src/snn_protocol.h"
 #include "cc/modules/protocol/mpc/snn/src/snn_protocol_ops.h"
