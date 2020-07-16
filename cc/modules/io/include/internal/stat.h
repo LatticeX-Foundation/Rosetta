@@ -88,9 +88,7 @@ class NetStat {
     return sss.str();
   }
 
-  void print(string str = "") const {
-    cout << str << fmt_string() << endl;
-  }
+  void print(string str = "") const { cout << str << fmt_string() << endl; }
 
  private:
   uint64_t bytes_sent = 0;

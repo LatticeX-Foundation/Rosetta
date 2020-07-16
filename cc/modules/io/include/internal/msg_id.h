@@ -35,9 +35,7 @@ using id_type = uint16_t; // will used in the future
  */
 class msg_id_t {
  public:
-  explicit msg_id_t() {
-    memset(bin_, 0, 16);
-  };
+  explicit msg_id_t() { memset(bin_, 0, 16); };
   explicit msg_id_t(const msg_id_t& id) {
     src_.assign(id.src_);
     str_.assign(id.str_);
@@ -56,21 +54,12 @@ class msg_id_t {
 
  public:
   friend std::ostream& operator<<(std::ostream& os, const msg_id_t& id);
-  bool operator<(const msg_id_t& id) const {
-    return (strncmp(bin_, id.bin_, 16) < 0);
-  }
-  static size_t Size() {
-    return 16;
-  }
-  const std::string& str() const {
-    return str_;
-  }
-  const char* data() const {
-    return (const char*)bin_;
-  }
-  char* data() {
-    return bin_;
-  }
+  bool operator<(const msg_id_t& id) const { return (strncmp(bin_, id.bin_, 16) < 0); }
+  bool operator==(const msg_id_t& id) const { return (strncmp(bin_, id.bin_, 16) == 0); }
+  static size_t Size() { return 16; }
+  const std::string& str() const { return str_; }
+  const char* data() const { return (const char*)bin_; }
+  char* data() { return bin_; }
 
  private:
   void hash();
