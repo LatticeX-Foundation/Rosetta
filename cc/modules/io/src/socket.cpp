@@ -20,61 +20,35 @@
 namespace rosetta {
 namespace io {
 
-int Socket::readn(int connfd, char* vptr, int n) {
-  int nleft;
-  int nread;
-  char* ptr;
+Socket::Socket() { default_buffer_size_ = 1024 * 1024 * 10; }
 
-  ptr = vptr;
-  nleft = n;
-
-  while (nleft > 0) {
-    if ((nread = ::read(connfd, ptr, nleft)) < 0) {
-      if (errno == EINTR) {
-        nread = 0;
-      } else {
-        if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-          usleep(10000);
-          continue;
-        }
-        cout << __FUNCTION__ << " errno:" << errno << endl;
-        return -1;
-      }
-    } else if (nread == 0) {
-      break;
-    }
-    nleft -= nread;
-    ptr += nread;
-  }
-  return n - nleft;
+int Socket::set_reuseaddr(int fd, int optval) {
+  int ret = ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void*)&optval, sizeof(optval));
+  return ret;
+}
+int Socket::set_reuseport(int fd, int optval) {
+  int ret = ::setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, (const void*)&optval, sizeof(optval));
+  return ret;
+}
+int Socket::set_sendbuf(int fd, int size) {
+  int ret = ::setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (const void*)&size, sizeof(size));
+  return ret;
+}
+int Socket::set_recvbuf(int fd, int size) {
+  int ret = ::setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (const void*)&size, sizeof(size));
+  return ret;
+}
+int Socket::set_linger(int fd) {
+  struct linger l;
+  l.l_onoff = 1;
+  l.l_linger = 0;
+  int ret = ::setsockopt(fd, SOL_SOCKET, SO_LINGER, (const void*)&l, sizeof(l));
+  return ret;
+}
+int Socket::set_nodelay(int fd, int optval) {
+  int ret = ::setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (const void*)&optval, sizeof(optval));
+  return ret;
 }
 
-int Socket::writen(int connfd, const char* vptr, size_t n) {
-  int nleft = 0, nwritten = 0;
-  const char* ptr;
-
-  ptr = vptr;
-  nleft = n;
-
-  while (nleft > 0) {
-    if ((nwritten = ::write(connfd, ptr, nleft)) <= 0) {
-      if (nwritten < 0) {
-        if (errno == EINTR) {
-          nwritten = 0;
-        } else if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-          usleep(10000);
-          continue;
-        }
-        cout << __FUNCTION__ << " errno:" << errno << endl;
-      } else {
-        return -1;
-      }
-    }
-    nleft -= nwritten;
-    ptr += nwritten;
-  }
-
-  return n - nleft;
-}
 } // namespace io
 } // namespace rosetta
