@@ -20,43 +20,60 @@
 
 class SimpleTimer {
  public:
-  SimpleTimer() {
-    begin = std::chrono::system_clock::now();
-    end = begin;
-  }
-
+  SimpleTimer() { start(); }
   virtual ~SimpleTimer() {}
 
-  void start() { begin = std::chrono::system_clock::now(); }
+  void start() {
+    begin = std::chrono::steady_clock::now();
+    end = begin;
+    stoped = false;
+  }
 
   double stop() {
-    end = std::chrono::system_clock::now();
+    end = std::chrono::steady_clock::now();
+    stoped = true;
     std::chrono::duration<double> elapsed_seconds = end - begin;
     double costTime = elapsed_seconds.count();
     return costTime;
   }
 
   double elapse() const {
-    auto ending = std::chrono::system_clock::now();
+    auto ending = std::chrono::steady_clock::now();
+    if (stoped)
+      ending = end;
     std::chrono::duration<double> elapsed_seconds = ending - begin;
     return elapsed_seconds.count();
   }
 
+  long long int ms_elapse() const {
+    auto ending = std::chrono::steady_clock::now();
+    if (stoped)
+      ending = end;
+    std::chrono::duration<long long int, std::micro> elapsed_milliseconds =
+      std::chrono::duration_cast<std::chrono::duration<long long int, std::milli>>(ending - begin);
+    return elapsed_milliseconds.count();
+  }
+
   long long int us_elapse() const {
-    auto ending = std::chrono::system_clock::now();
+    auto ending = std::chrono::steady_clock::now();
+    if (stoped)
+      ending = end;
     std::chrono::duration<long long int, std::micro> elapsed_microseconds =
       std::chrono::duration_cast<std::chrono::duration<long long int, std::micro>>(ending - begin);
     return elapsed_microseconds.count();
   }
 
   long long int ns_elapse() const {
-    auto ending = std::chrono::system_clock::now();
+    auto ending = std::chrono::steady_clock::now();
+    if (stoped)
+      ending = end;
     std::chrono::duration<long long int, std::nano> elapsed_microseconds =
       std::chrono::duration_cast<std::chrono::duration<long long int, std::nano>>(ending - begin);
     return elapsed_microseconds.count();
   }
 
- protected:
-  std::chrono::time_point<std::chrono::system_clock> begin;
-  std::chrono::time_point<std::chrono::system_clock> end;
+ private:
+  bool stoped;
+  std::chrono::time_point<std::chrono::steady_clock> begin;
+  std::chrono::time_point<std::chrono::steady_clock> end;
 };
