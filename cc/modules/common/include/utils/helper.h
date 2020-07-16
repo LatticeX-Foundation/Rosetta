@@ -131,6 +131,23 @@ inline void rand_vec_60bit(vector<int64_t>& rand_vec, int length) {
     rand_vec.push_back(tmp);
   }
 }
+
+inline void random_vector(vector<double>& v, size_t size, double low = -2.0, double high = 2.0) {
+  vector<uint64_t> vv;
+  rand_vec2(vv, size);
+  v.resize(size);
+  for (int i = 0; i < size; i++) {
+    v[i] = (((int64_t)vv[i]) % 0xff) / 128.0;
+    v[i] = (high - low) * v[i] + low;
+  }
+}
+inline void random_vector(vector<uint64_t>& v, size_t size) { rand_vec2(v, size); }
+inline void random_vector(vector<uint8_t>& v, size_t size) {
+  rand_vec2(v, size);
+  for (int i = 0; i < size; i++) {
+    v[i] = v[i] & 1;
+  }
+}
 ////////////////////////////////////////////////
 
 template <class T>
