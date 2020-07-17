@@ -119,15 +119,13 @@ int Log::mpc_log_hd(const vector<mpc_t>& shared_X,
     	    return -1;
     	}
 		log_hd_p->at(0).get_power_list(power_list);
-		log_hd_p->at(0).get_coff_list(coff_list);	
-		// TODO: vectorization this func
+		log_hd_p->at(0).get_coff_list(coff_list);
 		vector<mpc_t> shared_basic_val(vec_size, 0);
-		mpc_t tmp_v = 0;
-		for(int i = 0; i < vec_size; ++i) {
-			auto& each_curr_x = curr_x[i]; 
-			GetMpcOpInner(Polynomial)->mpc_uni_polynomial(each_curr_x, power_list, coff_list, tmp_v);
-			shared_basic_val[i] = CoffDown(tmp_v);
-		}
+		vector<mpc_t> tmp_v(vec_size);
+		GetMpcOpInner(Polynomial)->mpc_uni_polynomial(curr_x, power_list, coff_list, tmp_v);
+        for (int i = 0; i < vec_size; ++i) {
+            shared_basic_val[i] = CoffDown(tmp_v[i]);
+        }
 
 		vector<mpc_t> shared_high_part(vec_size, 0);
 		GetMpcOpInner(DotProduct)->Run(curr_power, SHARED_LN_2, shared_high_part, vec_size);
@@ -142,7 +140,7 @@ int Log::mpc_log_hd(const vector<mpc_t>& shared_X,
 	return 0;
 }
 
-// not used directly any more
+// outdated
 void Log::mpc_log_v1(const mpc_t& shared_X,
 				mpc_t& shared_Y) {
 	shared_Y = 0;   
@@ -159,7 +157,78 @@ void Log::mpc_log_v1(const mpc_t& shared_X,
 	log_v1_p->at(0).get_coff_list(coff_list);	
 	GetMpcOpInner(Polynomial)->mpc_uni_polynomial(shared_X, power_list, coff_list, shared_Y);
 	shared_Y = CoffDown(shared_Y);
-};
+}
+
+void Log::mpc_log_v2(const vector<mpc_t>& shared_X, 
+					vector<mpc_t>& shared_Y) {
+	int vec_size = shared_X.size();
+	shared_Y.resize(vec_size);		
+    string my_func = "LOG_V2";
+	vector<ConstPolynomial>* log_v2_p = NULL;
+    if (!PolyConfFactory::get_func_polys(my_func, &log_v2_p)) {
+        // TODO: throw exception
+        cout << "ERROR! can not find polynomials for func " << my_func <<endl;
+        return;
+    }
+	auto seg_size = log_v2_p->size();
+   	if (seg_size == 0) {
+		// TODO: throw exception
+		cout << "ERROR! empty polynomials in log_v2." << endl; 
+		return;
+   	}
+	
+   	// actually we will use the [start, end)-style for each segement!
+   	vector<mpc_t> curr_power_list;
+   	vector<mpc_t> curr_coff_list;
+   	// some temprorary variables
+	vector<mpc_t> shared_cmp_init(vec_size, 0);
+	vector<mpc_t> shared_cmp_end(vec_size, 0);
+   	vector<mpc_t> shared_init(vec_size, 0);
+   	vector<mpc_t> shared_end(vec_size, 0);
+   	vector<mpc_t> shared_res(vec_size, 0);
+	for(int i = 0; i < seg_size; ++i) {
+	   ConstPolynomial curr_seg = log_v2_p->at(i);
+	   mpc_t seg_init = curr_seg.get_start();
+	   mpc_t seg_end = curr_seg.get_end();
+		curr_seg.get_power_list(curr_power_list);
+		curr_seg.get_coff_list(curr_coff_list);
+		// S1: use ReLUPrime to get whether to use this segemnt[ multiplier is 0 or 1]
+		/// 1.1 check start point
+		// x >= start && (1 - (x >= end))
+		shared_cmp_init = shared_X;
+		shared_cmp_end = shared_X;
+		for(int j = 0; j < vec_size; ++j) {
+			if(partyNum == PARTY_A) {
+				shared_cmp_init[j] = shared_X[j] - seg_init;
+				shared_cmp_end[j] = shared_X[j] - seg_end; 
+			}
+		}
+		// packing for vectorization
+		vector<mpc_t> shared_cmp = shared_cmp_init;
+		shared_cmp.insert(shared_cmp.end(), shared_cmp_end.begin(), shared_cmp_end.end());
+		vector<mpc_t> tmp_reluprime(2*vec_size);	
+		GetMpcOpInner(ReluPrime)->Run3PC(shared_cmp, tmp_reluprime, 2*vec_size);
+		shared_init.assign(tmp_reluprime.begin(), tmp_reluprime.begin() + vec_size);
+		shared_end.assign(tmp_reluprime.begin() + vec_size, tmp_reluprime.end());
+		vector<mpc_t> CONST_ONE(vec_size, FloatToMpcType(1.0/2.0));
+		vector<mpc_t> shared_end2(vec_size, 0);
+		if (PRIMARY) {
+			subtractVectors(CONST_ONE, shared_end, shared_end2, vec_size);
+		}
+		GetMpcOpInner(DotProduct)->Run(shared_init, shared_end2, shared_res, vec_size);
+
+		vector<mpc_t> poly_res(vec_size, 0);
+		// S2: compute the value in this segment
+		GetMpcOpInner(Polynomial)->mpc_uni_polynomial(shared_X, curr_power_list, curr_coff_list, poly_res);
+		for (int i = 0; i < vec_size; ++i) {
+            poly_res[i] = CoffDown(poly_res[i]);
+        }
+		vector<mpc_t> this_seg_res(vec_size, 0);
+		GetMpcOpInner(DotProduct)->Run(shared_res, poly_res, this_seg_res, vec_size);	
+		addVectors<mpc_t>(shared_Y, this_seg_res, shared_Y, vec_size);
+    }
+}
+
 
 void Log::mpc_log_v2(const mpc_t& shared_X,
 				mpc_t& shared_Y) {

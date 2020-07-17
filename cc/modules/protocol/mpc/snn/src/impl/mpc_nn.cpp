@@ -148,18 +148,13 @@ void SigmoidCrossEntropy::CELog(const vector<mpc_t>& shared_X,
         GetMpcOpInner(Select1Of2)->Run(tmp_END, shared_X, cmp_res,
 								curr_X, vec_size);
         
-        // if(PRIMARY) {
-        //      GetMpcOpInner(Reconstruct2PC)->Run(shared_X, shared_X.size(), "original X");
-		//      GetMpcOpInner(Reconstruct2PC)->Run(curr_X, curr_X.size(), "curr_X");
-		// }
         vector<mpc_t> LOWER_BOUND(vec_size, FloatToMpcType(0.00015));
         vector<mpc_t> curr_res(vec_size, 0);
-        mpc_t tmp_v = 0;
-        // TODO: vectorization this func
-        for(int i = 0; i < vec_size; ++i) {
-            auto& each_x = curr_X[i];
-            GetMpcOpInner(Polynomial)->mpc_uni_polynomial(each_x, power_list, coff_list, tmp_v);
-            curr_res[i] = CoffDown(tmp_v);
+        vector<mpc_t> tmp_v(vec_size);
+        log_debug << "DEBUG CELOG, calling vectorization mpc_uni_polynomial" << endl;
+        GetMpcOpInner(Polynomial)->mpc_uni_polynomial(curr_X, power_list, coff_list, tmp_v);
+        for (int i = 0; i < vec_size; ++i) {
+            curr_res[i] = CoffDown(tmp_v[i]);
         }
 
         GetMpcOpInner(Select1Of2)->Run(LOWER_BOUND, curr_res, cmp_res, shared_Y, vec_size);     

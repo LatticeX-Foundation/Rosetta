@@ -661,61 +661,6 @@ class ReconstructBit2PC : public OpBase {
   int funcReconstructBit2PC(const vector<small_mpc_t>& a, size_t size, string str);
 };
 
-// TODO: remove these internal functionalities in a standalone file.
-///////**************************some internal functionalities ********************************
-/*
-	****Polynomials******************
-*/
-
-/*
-	for example:
-		y = 1 + 2 * X + 5 * X^ 3 , \in (0, 4)
-		get_power_list --> [0, 1, 3]
-		get_coff_list --> [1, 2, 5]
-		get_start --> 0
-		get_end --> 4
-*/
-// class ConstPolynomial {
-//  public:
-//   //ConstPolynomial(): __start(0), __end(0) {}
-//   explicit ConstPolynomial(
-//     mpc_t init_start, mpc_t init_end, std::vector<std::vector<mpc_t>> init_poly);
-
-//   bool get_power_list(vector<mpc_t>& out_vec);
-//   bool get_coff_list(vector<mpc_t>& out_vec);
-
-//   mpc_t get_start() {
-//     return __start;
-//   };
-//   mpc_t get_end() {
-//     return __end;
-//   };
-
-//  private:
-//   // internal presentation for initialization
-//   std::vector<std::vector<mpc_t>> __inner_poly;
-//   // Note: if __end == __start, this function is for all X, [-\inf, +\inf].
-//   mpc_t __start = FloatToMpcType(0.0); // >=
-//   mpc_t __end = FloatToMpcType(0.0); // <
-// };
-
-// /*
-// 	@brief: function approximation registering entry for mapping from func_name to its
-// 	segemental polynomials.
-// 	// TODO: make this as singleton
-// */
-// struct PolyConfFactory {
-//   // eg : "log_v1" --> A1
-//   // 		"log_v2" --> [B1, B2, B3]
-//   // TODO: add mutex_lock or RW lock
-//  public:
-//   static void func_register(const std::string& func_name, vector<ConstPolynomial>* approx_polys);
-
-//   static bool get_func_polys(const std::string& func_name, vector<ConstPolynomial>** approx_polys);
-//   //private:
-//   //	static unordered_map<std::string, vector<ConstPolynomial>> FUNC_POLY_MAP;
-// };
-
 /*
   @note: this Polynomial is mostly for internal usage, 
     especially for complex funtionalities, such as Log and Log1p, that 
@@ -743,6 +688,17 @@ class Polynomial : public OpBase {
     mpc_t& shared_Y,
     unordered_map<mpc_t, mpc_t>* curr_cache = NULL);
 
+  void mpc_pow_const(
+    const vector<mpc_t>& shared_X,
+		mpc_t common_k,
+		vector<mpc_t>& shared_Y,
+		unordered_map<mpc_t, vector<mpc_t>>* curr_cache = NULL);
+
+  void local_const_mul(
+    const vector<mpc_t>& shared_X,
+    mpc_t common_V,
+    vector<mpc_t>& shared_Y);
+
   /*
 	  @brief: secret-shared version for computing a univariate polynomial:
 	  Y = C0 * X^P0 + C1 * X^P1 + ... + Cn * X^Pn
@@ -760,10 +716,11 @@ class Polynomial : public OpBase {
     const vector<mpc_t>& common_power_list,
     const vector<mpc_t>& common_coff_list,
     mpc_t& shared_Y);
-  /*
-  	@brief: secret-shared version of Y = X * X
-  */
-  void mpc_squre(const mpc_t& shared_X, mpc_t& shared_Y);
+
+  void mpc_uni_polynomial(const vector<mpc_t>& shared_X, 
+		const vector<mpc_t>& common_power_list,
+		const vector<mpc_t>& common_coff_list,
+		vector<mpc_t>& shared_Y);
 };
 
 class PrivateCompare : public OpBase {
@@ -1299,6 +1256,23 @@ class Pow : public OpBase {
     assert(x.size() == n.size());
     assert(x.size() == size);
     auto poly = GetSnnOpInner(Polynomial);
+
+    // Added in V0.2.1 to support vectorization
+    bool is_common_k = true;
+    for(int i = 1; i < size; ++i) {
+      if(n[i] != n[i-1]) {
+        is_common_k = false;
+        break;
+      }
+    }
+
+    if(is_common_k) {
+      // cout << "DEBUG; common k" << endl;
+      unordered_map<mpc_t, vector<mpc_t>> curr_cache;
+      poly->mpc_pow_const(x, n[0], y, &curr_cache);
+      return 0;
+    }
+
     for (auto i = 0; i < size; i++) {
       unordered_map<mpc_t, mpc_t> curr_cache;
       poly->mpc_pow_const(x[i], n[i], y[i], &curr_cache);
@@ -1346,10 +1320,8 @@ class Log : public OpBase {
   }
   int funcLog(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
     //TODO: vectorization
-    for (size_t i = 0; i < size; ++i) {
-      //mpc_t res = a[i];
-      mpc_log_v2(a[i], b[i]);
-    }
+    //cout << "vector-version Log!" << endl;
+    mpc_log_v2(a, b);
     return 0;
   }
   int funcLog1p(const mpc_t& a, mpc_t& b) {
@@ -1379,9 +1351,9 @@ class Log : public OpBase {
     return 0;
   }
   /*
+    obsolete!
 	  @brief: secret-sahred version of logarithm with one-segment polynomial
 	  with domain x \in [0.3, 1.8)
-	  TODO: to support vectorized input
   */
   void mpc_log_v1(const mpc_t& shared_X, mpc_t& shared_Y);
 
@@ -1389,6 +1361,8 @@ class Log : public OpBase {
   	@brief: secret-sahred version of logarithm with three-segment polynomial
   */
   void mpc_log_v2(const mpc_t& shared_X, mpc_t& shared_Y);
+  
+  void mpc_log_v2(const vector<mpc_t>& shared_X, vector<mpc_t>& shared_Y);
 };
 
 class CompareOp : public OpBase {
