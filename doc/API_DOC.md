@@ -1,10 +1,23 @@
-# Rosetta Operations API
+# Rosetta User API
 
-- [Rosetta Operations API](#rosetta-operations-api)
+- [Rosetta User API](#rosetta-user-api)
   - [Overview](#overview)
+  - [Control API](#control-api)
+    - [Protocol Management](#protocol-management)
+      - [`get_supported_protocols()`](#get_supported_protocols)
+      - [`get_default_protocol_name()`](#get_default_protocol_name)
+      - [`activate(protocol_name=None, protocol_config_str=None)`](#activateprotocol_namenone-protocol_config_strnone)
+      - [`get_protocol_name()`](#get_protocol_name)
+      - [`deactivate()`](#deactivate)
+      - [`get_protocol_config()`](#get_protocol_config)
+      - [`get_party_id()`](#get_party_id)
+    - [Input and Dataset Utils](#input-and-dataset-utils)
+      - [`private_input(party_id: int, input_val)`](#private_inputparty_id-int-input_val)
+      - [`private_console_input(party_id: int)`](#private_console_inputparty_id-int)
+      - [`class SecureDataSet`](#class-securedataset)
+  - [Operation API](#operation-api)
     - [Terms and definition](#terms-and-definition)
     - [Common notes](#common-notes)
-  - [SecureOps API](#secureops-api)
     - [Computational SecureOps](#computational-secureops)
       - [`SecureAdd(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#secureaddx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureSub(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securesubx-y-namenone-lh_is_constfalse-rh_is_constfalse)
@@ -37,9 +50,122 @@
 
 ## Overview
 
-By using Rosetta framework, users can directly perform training or inference task on all of their respective dataset without leaking any privacy to others just after adding a single code `import latticex.rosetta`  at the header of your existing TensorFlow programs (see our [tutorial documentation](TUTORIALS.md) for more details). The main magic component that supports these upper-level conveniences is our implementation of a new suites of MPC-enabled `Operation` based on TensorFlow's flexible extension mechanism for introducing new operation library. To distinguish it from the native TensorFlow API Operation (hereinafter referred to directly as `Ops`), we refer to these customized Operation as `SecureOps`.
+By using Rosetta framework, users can directly perform training or inference task on all of their respective dataset without leaking any privacy to others just after adding a single code `import latticex.rosetta`  at the header of your existing TensorFlow programs (see our [tutorial documentation](TUTORIALS.md) for more details) in the simplest case. Besides, we also provide some easy-to-use APIs, which we will describe in the following context, to enable more flexibility.
 
-Here we describe how to use the various `SecureOps` interfaces supported in the `Rosetta v0.1.0` version. Most of interface signature of these `SecureOps` is consistent with the corresponding `Ops`' in TensorFlow, and only in a few cases have we extended the native one with more MPC-related functionality (e.g., the `SaveV2` operation, etc.).
+The APIs can mainly be classified into two types: 'Control API', which should be sufficient for most of your tasks, and 'Operation API', a set of TensorFlow-style Operators called `SecureOps`. The first type provides you with the ability to control the context of backend cryptographic protocols, pre-process your datasets and so on. The second type is for advanced usage, and you can use them in the same way as the native `tf.Operation` while the ciphertext flows within them.
+
+## Control API
+
+### Protocol Management
+
+#### `get_supported_protocols()`
+
+  Get list of all the backend cryptographic protocols.
+
+  You can activate one of the protocols as your backend Ops.
+
+  If you are a protocol developer, you can implement and register your own protocols in the backend, and you will see and use them here just as the native ones.
+
+  **Returns:**
+    
+  The list of the names of the supported secure protocols.
+
+#### `get_default_protocol_name()`
+
+  Get the name of the default protocol that will be used if none is set.
+
+
+#### `activate(protocol_name=None, protocol_config_str=None)`
+
+  Activate the specific protocol to carry out your subsequent Tensorflow Operations.
+
+  It is highly recommended that you use this interface explicitly to choose your backend protocol before calling `run` in the Tensorflow session.
+  
+  Besides, do NOT call this while the graph is running.
+
+  **Args:**
+
+  - **`protocol_name`**: Name of the protocol, which MUST be one of the supported protocols. If this parameter is not provided, the default protocol will be used.
+
+  - **`protocol_config_str`**: The config JSON string that is compatible with your
+        protocol.
+
+
+#### `get_protocol_name()`
+
+  Get the protocol name currently are activated.
+
+
+#### `deactivate()`
+
+  Deactivate your current backend protocol.
+
+  All the resources related, such as the network connections and local cache, will be released.
+
+  please DO NOT call this while your TF graph is running.
+
+#### `get_protocol_config()`
+
+  Get all the config JSON string that you are using now.
+
+#### `get_party_id()`
+
+  Get your party id.
+
+### Input and Dataset Utils
+
+#### `private_input(party_id: int, input_val)`
+
+  A party set its private input value to be shared among multi-parties.
+
+  **Args:**
+
+  - **`party_id`**: Indicates which party_id's `input_val` will be shared.
+
+  - **`input_val`**: local input values. ONLY the inputs of the party that has the same role as the `party_id` will be processed.
+
+  **Returns:**
+    
+  The local shared part, ciphertext, of the real value. Note that each party will has different cipher value that returned.
+
+
+#### `private_console_input(party_id: int)`
+
+  Just the same as private_input while the values will be fetched from console.
+
+#### `class SecureDataSet`
+
+  A wrapper class for multiparty to align and 'encrypt' ('share') its private dataset from a local CSV file. Every party's dataset should have the same user or ID while disjoint feature partition.
+
+  - **load_X(self, file: str, \*args, \*\*kwargs)**
+    
+    Load and 'secret-shared' private ATTRIBUTE values from local dataset files.
+
+    Since only COMMON_N_V_SPLIT is supported now, different party can have different number of attributes while having the same number of samples.
+
+    For example, if dataset of P0 is N * d0, dataset of P1 is N * d1, and P2 has no data at all.
+    Then the resulting 'ciphertext' local dataset returned for each party is of the shape N * (d0+d1).
+
+    Return:
+      The shared 'ciphertext' local dataset, and its datatype is string with format specific to your current activated protocol.
+
+  - **load_Y(self, file: str, \*args, \*\*kwargs)**
+    
+    Load and 'secret-shared' private LABEL values from local dataset files.
+    
+    Only the input file of 'label_owner'-party will be processed.
+    Return:
+      The shared 'ciphertext' local label dataset, and its datatype is string with format specific to your current activated protocol.
+  - **load_XY(self, fileX: str, fileY: str = '', \*args, \*\*kwargs)**
+
+    The combination of the above two functions.
+
+
+## Operation API
+
+The main magic component that supports these upper-level conveniences is our implementation of a new suites of MPC-enabled `Operation` based on TensorFlow's flexible extension mechanism for introducing new operation library. To distinguish it from the native TensorFlow API Operation (hereinafter referred to directly as `Ops`), we refer to these customized Operation as `SecureOps`.
+
+Here we describe how to use the various `SecureOps` interfaces supported in the `Rosetta v0.2.0` version. Most of interface signature of these `SecureOps` is consistent with the corresponding `Ops`' in TensorFlow, and only in a few cases have we extended the native one with more MPC-related functionality (e.g., the `SaveV2` operation, etc.).
 
 If you need to build your own specific privacy protection model based on Rosetta's underlying API, or are interested in our extending our `SecureOps` set, this is the right place you should start with. In addition, unit tests in the source code can also help you to understand the usage of the various `SecureOps`.
 
@@ -51,13 +177,11 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
 
 1. Unlike the input and output `Tensor` of `Ops` in native TensorFlow, the parameters and return values of `SecureOps` are considered to be a **shared value** in a secret state, unless an explicit declaration is made that an input value is an explicit constant (see the related `MpsOps` interface declaration below). You may not use these 'garbled' values directly.
 
-2. On data type (`dtype`) of  `SecureOps` input and output `tensor`, **Rosetta's Python frontend will uniformly convert them as `tf.float64' in the current version.**
+2. On data type (`dtype`) of  `SecureOps` input and output `tensor`, **Rosetta's Python frontend will uniformly convert them as `tf.string' in the current version.**
 
-3. For binary operators such as `SecureAdd`, the current `Rosetta v0.1.0` does not support the `Tensor` with dimension more than 2, while for unary operators such as `SecureRelu`, their tensor shape is not restricted.
-  
+3. For binary operators such as `SecureAdd`, the current `Rosetta v0.2.0` does not support the `Tensor` with dimension more than 2, while for unary operators such as `SecureRelu`, their tensor shape is not restricted.
   
 
-## SecureOps API
 
 ### Computational SecureOps
 

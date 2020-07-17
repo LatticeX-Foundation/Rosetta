@@ -38,9 +38,12 @@
 
 ## 概述
 
+> 注意，此文档内容可能会有所滞后，最新的接口文档请参考[用户接口文档](API_DOC.md)。
+
+
 在Rosetta框架中，用户在`import latticex.rosetta` 后，不需要修改现有TensorFlow程序中的代码便可以直接的在各自拥有的隐私数据集上进行基于MPC的多方协同的人工智能模型训练或推断（可以参考我们的[tutorial文档](TUTORIALS_CN.md)）。支持这些上层便利性的主要组件是我们在Rosetta内部基于TensorFlow的自定义算子库扩展机制实现了支持Secure功能的新算子(Operation)。为与原生TensorFlow中的API算子(下文直接简称其为`Ops`)相区分，我们称这些自定义的算子为`SecureOps` 。
 
-这里我们介绍`Rosetta v0.1.0`版本中所支持的各个`SecureOps`的接口使用方法。大部分的`SecureOps` 的原型都与TensorFlow中的`Ops`一致，只有在极少数的情况下，我们对对应的`Ops`进行了更多MPC相关功能的扩展（比如`SaveV2`算子等）。
+这里我们介绍`Rosetta v0.2.0`版本中所支持的各个`SecureOps`的接口使用方法。大部分的`SecureOps` 的原型都与TensorFlow中的`Ops`一致，只有在极少数的情况下，我们对对应的`Ops`进行了更多MPC相关功能的扩展（比如`SaveV2`算子等）。
 
 如果你需要自己基于Rosetta的底层API构建自己特定的隐私保护模型，或者对我们的底层实现感兴趣，你都可以参考本文档。此外，在源代码中的一些单元测试实例代码也有助于理解各`SecureOps`的使用。
 
@@ -52,9 +55,9 @@
 
 1. 与原生TensorFlow中的 `Ops `的输入和输出 `Tensor `不同，`SecureOps `的参数和返回值被认为是一个**共享的值**，处于秘密共享状态，除非显式声明一个输入值是一个常数（参见下面的具体相关某一`MpsOps `的接口说明）。你一般不会直接使用这些 "乱码 "值。
 
-2. 在 `SecureOps`的输入和输出`tensor`的数据类型 (`dtype`)上，**Rosetta的Python前台将统一转换为当前版本中的`tf.float64'。**
+2. 在 `SecureOps`的输入和输出`tensor`的数据类型 (`dtype`)上，**Rosetta的Python前台将统一转换为当前版本中的`tf.string'。**
 
-3. 对于诸如 `SecureAdd`等二元运算符，当前的 `Rosetta v0.1.0 `不支持维度大于2的 `Tensor`参数，而对于诸如 `SecureRelu `等单元运算符，其 `Tensor Shape`不受限制。
+3. 对于诸如 `SecureAdd`等二元运算符，当前的 `Rosetta v0.2.0 `不支持维度大于2的 `Tensor`参数，而对于诸如 `SecureRelu `等单元运算符，其 `Tensor Shape`不受限制。
 
    
 
