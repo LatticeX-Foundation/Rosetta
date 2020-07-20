@@ -31,6 +31,7 @@ using namespace std;
 using std::vector;
 
 #include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/random_util.h"
 
 ////////////////////////////////////////////////
 static inline std::vector<std::string> split(const std::string& src, char delim) {
@@ -60,78 +61,6 @@ void print(T v, ARG... args) {
   cout << v << " ";
   print(args...);
 }
-
-////////////////////////////////////////////////
-inline void rand_vec(vector<int64_t>& vec, int vec_size, int bit_size) {
-  vec.clear();
-  vec.resize(vec_size);
-
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<uint> dis(0, (1L << (bit_size - 1)) - 1);
-
-  for (int i = 0; i < vec_size; i++) {
-    vec[i] = dis(gen) - (1L << (bit_size - 2));
-  }
-}
-
-template <typename T>
-static inline void rand_vec2(vector<T>& vec, int length) {
-  vec.clear();
-  vec.resize(length);
-
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<T> dis(
-    std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
-
-  for (int i = 0; i < length; i++) {
-    vec[i] = dis(gen);
-  }
-}
-
-template <typename T>
-static inline void rand_vec3(vector<T>& vec, int length) {
-  vec.clear();
-  vec.resize(length);
-
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<T> dis(
-    std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
-
-  for (int i = 0; i < length; i++) {
-    vec[i] = dis(gen);
-  }
-}
-
-inline void rand_vec_30bit(vector<int64_t>& rand_vec, int length) {
-  rand_vec.clear();
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<uint> dis(0, (1 << 29) - 1);
-  //    cout<<dis.max()<<endl;
-  //    cout<<dis.min()<<endl;
-  int tmp;
-  for (int i = 0; i < length; i++) {
-    tmp = dis(gen) - (1 << 28);
-    rand_vec.push_back(tmp);
-  }
-}
-
-inline void rand_vec_60bit(vector<int64_t>& rand_vec, int length) {
-  rand_vec.clear();
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<uint64_t> dis(0, (1ULL << 59) - 1);
-
-  int64_t tmp;
-  for (int i = 0; i < length; i++) {
-    tmp = dis(gen) - (1ULL << 58);
-    rand_vec.push_back(tmp);
-  }
-}
-////////////////////////////////////////////////
 
 template <class T>
 inline void print_vec(const vector<T>& a, int length = -1, string msg = "") {

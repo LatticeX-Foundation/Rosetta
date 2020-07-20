@@ -28,6 +28,7 @@
 #include <mutex>
 #include <iostream>
 #include <atomic>
+#include <sstream>
 using namespace std;
 
 #define PERFORMANCE_TEST 0

@@ -166,3 +166,95 @@ static void tofile(const MAT& m, const string& filename) {
   }
   ofile.close();
 }
+
+////////////////////////
+////////////////////////
+static MatrixXd get_random(int c, int r) {
+  static default_random_engine ee(time(0));
+  static normal_distribution<double> nd(0, 10);
+  return MatrixXd::Zero(c, r).unaryExpr([](double dummy) { return nd(ee); });
+}
+
+static MatrixXd get_random2(int c, int r) {
+  static default_random_engine ee(time(0));
+  return MatrixXd::Zero(c, r).unaryExpr([](double dummy) { return (ee() % 10000) / 10000.0; });
+}
+
+static MatrixXd get_random3(int c, int r) {
+  static default_random_engine ee(time(0));
+  return MatrixXd::Zero(c, r).unaryExpr(
+    [](double dummy) { return (ee() & 0xFFFF) * (0.5 / 0xFFFF); });
+}
+
+////////////////////////
+static void standardization(MatrixXd& X) {
+  for (int j = 0; j < X.cols(); j++) {
+    // MatrixXd feature = X.col(j);
+  }
+}
+
+static void xavier_uniform(MATRIX& m, size_t fan_in, size_t fan_out, int64_t seed = -1) {
+  throw;
+  // double d = sqrt(6.0 / (fan_in + fan_out));
+  // std::uniform_real_distribution<> dist{-d, d};
+  // std::random_device rd;
+  // std::default_random_engine e{rd()};
+  // e.seed((uint32_t)seed);
+  // for (int r = 0; r < m.rows(); r++) {
+  //   for (int c = 0; c < m.cols(); c++) {
+  //     m(r, c) = floatToDType(dist(e));
+  //   }
+  // }
+}
+
+static void uniform2(MatrixXd& m, float low, float up, int64_t seed = -1) {
+  std::uniform_real_distribution<> dist{low, up};
+  std::random_device rd;
+  std::default_random_engine e{rd()};
+  if (seed != -1)
+    e.seed((uint32_t)seed);
+  for (int r = 0; r < m.rows(); r++) {
+    for (int c = 0; c < m.cols(); c++) {
+      m(r, c) = dist(e);
+    }
+  }
+}
+
+static void uniform2(MatrixXui& m, int32_t low, int32_t up, int64_t seed = -1) {
+  std::uniform_int_distribution<int32_t> dist{low, up};
+  std::random_device rd;
+  std::default_random_engine e{rd()};
+  if (seed != -1)
+    e.seed((uint32_t)seed);
+  for (int r = 0; r < m.rows(); r++) {
+    for (int c = 0; c < m.cols(); c++) {
+      m(r, c) = dist(e);
+    }
+  }
+}
+
+static void uniform2(MatrixXul& m, int64_t low, int64_t up, int64_t seed = -1) {
+  std::uniform_int_distribution<int64_t> dist{low, up};
+  std::random_device rd;
+  std::default_random_engine e{rd()};
+  if (seed != -1)
+    e.seed((uint32_t)seed);
+  for (int r = 0; r < m.rows(); r++) {
+    for (int c = 0; c < m.cols(); c++) {
+      m(r, c) = dist(e);
+    }
+  }
+}
+
+static void uniform2(MatrixXl& m, int64_t low, int64_t up, int64_t seed = -1) {
+  std::uniform_int_distribution<int64_t> dist{low, up};
+  std::random_device rd;
+  std::default_random_engine e{rd()};
+  if (seed != -1)
+    e.seed((uint32_t)seed);
+  for (int r = 0; r < m.rows(); r++) {
+    for (int c = 0; c < m.cols(); c++) {
+      m(r, c) = dist(e);
+    }
+  }
+}

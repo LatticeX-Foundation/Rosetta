@@ -17,7 +17,7 @@
 // ==============================================================================
 #pragma once
 
-static vector<double> generate_random(int n, int seed = -1) {
+static inline vector<double> generate_random(int n, int seed = -1) {
   static default_random_engine e;
   if (seed > 0) {
     e.seed(seed);
@@ -33,23 +33,8 @@ static vector<double> generate_random(int n, int seed = -1) {
   return v;
 }
 
-static default_random_engine ee(time(0));
-static normal_distribution<double> nnd(0, 10);
-static MatrixXd get_random(int c, int r) {
-  return MatrixXd::Zero(c, r).unaryExpr([](double dummy) { return nnd(ee); });
-}
-
-static MatrixXd get_random2(int c, int r) {
-  return MatrixXd::Zero(c, r).unaryExpr([](double dummy) { return (ee() % 10000) / 10000.0; });
-}
-
-static MatrixXd get_random3(int c, int r) {
-  return MatrixXd::Zero(c, r).unaryExpr(
-    [](double dummy) { return (ee() & 0xFFFF) * (0.5 / 0xFFFF); });
-}
-
 // generate [0, max_size), return the first 'front_size' elements
-static void gen_random_index0(vector<int>& indexs_r, int max_size, int front_size = -1) {
+static inline void gen_random_index0(vector<int>& indexs_r, int max_size, int front_size = -1) {
   if (front_size < 0)
     front_size = max_size;
 
@@ -61,7 +46,7 @@ static void gen_random_index0(vector<int>& indexs_r, int max_size, int front_siz
   std::random_shuffle(indexs_r.begin(), indexs_r.end());
 }
 
-static void gen_random_index(vector<int>& indexs_r, int max_size, int front_size = -1) {
+static inline void gen_random_index(vector<int>& indexs_r, int max_size, int front_size = -1) {
   if (front_size < 0)
     front_size = max_size;
 
@@ -81,7 +66,7 @@ static void gen_random_index(vector<int>& indexs_r, int max_size, int front_size
   }
 }
 
-static void gen_random_index2(
+static inline void gen_random_index2(
   vector<int>& indexs_r,
   int max_size,
   int front_size = -1,
@@ -106,27 +91,11 @@ static void gen_random_index2(
   }
 }
 
-static void standardization(MatrixXd& X) {
-  for (int j = 0; j < X.cols(); j++) {
-    // MatrixXd feature = X.col(j);
-  }
-}
-
-static void xavier_uniform(MATRIX& m, size_t fan_in, size_t fan_out, int64_t seed = -1) {
-  throw;
-  // double d = sqrt(6.0 / (fan_in + fan_out));
-  // std::uniform_real_distribution<> dist{-d, d};
-  // std::random_device rd;
-  // std::default_random_engine e{rd()};
-  // e.seed((uint32_t)seed);
-  // for (int r = 0; r < m.rows(); r++) {
-  //   for (int c = 0; c < m.cols(); c++) {
-  //     m(r, c) = floatToDType(dist(e));
-  //   }
-  // }
-}
-
-static void xavier_uniform2(vector<float>& v, size_t fan_in, size_t fan_out, int64_t seed = -1) {
+static inline void xavier_uniform2(
+  vector<double>& v,
+  size_t fan_in,
+  size_t fan_out,
+  int64_t seed = -1) {
   double d = sqrt(6.0 / (fan_in + fan_out));
   std::uniform_real_distribution<> dist{-d, d};
   std::random_device rd;
@@ -138,7 +107,7 @@ static void xavier_uniform2(vector<float>& v, size_t fan_in, size_t fan_out, int
   }
 }
 
-static void uniform2(vector<float>& v, float low, float up, int64_t seed = -1) {
+static inline void uniform2(vector<double>& v, double low, double up, int64_t seed = -1) {
   std::uniform_real_distribution<> dist{low, up};
   std::random_device rd;
   std::default_random_engine e{rd()};
@@ -149,59 +118,11 @@ static void uniform2(vector<float>& v, float low, float up, int64_t seed = -1) {
   }
 }
 
-static void uniform2(MatrixXd& m, float low, float up, int64_t seed = -1) {
-  std::uniform_real_distribution<> dist{low, up};
-  std::random_device rd;
-  std::default_random_engine e{rd()};
-  if (seed != -1)
-    e.seed((uint32_t)seed);
-  for (int r = 0; r < m.rows(); r++) {
-    for (int c = 0; c < m.cols(); c++) {
-      m(r, c) = dist(e);
-    }
-  }
-}
-
-static void uniform2(MatrixXui& m, int32_t low, int32_t up, int64_t seed = -1) {
-  std::uniform_int_distribution<int32_t> dist{low, up};
-  std::random_device rd;
-  std::default_random_engine e{rd()};
-  if (seed != -1)
-    e.seed((uint32_t)seed);
-  for (int r = 0; r < m.rows(); r++) {
-    for (int c = 0; c < m.cols(); c++) {
-      m(r, c) = dist(e);
-    }
-  }
-}
-
-static void uniform2(MatrixXul& m, int64_t low, int64_t up, int64_t seed = -1) {
-  std::uniform_int_distribution<int64_t> dist{low, up};
-  std::random_device rd;
-  std::default_random_engine e{rd()};
-  if (seed != -1)
-    e.seed((uint32_t)seed);
-  for (int r = 0; r < m.rows(); r++) {
-    for (int c = 0; c < m.cols(); c++) {
-      m(r, c) = dist(e);
-    }
-  }
-}
-
-static void uniform2(MatrixXl& m, int64_t low, int64_t up, int64_t seed = -1) {
-  std::uniform_int_distribution<int64_t> dist{low, up};
-  std::random_device rd;
-  std::default_random_engine e{rd()};
-  if (seed != -1)
-    e.seed((uint32_t)seed);
-  for (int r = 0; r < m.rows(); r++) {
-    for (int c = 0; c < m.cols(); c++) {
-      m(r, c) = dist(e);
-    }
-  }
-}
-
-static void uniform2(vector<vector<uint64_t>>& m, int64_t low, int64_t up, int64_t seed = -1) {
+static inline void uniform2(
+  vector<vector<uint64_t>>& m,
+  int64_t low,
+  int64_t up,
+  int64_t seed = -1) {
   std::uniform_int_distribution<int64_t> dist{low, up};
   std::random_device rd;
   std::default_random_engine e{rd()};
@@ -213,7 +134,11 @@ static void uniform2(vector<vector<uint64_t>>& m, int64_t low, int64_t up, int64
     }
   }
 }
-static void uniform2(vector<vector<int64_t>>& m, int64_t low, int64_t up, int64_t seed = -1) {
+static inline void uniform2(
+  vector<vector<int64_t>>& m,
+  int64_t low,
+  int64_t up,
+  int64_t seed = -1) {
   std::uniform_int_distribution<int64_t> dist{low, up};
   std::random_device rd;
   std::default_random_engine e{rd()};
@@ -225,7 +150,7 @@ static void uniform2(vector<vector<int64_t>>& m, int64_t low, int64_t up, int64_
     }
   }
 }
-static void uniform2(vector<uint64_t>& m, int64_t low, int64_t up, int64_t seed = -1) {
+static inline void uniform2(vector<uint64_t>& m, int64_t low, int64_t up, int64_t seed = -1) {
   std::uniform_int_distribution<int64_t> dist{low, up};
   std::random_device rd;
   std::default_random_engine e{rd()};
@@ -236,7 +161,7 @@ static void uniform2(vector<uint64_t>& m, int64_t low, int64_t up, int64_t seed 
   }
 }
 
-static void uniform2(vector<int64_t>& m, int64_t low, int64_t up, int64_t seed = -1) {
+static inline void uniform2(vector<int64_t>& m, int64_t low, int64_t up, int64_t seed = -1) {
   std::uniform_int_distribution<int64_t> dist{low, up};
   std::random_device rd;
   std::default_random_engine e{rd()};
@@ -246,3 +171,91 @@ static void uniform2(vector<int64_t>& m, int64_t low, int64_t up, int64_t seed =
     m[r] = dist(e);
   }
 }
+
+////////////////////////////////////////////////
+static inline void rand_vec(vector<int64_t>& vec, int vec_size, int bit_size) {
+  vec.clear();
+  vec.resize(vec_size);
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<uint> dis(0, (1L << (bit_size - 1)) - 1);
+
+  for (int i = 0; i < vec_size; i++) {
+    vec[i] = dis(gen) - (1L << (bit_size - 2));
+  }
+}
+
+template <typename T>
+inline void rand_vec2(vector<T>& vec, int length) {
+  vec.clear();
+  vec.resize(length);
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<T> dis(
+    std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+  for (int i = 0; i < length; i++) {
+    vec[i] = dis(gen);
+  }
+}
+
+template <typename T>
+inline void rand_vec3(vector<T>& vec, int length) {
+  vec.clear();
+  vec.resize(length);
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<T> dis(
+    std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+
+  for (int i = 0; i < length; i++) {
+    vec[i] = dis(gen);
+  }
+}
+
+static inline void rand_vec_30bit(vector<int64_t>& rand_vec, int length) {
+  rand_vec.clear();
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<uint> dis(0, (1 << 29) - 1);
+  //    cout<<dis.max()<<endl;
+  //    cout<<dis.min()<<endl;
+  int tmp;
+  for (int i = 0; i < length; i++) {
+    tmp = dis(gen) - (1 << 28);
+    rand_vec.push_back(tmp);
+  }
+}
+
+static inline void rand_vec_60bit(vector<int64_t>& rand_vec, int length) {
+  rand_vec.clear();
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<uint64_t> dis(0, (1ULL << 59) - 1);
+
+  int64_t tmp;
+  for (int i = 0; i < length; i++) {
+    tmp = dis(gen) - (1ULL << 58);
+    rand_vec.push_back(tmp);
+  }
+}
+
+static inline void random_vector(
+  vector<double>& v,
+  size_t size,
+  double low = -2.0,
+  double high = 2.0) {
+  v.resize(size, 0);
+  uniform2(v, low, high);
+}
+static inline void random_vector(vector<uint64_t>& v, size_t size) { rand_vec2(v, size); }
+static inline void random_vector(vector<uint8_t>& v, size_t size) {
+  rand_vec2(v, size);
+  for (int i = 0; i < size; i++) {
+    v[i] = v[i] & 1;
+  }
+}
+////////////////////////////////////////////////
