@@ -41,3 +41,15 @@ zc
 .exclude_cb_file
 err.txt
 python/latticex_rosetta.egg-info
+contrib/rtt_tensor/*.so
+contrib/rtt_tensor/python/core
+*.swp
+cc/tf/strops/core
+python/latticex/*.so
+.publish_to_github
+publish_to_github.tar.gz
+core
+!core/
+*.log.*
+*.log
+

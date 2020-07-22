@@ -25,7 +25,6 @@
 #include "cc/modules/common/include/utils/secure_encoder.h"
 #include <string>
 
-using rosetta::convert::SecureText;
 using StrVec = std::vector<std::string>;
 using MpcVec = std::vector<mpc_t>;
 
@@ -52,27 +51,22 @@ static inline void convert_plain_double_to_mpctype(const vector<double>& a, vect
 
 static inline int snn_decode_(const StrVec& a, MpcVec& sa) {
   ELAPSED_STATISTIC_BEG(convert_string_to_share_timer);
-
-  StrVec content_a;
-  int str_type = rosetta::convert::encoder::decode(a, content_a);
-  if (0 > str_type) {
-    log_error << "rosetta::convert::encoder::decode failed!";
-    return -1;
-  }
-
-  if (str_type == (int)rosetta::convert::encoder::SECURE_STR)
-    rosetta::convert::from_hex_str(content_a, sa);
-  else
-    convert_plain_double_to_mpctype(rosetta::convert::from_double_str(content_a), sa);
-
+  
+  if (rosetta::convert::is_secure_text(a[0])) {
+    sa.resize(a.size());
+    for (auto i = 0; i < a.size(); ++i)
+      memcpy((char*)&sa[i], a[i].data(), sizeof(mpc_t));
+  } else
+    convert_plain_double_to_mpctype(rosetta::convert::from_double_str(a), sa);
+  
   ELAPSED_STATISTIC_END(convert_string_to_share_timer);
   return 0;
 }
 
 static inline int snn_encode_(const MpcVec& sa, StrVec& a) {
   ELAPSED_STATISTIC_BEG(convert_share_to_string_timer);
-  if (0 != rosetta::convert::encoder::encode(sa, SecureText::SNN, a)) {
-    log_error << "rosetta::convert::encoder::encode failed!";
+  if (0 != rosetta::convert::encoder::encode_to_secure(sa, a)) {
+    log_error << "encode_to_secure failed!";
     return -1;
   }
   ELAPSED_STATISTIC_END(convert_share_to_string_timer);
@@ -137,14 +131,13 @@ int SnnProtocolOps::TfToSecure(
 }
 
 // decode the string in protocol-specific format to literal number
-// template <typename T>
 int SnnProtocolOps::SecureToTf(
   const vector<string>& in,
   vector<string>& out,
   const attr_type* attr_info /* = nullptr*/) {
   log_debug << "----> SecureToTf. from mpc_t to double hex string";
   vector<string> contents;
-  if (0 != rosetta::convert::encoder::decode(in, out)) {
+  if (0 != rosetta::convert::encoder::decode_secure(in, out)) {
     log_error << "decode error, input is valid !";
     return -1;
   }
@@ -529,9 +522,6 @@ int SnnProtocolOps::Reveal(
   for (int i = 0; i < dvalues.size(); ++i) {
     output[i] = std::to_string(dvalues[i]);
   }
-
-  //reveal strings are readable, not decode now for snn
-  // snn_encode(out_vec, output);
 
   log_debug << "Reveal ok. <----\n";
   return 0;

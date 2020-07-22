@@ -56,15 +56,18 @@ def private_input(party_id: int, inp):
         Note that each party will has different cipher value that returned.
     """
     __check()
+    is_single = False
     if isinstance(inp, float) or isinstance(inp, int):
-        inp = float(inp)
+        is_single = True
+        inp = np.array([float(inp)])
     elif isinstance(inp, np.ndarray):
         pass
     elif isinstance(inp, list):
         inp = np.array(inp)
     else:
         raise Exception("unsupported type~")
-    return _rtt.input.Input().private_input(party_id, inp)
+    ret = _rtt.input.Input().private_input(party_id, inp)
+    return ret
 
 
 def private_console_input(party_id: int, shape: tuple = None):
@@ -140,3 +143,12 @@ def private_console_input(party_id: int, shape: tuple = None):
     if org_shape is None:
         return lst[0]
     return lst
+
+
+if __name__ == "__main__":
+    print(private_console_input(0))
+    print(private_console_input(0, None))
+    print(private_console_input(0, (1,)))
+    print(private_console_input(0, (2,)))
+    print(private_console_input(0, (1, 2)))
+    print(private_console_input(0, (2, 3)))

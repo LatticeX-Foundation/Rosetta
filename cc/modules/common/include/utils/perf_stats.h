@@ -23,7 +23,7 @@
 #include <iostream>
 #include <atomic>
 
-#define DO_ELAPSED_STATISTIC 1
+#define DO_ELAPSED_STATISTIC 0
 namespace rosetta {
 /**
  * Usage:
@@ -61,11 +61,11 @@ namespace rosetta {
   rosetta::__##timer += __##timer##_start.ns_elapse()
 
 #else
-#define DEFINE_GLOBAL_TIMER_COUNTER(timer) (void)0;
+#define DEFINE_GLOBAL_TIMER_COUNTER(timer)
 
-#define DEFINE_AT_EXIT_FUNCTION_BEG() (void)0;
-#define DEFINE_AT_EXIT_FUNCTION_BODY(timer) (void)0;
-#define DEFINE_AT_EXIT_FUNCTION_END() (void)0;
+#define DEFINE_AT_EXIT_FUNCTION_BEG()
+#define DEFINE_AT_EXIT_FUNCTION_BODY(timer)
+#define DEFINE_AT_EXIT_FUNCTION_END()
 
 #define ELAPSED_STATISTIC_BEG(timer) (void)0
 #define ELAPSED_STATISTIC_END(timer) (void)0

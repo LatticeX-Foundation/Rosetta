@@ -31,6 +31,8 @@
 #include <sstream>
 using namespace std;
 
+#include "cc/modules/protocol/mpc/comm/include/_test_check_func.h"
+
 #define PERFORMANCE_TEST 0
 typedef void (*_mpc_run_func)(int);
 static inline int _mpc_main(int argc, char* argv[], _mpc_run_func run) {

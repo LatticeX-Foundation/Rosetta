@@ -43,9 +43,6 @@ void SnnProtocol::_initialize_mpc_enviroment() {
     initializeMPC();
 }
 int SnnProtocol::_init_aeskeys() {
-#if MPC_DEBUG_USE_FIXED_AESKEY
-  return 0;
-#endif
   cout << "_init_aeskeys" << endl;
 
   using namespace rosetta::mpc;
@@ -60,7 +57,7 @@ int SnnProtocol::_init_aeskeys() {
       AESKeyStrings::keys.key_c = gen_key_str();
       AESKeyStrings::keys.key_cd = gen_key_str();
     }
-    usleep(1000);
+    //usleep(1000);//no need to sleep
 
     // public aes key
     string kab, kac, kbc, k0;
@@ -82,7 +79,7 @@ int SnnProtocol::_init_aeskeys() {
     AESKeyStrings::keys.key_bc = kbc;
     AESKeyStrings::keys.key_ac = kac;
   }
-  usleep(1000);
+  //usleep(1000);//no need to sleep
 
   return 0;
 }

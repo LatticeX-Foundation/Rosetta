@@ -29,366 +29,129 @@ using std::vector;
 namespace rosetta {
 namespace convert {
 
-
-// SecureText construction:
-// [prefix-protcol]  +  [string-text]  +  [suffix-dtype]
-// prefix-protcol: snn(SecureNN), helix, plain
-// string-text: text content
-// suffix-dtype: int32, int64, float32, float64, string
-struct SecureText {
-  const char SP='_';
-  enum ProtType {
-    PLAIN=0,
-    SNN=1,
-    HELIX=2
-  };
-  enum DataType {
-    D_INT32=0,
-    D_INT64=1,
-    D_FLOAT32=2,
-    D_FLOAT64=3,
-    D_STRING=4
-  };
-  
-  ProtType prot; //PLAIN, SNN, HELIX
-  string content;//string text
-  //DataType dtype;//D_INT32, D_INT64, D_FLOAT32, D_FLOAT64, D_STRING
-
-  static bool check_prot(int protcol) {
-    if (protcol < PLAIN || protcol > HELIX)
-    {
-      //NOT SUPPORT PROTCOL
-      return false;
-    }
-
+static bool is_secure_text(const string& text) {
+  if (text.size() >= 2 && text[text.size() - 1] == '#')
     return true;
-  }
-
-  static bool check_dtype(int protcol) {
-    if (protcol < D_INT32 || protcol > D_STRING)
-    {
-      //NOT SUPPORT DTYPE
-      return false;
-    }
-
-    return true;
-  }
-
-  char prot_str() const {
-    // prot:  from G, H, ..., P
-    return 'G' + prot;
-  }
-
-  char dtype_str() const {
-    // dtype: from Q, R, ..., Z
-    return 'Q' + prot;
-  }
-
-  string to_string() const {
-    string text;
-    //prot:  from G, H, ..., P
-    text.append(1, prot_str());
-    text.append(1, SP);
-    //string text
-    text.append(content);
-    //text.append(1, SP);
-    //dtype: from Q, R, ..., Z
-    //text.append(1, dtype_str());
-
-    return text;
-  }
-
-  static bool is_secure_text(const string& text) {
-    int prot = text[0] - 'G';
-    if (text.size() >= 3 && text[1] == '_' && check_prot(prot))
-    {
-      return true;
-    }
-    else
-      return false;
-  }
-
-  
-  static int from_string(const string& text, SecureText& stext) {
-    if (text.empty())
-    {
-      log_error << "null text";
-      return -1;
-    }
-
-    smatch results;
-    //check secure type
-    // if (std::regex_match(text, results, std::regex("([G-P]{1})_([[:alnum:]]{2,})"))) {
-    //   if (results.size() < 2) {
-    //     cout << "decode string: " << text << "matched, but with illegal matches !" << endl;
-    //     return -1;
-    //   }
-    //   log_debug << "=> secure text:  " << text;
-
-    //   // prot
-    //   int prot = text[0] - 'G';
-    //   if (!check_prot(prot)) {
-    //     cout << "protocol type not support: " << results[0] << endl;
-    //     return -1;
-    //   }
-    //   stext.prot = static_cast<SecureText::ProtType>(SecureText::PLAIN + prot);
-    //   stext.content = results[2];
-    //   //text.dtype = dtype;
-    // }
-    if (is_secure_text(text))
-    {
-      stext.prot = static_cast<SecureText::ProtType>(SecureText::PLAIN + (text[0] - 'G'));
-      stext.content = text.substr(2);
-    }
-    else
-    {
-      log_error << "bad secure text : " << text << endl;
-      return -2;
-    }
-
-    return 0;
-  }
-};
+  else
+    return false;
+}
 
 // stateless decoder/encoder
 namespace encoder {
-  using rosetta::convert::SecureText;
 
-  // support string type
-  // 0. secure string: H_{secure_string}
-  // 1. private input: xxxxxxx#
-  // 2. variable input string or const attribute string: literal string (double) 
-  // 3. unknown and not support
-  enum SupportDecodeType{
-    SECURE_STR = 0,
-    PRIVATE_IN_STR = 1,
-    DOUBLE_STR = 2,
-    UNKNOWN_STR = 3
-  };
+// support string type
+// 0. secure string: H_{secure_string}
+// 1. variable input string or const attribute string: literal string (double)
+// 2. unknown and not support
+enum SupportDecodeType { SECURE_STR = 0, DOUBLE_STR, UNKNOWN_STR };
 
-  template <typename T>
-  int encode(const T& t, SecureText::ProtType prot, string& encode_str)
+template <typename T>
+int encode_to_secure(const T& t, string& encode_str) {
+  rosetta::convert::to_binary_str(&t, sizeof(T), encode_str);
+  return 0;
+}
+
+template <typename T>
+int encode_to_secure(const vector<T>& t, vector<string>& secure_binary) {
+  int size = t.size();
+  secure_binary.resize(size);
+
+  for (int i = 0; i < size; ++i) {
+    rosetta::convert::to_binary_str(&t[i], sizeof(t[i]), secure_binary[i]);
+    secure_binary[i].append(1, '#');
+  }
+
+  return 0;
+}
+
+template <>
+int encode_to_secure<string>(const string& t, string& encode_str) {
+  encode_str = t;
+  return 0;
+}
+
+template <>
+int encode_to_secure<string>(const vector<string>& t, vector<string>& encode_strs) {
+  int size = t.size();
+  encode_strs.assign(t.begin(), t.end());
+  return 0;
+}
+
+static SupportDecodeType probe_string_type(const string& text) {
+  SupportDecodeType string_type = UNKNOWN_STR; // 0: secure string, 2: double literal string
+  if (is_secure_text(text)) //check secure string first
   {
-    SecureText text;
-    if (!SecureText::check_prot(prot))
-      return -1;
+    return SECURE_STR;
+  } else if (
+    (('0' <= text[0] && '9' >= text[0]) || (text[0] == '-' || text[0] == '+')) &&
+    std::isdigit(text[text.size() - 1])) // is float
+  { // if (regex_match(text, regex("^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$"))) //check double string
+    return DOUBLE_STR;
+  } else {
+    return string_type;
+  }
+}
 
-    text.prot = prot;
-    rosetta::convert::to_hex_str_copy(&t, sizeof(T), text.content);
-    
-    encode_str = text.to_string();
-    return 0;
+static int decode_secure(
+  const string& text,
+  string& stext,
+  SupportDecodeType string_type = UNKNOWN_STR) {
+  if (text.empty()) {
+    log_error << "null text to decode" << endl;
+    return -1;
   }
 
-  template <typename T>
-  int encode(const vector<T>& t, SecureText::ProtType prot, vector<string>& encode_strs)
-  {
-    if (!SecureText::check_prot(prot))
-      return -1;
+  if (string_type == UNKNOWN_STR)
+    string_type = probe_string_type(text);
 
-    int size = t.size();
-    encode_strs.resize(size);
-
-    SecureText text = SecureText();
-    text.prot = prot;
-    for (int i = 0; i < size; ++i)
-    {
-      rosetta::convert::to_hex_str_copy(&t[i], sizeof(T), text.content);
-      encode_strs[i] = text.to_string();
-      text.content.clear();
-    }
-    
-    return 0;
+  if (string_type == SECURE_STR) {
+    stext = text.substr(0, text.size() - 1);
+  } else if (string_type == DOUBLE_STR) {
+    stext = text;
+  } else {
+    log_error << "find unknown string type, not support: " << text << endl;
+    return -1;
   }
 
-  template <>
-  int encode<string>(const string& t, SecureText::ProtType prot, string& encode_str)
-  {
-    SecureText text;
-    if (!SecureText::check_prot(prot))
-      return -1;
-    
-    text.prot = prot;
-    text.content = t;
-    
-    encode_str = text.to_string();
-    return 0;
+  return static_cast<int>(string_type);
+}
+
+static int decode_secure(const vector<string>& texts, vector<string>& stexts) {
+  int size = texts.size();
+  if (size == 0) {
+    log_error << "empty decode texts !" << endl;
+    return -1;
   }
 
-  template <>
-  int encode<string>(const vector<string>& t, SecureText::ProtType prot, vector<string>& encode_strs)
-  {
-    if (!SecureText::check_prot(prot))
-      return -1;
-    
-    int size = t.size();
-    encode_strs.resize(size);
-
-    SecureText text = SecureText();
-    text.prot = prot;
-    for (int i = 0; i < size; ++i)
-    {
-      text.content = t[i];
-      encode_strs[i] = text.to_string();
-    }
-    
-    return 0; 
+  // only test the first element for convient
+  if (texts[0].empty()) {
+    log_error << "null string to decode" << endl;
+    return -1;
   }
 
-  // decode input text Snn Type input message
-  static int decode_secure(const string& text, SecureText& stext) {
-    if (0 != SecureText::from_string(text, stext)) {
-      cout << "decode: " << text << ", failed, please input match pattern: ([G-P]{1})_([:alnum:]{2,}) "
-           << endl;
-      return -1;
-    }
-
-    return 0;
+  SupportDecodeType string_type = probe_string_type(
+    texts[0]); // 0: secure string, 1: private_input string, 2: double literal string
+  if (string_type == UNKNOWN_STR) {
+    log_error << "find unknown string type, not support: " << texts[0] << endl;
+    return -1;
   }
 
-  static int decode_secure(const vector<string>& texts, vector<SecureText>& stexts) {
-    int size = texts.size();
-    if (size == 0)
-    {
-      log_error << "empty decode texts !" << endl;
-      return -1;
-    }
-
-    stexts.clear();
-    stexts.resize(size);
+  stexts.resize(size);
+  if (string_type == SECURE_STR) {
     for (int i = 0; i < size; ++i) {
-      if (0 != SecureText::from_string(texts[i], stexts[i])) {
-        cout << "decode:  " << texts[i] << ",  failed, please input match pattern: ([G-P]{1})_([[:alnum:]]{2,}) "
-             << endl;
+      if (0 != decode_secure(texts[i], stexts[i])) {
+        log_error << "decode '" << texts[i] << "' failed, please input secure text" << endl;
         stexts.clear();
         return -1;
       }
     }
+  } else // string_type == DOUBLE_STR
+    stexts.assign(texts.begin(), texts.end());
 
-    return 0;
-  }
+  return static_cast<int>(string_type);
+} //decode
 
-  static SupportDecodeType probe_string_type(const string& text) {
-    SupportDecodeType string_type = UNKNOWN_STR; // 0: secure string, 1: private_input string, 2: double literal string
-    if (SecureText::is_secure_text(text))//check secure string first
-    {
-      string_type = SECURE_STR;
-    }
-    else if (text.size() >= 2 && text[text.size()-1] == '#')//check private input string
-    {
-      string_type = PRIVATE_IN_STR;
-    }
-    else if ((('0' <= text[0] && '9' >= text[0]) || text[0] == '-' || text[0] == '+') && std::isdigit(text[text.size()-1])) // just do simple check
-    {// if (regex_match(text, regex("^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$"))) //check double string
-      string_type = DOUBLE_STR;
-    }
-    else{
-      //default, unkonw string
-    }
-
-    return string_type;
-  }
-
-  static int decode(const string& text, string& stext) {
-    if (text.empty())
-    {
-      log_error << "null text to decode" << endl;
-      return -1;
-    }
-
-    SupportDecodeType string_type = probe_string_type(text); // 0: secure string, 1: private_input string, 2: double literal string
-    if (string_type == UNKNOWN_STR)
-    {
-      log_error << "find unknown string type, not support: " << text << endl;
-      return -1;
-    }
-
-    if (string_type == SECURE_STR)
-    {
-      SecureText st;
-      if (0 != SecureText::from_string(text, st)) {
-          log_error << "decode '" << text << "' failed, please input secure text"  << endl;
-          return -1;
-      }
-      stext = st.content;
-    }
-    else if (string_type == PRIVATE_IN_STR)
-    {
-      if (text[text.size()-1] != '#')
-      {
-        log_error << "bad text: " << text << "please input private_input text"  << endl;
-        return -1;
-      }
-      stext = text.substr(0, text.size()-1);
-    }
-    else if (string_type == DOUBLE_STR)
-    {
-      stext = text;
-    }
-    else{}
-
-    return static_cast<int>(string_type);
-  }
-
-  static int decode(const vector<string>& texts, vector<string>& stexts) {
-    int size = texts.size();
-    if (size == 0)
-    {
-      log_error << "empty decode texts !" << endl;
-      return -1;
-    }
-
-    // only test the first element for convient
-    if (texts[0].empty())
-    {
-      log_error << "null string to decode" << endl;
-      return -1;
-    }
-
-    SupportDecodeType string_type = probe_string_type(texts[0]); // 0: secure string, 1: private_input string, 2: double literal string
-    if (string_type == UNKNOWN_STR)
-    {
-      log_error << "find unknown string type, not support: " << texts[0] << endl;
-      return -1;
-    }
-
-    stexts.resize(size);
-    if (string_type == SECURE_STR)
-    {
-      SecureText st;
-      for (int i = 0; i < size; ++i) {
-        if (0 != SecureText::from_string(texts[i], st)) {
-          log_error << "decode '" << texts[i] << "' failed, please input secure text"  << endl;
-          stexts.clear();
-          return -1;
-        }
-
-        stexts[i] = st.content;
-      }
-    }
-    else if (string_type == PRIVATE_IN_STR)
-    {
-      for (int i = 0; i < size; ++i) {
-        if (texts[i][texts[i].size()-1] != '#')
-        {
-          log_error << "bad text: " << texts[i] << "please input private_input text"  << endl;
-          stexts.clear();
-          return -1;
-        }
-        stexts[i] = texts[i].substr(0, texts[i].size()-1);
-      }
-    }
-    else if (string_type == DOUBLE_STR)
-    {
-      for (int i = 0; i < size; ++i) {
-        stexts[i] = texts[i];
-      }
-    }
-    else{}
-
-    return static_cast<int>(string_type);
-  }
-}
+} // namespace encoder
 
 } // namespace convert
 } // namespace rosetta

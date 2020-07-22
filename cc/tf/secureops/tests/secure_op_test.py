@@ -291,7 +291,7 @@ def test_pow2():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("pow2 result: ", result, ", math.pow: ", 2.0, 4.0)
+    print("pow2 result: ", result, ", math.pow: ", 1.0, 2.0)
     print("-----   test_pow2 (OK) -----")
 
 def test_log():
@@ -445,7 +445,7 @@ def test_add_n():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, ", expect: ", [[-4, 8], [-4, 8]])
+    print("secure result: ", result, ", expect: ", [[-2, 4], [-4, 4]])
     print("-----   test_add_n (OK) -----")
 
 def test_reduce_mean():
@@ -547,7 +547,7 @@ def test_negative():
 
 
 def test_all_protocol_ops():
-    test_reveal()
+    # test_reveal()
     test_add()
     test_sub()
     test_mul()
@@ -576,12 +576,12 @@ def test_all_protocol_ops():
     test_reduce_max()
     test_add_n() # TODO
 
-    test_sigmoid()
-    test_sigmoid_entropy_with_logit()
-    test_relu()
-    test_relu_prime()
+    # test_sigmoid()
+    # test_sigmoid_entropy_with_logit()
+    # test_relu()
+    # test_relu_prime()
 
-    test_apply_gradient_descent()
+    # test_apply_gradient_descent()
 
 # main
 if __name__ == "__main__":
@@ -594,8 +594,8 @@ if __name__ == "__main__":
     test_all_protocol_ops()
     print("--- {} ops test ok ----".format(protocol))
 
-    protocol = "Helix"
-    print("---  to activate ", protocol)
-    prot_handler.activate(protocol, cfg_content)
-    test_all_protocol_ops()
-    print("--- {} ops test ok ----".format(protocol))
+    #protocol = "Helix"
+    #print("---  to activate ", protocol)
+    #prot_handler.activate(protocol, cfg_content)
+    #test_all_protocol_ops()
+    #print("--- {} ops test ok ----".format(protocol))
