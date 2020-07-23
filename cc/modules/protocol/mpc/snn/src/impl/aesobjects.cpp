@@ -31,6 +31,7 @@ void AESKeyStrings::print() {
   cout << "key_cd:" << key_cd << endl;
 }
 
+std::set<msg_id_t> AESObjects::msig_objs_;
 mutex AESObjects::msgid_aesobjs_mtx_;
 map<msg_id_t, std::shared_ptr<AESObjects>> AESObjects::msgid_aesobjs_;
 
