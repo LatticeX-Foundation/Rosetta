@@ -196,13 +196,13 @@ void powconst_check_func(
   const vector<double>& Y,
   const vector<double>& Z) {
   int size = X.size();
-  //! @todo only positive
   for (int i = 0; i < size; i++) {
-    if (f_equal(pow(X[i], (int)Y[i]), Z[i])) {
+    auto r = pow(X[i], (int)Y[i]);
+    if (f_equal(r, Z[i])) {
       continue;
     }
     cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << " z:" << Z[i]
-         << endl;
+         << " r:" << r << endl;
   }
 }
 
@@ -253,28 +253,34 @@ void absprime_check_func(const vector<double>& X, const vector<double>& Y) {
 void log_check_func(const vector<double>& X, const vector<double>& Y) {
   int size = X.size();
   for (int i = 0; i < size; i++) {
-    if (f_equal(f_log2(X[i]), Y[i])) {
+    auto r = f_log2(X[i]);
+    if (f_equal(r, Y[i])) {
       continue;
     }
-    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << endl;
+    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << " r:" << r
+         << endl;
   }
 }
 void log1p_check_func(const vector<double>& X, const vector<double>& Y) {
   int size = X.size();
   for (int i = 0; i < size; i++) {
-    if (f_equal(f_log2(X[i] + 1.0), Y[i])) {
+    auto r = f_log2(X[i] + 1.0);
+    if (f_equal(r, Y[i])) {
       continue;
     }
-    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << endl;
+    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << " r:" << r
+         << endl;
   }
 }
 void hlog_check_func(const vector<double>& X, const vector<double>& Y) {
   int size = X.size();
   for (int i = 0; i < size; i++) {
-    if (f_equal(f_log2(X[i]), Y[i])) {
+    auto r = f_log2(X[i]);
+    if (f_equal(r, Y[i])) {
       continue;
     }
-    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << endl;
+    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << " r:" << r
+         << endl;
   }
 }
 
@@ -306,11 +312,13 @@ void reluprime_check_func(const vector<double>& X, const vector<double>& Y) {
 
 void sigmoid_check_func(const vector<double>& X, const vector<double>& Y) {
   int size = X.size();
-  //! @todo
   for (int i = 0; i < size; i++) {
-    auto r = 1 / (1 + pow(2, X[i]));
-
-    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << endl;
+    auto r = 1 / (1 + pow(2.718281828459, -X[i]));
+    if (f_equal(Y[i], r, 0.02)) {
+      continue;
+    }
+    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << " r:" << r
+         << endl;
   }
 }
 
@@ -319,38 +327,81 @@ void sigmoid_check_func(const vector<double>& X, const vector<double>& Y) {
  * 
  */
 void mean_check_func(const vector<double>& X, const vector<double>& Y, int rows, int cols) {
-  int size = X.size();
-  //! @todo
-  for (int i = 0; i < size; i++) {
-    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << endl;
+  vector<double> T(rows, 0);
+  for (int r = 0; r < rows; r++) {
+    for (int c = 0; c < cols; c++) {
+      T[r] += X[r * cols + c];
+    }
+    T[r] /= cols;
+  }
+  for (int i = 0; i < rows; i++) {
+    if (f_equal(Y[i], T[i])) {
+      continue;
+    }
+    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << " t:" << T[i]
+         << endl;
   }
 }
 void sum_check_func(const vector<double>& X, const vector<double>& Y, int rows, int cols) {
-  int size = X.size();
-  //! @todo
-  for (int i = 0; i < size; i++) {
-    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << endl;
+  vector<double> T(rows, 0);
+  for (int r = 0; r < rows; r++) {
+    for (int c = 0; c < cols; c++) {
+      T[r] += X[r * cols + c];
+    }
+  }
+  for (int i = 0; i < rows; i++) {
+    if (f_equal(Y[i], T[i])) {
+      continue;
+    }
+    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << " t:" << T[i]
+         << endl;
   }
 }
 void addn_check_func(const vector<double>& X, const vector<double>& Y, int rows, int cols) {
-  int size = X.size();
-  //! @todo
-  for (int i = 0; i < size; i++) {
-    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << endl;
+  vector<double> T(cols, 0);
+  for (int c = 0; c < cols; c++) {
+    for (int r = 0; r < rows; r++) {
+      T[c] += X[r * cols + c];
+    }
+  }
+  for (int i = 0; i < cols; i++) {
+    if (f_equal(Y[i], T[i])) {
+      continue;
+    }
+    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << " t:" << T[i]
+         << endl;
   }
 }
 void max_check_func(const vector<double>& X, const vector<double>& Y, int rows, int cols) {
-  int size = X.size();
-  //! @todo
-  for (int i = 0; i < size; i++) {
-    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << endl;
+  vector<double> T(rows, 0);
+  for (int r = 0; r < rows; r++) {
+    T[r] = X[r * cols];
+    for (int c = 1; c < cols; c++) {
+      T[r] = std::max(X[r * cols + c], T[r]);
+    }
+  }
+  for (int i = 0; i < rows; i++) {
+    if (f_equal(Y[i], T[i])) {
+      continue;
+    }
+    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << " t:" << T[i]
+         << endl;
   }
 }
 void min_check_func(const vector<double>& X, const vector<double>& Y, int rows, int cols) {
-  int size = X.size();
-  //! @todo
-  for (int i = 0; i < size; i++) {
-    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << endl;
+  vector<double> T(rows, 0);
+  for (int r = 0; r < rows; r++) {
+    T[r] = X[r * cols];
+    for (int c = 1; c < cols; c++) {
+      T[r] = std::min(X[r * cols + c], T[r]);
+    }
+  }
+  for (int i = 0; i < rows; i++) {
+    if (f_equal(Y[i], T[i])) {
+      continue;
+    }
+    cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << " t:" << T[i]
+         << endl;
   }
 }
 /**

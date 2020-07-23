@@ -5,7 +5,7 @@
 
   stringstream ssheader;
   // clang-format off
-      ssheader << "HELPER:" << endl;
+      ssheader << "Notes:" << endl;
       ssheader << "    OP: operator name. eg. 0.1.OpName: 0 means variable, 1 means constant." << endl;
       ssheader << "    avg-elap.(ms): elapsed/times " << endl;
       ssheader << "    shape size: k = r * c = m * K = K * n" << endl;

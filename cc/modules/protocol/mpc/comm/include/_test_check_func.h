@@ -22,13 +22,16 @@
 #include <iostream>
 using namespace std;
 
-static inline bool f_equal(double a, double b) { return (fabs(a - b) < 0.0001); }
-static inline bool f_notequal(double a, double b) { return !f_equal(a, b); }
-static inline bool f_less(double a, double b) { return !f_equal(a, b) && (a < b); }
-static inline bool f_lessequal(double a, double b) { return f_equal(a, b) || (a < b); }
-static inline bool f_greater(double a, double b) { return !f_equal(a, b) && (a > b); }
-static inline bool f_greaterequal(double a, double b) { return f_equal(a, b) || (a > b); }
-static inline bool f_log2(double a) { return log(a) / log(2); }
+// clang-format off
+static const double EPS = 0.0001;
+static inline bool f_equal(double a, double b, double e = EPS) { return (fabs(a - b) < e); }
+static inline bool f_notequal(double a, double b, double e = EPS) { return !f_equal(a, b, e); }
+static inline bool f_less(double a, double b, double e = EPS) { return !f_equal(a, b, e) && (a < b); }
+static inline bool f_lessequal(double a, double b, double e = EPS) { return f_equal(a, b, e) || (a < b); }
+static inline bool f_greater(double a, double b, double e = EPS) { return !f_equal(a, b, e) && (a > b); }
+static inline bool f_greaterequal(double a, double b, double e = EPS) { return f_equal(a, b, e) || (a > b); }
+static inline double f_log2(double a) { return log(a) / log(2); }
+// clang-format on
 
 /**
  * 
