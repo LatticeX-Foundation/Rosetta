@@ -75,6 +75,7 @@ class ConstPolynomial {
   mpc_t get_start() { return FloatToMpcType(__start); };
   mpc_t get_end() { return FloatToMpcType(__end); };
   string to_string();
+
  private:
   // internal presentation for initialization
   std::vector<std::vector<double>> __inner_poly;
@@ -103,5 +104,18 @@ struct PolyConfFactory {
   //private:
   //	static unordered_map<std::string, vector<ConstPolynomial>> FUNC_POLY_MAP;
 };
+
+/**
+ * 
+ */
+void EigenMatMul(
+  const vector<mpc_t>& a,
+  const vector<mpc_t>& b,
+  vector<mpc_t>& c,
+  size_t rows,
+  size_t common_dim,
+  size_t columns,
+  bool transpose_a,
+  bool transpose_b);
 
 } // namespace rosetta

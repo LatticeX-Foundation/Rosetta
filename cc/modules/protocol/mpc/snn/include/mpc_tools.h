@@ -24,8 +24,8 @@ extern small_mpc_t additionModPrime[PRIME_NUMBER][PRIME_NUMBER];
 extern small_mpc_t multiplicationModPrime[PRIME_NUMBER][PRIME_NUMBER];
 
 // clang-format off
-void matrixMultEigen(const vector<mpc_t>& a,const vector<mpc_t>& b,vector<mpc_t>& c,
-	size_t rows,size_t common_dim,size_t columns,size_t transpose_a,size_t transpose_b);
+// void matrixMultEigenx(const vector<mpc_t>& a,const vector<mpc_t>& b,vector<mpc_t>& c,
+// 	size_t rows,size_t common_dim,size_t columns,size_t transpose_a,size_t transpose_b);
 
 mpc_t divideMyTypeSA(mpc_t a, mpc_t b);
 mpc_t dividePlainSA(mpc_t a, int b);

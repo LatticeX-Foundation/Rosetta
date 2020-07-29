@@ -34,7 +34,7 @@ int MatMul::funcMatMulMPC(
     getVectorfromPrimary<mpc_t>(a_temp, rows * common_dim, "AS-IS", "NATURAL");
     getVectorfromPrimary<mpc_t>(b_temp, common_dim * columns, "AS-IS", "UNNATURAL");
 
-    matrixMultEigen(a_temp, b_temp, c, rows, common_dim, columns, transpose_a, transpose_b);
+    EigenMatMul(a_temp, b_temp, c, rows, common_dim, columns, transpose_a, transpose_b);
 
     if (NON_PRIMARY) {
       populateRandomVector<mpc_t>(temp, size, "COMMON", "NEGATIVE");
@@ -69,7 +69,7 @@ int MatMul::funcMatMulMPC(
       addVectors<mpc_t>(A1, A2, A, size_left);
       addVectors<mpc_t>(B1, B2, B, size_right);
 
-      matrixMultEigen(A, B, C, rows, common_dim, columns, transpose_a, transpose_b);
+      EigenMatMul(A, B, C, rows, common_dim, columns, transpose_a, transpose_b);
       subtractVectors<mpc_t>(C, C1, C2, size);
       sendVector<mpc_t>(C2, PARTY_B, size);
     }
@@ -112,14 +112,14 @@ int MatMul::funcMatMulMPC(
       addVectors<mpc_t>(E, temp_E, E, size_left);
       addVectors<mpc_t>(F, temp_F, F, size_right);
 
-      matrixMultEigen(a, F, c, rows, common_dim, columns, transpose_a, transpose_b);
-      matrixMultEigen(E, b, temp_c, rows, common_dim, columns, transpose_a, transpose_b);
+      EigenMatMul(a, F, c, rows, common_dim, columns, transpose_a, transpose_b);
+      EigenMatMul(E, b, temp_c, rows, common_dim, columns, transpose_a, transpose_b);
 
       addVectors<mpc_t>(c, temp_c, c, size);
       addVectors<mpc_t>(c, C, c, size);
 
       if (partyNum == PARTY_A) {
-        matrixMultEigen(E, F, temp_c, rows, common_dim, columns, transpose_a, transpose_b);
+        EigenMatMul(E, F, temp_c, rows, common_dim, columns, transpose_a, transpose_b);
         subtractVectors<mpc_t>(c, temp_c, c, size);
       }
 
