@@ -114,13 +114,14 @@ int MpcProtocol::Uninit() {
   log_debug << "MpcProtocol::Uninit()" << endl;
   std::unique_lock<std::mutex> lck(_status_mtx);
   if (_is_inited) {
-    msg_id_t msgid("this message id for synchronize P0/P1/P2 uninit");
+    _net_io->statistics();
 
+    msg_id_t msgid("this message id for synchronize P0/P1/P2 uninit");
     // the following time(0) will show the sync beg/end
     log_debug << __FUNCTION__ << " beg sync :" << time(0) << endl;
     _net_io->sync_with(msgid);
     log_debug << __FUNCTION__ << " end sync :" << time(0) << endl;
-    //sleep(1);//no need to sleep
+    usleep(500);
 
     _net_io->close();
     _net_io.reset();
