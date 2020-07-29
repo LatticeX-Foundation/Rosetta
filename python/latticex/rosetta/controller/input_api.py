@@ -139,9 +139,9 @@ def private_console_input(party_id: int, shape: tuple = None):
         inp = [0] * total_inputs
 
     arr = private_input(party_id, inp)
-    lst = arr.reshape(shape).tolist()
-    if org_shape is None:
-        return lst[0]
+    lst = arr.reshape(shape)
+    #if org_shape is None:
+    #    return lst[0]
     return lst
 
 
