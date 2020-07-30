@@ -197,6 +197,6 @@ def set_backend_loglevel(loglevel: int):
         3: Info;
         4: Warn; 
         5: Error;
-        6:Fatal
+        6: Fatal
     """
     py_protocol_handler.set_loglevel(loglevel)

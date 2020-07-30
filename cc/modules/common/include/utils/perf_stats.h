@@ -16,14 +16,61 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #pragma once
-
-#include <cassert>
-#include <sstream>
-#include <vector>
-#include <iostream>
-#include <cstring>
+#include "simple_timer.h"
 #include <cstdlib>
-using namespace std;
+#include <cstring>
+#include <sstream>
+#include <iostream>
+#include <atomic>
+
+#define DO_ELAPSED_STATISTIC 0
+namespace rosetta {
+/**
+ * Usage:
+ *  @see tests/perf_stats.cpp for details
+ *  OR global search these macros
+ */
+
+#if DO_ELAPSED_STATISTIC
+/**
+ * step1 use this macro to define some global(static) timer variables
+ */
+#define DEFINE_GLOBAL_TIMER_COUNTER(timer) static std::atomic<int64_t> __##timer{0};
+
+/**
+ * step2 use these macros to define an atexit function(static) 
+ * the following 3 MACROS must be used together, agaist with DEFINE_GLOBAL_TIMER_COUNTER
+ */
+#define DEFINE_AT_EXIT_FUNCTION_BEG()                \
+  static std::atomic<int64_t> __reg_exit_counter{0}; \
+  static void __elapsed_atexit_fn() {
+#define DEFINE_AT_EXIT_FUNCTION_BODY(timer) \
+  std::cout << "-> " #timer ": " << __##timer * 1.0 / 1e9 << std::endl;
+#define DEFINE_AT_EXIT_FUNCTION_END() }
+
+/**
+ * step3 use the following macros to statistic the elapsed
+ */
+#define ELAPSED_STATISTIC_BEG(timer)        \
+  if (rosetta::__reg_exit_counter++ == 0) { \
+    atexit(rosetta::__elapsed_atexit_fn);   \
+  }                                         \
+  SimpleTimer __##timer##_start
+#define ELAPSED_STATISTIC_END(timer) \
+  __##timer##_start.stop();          \
+  rosetta::__##timer += __##timer##_start.ns_elapse()
+
+#else
+#define DEFINE_GLOBAL_TIMER_COUNTER(timer)
+
+#define DEFINE_AT_EXIT_FUNCTION_BEG()
+#define DEFINE_AT_EXIT_FUNCTION_BODY(timer)
+#define DEFINE_AT_EXIT_FUNCTION_END()
+
+#define ELAPSED_STATISTIC_BEG(timer) (void)0
+#define ELAPSED_STATISTIC_END(timer) (void)0
+#endif
+} // namespace rosetta
 
 /**
  * Performance Statitistic. Time, Network, CPU, Memory, etc.
@@ -31,7 +78,7 @@ using namespace std;
 namespace rosetta {
 class PerfStats {
  public:
-  string vmpeak = "";
+  std::string vmpeak = "";
   struct __stat {
     // io
     int64_t bytes_sent = 0;

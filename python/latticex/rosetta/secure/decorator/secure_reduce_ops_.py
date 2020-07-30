@@ -20,7 +20,10 @@ from tensorflow.python.ops import math_ops
 import os
 
 
-_secureop_lib = os.path.dirname(__file__) + '/../../../libsecure-ops.so'
+if 'ROSETTA_MPC_128' in os.environ and os.environ['ROSETTA_MPC_128'] == 'ON':
+    _secureop_lib = os.path.dirname(__file__) + '/../../../lib128/libsecure-ops.so'
+else:
+    _secureop_lib = os.path.dirname(__file__) + '/../../../libsecure-ops.so'
 _secure_ops = tf.load_op_library(_secureop_lib)
 
 

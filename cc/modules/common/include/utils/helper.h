@@ -26,11 +26,21 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 using namespace std;
 using std::vector;
 
 #include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/random_util.h"
+
+#if __SIZEOF_INT128__
+typedef unsigned __int128 uintlong;
+typedef __int128 intlong;
+#else
+typedef uint64_t uintlong;
+typedef int64_t intlong;
+#endif
 
 ////////////////////////////////////////////////
 static inline std::vector<std::string> split(const std::string& src, char delim) {
@@ -61,77 +71,37 @@ void print(T v, ARG... args) {
   print(args...);
 }
 
-////////////////////////////////////////////////
-inline void rand_vec(vector<int64_t>& vec, int vec_size, int bit_size) {
-  vec.clear();
-  vec.resize(vec_size);
-
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<uint> dis(0, (1L << (bit_size - 1)) - 1);
-
-  for (int i = 0; i < vec_size; i++) {
-    vec[i] = dis(gen) - (1L << (bit_size - 2));
+template <typename T>
+string to_readable_hex(const T& v) {
+  int len = sizeof(T);
+  string hex(2 * len, 0);
+  unsigned char* p = (unsigned char*)&v;
+  unsigned char p0;
+  unsigned char p1;
+  for (int i = 0; i < len; ++i) {
+    p0 = p[len - 1 - i] & 0x0000000F;
+    p1 = p[len - 1 - i] >> 4 & 0x0000000F;
+    hex[2 * i + 1] = p0 >= 0 && p0 <= 9 ? p0 + '0' : p0 - 10 + 'A';
+    hex[2 * i] = p1 >= 0 && p1 <= 9 ? p1 + '0' : p1 - 10 + 'A';
   }
+  return hex;
 }
 
 template <typename T>
-static inline void rand_vec2(vector<T>& vec, int length) {
-  vec.clear();
-  vec.resize(length);
-
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<T> dis(
-    std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
-
-  for (int i = 0; i < length; i++) {
-    vec[i] = dis(gen);
+string to_readable_dec(const T& v) {
+  assert(sizeof(T) <= sizeof(uintlong) && "only support 128 bits long");
+  if (v == 0)
+    return "0";
+  
+  uintlong value = (uintlong)v;
+  string hex;
+  while (value) {
+    hex.insert(0, 1, value % 10 + '0');
+    value = value / 10;
   }
+
+  return hex;
 }
-
-template <typename T>
-static inline void rand_vec3(vector<T>& vec, int length) {
-  vec.clear();
-  vec.resize(length);
-
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<T> dis(
-    std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
-
-  for (int i = 0; i < length; i++) {
-    vec[i] = dis(gen);
-  }
-}
-
-inline void rand_vec_30bit(vector<int64_t>& rand_vec, int length) {
-  rand_vec.clear();
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<uint> dis(0, (1 << 29) - 1);
-  //    cout<<dis.max()<<endl;
-  //    cout<<dis.min()<<endl;
-  int tmp;
-  for (int i = 0; i < length; i++) {
-    tmp = dis(gen) - (1 << 28);
-    rand_vec.push_back(tmp);
-  }
-}
-
-inline void rand_vec_60bit(vector<int64_t>& rand_vec, int length) {
-  rand_vec.clear();
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<uint64_t> dis(0, (1ULL << 59) - 1);
-
-  int64_t tmp;
-  for (int i = 0; i < length; i++) {
-    tmp = dis(gen) - (1ULL << 58);
-    rand_vec.push_back(tmp);
-  }
-}
-////////////////////////////////////////////////
 
 template <class T>
 inline void print_vec(const vector<T>& a, int length = -1, string msg = "") {
@@ -139,13 +109,23 @@ inline void print_vec(const vector<T>& a, int length = -1, string msg = "") {
     length = a.size();
   cout << msg << ": size [" << a.size() << "]" << endl;
   for (int i = 0; i < length; i++) {
-    cout << a[i] << endl;
-    // cout << setw(22) << a[i];
-    // if (i > 0 && (((i + 1) & 0x7) == 0))
-    //   cout << endl;
+    //if (sizeof(a[i]) == sizeof(uintlong))
+      cout << to_readable_hex(a[i]) << endl;
   }
   cout << endl;
 }
+
+template <>
+inline void print_vec(const vector<double>& a, int length, string msg) {
+  if (length < 0 || length > a.size())
+    length = a.size();
+  cout << msg << ": size [" << a.size() << "]" << endl;
+  for (int i = 0; i < length; i++) {
+    cout << a[i] << endl;
+  }
+  cout << endl;
+}
+
 template <>
 inline void print_vec(const vector<string>& a, int length, string msg) {
   if (length < 0 || length > a.size())
@@ -368,4 +348,56 @@ static string fmt_time(int64_t us) {
   }
   sss << "]";
   return sss.str();
+}
+
+// https://tinodidriksen.com/2011/05/cpp-convert-string-to-double-speed/
+static inline double to_double(const char* p) {
+  double r = 0.0;
+  bool neg = false;
+  if (*p == '-') {
+    neg = true;
+    ++p;
+  }
+  while (*p >= '0' && *p <= '9') {
+    r = (r * 10.0) + (*p - '0');
+    ++p;
+  }
+  if (*p == '.') {
+    double f = 0.0;
+    int n = 0;
+    ++p;
+    while (*p >= '0' && *p <= '9') {
+      f = (f * 10.0) + (*p - '0');
+      ++p;
+      ++n;
+    }
+    r += f / std::pow(10.0, n);
+  }
+  if (neg) {
+    r = -r;
+  }
+  return r;
+}
+
+/**
+ * log_2(integer)
+ */
+static const int tab64[64] = {63, 0,  58, 1,  59, 47, 53, 2,  60, 39, 48, 27, 54, 33, 42, 3,
+                              61, 51, 37, 40, 49, 18, 28, 20, 55, 30, 34, 11, 43, 14, 22, 4,
+                              62, 57, 46, 52, 38, 26, 32, 41, 50, 36, 17, 19, 29, 10, 13, 21,
+                              56, 45, 25, 31, 35, 16, 9,  12, 44, 24, 15, 8,  23, 7,  6,  5};
+
+static inline uint64_t log2floor(uint64_t value) {
+  value |= value >> 1;
+  value |= value >> 2;
+  value |= value >> 4;
+  value |= value >> 8;
+  value |= value >> 16;
+  value |= value >> 32;
+  return tab64[((uint64_t)((value - (value >> 1)) * 0x07EDD5E59A4E28C2)) >> 58];
+}
+
+static inline uint64_t log2ceil(uint64_t value) {
+  auto floor = log2floor(value);
+  return floor + (value > (1ull << floor));
 }

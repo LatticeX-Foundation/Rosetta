@@ -108,7 +108,7 @@ REGISTER_OP("SecureLog1p")
 REGISTER_OP("SecureReveal")
   .Input("x: string")
   .Output("res: string")
-  .Attr("receive_party: int = 1")
+  .Attr("receive_party: int = 7")
   .SetIsStateful();
 
 REGISTER_OP("SecureAddN")

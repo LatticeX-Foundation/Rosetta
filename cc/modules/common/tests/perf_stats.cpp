@@ -15,21 +15,33 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#pragma once
+#include "cc/modules/common/tests/test.h"
+#include "cc/modules/common/include/utils/perf_stats.h"
 
-#include <cassert>
-#include <cmath>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <limits>
-#include <random>
-#include <regex>
-#include <string>
-using namespace std;
+namespace rosetta {
+// step1 define the global(static) timer variables
+DEFINE_GLOBAL_TIMER_COUNTER(my_timer1)
+DEFINE_GLOBAL_TIMER_COUNTER(my_timer2)
 
-#include "file_directory.h"
-#include "cc/modules/common/include/utils/simple_timer.h"
-#include "cc/modules/common/include/utils/logger.h"
-#include "cc/modules/common/include/utils/helper.h"
-#include "random_util.h"
+// step2 define an atexit function(static)
+DEFINE_AT_EXIT_FUNCTION_BEG()
+DEFINE_AT_EXIT_FUNCTION_BODY(my_timer1)
+DEFINE_AT_EXIT_FUNCTION_BODY(my_timer2)
+DEFINE_AT_EXIT_FUNCTION_END()
+
+// step3 use ELAPSED_STATISTIC_BEG/ELAPSED_STATISTIC_END in the program
+} // namespace rosetta
+
+#include <thread>
+#include <chrono>
+TEST_CASE("utils perf_stats", "[common][utils]") {
+  // step3 use my_timer1
+  ELAPSED_STATISTIC_BEG(my_timer1);
+  std::this_thread::sleep_for(std::chrono::milliseconds(113));
+  ELAPSED_STATISTIC_END(my_timer1);
+
+  // step3 use my_timer2
+  ELAPSED_STATISTIC_BEG(my_timer2);
+  std::this_thread::sleep_for(std::chrono::milliseconds(579));
+  ELAPSED_STATISTIC_END(my_timer2);
+}

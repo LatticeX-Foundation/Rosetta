@@ -65,7 +65,6 @@ int DotProduct::funcDotProduct(
 
       subtractVectors<mpc_t>(C, C1, C2, size);
       sendVector<mpc_t>(C2, PARTY_B, size);
-      //cout << "partyNum " << partyNum << " C2[0]:" << C2[0] << endl;
     }
 
     if (PRIMARY) {
@@ -79,7 +78,7 @@ int DotProduct::funcDotProduct(
         populateRandomVector<mpc_t>(A, size, "a_2", "POSITIVE");
         populateRandomVector<mpc_t>(B, size, "b_2", "POSITIVE");
         receiveVector<mpc_t>(C, PARTY_C, size);
-        //cout << "partyNum " << partyNum << " C[0]:" << C[0] << endl;
+        //cout << "partyNum " << partyNum << ",  C[0]:" << C[0] << endl;
       }
 
       // receiveThreeVectors<mpc_t>(A, B, C, PARTY_C, size, size, size);
@@ -110,11 +109,6 @@ int DotProduct::funcDotProduct(
         sendTwoVectors<mpc_t>(ref(E), ref(F), adversary(partyNum), size, size);
       }
 #endif
-
-      //cout << "partyNum " << partyNum << "      E[0]:" << E[0] << endl;
-      //cout << "partyNum " << partyNum << "      F[0]:" << F[0] << endl;
-      //cout << "partyNum " << partyNum << " temp_E[0]:" << temp_E[0] << endl;
-      //cout << "partyNum " << partyNum << " temp_F[0]:" << temp_F[0] << endl;
 
       addVectors<mpc_t>(E, temp_E, E, size);
       addVectors<mpc_t>(F, temp_F, F, size);

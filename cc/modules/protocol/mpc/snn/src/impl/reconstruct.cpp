@@ -34,7 +34,7 @@ int Reconstruct2PC::funcReconstruct2PC(const vector<mpc_t>& a, size_t size, stri
   if (partyNum == PARTY_A) {
     cout << str << "[shared]: ";
     for (size_t i = 0; i < size; ++i) {
-      cout << (signed_mpc_t)out[i] << " ";
+      cout << to_readable_dec((signed_mpc_t)out[i]) << " ";
     }
     cout << endl;
     cout << str << "[plain]: ";
@@ -150,7 +150,7 @@ int Reconstruct2PC::funcReconstruct2PC_ex(
 }
 
 // Added by SJJ
-int Reconstruct2PC::reconstrct_general(
+int Reconstruct2PC::reconstruct_general(
   const vector<mpc_t>& shared_v, size_t size, vector<mpc_t>& plaintext_v, int target_party) {
   if (shared_v.size() < size) {
     size = shared_v.size();

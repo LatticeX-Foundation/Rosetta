@@ -34,105 +34,38 @@ using std::vector;
 namespace rosetta {
 namespace convert {
 
-////////////////////////////////////////////////
-// convert T type to hex-formatted string
-// T should be POD type
-template <typename T, typename std::enable_if<std::is_pod<T>::value, int>::type = 0>
-string to_hex_str(const T& t) {
-  int len = sizeof(t) + 1;
-  char* buf = new char[len];
-  memset(buf, 0, len);
-
-  char* p = (char*)&t;
-  string s;
-  for (int i = 0; i < sizeof(T); i++) {
-    sprintf(buf, "%02x", p[i] & 0xFF);
-    s.append(buf);
-  }
-
-  delete[] buf;
-  return s;
-};
-
 template <typename T>
 void to_hex_str(const T& t, string& s) {
-  int len = sizeof(t) + 1;
-  char* buf = new char[len];
-  memset(buf, 0, len);
-
-  char* p = (char*)&t;
-  for (int i = 0; i < sizeof(T); i++) {
-    sprintf(buf, "%02x", p[i] & 0xFF);
-    s.append(buf);
-  }
-
-  delete[] buf;
+  s.resize(sizeof(t));
+  memcpy((void*)s.data(), &t, sizeof(t));
 };
 
-static void to_hex_str_copy(const void* ptr, int size, string& s) {
-  int len = size + 1;
-  char* buf = new char[len];
-  memset(buf, 0, len);
-
-  const char* p = (const char*)ptr;
-  for (int i = 0; i < size; i++) {
-    sprintf(buf, "%02x", p[i] & 0xFF);
-    s.append(buf);
-  }
-
-  delete[] buf;
+static void to_binary_str(const void* ptr, int size, string& s) {
+  s.resize(size);
+  memcpy((void*)s.data(), ptr, size);
 };
 
 template <typename T>
 void to_hex_str(const vector<T>& ss, vector<string>& ts) {
-  int len = sizeof(T) + 1;
-  char* buf = new char[len];
-  memset(buf, 0, len);
-
   ts.resize(ss.size());
   for (int i = 0; i < ss.size(); ++i) {
-    char* p = (char*)&ss[i];
-    string s;
-    for (int j = 0; j < sizeof(T); j++) {
-      sprintf(buf, "%02x", p[j] & 0xFF);
-      s.append(buf);
-    }
-
-    ts[i] = s;
+    ts[i].resize(sizeof(T));
+    memcpy((void*)ts[i].data(), (void*)&ss[i], sizeof(ss[i]));
   }
-
-  delete[] buf;
 };
 
 // convert from value encoded with hex-formatted string to specify T type
 // T should be POD type
 template <typename T>
 T from_hex_str(const string& s) {
-  assert(s.size() == sizeof(T) * 2 && "string size and T are not compatiable");
-
   T t;
-  unsigned char* p = (unsigned char*)&t;
-  for (int i = 0; i < sizeof(T); i++) {
-    char c = toupper(s[2 * i]);
-    if (c >= '0' && c <= '9') {
-      p[i] = ((c - '0') << 4);
-    } else if (c >= 'A' && c <= 'F') {
-      p[i] = ((c - 'A' + 10) << 4);
-    }
-
-    c = toupper(s[2 * i + 1]);
-    if (c >= '0' && c <= '9') {
-      p[i] |= (c - '0');
-    } else if (c >= 'A' && c <= 'F') {
-      p[i] |= (c - 'A' + 10);
-    }
-  }
+  memcpy((void*)&t, s.data(), sizeof(t));//cns.size());
   return t;
 }
 
 template <typename T>
 void from_hex_str(const string& s, T& t) {
-  t = from_hex_str<T>(s);
+  memcpy((void*)&t, s.data(), sizeof(t));
 }
 
 template <typename T>

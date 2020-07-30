@@ -26,26 +26,25 @@ class ZeroBufferOut(object):
 
 sys.stdout = ZeroBufferOut(sys.stdout)
 
-basepath = os.path.abspath(os.path.dirname(__file__)) + "/../../../../build/lib"
+basepath = os.path.abspath(os.path.dirname(__file__)) + "/../../../../build128/lib" 
 rosettapth = (
     os.path.abspath(os.path.dirname(__file__))
-    + "/../../../../build/lib.linux-x86_64-3.6/latticex/"
+    + "/../../../../build/lib.linux-x86_64-3.6/latticex"
 )
 
 rosettapth2 = (
     os.path.abspath(os.path.dirname(__file__))
-    + "/../../../../build/lib.linux-x86_64-3.7/latticex/"
+    + "/../../../../build/lib.linux-x86_64-3.7/latticex"
 )
 
 
-# import latticex._rosetta as _rtt
 sys.path.append(basepath)
-sys.path.append(rosettapth)
 sys.path.append(rosettapth2)
+sys.path.append(rosettapth)
 
 # inp = input("input: ")
 # print(inp)
-print(rosettapth)
+print(sys.path)
 import _rosetta as rst
 
 print(dir(rst))
@@ -80,13 +79,24 @@ def create_run_session(target):
 
     return result
 
+def create_run_session_ex(in1, in2):
+    print("-----  create_run_session ---")
+    init = tf.global_variables_initializer()
+    with tf.Session() as sess:
+        sess.run(init)
+        ret1, ret2 = sess.run([in1, in2])
 
-def create_init_protocol_handler(prot="SecureNN", config=None):
+    return ret1, ret2
+
+
+def create_init_protocol_handler(prot="SecureNN", config=None, loglevel=2):
     proto_handler = rst.protocol.ProtocolHandler()
+    proto_handler.set_loglevel(loglevel)
     configfile = open(config)
     content = configfile.read()
     configfile.close()
     proto_handler.activate(prot, content)
+    
     print("-------  init mpc proto_handler and activate ok -----")
 
     return proto_handler, content
@@ -133,7 +143,7 @@ def test_add():
     c = rtt.secure_add(in1, in2)
     ret = rtt.secure_reveal(c)
     result = create_run_session(ret)
-    print("add result: ", result)
+    print("add result: ", result, ", expect: [3, 3]")
     print("-----   test_add (OK) -----")
 
 def test_sub():
@@ -145,21 +155,26 @@ def test_sub():
     ret = rtt.secure_reveal(c)
     ## ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("sub result: ", result)
+    print("sub result: ", result, ", expect: [-1, -1.1]")
     print("-----   test_sub (OK) -----")
 
 def test_mul():
     print("-----   test_mul -----")
     assert rtt
-    in1 = tf.Variable(["1","1"], name="in1")
-    in2 = tf.Variable(["2","2"], name="in2")
+    in1 = tf.Variable(["18458288", "18458288"], name="in1")
+    in2 = tf.Variable(["184582879", "1845828797"], name="in2") # ok
+    # in1 = tf.Variable(["1845828800", "1845828801"], name="in1")
+    # in2 = tf.Variable(["69458287980", "1845828797"], name="in2") # ok
+    # in1 = tf.Variable(["3"], name="in1")
+    # in2 = tf.Variable(["2"], name="in2") # ok
     # a = rtt.tf_to_secure(in1, name="a")
     #b = rtt.tf_to_secure(in2, name="b")
     c = rtt.secure_mul(in1, in2)
     ret = rtt.secure_reveal(c)
     # # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("mul result: ", result)
+    # print("secret-sharing value: ", cstring)
+    print("mul result: ", result, ", expect: ", 18458288*184582879, 18458288*1845828797)
     print("-----   test_mul (OK) -----")
 
 def test_div():
@@ -174,38 +189,38 @@ def test_div():
     # # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
 
-    print("div result: ", result)
+    print("div result: ", result, ", expect: [0.5, 0.5]")
     print("-----   test_div (OK) -----")
 
 def test_div_const():
     print("-----   test_div -----")
     assert rtt
-    in1 = tf.constant(["1","1"], name="in1")
+    in1 = tf.Variable(["1","1"], name="in1")
     in2 = tf.constant(["4","4"], name="in2")
     c = rtt.secure_div(in1, in2, rh_is_const=True)
     ret = rtt.secure_reveal(c)
     # # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
 
-    print("div result: 2/4: ", result)
+    print("div result: 1/4: ", result)
     print("-----   test_div (OK) -----")
 
 def test_matmul():
     print("-----   test_matmul -----")
-    in1 = tf.Variable([["1","1"],["1","1"]], name="in1")
-    in2 = tf.Variable([["2","2"], ["2","2"]], name="in2")
+    in1 = tf.Variable([["1845828799","1"],["1845828799","1"]], name="in1")
+    in2 = tf.Variable([["1845828799","1"],["1845828799","1"]], name="in2")
     # # a = rtt.tf_to_secure(in1, name="a")
     # b = rtt.tf_to_secure(in2, name="b")
     c = rtt.secure_matmul(in1, in2)
     ret = rtt.secure_reveal(c)
     # # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("matmul result: ", result)
+    print("matmul result: ", result, ", expect: [[3407083957063611200, 1845828800], [3407083957063611200, 1845828800]]")
     print("-----   test_matmul (OK) -----")
 
 def test_less():
     print("-----   test_less -----")
-    in1 = tf.Variable(["1","1"], name="in1")
+    in1 = tf.Variable(["1","3"], name="in1")
     in2 = tf.Variable(["2","2"], name="in2")
     # a = rtt.tf_to_secure(in1, name="a")
     # b = rtt.tf_to_secure(in2, name="b")
@@ -213,7 +228,7 @@ def test_less():
     ret = rtt.secure_reveal(c)
     # # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("less result: ", result)
+    print("less result: ", result, ", expect: [1, 0]")
     print("-----   test_less (OK) -----")
 
 def test_less_equal():
@@ -226,7 +241,7 @@ def test_less_equal():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("less_equal result: ", result)
+    print("less_equal result: ", result, ", expect: [1, 1]")
     print("-----   test_less_equal (OK) -----")
 
 def test_equal():
@@ -239,7 +254,7 @@ def test_equal():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("equal result: ", result)
+    print("equal result: ", result, ", expect: [0, 0]")
     print("-----   test_equal (OK) -----")
 
 def test_not_equal():
@@ -252,7 +267,7 @@ def test_not_equal():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("not_equal result: ", result)
+    print("not_equal result: ", result, ", expect: [1, 1]")
     print("-----   test_not_equal (OK) -----")
 
 def test_greater():
@@ -265,7 +280,7 @@ def test_greater():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("greater result: ", result)
+    print("greater result: ", result, ", expect: [0, 0]")
     print("-----   test_greater (OK) -----")
 
 def test_greater_equal():
@@ -278,20 +293,20 @@ def test_greater_equal():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("greater_equal result: ", result)
+    print("greater_equal result: ", result, ", expect: [0, 0]")
     print("-----   test_greater_equal (OK) -----")
 
 def test_pow2():
     print("-----   test_pow2 -----")
     in1 = tf.Variable(["1","2"], name="in1")
-    in2 = tf.Variable(["1","1"], name="in2")
+    in2 = tf.constant(["1","1"], name="in2")
     # a = rtt.tf_to_secure(in1, name="a")
     # b = tf.constant(["1","2"], name="b") #rtt.tf_to_secure(in2, name="b")
     c = rtt.secure_pow(in1, in2)
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("pow2 result: ", result, ", math.pow: ", 2.0, 4.0)
+    print("pow2 result: ", result, ", math.pow: ", [1.0, 2.0])
     print("-----   test_pow2 (OK) -----")
 
 def test_log():
@@ -302,7 +317,7 @@ def test_log():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, ", math.log 2, 5: ", math.log(2), math.log(10))
+    print("secure result: ", result, ", math.log 2, 10: ", math.log(2), math.log(10))
     print("-----   test_log (OK) -----")
 
 def test_log1p():
@@ -313,7 +328,7 @@ def test_log1p():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, ", math.log1p 2, 5: ", math.log1p(2), math.log1p(5))
+    print("secure result: ", result, ", math.log1p 2, 10: ", math.log1p(2), math.log1p(5))
     print("-----   test_log1p (OK) -----")
 
 def test_square():
@@ -324,7 +339,7 @@ def test_square():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, ", math.square 2, 4: ", math.pow(2,2), math.pow(4,2))
+    print("secure result: ", result, ", math.square 1, 2: ", math.pow(1,2), math.pow(2,2))
     print("-----   test_square (OK) -----")
 
 def test_sigmoid():
@@ -335,7 +350,7 @@ def test_sigmoid():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, ", math.sigmoid 2, 4: ", 1/(1+math.exp(-2)), 1/(1+math.exp(-4)))
+    print("secure result: ", result, ", math.sigmoid 1, 2: ", 1/(1+math.exp(-1)), 1/(1+math.exp(-2)))
     print("-----   test_sigmoid (OK) -----")
 
 
@@ -364,41 +379,45 @@ def test_sigmoid_entropy_with_logit():
     for i in (0,1):
         sigmoid_entropy.append(ideal_sigmoid_entropy_with_logit(z[i], x[i]))
 
-    print("secure result: ", result, ", math.sigmoid_entropy_with_logit 2, 4: ", sigmoid_entropy)
+    print("secure result: ", result, ", math.sigmoid_entropy_with_logit 1, 2: ", sigmoid_entropy)
     print("-----   test_sigmoid_entropy_with_logit (OK) -----")
 
 
 def test_relu():
     print("-----   test_relu -----")
-    in1 = tf.Variable(["-1", "2"], name="in1")
+    in1 = tf.Variable(["-1", "2", "0", "-2"], name="in1")
     # a = rtt.tf_to_secure(in1, name="a")
     c = rtt.secure_relu(in1)
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, "math.relu -2, 4: ", 0, 4)
+    print("secure result: ", result, "math.relu -1, 2 , 0, -2: ", 0, 2, 0, 0)
     print("-----   test_relu (OK) -----")
 
 def test_relu_prime():
     print("-----   test_relu_prime -----")
-    in1 = tf.Variable(["-1", "2"], name="in1")
+    print("-----   relu-input: -1, 2, 0, -2 ------")
+    in1 = tf.Variable(["-1", "2", "0", "-2"], name="in1")
+    # in1 = tf.Variable(["-1", "2"], name="in1") # sometimes ok
+    # in1 = tf.Variable(["2", "-1", "0", "1"], name="in1")
+    # in1 = tf.Variable(["2", "-1"], name="in1")
     # a = rtt.tf_to_secure(in1, name="a")
     c = rtt.secure_relu_prime(in1)
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, "math.relu_prime -2, 4: ", 0, 1)
+    print("secure result: ", result, "math.relu_prime -1, 2, 0, -2: ", 0, 1, 1, 0)
     print("-----   test_relu_prime (OK) -----")
 
 def test_abs_prime():
     print("-----   test_abs_prime -----")
-    in1 = tf.Variable(["-0.1", "0.4"], name="in1")
+    in1 = tf.Variable(["-0.1", "0.4", "1", "2"], name="in1")
     # a = rtt.tf_to_secure(in1, name="a")
     c = rtt.secure_abs_prime(in1)
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, "math.abs_prime -0.2, 0.8: ", -1, 1)
+    print("secure result: ", result, "math.abs_prime -0.1, 0.4, 1, 2: ", -1, 1, 1, 1)
     print("-----   test_abs_prime (OK) -----")
 
 def test_abs():
@@ -409,7 +428,7 @@ def test_abs():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, "math.abs -2, 4, -0.2, 0.8: ", 2, 4, 0.2, 0.8)
+    print("secure result: ", result, "math.abs -1, 2, -0.1, 0.4: ", 1, 2, 0.1, 0.4)
     print("-----   test_abs (OK) -----")
 
 
@@ -421,7 +440,7 @@ def test_reduce_sum():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, "math.sum -2, 4: ", 2)
+    print("secure result: ", result, "expect: ", 1)
     print("-----   test_reduce_sum (OK) -----")
 
 def test_add_n_core_dump():
@@ -432,7 +451,7 @@ def test_add_n_core_dump():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, ", math.add_n -2, 4: ", 2)
+    print("secure result: ", result, ", math.add_n -1, 2: ", 2)
     print("-----   test_add_n (OK) -----")
 
 def test_add_n():
@@ -445,7 +464,7 @@ def test_add_n():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, ", expect: ", [[-4, 8], [-4, 8]])
+    print("secure result: ", result, ", expect: ", [[-2, 4], [-2, 4]])
     print("-----   test_add_n (OK) -----")
 
 def test_reduce_mean():
@@ -456,7 +475,7 @@ def test_reduce_mean():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result, "math.mean -2, 4: ", 1)
+    print("secure result: ", result, ", expect: ", 0.5)
     print("-----   test_reduce_mean (OK) -----")
 
 def test_reduce_min():
@@ -542,46 +561,50 @@ def test_negative():
     ret = rtt.secure_reveal(c)
     # ret = rtt.secure_to_tf(reveal_c, dtype=tf.float64)
     result = create_run_session(ret)
-    print("secure result: ", result)
+    print("secure result: ", result, ", expect: -1, 2")
     print("-----   test_negative (OK) -----")
 
 
 def test_all_protocol_ops():
-    test_reveal()
-    test_add()
-    test_sub()
-    test_mul()
-    test_matmul()
-    test_div()
-    test_div_const()
+    test_reveal() # pass
+    # test_add() # pass
+    # test_sub() # pass
+    test_mul() # pass
+    # test_matmul() # pass
+    # test_div() # pass
+    # test_div_const() # pass
 
-    test_less()
-    test_less_equal()
-    test_equal()
-    test_not_equal()
-    test_greater()
-    test_greater_equal()
-    test_pow2()
+    # test_less() # pass
+    # test_less_equal() # pass
+    # test_equal() # pass
+    # test_not_equal() # pass
+    # test_greater() # pass
+    # test_greater_equal() # pass
+    
+    # test_pow2() # pass
 
-    test_log()
-    test_log1p()
-    test_square()
-    test_abs()
-    test_abs_prime()
-    test_negative()
-    test_reduce_sum()
-    test_reduce_mean()
-    ## max, min ok
-    test_reduce_min() # ok
-    test_reduce_max()
-    test_add_n() # TODO
+    #########################
+    test_log() # not pass for snn
+    test_log1p() # not pass for snn
+    #########################
 
-    test_sigmoid()
-    test_sigmoid_entropy_with_logit()
-    test_relu()
-    test_relu_prime()
+    # test_square() # pass
+    # test_abs() # pass
+    # test_abs_prime() # pass
+    # test_negative() # pass
+    # test_reduce_sum() # pass 
+    # test_reduce_mean() # pass 
+    # ## max, min ok
+    # test_reduce_min() # pass
+    # test_reduce_max() # pass
+    # test_add_n() # pass
 
-    test_apply_gradient_descent()
+    # test_sigmoid() # pass
+    # test_sigmoid_entropy_with_logit() # pass, helix not precise
+    # test_relu() # pass
+    # test_relu_prime() # pass
+
+    # test_apply_gradient_descent()
 
 # main
 if __name__ == "__main__":
@@ -589,7 +612,7 @@ if __name__ == "__main__":
     print("---  to activate ", protocol)
 
     prot_handler, cfg_content = create_init_protocol_handler(protocol, cfgfile)
-    prot_handler.set_loglevel(2) # trace, debug , info, ...
+    # prot_handler.set_loglevel(0) # trace, debug , info, ...
     # prot_handler.set_logfile("log/secure_op_test.log")
     test_all_protocol_ops()
     print("--- {} ops test ok ----".format(protocol))

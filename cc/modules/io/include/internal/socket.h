@@ -69,6 +69,7 @@ class Socket {
   int verbose_ = 0;
 
  public:
+  Socket();
   virtual ~Socket() = default;
 
   // 1
@@ -90,52 +91,20 @@ class Socket {
   bool option_reuseport_ = true;
 
  public:
-  bool option_reuseaddr() const {
-    return option_reuseaddr_;
-  }
-  bool option_reuseport() const {
-    return option_reuseport_;
-  }
+  bool option_reuseaddr() const { return option_reuseaddr_; }
+  bool option_reuseport() const { return option_reuseport_; }
 
  protected:
-  int set_reuseaddr(int fd, int optval) {
-    int ret = ::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void*)&optval, sizeof(optval));
-    return ret;
-  }
-  int set_reuseport(int fd, int optval) {
-    int ret = ::setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, (const void*)&optval, sizeof(optval));
-    return ret;
-  }
-  int set_sendbuf(int fd, int size) {
-    int ret = ::setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (const void*)&size, sizeof(size));
-    return ret;
-  }
-  int set_recvbuf(int fd, int size) {
-    int ret = ::setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (const void*)&size, sizeof(size));
-    return ret;
-  }
+  int set_reuseaddr(int fd, int optval);
+  int set_reuseport(int fd, int optval);
+  int set_sendbuf(int fd, int size);
+  int set_recvbuf(int fd, int size);
   size_t default_buffer_size_ = 1024 * 1024 * 10;
-  size_t default_buffer_size() {
-    return default_buffer_size_;
-  }
+  size_t default_buffer_size() { return default_buffer_size_; }
 
  protected:
-  // SO_LINGER for TIME_WAIT
-  int set_linger(int fd) {
-    struct linger l;
-    l.l_onoff = 1;
-    l.l_linger = 0;
-    int ret = ::setsockopt(fd, SOL_SOCKET, SO_LINGER, (const void*)&l, sizeof(l));
-    return ret;
-  }
-  int set_nodelay(int fd, int optval) {
-    int ret = ::setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (const void*)&optval, sizeof(optval));
-    return ret;
-  }
-
-  // use std tcp socket read/write
-  int readn(int connfd, char* vptr, int n);
-  int writen(int connfd, const char* vptr, size_t n);
+  int set_linger(int fd);
+  int set_nodelay(int fd, int optval);
 
   //! Helpers
  protected:
@@ -149,9 +118,7 @@ class Socket {
  protected:
   bool is_ssl_socket_ = false;
   bool running_ = false;
-  bool is_running() {
-    return running_;
-  }
+  bool is_running() { return running_; }
 };
 
 #if USE_LIBEVENT_AS_BACKEND

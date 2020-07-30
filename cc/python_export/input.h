@@ -43,12 +43,18 @@ class Input {
 
   void public_input() {}
 
-  std::string private_input(int party_id, double d) {
-    vector<std::string> outd(1);
-    auto ops = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(pri_input_msg_id);
-    ops->PrivateInput(party_id, {d}, outd);
-    return outd[0];
-  }
+  // np_str_t private_input(int party_id, double d) {
+  //   vector<std::string> outd(1);
+  //   auto ops = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(pri_input_msg_id);
+  //   ops->PrivateInput(party_id, {d}, outd);
+
+  //   auto result = py::array_t<np_str_t>(1);
+  //   py::buffer_info out = result.request();
+  //   np_str_t* pout = reinterpret_cast<np_str_t*>(out.ptr);
+  //   memset((char*)pout, 0, sizeof(np_str_t));
+  //   std::memcpy((char*)pout->data(), outd[0].data(), outd[0].size());
+  //   return result.at(0);
+  // }
 
   py::array_t<np_str_t> private_input(int party_id, const py::array_t<double>& input) {
     py::buffer_info buf = input.request();

@@ -38,6 +38,10 @@ class ZeroBufferOut(object):
 sys.stdout = ZeroBufferOut(sys.stdout)
 
 
+if 'ROSETTA_MPC_128' in os.environ and os.environ['ROSETTA_MPC_128'] == 'ON':
+    tf_dpass_lib = os.path.dirname(__file__) + '/../lib128/libtf-dpass.so'
+else:
+    tf_dpass_lib = os.path.dirname(__file__) + '/../libtf-dpass.so'
 tf_dpass_lib = os.path.dirname(__file__) + '/../libtf-dpass.so'
 
 dpass = None

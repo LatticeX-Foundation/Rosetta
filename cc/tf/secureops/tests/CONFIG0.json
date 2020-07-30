@@ -6,7 +6,7 @@
     "RECV_PARTY": 2
   },
   "MPC": {
-    "FLOAT_PRECISION": 16,
+    "FLOAT_PRECISION": 24,
     "P0": {
       "NAME": "PartyA(P0)",
       "HOST": "127.0.0.1",

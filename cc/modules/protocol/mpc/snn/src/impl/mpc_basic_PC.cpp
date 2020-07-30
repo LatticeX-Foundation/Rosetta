@@ -67,7 +67,9 @@ int PrivateCompare::funcPrivateCompareMPC(
             c[index3] = a;
             tempM = share_m[index3];
 
-            bit_r = (small_mpc_t)((valueX >> (63 - k)) & 1);
+            // [huanggaofeng] fix:
+            // bit_r = (small_mpc_t)((valueX >> (63 - k)) & 1);
+            bit_r = (small_mpc_t)((valueX >> (BIT_SIZE - 1 - k)) & 1);
 
             if (bit_r == 0)
               a = addModPrime(a, tempM);

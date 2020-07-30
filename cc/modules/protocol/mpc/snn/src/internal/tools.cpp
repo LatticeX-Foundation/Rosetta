@@ -27,6 +27,7 @@
 #include "cc/modules/protocol/mpc/snn/src/internal/tools.h"
 #include "cc/modules/protocol/mpc/snn/src/internal/snn_helper.h"
 #include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/helper.h"
 #include <Eigen/Dense>
 #include <bitset>
 #include <mutex>
@@ -407,7 +408,7 @@ void print_myType(mpc_t var, string message, string type) {
   else if (type == "SIGNED")
     log_info << message << ": " << static_cast<int64_t>(var) << endl;
   else if (type == "UNSIGNED")
-    log_info << message << ": " << var << endl;
+    log_info << message << ": " << to_readable_dec(var) << endl;
 }
 
 void print_linear(mpc_t var, string type) {
@@ -418,7 +419,7 @@ void print_linear(mpc_t var, string type) {
   else if (type == "SIGNED")
     log_info << static_cast<int64_t>(var) << " ";
   else if (type == "UNSIGNED")
-    log_info << var << " ";
+    log_info << to_readable_dec(var) << " ";
 }
 
 void checkOverflow(
@@ -494,55 +495,6 @@ void sigmoidSA(const vector<mpc_t>& input, vector<mpc_t>& output, size_t rows, s
   }
 }
 
-void matrixMultEigen(
-  const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t rows, size_t common_dim,
-  size_t columns, size_t transpose_a, size_t transpose_b) {
-  assert(rows * common_dim == a.size() && "a vector sizes is incorrect!!!");
-  assert(common_dim * columns == b.size() && "b vector sizes is incorrect!!!");
-  assert(rows * columns == c.size() && "c vector sizes is incorrect!!!");
-
-  size_t a_rows, a_cols;
-  size_t b_rows, b_cols;
-  a_rows = transpose_a ? common_dim : rows;
-  a_cols = transpose_a ? rows : common_dim;
-  b_rows = transpose_b ? columns : common_dim;
-  b_cols = transpose_b ? common_dim : columns;
-  Matrix<mpc_t, Dynamic, Dynamic, RowMajor> eigen_a(a_rows, a_cols);
-  Matrix<mpc_t, Dynamic, Dynamic, RowMajor> eigen_b(b_rows, b_cols);
-  Matrix<mpc_t, Dynamic, Dynamic, RowMajor> eigen_c(rows, columns);
-
-  assert(a.size() == rows * common_dim);
-  assert(b.size() == common_dim * columns);
-  assert(c.size() == rows * columns);
-
-  assert(eigen_a.size() == rows * common_dim);
-  assert(eigen_b.size() == common_dim * columns);
-  assert(eigen_c.size() == rows * columns);
-
-  // memcpy((void *)eigen_a.data(), a.data(), a.size() * sizeof(mpc_t));
-  for (int i = 0; i < a_rows; i++)
-    for (int j = 0; j < a_cols; j++)
-      eigen_a(i, j) = a[i * a_cols + j];
-  if (transpose_a)
-    eigen_a.transposeInPlace();
-
-  // memcpy((void *)eigen_b.data(), b.data(), b	.size() * sizeof(mpc_t));
-  for (int i = 0; i < b_rows; i++)
-    for (int j = 0; j < b_cols; j++)
-      eigen_b(i, j) = b[i * b_cols + j];
-  if (transpose_b)
-    eigen_b.transposeInPlace();
-
-#if MPC_CHECK_OVERFLOW
-  checkOverflow(a, b, rows, common_dim, columns, transpose_a, transpose_b);
-#endif
-  eigen_c = eigen_a * eigen_b;
-
-  // memcpy(c.data(), eigen_c.data(), eigen_c.size() * sizeof(mpc_t));
-  for (int i = 0; i < rows; i++)
-    for (int j = 0; j < columns; j++)
-      c[i * columns + j] = eigen_c(i, j);
-}
 
 mpc_t divideMyTypeSA(mpc_t a, mpc_t b) {
   // assert((sizeof(double) == sizeof(mpc_t)) && "sizeof(double) !=

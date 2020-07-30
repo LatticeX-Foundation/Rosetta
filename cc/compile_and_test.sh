@@ -7,7 +7,15 @@ target="modules"
 curdir=$(pwd)
 
 ccdir=${curdir}
-builddir=${curdir}/../build/
+
+BUILD_TYPE=Release
+builddir=${curdir}/../build
+
+if [[ $ROSETTA_MPC_128 ]] && [[ $ROSETTA_MPC_128 == "ON" ]]; then
+    builddir=${curdir}/../build128
+else
+    ROSETTA_MPC_128=OFF
+fi
 bindir=${builddir}/bin
 mkdir -p ${bindir}
 
@@ -15,15 +23,22 @@ mkdir -p ${bindir}
 cd ${builddir}
 TF_CFLGS=$(python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_compile_flags()[1])')
 #TF_CFLAGS=$(python3 -c "import tensorflow as tf; print(' '.join(tf.sysconfig.get_compile_flags()), end='')")
-if [ $# -lt 1 ]; then
-    cmake ../cc/ ${TF_CFLGS} -DUSE_OMP=1 -DCMAKE_INSTALL_PREFIX=.install && make -j4 all && make install
+if [ $# -ge 2 ]; then
+    if [ $1 == "Debug" ]; then
+        BUILD_TYPE=Debug
+    fi
+    
+    if [ $2 == "128" ]; then
+        MPC_128=ON
+    fi
+
+    cmake ../cc/ ${TF_CFLGS} -DUSE_OMP=1 -DCMAKE_INSTALL_PREFIX=.install -Wno-dev -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DROSETTA_MPC_128=${MPC_128} # && make -j4 all && make install
 else
-    echo "arg1: $1"
+    echo "compile: $1"
     if [ "$1" == "modules" ]; then
-        cd modules && make -j8 && make install
+        cd modules && make -j && make install
     elif [ "$1" == "tf" ]; then
-        #cmake ../cc ${TF_CFLGS} -DUSE_OMP=1 -DCMAKE_INSTALL_PREFIX=.install -DCMAKE_BUILD_TYPE=Debug
-        cd tf && make -j8 && make install
+        cd tf && make -j && make install
     else
         echo "bad target: $1"
         exit 1

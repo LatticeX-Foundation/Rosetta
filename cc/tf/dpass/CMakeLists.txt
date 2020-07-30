@@ -4,10 +4,6 @@ set(NAME tf-dpass)
 
 # settings
 include(SetCommon)
-#include(SetFunctions)
-#include(SetPlatformFeatures)
-#include(SetCompileOptions)
-#include(SetVersionNumber)
 include(SetTfCompileOptions)
 
 # third party libraries include

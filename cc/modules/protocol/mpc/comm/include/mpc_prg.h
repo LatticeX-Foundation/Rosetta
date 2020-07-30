@@ -17,6 +17,7 @@
 // ==============================================================================
 #pragma once
 
+#include <immintrin.h>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -25,13 +26,14 @@ using namespace std;
 
 namespace emp {
 class PRG;
-}
-typedef __m128i block;
+using block = __m128i;
+} // namespace emp
+using emp::block;
 
 namespace rosetta {
 
 class MpcPRG {
-#define BLOCK_COUNT 2048
+#define BLOCK_COUNT 4096
   uint64_t counter_ = 0;
   block data_[BLOCK_COUNT];
 

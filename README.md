@@ -54,8 +54,8 @@ import tensorflow as tf
 rtt.activate("SecureNN")
 
 # Get private data from Alice (input x), Bob (input y)
-x = tf.Variable(rtt.private_input(0, [[1, 2], [2, 3]])) # Alice private_input x
-y = tf.Variable(rtt.private_input(1, [[1, 2], [2, 3]])) # Bob private_input y
+x = tf.Variable(rtt.private_console_input(0, shape=(2, 3)))
+y = tf.Variable(rtt.private_console_input(1, shape=(3, 2)))
 
 # Define matmul operation
 res = tf.matmul(x, y)
@@ -66,9 +66,11 @@ with tf.Session() as sess:
     res = sess.run(res)
 
     # Get the result of Rosetta matmul
-    print('matmul:', sess.run(rtt.SecureReveal(res)))  # matmul: [[b'14.000000' b'20.000000'] [b'20.000000' b'29.000000']]
+    print('matmul:', sess.run(rtt.SecureReveal(res)))
 ```
 For more details, please check [Tutorials](doc/TUTORIALS.md) and [Examples](./example).
+
+> Note: Currently Rosetta already supports 128-bits large integer arithmetic, which can be enabled by configuring the environment variable `export ROSETTA_MPC_128=ON`.
 
 ## Getting Started
 
@@ -87,7 +89,7 @@ Rosetta is an open source project developed under the LPGLv3 license and maintai
 
 * [Rosetta Deployment Guide](doc/DEPLOYMENT.md)
 
-* [Rosetta MpcOps API](doc/API_DOC.md)
+* [Rosetta User API](doc/API_DOC.md)
 
 * [Rosetta WhitePaper](doc/Rosetta_whitepaper.pdf)
 
