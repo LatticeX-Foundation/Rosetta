@@ -27,6 +27,7 @@
 #include "cc/modules/protocol/mpc/snn/src/internal/tools.h"
 #include "cc/modules/protocol/mpc/snn/src/internal/snn_helper.h"
 #include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/helper.h"
 #include <Eigen/Dense>
 #include <bitset>
 #include <mutex>
@@ -407,7 +408,7 @@ void print_myType(mpc_t var, string message, string type) {
   else if (type == "SIGNED")
     log_info << message << ": " << static_cast<int64_t>(var) << endl;
   else if (type == "UNSIGNED")
-    log_info << message << ": " << var << endl;
+    log_info << message << ": " << to_readable_dec(var) << endl;
 }
 
 void print_linear(mpc_t var, string type) {
@@ -418,7 +419,7 @@ void print_linear(mpc_t var, string type) {
   else if (type == "SIGNED")
     log_info << static_cast<int64_t>(var) << " ";
   else if (type == "UNSIGNED")
-    log_info << var << " ";
+    log_info << to_readable_dec(var) << " ";
 }
 
 void checkOverflow(
@@ -493,6 +494,7 @@ void sigmoidSA(const vector<mpc_t>& input, vector<mpc_t>& output, size_t rows, s
     }
   }
 }
+
 
 mpc_t divideMyTypeSA(mpc_t a, mpc_t b) {
   // assert((sizeof(double) == sizeof(mpc_t)) && "sizeof(double) !=

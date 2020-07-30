@@ -16,7 +16,7 @@
 # along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 # =============================================================================="
 import tensorflow as tf
-import latticex._rosetta as _rtt
+from latticex.rosetta.controller.controller_base_ import _rtt
 from latticex.rosetta.controller.common_util import rtt_get_logger
 
 

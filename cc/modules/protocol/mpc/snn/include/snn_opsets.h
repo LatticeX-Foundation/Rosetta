@@ -625,7 +625,7 @@ class Reconstruct2PC : public OpBase {
   }
 
   int RunV2(const vector<mpc_t>& a, size_t size, vector<mpc_t>& out, int recv_party = PARTY_A) {
-    MPCOP_RETURN(reconstrct_general(a, size, out, recv_party));
+    MPCOP_RETURN(reconstruct_general(a, size, out, recv_party));
   }
 
  private:
@@ -642,7 +642,7 @@ class Reconstruct2PC : public OpBase {
   /**
    * @brief: the shared_v will be 'revealed' to plaintext_v held by rev_party 
    **/
-  int reconstrct_general(
+  int reconstruct_general(
     const vector<mpc_t>& shared_v,
     size_t size,
     vector<mpc_t>& plaintext_v,
@@ -685,14 +685,12 @@ class Polynomial : public OpBase {
   void mpc_pow_const(
     const mpc_t& shared_X,
     mpc_t common_k,
-    mpc_t& shared_Y,
-    unordered_map<mpc_t, mpc_t>* curr_cache = NULL);
+    mpc_t& shared_Y);
 
   void mpc_pow_const(
     const vector<mpc_t>& shared_X,
-		mpc_t common_k,
-		vector<mpc_t>& shared_Y,
-		unordered_map<mpc_t, vector<mpc_t>>* curr_cache = NULL);
+    mpc_t common_k,
+    vector<mpc_t>& shared_Y);
 
   void local_const_mul(
     const vector<mpc_t>& shared_X,
@@ -1268,14 +1266,12 @@ class Pow : public OpBase {
 
     if(is_common_k) {
       // cout << "DEBUG; common k" << endl;
-      unordered_map<mpc_t, vector<mpc_t>> curr_cache;
-      poly->mpc_pow_const(x, n[0], y, &curr_cache);
+      poly->mpc_pow_const(x, n[0], y);
       return 0;
     }
 
     for (auto i = 0; i < size; i++) {
-      unordered_map<mpc_t, mpc_t> curr_cache;
-      poly->mpc_pow_const(x[i], n[i], y[i], &curr_cache);
+      poly->mpc_pow_const(x[i], n[i], y[i]);
     }
     return 0;
   }

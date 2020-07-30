@@ -20,6 +20,8 @@
 namespace rosetta {
 namespace snn {
 
+#define PRSS_OPT_VALUE 2
+
 // Compute MSB of a and store it in b
 // 3PC: output is shares of MSB in \Z_L
 int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
@@ -43,7 +45,6 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     vector<mpc_t> LSB_shares_1(size);
     vector<mpc_t> LSB_shares_2(size);
     
-#define OPT_VALUE 2
 #if 0
     for (size_t i = 0; i < size; ++i) {
       r1[i] = aes_indep->randModuloOdd();
@@ -58,7 +59,7 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     sendVector<small_mpc_t>(bit_shares_r_2, PARTY_B, size * BIT_SIZE);
     sendTwoVectors<mpc_t>(r1, LSB_shares_1, PARTY_A, size, size);
     sendTwoVectors<mpc_t>(r2, LSB_shares_2, PARTY_B, size, size);
-#elif OPT_VALUE == 1
+#elif PRSS_OPT_VALUE == 1
     populateRandomVector<mpc_t>(r1, size, "a_1", "POSITIVE");
     populateRandomVector<mpc_t>(r2, size, "a_2", "POSITIVE");
     for (size_t i = 0; i < size; ++i) {
@@ -81,9 +82,9 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     populateRandomVector<mpc_t>(r2, size, "a_2", "POSITIVE");
     for (size_t i = 0; i < size; ++i) {
       if (r1[i] == MINUS_ONE)
-        r1[i]--;
+        r1[i] = 0;////[huanggaofeng] fix for odd ring Z_{2^128 - 1}, origin: r1[i]--
       if (r2[i] == MINUS_ONE)
-        r2[i]--;
+        r2[i] = 0;////[huanggaofeng] fix for odd ring Z_{2^128 - 1}, origin: r2[i]--
     }
 
     addModuloOdd<mpc_t, mpc_t>(r1, r2, r, size);
@@ -104,7 +105,7 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     vector<mpc_t> temp(size);
     receiveVector<small_mpc_t>(bit_shares, PARTY_C, size * BIT_SIZE);
     receiveTwoVectors<mpc_t>(ri, LSB_shares, PARTY_C, size, size);
-#elif OPT_VALUE == 1
+#elif PRSS_OPT_VALUE == 1
     vector<mpc_t> temp(size);
     receiveVector<small_mpc_t>(bit_shares, PARTY_C, size * BIT_SIZE);
     receiveVector<mpc_t>(LSB_shares, PARTY_C, size);
@@ -136,7 +137,7 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
 
     for (size_t i = 0; i < size; ++i) {
       if (ri[i] == MINUS_ONE)
-        ri[i] -= 1;
+        ri[i] = 0;////[huanggaofeng] fix for odd ring Z_{2^128 - 1}, origin: ri[i] -= 1;
     }
 #endif
 

@@ -29,9 +29,12 @@ log/
 sftp-config.json
 
 build/
+build128/
 .eggs/
 dist/
 tmp/
+python/latticex/*.so
+python/latticex/lib128
 python/latticex.egg-info/
 cc/tf/pass/test_cases/ckp
 cc/tf/dpass/test_cases/ckp
@@ -46,6 +49,7 @@ contrib/rtt_tensor/python/core
 *.swp
 cc/tf/strops/core
 python/latticex/*.so
+python/latticex/lib128
 .publish_to_github
 publish_to_github.tar.gz
 core

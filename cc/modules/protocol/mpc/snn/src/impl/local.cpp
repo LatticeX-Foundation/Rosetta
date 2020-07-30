@@ -32,12 +32,12 @@ void funcTruncate2PC(vector<mpc_t>& a, size_t power, size_t size, size_t party_1
 
   if (partyNum == party_1) {
     for (size_t i = 0; i < size; ++i)
-      a[i] = static_cast<mpc_t>(static_cast<int64_t>(a[i]) >> power);
+      a[i] = static_cast<mpc_t>(static_cast<signed_mpc_t>(a[i]) >> power);
   }
 
   if (partyNum == party_2) {
     for (size_t i = 0; i < size; ++i)
-      a[i] = -static_cast<mpc_t>(static_cast<int64_t>(-a[i]) >> power);
+      a[i] = -static_cast<mpc_t>(static_cast<signed_mpc_t>(-a[i]) >> power);
   }
 }
 
@@ -45,20 +45,20 @@ void funcTruncateElem2PC(mpc_t& a, size_t power, size_t party_1, size_t party_2)
   assert((partyNum == party_1 || partyNum == party_2) && "Truncate called by spurious parties");
 
   if (partyNum == party_1)
-    a = static_cast<mpc_t>(static_cast<int64_t>(a) >> power);
+    a = static_cast<mpc_t>(static_cast<signed_mpc_t>(a) >> power);
 
   if (partyNum == party_2)
-    a = -static_cast<mpc_t>(static_cast<int64_t>(-a) >> power);
+    a = -static_cast<mpc_t>(static_cast<signed_mpc_t>(-a) >> power);
 }
 
 mpc_t funcTruncateElem2PCConst(const mpc_t& a, size_t power, size_t party_1, size_t party_2) {
   assert((partyNum == party_1 || partyNum == party_2) && "Truncate called by spurious parties");
   mpc_t r = a;
   if (partyNum == party_1)
-    r = static_cast<mpc_t>(static_cast<int64_t>(r) >> power);
+    r = static_cast<mpc_t>(static_cast<signed_mpc_t>(r) >> power);
 
   if (partyNum == party_2)
-    r = -static_cast<mpc_t>(static_cast<int64_t>(-r) >> power);
+    r = -static_cast<mpc_t>(static_cast<signed_mpc_t>(-r) >> power);
   return r;
 }
 

@@ -26,7 +26,10 @@ import os
 from latticex.rosetta.controller.common_util import rtt_get_logger
 
 # load librtt_ops.so
-_rtt_ops_lib = os.path.dirname(__file__) + '/../../../librtt-ops.so'
+if 'ROSETTA_MPC_128' in os.environ and os.environ['ROSETTA_MPC_128'] == 'ON':
+    _rtt_ops_lib = os.path.dirname(__file__) + '/../../../lib128/librtt-ops.so'
+else:
+    _rtt_ops_lib = os.path.dirname(__file__) + '/../../../librtt-ops.so'
 rtt_ops = tf.load_op_library(_rtt_ops_lib)
 
 

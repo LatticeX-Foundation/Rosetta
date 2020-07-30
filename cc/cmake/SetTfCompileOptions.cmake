@@ -26,7 +26,7 @@ execute_process(
 message(STATUS "TF_LD_FLAGS: " ${TF_LD_FLAGS})
 
 # append flags
-set(RUNTIME_FLAGS "-Wl,--rpath='$ORIGIN/..:$ORIGIN'")
+set(RUNTIME_FLAGS "-Wl,--rpath='$ORIGIN'")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${TF_CFLAGS} ${TF_LD_FLAGS} ${RUNTIME_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TF_CFLAGS} ${TF_LD_FLAGS} ${RUNTIME_FLAGS}")
 

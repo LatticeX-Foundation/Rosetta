@@ -187,11 +187,17 @@ void Log::mpc_log_v2(const vector<mpc_t>& shared_X,
    	vector<mpc_t> shared_end(vec_size, 0);
    	vector<mpc_t> shared_res(vec_size, 0);
 	for(int i = 0; i < seg_size; ++i) {
-	   ConstPolynomial curr_seg = log_v2_p->at(i);
-	   mpc_t seg_init = curr_seg.get_start();
-	   mpc_t seg_end = curr_seg.get_end();
+	   	ConstPolynomial curr_seg = log_v2_p->at(i);
+	   	mpc_t seg_init = curr_seg.get_start();
+	   	mpc_t seg_end = curr_seg.get_end();
 		curr_seg.get_power_list(curr_power_list);
 		curr_seg.get_coff_list(curr_coff_list);
+		// cout << "Seg " << i << ":[" << MpcTypeToFloat(seg_init) <<
+		//  			", " << MpcTypeToFloat(seg_end) << "): ";
+		// for(auto i = 0; i< curr_power_list.size(); i++) {
+		//     cout << MpcTypeToFloat(curr_coff_list[i]) << "*X^" << 
+		//  			to_readable_hex(curr_power_list[i]) << " + ";
+		// }
 		// S1: use ReLUPrime to get whether to use this segemnt[ multiplier is 0 or 1]
 		/// 1.1 check start point
 		// x >= start && (1 - (x >= end))
@@ -223,6 +229,10 @@ void Log::mpc_log_v2(const vector<mpc_t>& shared_X,
 		for (int i = 0; i < vec_size; ++i) {
             poly_res[i] = CoffDown(poly_res[i]);
         }
+		// debug 
+		// if(PRIMARY) {
+        //   	GetMpcOpInner(Reconstruct2PC)->Run(poly_res, poly_res.size(), "curr seg Poly value");
+    	// }
 		vector<mpc_t> this_seg_res(vec_size, 0);
 		GetMpcOpInner(DotProduct)->Run(shared_res, poly_res, this_seg_res, vec_size);	
 		addVectors<mpc_t>(shared_Y, this_seg_res, shared_Y, vec_size);
@@ -261,14 +271,7 @@ void Log::mpc_log_v2(const mpc_t& shared_X,
 	   mpc_t seg_end = curr_seg.get_end();
 		curr_seg.get_power_list(curr_power_list);
 		curr_seg.get_coff_list(curr_coff_list);
-		// cout << "Seg " << i << ":[" << MpcTypeToFloat(seg_init) <<
-		// 			", " << MpcTypeToFloat(seg_end) << "): ";
-		// for(auto i = 0; i< curr_power_list.size(); i++) {
-		// cout << MpcTypeToFloat(curr_coff_list[i]) << "*X^" << 
-		// 			curr_power_list[i] << " + ";
-		// }
-		// cout << endl;
-		// S1: use ReLUPrime to get whether to use this segemnt[ multiplier is 0 or 1]
+		/// S1: use ReLUPrime to get whether to use this segemnt[ multiplier is 0 or 1]
 		/// 1.1 check start point
 		// x >= start && (1 - (x >= end))
 		shared_cmp[0] = shared_X;

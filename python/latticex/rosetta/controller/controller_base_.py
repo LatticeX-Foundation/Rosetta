@@ -16,35 +16,14 @@
 # along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 # =============================================================================="
 
-
-import tensorflow as tf
+# -----------------------------
+# Import _rosetta library
+# -----------------------------
 import os
-
+import tensorflow as tf
 if 'ROSETTA_MPC_128' in os.environ and os.environ['ROSETTA_MPC_128'] == 'ON':
-    _secureop_lib = os.path.dirname(__file__) + '/../../../lib128/libsecure-ops.so'
+    import latticex.lib128._rosetta as _rst
 else:
-    _secureop_lib = os.path.dirname(__file__) + '/../../../libsecure-ops.so'
-_secure_ops = tf.load_op_library(_secureop_lib)
+    import latticex._rosetta as _rst
 
-
-# -----------------------------
-# matrix arithmetic ops
-# -----------------------------
-def SecureMatMul(a,
-              b,
-              transpose_a=False,
-              transpose_b=False,
-              adjoint_a=False,
-              adjoint_b=False,
-              a_is_sparse=False,
-              b_is_sparse=False,
-              name=None):
-    return _secure_ops.secure_matmul(a, b, transpose_a=transpose_a, transpose_b=transpose_b, name=name)
-
-
-
-
-
-
-
-
+_rtt = _rst

@@ -2,9 +2,7 @@
 # find . -name '*.sh' | xargs chmod 755
 # find . -name '*.py' | xargs chmod 755
 
-# for debug
-set -x
-bash ./kill.sh
+
 # This script for compiling all c++ projects and python-setup project
 # Also runing all tests
 
@@ -19,7 +17,7 @@ NC='\033[0m' # No Color
 function run_stage_prepare() {
     echo -e "stage 0: cmake build and dependencies install."
     cd ${ccdir}
-    bash ./compile_and_test.sh
+    bash ./compile_and_test.sh $*
     cd ${curdir}
     echo -e "${GREEN}run stage prepare ok.${NC}"
 }
@@ -78,22 +76,57 @@ function run_stage_4() {
 
 # run all the stages
 function run_all() {
-    run_stage_prepare
+    if [ ${use_128} == "128" ]; then
+        echo -e "run and compile 128 bits binaries..."
+    else
+        echo -e "please specify 128 bits to compile and run !!!"
+        exit 1
+    fi
+    # run and compile 128 bits
+    export ROSETTA_MPC_128=ON
+    run_stage_prepare ${build_type} ${use_128}
+    run_stage_1
+    run_stage_2
+    run_stage_3
+    echo -e "run and compile 128 bits binaries ok."
+
+    # build 128 _rosetta.xxxx.so and backup
+    python3 setup.py build_ext
+    unset ROSETTA_MPC_128
+
+    # run and compile 64 bits binaries and .whl package
+    use_128=64
+    run_stage_prepare ${build_type} ${use_128}
     run_stage_1
     run_stage_2
     run_stage_3
     run_stage_4
+    echo -e "run and compile 64 bits binaries ok."
 
-    echo -e "run all the stages ok."
+    echo -e "run 128-bits, 64-bits binaries all ok."
 }
 
 # get choice, default choice means run all the stages
 stage_choice=x
+# build_type, default is Release
+build_type=Release
+# use 128 bits mpc type
+use_128=128
 if [ $# -ge 1 ]; then
     stage_choice=$1
     echo -e "run stage: ${stage_choice}..."
 else
     echo -e "run all the stages..."
+fi
+
+if [ $# -ge 2 ]; then
+    build_type=$2
+    echo -e "build type: ${build_type}..."
+fi
+
+if [ $# -ge 3 ]; then
+    use_128=$3
+    echo -e "use 128 bits mpc: ${use_128}..."
 fi
 
 # main

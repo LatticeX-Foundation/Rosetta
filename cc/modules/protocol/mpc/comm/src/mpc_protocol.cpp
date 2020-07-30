@@ -117,6 +117,7 @@ int MpcProtocol::Uninit() {
     _net_io->statistics();
 
     msg_id_t msgid("this message id for synchronize P0/P1/P2 uninit");
+
     // the following time(0) will show the sync beg/end
     log_debug << __FUNCTION__ << " beg sync :" << time(0) << endl;
     _net_io->sync_with(msgid);

@@ -19,15 +19,33 @@
 
 #include <vector>
 #include <string>
+#include <cstdint>
+
 
 extern int FLOAT_PRECISION_M; // todo, will rename to FLOAT_PRECISION in the future
 
-namespace rosetta {
-
+//#define ROSETTA_MPC_128 1 // define ROSETTA_MPC_128 macro from cmake
+#if ROSETTA_MPC_128
+#if __SIZEOF_INT128__
+typedef unsigned __int128 uint128_t;
+typedef __int128 int128_t;
+typedef uint128_t mpc_t;
+typedef uint8_t small_mpc_t;
+typedef int128_t signed_mpc_t;
+typedef uint8_t bit_t;
+#define GCC_SUPPORT_INT128 1
+#else
+  #error your gcc not support int128 or uint128
+#endif //if__SIZEOF_INT128__
+#else
 typedef uint64_t mpc_t;
 typedef uint8_t small_mpc_t;
 typedef int64_t signed_mpc_t;
 typedef uint8_t bit_t;
+#endif //ROSETTA_MPC_128
+
+
+namespace rosetta {
 
 // Attention! Note that the FLOAT_PRECISION_M will be initialized AFTER
 //      initializing protocol, so DO NOT use it or its related functions before
@@ -37,16 +55,21 @@ typedef uint8_t bit_t;
     (((signed_mpc_t)(a)) << FLOAT_PRECISION_M) + \
     (signed_mpc_t)(((a) - (signed_mpc_t)(a)) * (1L << FLOAT_PRECISION_M))))
 #define MpcTypeToFloat(a) ((double((signed_mpc_t)(a))) / (1L << FLOAT_PRECISION_M))
+// TODO(george): to reimplement this
 /* 
     @brief: Customized for polynomial interpolation coefficients so that 
     we have higher precision (more significant decimal points)!
-    @Note: the original float number shoud not (usually) be too large.
+    @Note: the original float number should not (usually) be too large.
 */
+// #define CoffUp(a) 
+//  ((mpc_t)(signed_mpc_t)(double(a) * (1L << (FLOAT_PRECISION_M + FLOAT_PRECISION_M))))
 #define CoffUp(a) \
-  ((mpc_t)(signed_mpc_t)(double(a) * (1L << (FLOAT_PRECISION_M + FLOAT_PRECISION_M))))
+  ((mpc_t)(                                      \
+    (((signed_mpc_t)(a)) << FLOAT_PRECISION_M) + \
+    (signed_mpc_t)(((a) - (signed_mpc_t)(a)) * (1L << FLOAT_PRECISION_M))))
 // only used in protocol SecureNN currenlty. please use 'trunc' (and Scale) in protocol Helix.
-#define CoffDown(a) ((double((signed_mpc_t)(a))) / (1L << FLOAT_PRECISION_M))
-
+// #define CoffDown(a) ((double((signed_mpc_t)(a))) / (1L << FLOAT_PRECISION_M))
+#define CoffDown(a) a
 ///////**************************some internal functionalities ********************************
 /*
 	****Polynomials******************

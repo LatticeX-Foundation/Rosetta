@@ -62,12 +62,19 @@ __m128i AESObject::newRandomNumber() {
 mpc_t AESObject::get64Bits() {
   mpc_t ret;
 
+#if ROSETTA_MPC_128
+  random64BitNumber = newRandomNumber();
+#else
   if (random64BitCounter == 0)
     random64BitNumber = newRandomNumber();
+#endif
 
-  uint8_t x = random64BitCounter % 2;
   uint64_t* temp = (uint64_t*)&random64BitNumber;
 
+#if ROSETTA_MPC_128
+  ret = (mpc_t(temp[0]) << 64) | (mpc_t(temp[1]));
+#else
+  uint8_t x = random64BitCounter % 2;
   switch (x) {
     case 0:
       ret = (mpc_t)temp[1];
@@ -76,10 +83,13 @@ mpc_t AESObject::get64Bits() {
       ret = (mpc_t)temp[0];
       break;
   }
+#endif //ROSETTA_MPC_128
 
+#if !ROSETTA_MPC_128
   random64BitCounter++;
   if (random64BitCounter == 2)
     random64BitCounter = 0;
+#endif
 
   return ret;
 }
@@ -174,6 +184,8 @@ small_mpc_t AESObject::randModPrime() {
     :
     : "r"(ret)
     : "%eax", "%ebx", "%ecx", "%edx");
+
+  return (ret % PRIME_NUMBER);
 #else
   small_mpc_t i = (ret & PRIME_NUMBER) + (ret >> 7);
   return (i >= PRIME_NUMBER) ? i - PRIME_NUMBER : i;
@@ -181,8 +193,7 @@ small_mpc_t AESObject::randModPrime() {
 
 #else
   return (ret % PRIME_NUMBER);
-#endif
-  return (ret % PRIME_NUMBER);
+#endif//(PRIME_NUMBER == 127)
 }
 
 small_mpc_t AESObject::randNonZeroModPrime() {

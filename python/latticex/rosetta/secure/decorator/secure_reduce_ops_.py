@@ -17,11 +17,7 @@
 # =============================================================================="
 import tensorflow as tf
 from tensorflow.python.ops import math_ops
-import os
-
-
-_secureop_lib = os.path.dirname(__file__) + '/../../../libsecure-ops.so'
-_secure_ops = tf.load_op_library(_secureop_lib)
+from latticex.rosetta.secure.decorator.secure_base_ import _secure_ops
 
 
 # -----------------------------

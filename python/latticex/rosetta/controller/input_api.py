@@ -17,7 +17,7 @@
 # =============================================================================="
 from latticex.rosetta.controller.backend_handler import py_protocol_handler
 from latticex.rosetta.controller.common_util import rtt_get_logger
-import latticex._rosetta as _rtt
+from latticex.rosetta.controller.controller_base_ import _rtt
 
 import numpy as np
 import pandas as pd

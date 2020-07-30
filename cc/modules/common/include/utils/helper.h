@@ -26,12 +26,21 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cstdint>
 
 using namespace std;
 using std::vector;
 
 #include "cc/modules/common/include/utils/logger.h"
 #include "cc/modules/common/include/utils/random_util.h"
+
+#if __SIZEOF_INT128__
+typedef unsigned __int128 uintlong;
+typedef __int128 intlong;
+#else
+typedef uint64_t uintlong;
+typedef int64_t intlong;
+#endif
 
 ////////////////////////////////////////////////
 static inline std::vector<std::string> split(const std::string& src, char delim) {
@@ -62,19 +71,61 @@ void print(T v, ARG... args) {
   print(args...);
 }
 
+template <typename T>
+string to_readable_hex(const T& v) {
+  int len = sizeof(T);
+  string hex(2 * len, 0);
+  unsigned char* p = (unsigned char*)&v;
+  unsigned char p0;
+  unsigned char p1;
+  for (int i = 0; i < len; ++i) {
+    p0 = p[len - 1 - i] & 0x0000000F;
+    p1 = p[len - 1 - i] >> 4 & 0x0000000F;
+    hex[2 * i + 1] = p0 >= 0 && p0 <= 9 ? p0 + '0' : p0 - 10 + 'A';
+    hex[2 * i] = p1 >= 0 && p1 <= 9 ? p1 + '0' : p1 - 10 + 'A';
+  }
+  return hex;
+}
+
+template <typename T>
+string to_readable_dec(const T& v) {
+  assert(sizeof(T) <= sizeof(uintlong) && "only support 128 bits long");
+  if (v == 0)
+    return "0";
+  
+  uintlong value = (uintlong)v;
+  string hex;
+  while (value) {
+    hex.insert(0, 1, value % 10 + '0');
+    value = value / 10;
+  }
+
+  return hex;
+}
+
 template <class T>
 inline void print_vec(const vector<T>& a, int length = -1, string msg = "") {
   if (length < 0 || length > a.size())
     length = a.size();
   cout << msg << ": size [" << a.size() << "]" << endl;
   for (int i = 0; i < length; i++) {
-    cout << a[i] << endl;
-    // cout << setw(22) << a[i];
-    // if (i > 0 && (((i + 1) & 0x7) == 0))
-    //   cout << endl;
+    //if (sizeof(a[i]) == sizeof(uintlong))
+      cout << to_readable_hex(a[i]) << endl;
   }
   cout << endl;
 }
+
+template <>
+inline void print_vec(const vector<double>& a, int length, string msg) {
+  if (length < 0 || length > a.size())
+    length = a.size();
+  cout << msg << ": size [" << a.size() << "]" << endl;
+  for (int i = 0; i < length; i++) {
+    cout << a[i] << endl;
+  }
+  cout << endl;
+}
+
 template <>
 inline void print_vec(const vector<string>& a, int length, string msg) {
   if (length < 0 || length > a.size())

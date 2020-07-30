@@ -70,6 +70,8 @@ with tf.Session() as sess:
 ```
 For more details, please check [Tutorials](doc/TUTORIALS.md) and [Examples](./example).
 
+> Note: Currently Rosetta already supports 128-bits large integer arithmetic, which can be enabled by configuring the environment variable `export ROSETTA_MPC_128=ON`.
+
 ## Getting Started
 
 To help you start with your first workable program with Rosetta easily, our [Tutorials](doc/TUTORIALS.md) will lead you to this fantastic world. In this detailed tutorials, we will assist you learn the basic concepts about Rosetta, then show you how to use the interfaces that we provide by easy-to-understand examples, and finally teach you to build a workable privacy-preserving machine learning model on real datasets.

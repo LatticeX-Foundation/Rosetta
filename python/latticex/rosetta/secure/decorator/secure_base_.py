@@ -16,7 +16,9 @@
 # along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 # =============================================================================="
 
-
+# -----------------------------
+# Import TensorFlow secure binary ops
+# -----------------------------
 import tensorflow as tf
 import os
 
@@ -25,26 +27,3 @@ if 'ROSETTA_MPC_128' in os.environ and os.environ['ROSETTA_MPC_128'] == 'ON':
 else:
     _secureop_lib = os.path.dirname(__file__) + '/../../../libsecure-ops.so'
 _secure_ops = tf.load_op_library(_secureop_lib)
-
-
-# -----------------------------
-# matrix arithmetic ops
-# -----------------------------
-def SecureMatMul(a,
-              b,
-              transpose_a=False,
-              transpose_b=False,
-              adjoint_a=False,
-              adjoint_b=False,
-              a_is_sparse=False,
-              b_is_sparse=False,
-              name=None):
-    return _secure_ops.secure_matmul(a, b, transpose_a=transpose_a, transpose_b=transpose_b, name=name)
-
-
-
-
-
-
-
-

@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 # =============================================================================="
-import latticex._rosetta as _rtt
+
 import numpy as np
 import pandas as pd
 from enum import Enum, unique
+from latticex.rosetta.controller.controller_base_ import _rtt
 from latticex.rosetta.controller.common_util import rtt_get_logger
 
 class SecureDatasetType(Enum):
