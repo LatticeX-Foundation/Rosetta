@@ -15,14 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 # =============================================================================="
-import os
 import tensorflow as tf
-if 'ROSETTA_MPC_128' in os.environ and os.environ['ROSETTA_MPC_128'] == 'ON':
-    import latticex.lib128._rosetta as _rtt
-else:
-    import latticex._rosetta as _rtt
-
+from latticex.rosetta.controller.controller_base_ import _rtt
 from latticex.rosetta.controller.common_util import rtt_get_logger
+
 # A simple way to cope commandline arguments
 # ########################### commandline arguments
 import argparse
