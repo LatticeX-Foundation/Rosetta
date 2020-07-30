@@ -2,9 +2,7 @@
 # find . -name '*.sh' | xargs chmod 755
 # find . -name '*.py' | xargs chmod 755
 
-# for debug
-set -x
-bash ./kill.sh
+
 # This script for compiling all c++ projects and python-setup project
 # Also runing all tests
 
