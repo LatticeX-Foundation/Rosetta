@@ -50,23 +50,27 @@ The following is a simple example for matrix multiplication using Rosetta.
 import latticex.rosetta as rtt
 import tensorflow as tf
 
-# You can activate a backend protocol, here use SecureNN
+# You can activate a backend protocol, here we use SecureNN
 rtt.activate("SecureNN")
 
-# Get private data from Alice (input x), Bob (input y)
-x = tf.Variable(rtt.private_console_input(0, shape=(2, 3)))
-y = tf.Variable(rtt.private_console_input(1, shape=(3, 2)))
+# Get private data from every party
+matrix_a = tf.Variable(rtt.private_console_input(0, shape=(3, 2)))
+matrix_b = tf.Variable(rtt.private_console_input(1, shape=(2, 1)))
+matrix_c = tf.Variable(rtt.private_console_input(2, shape=(1, 4)))
 
-# Define matmul operation
-res = tf.matmul(x, y)
+# Just use the native tf.matmul operation.
+cipher_result = tf.matmul(tf.matmul(matrix_a, matrix_b), matrix_c)
 
 # Start execution
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    res = sess.run(res)
-
+    # Take a glance at the ciphertext
+    cipher_result = sess.run(cipher_result)
+    print('local ciphertext result:', cipher_result)
+    # Set only party a and c can get plain result
+    a_and_c_can_get_plain = 0b101 
     # Get the result of Rosetta matmul
-    print('matmul:', sess.run(rtt.SecureReveal(res)))
+    print('plaintext matmul result:', sess.run(rtt.SecureReveal(cipher_result, a_and_c_can_get_plain)))
 ```
 For more details, please check [Tutorials](doc/TUTORIALS.md) and [Examples](./example).
 
@@ -74,14 +78,14 @@ For more details, please check [Tutorials](doc/TUTORIALS.md) and [Examples](./ex
 
 ## Getting Started
 
-To help you start with your first workable program with Rosetta easily, our [Tutorials](doc/TUTORIALS.md) will lead you to this fantastic world. In this detailed tutorials, we will assist you learn the basic concepts about Rosetta, then show you how to use the interfaces that we provide by easy-to-understand examples, and finally teach you to build a workable privacy-preserving machine learning model on real datasets.
+To help you start with your first workable program with Rosetta easily, our [Tutorials](doc/TUTORIALS.md) will lead you to this fantastic world. In this detailed tutorials, we will assist you learn the basic concepts about Rosetta, then show you how to use the interfaces that we provide by easy-to-understand examples, and finally help you build a workable privacy-preserving machine learning model on real-world datasets.
 
 Hopefully, this tutorial, and more other examples in [Examples](./example), will whet your appetite to dive in knowing more about this privacy-preserving framework.
 
 
 ## Contributing to Rosetta
 
-Rosetta is an open source project developed under the LPGLv3 license and maintained by [LatticeX Foundation](https://latticex.foundation/). Contributions from individuals and organizations are all welcome. Before beginning, please take a look at our [contributing guidelines](CONTRIBUTING.md). You could also open an issue by clicking [here](https://github.com/LatticeX-Foundation/Rosetta/issues/new).
+Rosetta is an open source project developed under the LPGLv3 license and maintained by [LatticeX Foundation](https://latticex.foundation/). Contributions from individuals and organizations are all welcome. Before beginning, please take a look at our [contributing guidelines](CONTRIBUTING.md). Our project adheres to [code of conduct](CODE_OF_CONDUCT.md). By participating in our community, you are expected to uphold this code. You could also open an issue by clicking [here](https://github.com/LatticeX-Foundation/Rosetta/issues/new).
 
 ## Documents List
 
