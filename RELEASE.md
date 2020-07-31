@@ -3,6 +3,7 @@
 
 - [Release Notes](#release-notes)
   - [Introduction](#introduction)
+  - [Rosetta v0.2.1](#rosetta-v021)
   - [Rosetta v0.2.0](#rosetta-v020)
   - [Rosetta v0.1.1](#rosetta-v011)
     - [Features](#features)
@@ -16,6 +17,11 @@
 
 ## Introduction
 This document will maintain and continually update the release notes of each version of Rosetta. If you have questions or comments, please contact us via rosetta@latticex.foundation.
+
+## Rosetta v0.2.1
+1. Support 128-bit integer data type, which enables big integer and high precision float-point operations.
+   
+2. Refactor python directories of dynamic libraries and use `ROSETTA_MPC_128=ON` to enable 128-bit privacy computation.
 
 ## Rosetta v0.2.0
 1. Refactor the whole architecture so that each layer has a clearer boundary. Especially, an abstract protocol layer is added to decouple cryptographic protocols and TensorFlow Ops, so that TensorFlow does not depend on specific protocols and vise verse.
