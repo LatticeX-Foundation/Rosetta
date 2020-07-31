@@ -28,6 +28,7 @@ namespace py = pybind11;
 #include <iostream>
 #include <mutex>
 #include <fstream>
+using namespace std;
 
 #include "cc/modules/protocol/public/protocol_manager.h"
 using np_str_t = std::array<char, 33>; // at most 33 bytes
@@ -43,25 +44,11 @@ class Input {
 
   void public_input() {}
 
-  // np_str_t private_input(int party_id, double d) {
-  //   vector<std::string> outd(1);
-  //   auto ops = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(pri_input_msg_id);
-  //   ops->PrivateInput(party_id, {d}, outd);
-
-  //   auto result = py::array_t<np_str_t>(1);
-  //   py::buffer_info out = result.request();
-  //   np_str_t* pout = reinterpret_cast<np_str_t*>(out.ptr);
-  //   memset((char*)pout, 0, sizeof(np_str_t));
-  //   std::memcpy((char*)pout->data(), outd[0].data(), outd[0].size());
-  //   return result.at(0);
-  // }
 
   py::array_t<np_str_t> private_input(int party_id, const py::array_t<double>& input) {
     py::buffer_info buf = input.request();
     ssize_t ndim = buf.ndim;
     ssize_t size = buf.size;
-    //cout << "input size:" << size << endl;
-    //cout << "input ndim:" << ndim << endl;
     auto result = py::array_t<np_str_t>(size);
     py::buffer_info out = result.request();
     np_str_t* pout = reinterpret_cast<np_str_t*>(out.ptr);

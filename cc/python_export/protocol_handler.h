@@ -23,6 +23,7 @@
 #include <iostream>
 #include <mutex>
 #include <fstream>
+using namespace std;
 
 #include "cc/modules/protocol/public/protocol_manager.h"
 

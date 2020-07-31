@@ -27,7 +27,6 @@ namespace py = pybind11;
 #include <iostream>
 #include <mutex>
 #include <fstream>
-
 using namespace std;
 
 #include "cc/modules/protocol/public/protocol_manager.h"
@@ -82,8 +81,8 @@ class DataSet {
     py::buffer_info buf = input.request();
     ssize_t ndim = buf.ndim;
     ssize_t size = buf.size;
-    cout << "input size:" << size << endl;
-    cout << "input ndim:" << ndim << endl;
+    // cout << "input size:" << size << endl;
+    // cout << "input ndim:" << ndim << endl;
 
     // initialize
     vector<double> valuesX;
@@ -193,8 +192,8 @@ class DataSet {
     py::buffer_info buf = input.request();
     ssize_t ndim = buf.ndim;
     ssize_t size = buf.size;
-    cout << "input size:" << size << endl;
-    cout << "input ndim:" << ndim << endl;
+    // cout << "input size:" << size << endl;
+    // cout << "input ndim:" << ndim << endl;
 
     vector<double> valuesY;
     int n = 1, d = 1;
