@@ -74,7 +74,7 @@ with tf.Session() as sess:
 ```
 For more details, please check [Tutorials](doc/TUTORIALS.md) and [Examples](./example).
 
-> Note: Currently Rosetta already supports 128-bits large integer arithmetic, which can be enabled by configuring the environment variable `export ROSETTA_MPC_128=ON`.
+> Note: Currently Rosetta already supports 128-bit integer data type, which can be enabled by configuring the environment variable `export ROSETTA_MPC_128=ON`.
 
 ## Getting Started
 
