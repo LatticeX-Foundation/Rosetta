@@ -16,7 +16,6 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #include "cc/modules/io/include/internal/server.h"
-#include "cc/modules/common/include/utils/helper.h"
 
 #if !USE_LIBEVENT_AS_BACKEND
 namespace rosetta {
@@ -24,9 +23,7 @@ namespace io {
 //#define EPOLL_EVENTS (EPOLLIN | EPOLLERR)
 #define EPOLL_EVENTS (EPOLLIN | EPOLLERR | EPOLLET)
 
-void handleInterrupt(int sig) {
-  cout << "Ctrl C" << endl;
-}
+void handleInterrupt(int sig) { cout << "Ctrl C" << endl; }
 namespace {
 
 void epoll_add(int efd, Connection* conn) {
@@ -150,9 +147,7 @@ void TCPServer::handle_error(Connection* conn) {
   //close(conn->fd_);
 }
 
-void TCPServer::handle_write(Connection* conn) {
-  cout << __FUNCTION__ << endl;
-}
+void TCPServer::handle_write(Connection* conn) { cout << __FUNCTION__ << endl; }
 
 void TCPServer::handle_read(Connection* conn) {
   if (conn->fd_ == listenfd_) {

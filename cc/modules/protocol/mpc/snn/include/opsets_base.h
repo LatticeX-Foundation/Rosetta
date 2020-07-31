@@ -17,6 +17,7 @@
 // ==============================================================================
 #pragma once
 
+#include "cc/modules/protocol/public/include/protocol_base.h"
 #include "cc/modules/protocol/mpc/comm/include/mpc_helper.h"
 #include "cc/modules/protocol/mpc/snn/include/mpc_tools.h"
 #include "cc/modules/protocol/mpc/snn/include/aesobjects.h"
@@ -25,21 +26,13 @@ extern int partyNum;
 namespace rosetta {
 namespace snn {
 
-
-//! @todo optimized
-#if USE_NETIO_WITH_MESSAGEID
-  using _SNN_IO = rosetta::io::ParallelIO;
-#else
-  using _SNN_IO = rosetta::io::IO;
-#endif
-
 // temp solution!
 using namespace rosetta::mpc;
 class OpBase_ {
   OpBase_& operator=(const OpBase_&) = delete;
 
  protected:
-  shared_ptr<_SNN_IO> io = nullptr; //!!!!!!!!! do not release this pointer
+  shared_ptr<NET_IO> io = nullptr; //!!!!!!!!! do not release this pointer
 
  protected:
   std::shared_ptr<AESObject> aes_randseed = nullptr;

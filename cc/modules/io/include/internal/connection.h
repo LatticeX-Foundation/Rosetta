@@ -22,6 +22,12 @@
 #include "cc/modules/io/include/internal/socket.h"
 #include "cc/modules/io/include/internal/cycle_buffer.h"
 
+#include <atomic>
+#include <map>
+#include <iostream>
+#include <mutex>
+using namespace std;
+
 namespace rosetta {
 namespace io {
 

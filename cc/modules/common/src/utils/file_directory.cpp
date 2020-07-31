@@ -15,11 +15,5 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#pragma once
+#include "cc/modules/common/include/utils/file_directory.h"
 
-#include <string>
-#include <cstdint>
-using namespace std;
-
-string gen_key_str(uint32_t seed = 0);
-void gen_key_file(const string& filename, uint32_t seed = 0);

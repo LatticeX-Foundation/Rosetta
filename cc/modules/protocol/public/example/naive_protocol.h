@@ -32,7 +32,7 @@ using std::vector;
 using std::shared_ptr;
 using std::unordered_map; 
 
-using NET_IO = io::BasicIO<io::TCPServer, io::TCPClient>;
+using NET_IO = io::BasicIO;
 
 // This is the base interface class for all secure cryptographic protocols
 class ProtocolBase {

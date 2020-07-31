@@ -20,8 +20,6 @@
 // NOTE THAT THIS FILE IS USED FOR PROTOCOL SNN NOW.
 // WE WILL RENAME THIS AS SOON AS POSSIBLE.
 
-#include "cc/modules/common/include/utils/simple_timer.h"
-
 #include <emmintrin.h>
 #include <cassert>
 #include <climits>

@@ -15,7 +15,24 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
+#include "cc/modules/common/include/utils/logger.h"
 #include "cc/modules/protocol/mpc/comm/include/config.h"
+
+#include <rapidjson/document.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+using namespace rapidjson;
+
+#include <unistd.h>
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+using namespace std;
+
 namespace rosetta {
 
 namespace {

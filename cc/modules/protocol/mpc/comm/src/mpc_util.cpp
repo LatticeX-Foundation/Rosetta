@@ -18,6 +18,17 @@
 #include "cc/modules/protocol/mpc/comm/include/mpc_util.h"
 #include "cc/modules/protocol/mpc/comm/include/mpc_helper.h"
 
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+#include <vector>
+#include <sstream>
+#include <iostream>
+#include <fstream>
+#include <chrono>
+#include <random>
+using namespace std;
+
 namespace rosetta {
 static std::streambuf* cout_buf = nullptr;
 static std::ofstream of;

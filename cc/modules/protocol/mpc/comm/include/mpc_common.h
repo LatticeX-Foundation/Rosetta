@@ -21,7 +21,6 @@
 #include <string>
 #include <cstdint>
 
-
 extern int FLOAT_PRECISION_M; // todo, will rename to FLOAT_PRECISION in the future
 
 //#define ROSETTA_MPC_128 1 // define ROSETTA_MPC_128 macro from cmake
@@ -35,7 +34,7 @@ typedef int128_t signed_mpc_t;
 typedef uint8_t bit_t;
 #define GCC_SUPPORT_INT128 1
 #else
-  #error your gcc not support int128 or uint128
+#error your gcc not support int128 or uint128
 #endif //if__SIZEOF_INT128__
 #else
 typedef uint64_t mpc_t;
@@ -43,7 +42,6 @@ typedef uint8_t small_mpc_t;
 typedef int64_t signed_mpc_t;
 typedef uint8_t bit_t;
 #endif //ROSETTA_MPC_128
-
 
 namespace rosetta {
 
@@ -61,9 +59,9 @@ namespace rosetta {
     we have higher precision (more significant decimal points)!
     @Note: the original float number should not (usually) be too large.
 */
-// #define CoffUp(a) 
+// #define CoffUp(a)
 //  ((mpc_t)(signed_mpc_t)(double(a) * (1L << (FLOAT_PRECISION_M + FLOAT_PRECISION_M))))
-#define CoffUp(a) \
+#define CoffUp(a)                                \
   ((mpc_t)(                                      \
     (((signed_mpc_t)(a)) << FLOAT_PRECISION_M) + \
     (signed_mpc_t)(((a) - (signed_mpc_t)(a)) * (1L << FLOAT_PRECISION_M))))

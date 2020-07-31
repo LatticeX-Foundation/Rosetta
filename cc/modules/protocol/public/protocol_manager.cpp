@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-
+#include "cc/modules/common/include/utils/logger.h"
 #include "cc/modules/protocol/public/protocol_manager.h"
 #include "cc/modules/protocol/mpc/snn/src/snn_protocol.h"
 

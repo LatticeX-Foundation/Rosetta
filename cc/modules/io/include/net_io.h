@@ -52,7 +52,6 @@ namespace io {
 /**
  * This is the basic class of Network IO.
  */
-template <typename Server, typename Client>
 class BasicIO {
  public:
   virtual ~BasicIO();
@@ -238,7 +237,8 @@ class BasicIO {
   int thread_nums_ = 1;
   int base_port_ = -1;
   vector<string> ips_;
-  bool parallel_ = false;
+  bool is_parallel_io_ = false;
+  bool is_ssl_io_ = false;
 
   NetStat_st net_stat_st_;
 
@@ -249,8 +249,8 @@ class BasicIO {
  protected:
   vector<int> ports_;
   map<int, map<int, int>> party_cids_; // party id --> client ids <tid --> cid>
-  shared_ptr<Server> server = nullptr;
-  vector<vector<shared_ptr<Client>>> client; // [party_id][thread_id]
+  shared_ptr<TCPServer> server = nullptr;
+  vector<vector<shared_ptr<TCPClient>>> client; // [party_id][thread_id]
 };
 
 #include "internal/net_io.hpp"
@@ -258,32 +258,38 @@ class BasicIO {
 /**
  * General Net IO.
  */
-class NetIO : public BasicIO<TCPServer, TCPClient> {
+class NetIO : public BasicIO {
  public:
-  using BasicIO<TCPServer, TCPClient>::BasicIO;
+  using BasicIO::BasicIO;
   virtual ~NetIO() = default;
 };
 
 /**
  * General Net IO with SSL.
  */
-class SSLNetIO : public BasicIO<SSLServer, SSLClient> {
+class SSLNetIO : public BasicIO {
  public:
-  using BasicIO<SSLServer, SSLClient>::BasicIO;
+  using BasicIO::BasicIO;
   virtual ~SSLNetIO() = default;
+
+ protected:
+  virtual bool init_inner() {
+    is_ssl_io_ = true;
+    return true;
+  }
 };
 
 /**
  * Parallel Net IO.
  */
-class ParallelNetIO : public BasicIO<TCPServer, TCPClient> {
+class ParallelNetIO : public BasicIO {
  public:
-  using BasicIO<TCPServer, TCPClient>::BasicIO;
+  using BasicIO::BasicIO;
   virtual ~ParallelNetIO() = default;
 
  protected:
   virtual bool init_inner() {
-    parallel_ = true;
+    is_parallel_io_ = true;
     return true;
   }
 };
@@ -291,14 +297,15 @@ class ParallelNetIO : public BasicIO<TCPServer, TCPClient> {
 /**
  * Parallel Net IO with SSL.
  */
-class SSLParallelNetIO : public BasicIO<SSLServer, SSLClient> {
+class SSLParallelNetIO : public BasicIO {
  public:
-  using BasicIO<SSLServer, SSLClient>::BasicIO;
+  using BasicIO::BasicIO;
   virtual ~SSLParallelNetIO() = default;
 
  protected:
   virtual bool init_inner() {
-    parallel_ = true;
+    is_ssl_io_ = true;
+    is_parallel_io_ = true;
     return true;
   }
 };

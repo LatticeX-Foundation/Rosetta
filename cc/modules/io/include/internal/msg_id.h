@@ -17,15 +17,9 @@
 // ==============================================================================
 #pragma once
 
-#include <map>
-#include <vector>
-#include <string>
-#include <atomic>
-#include <mutex>
-#include <deque>
-#include <iostream>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
+#include <ostream>
 
 using id_type = uint16_t; // will used in the future
 

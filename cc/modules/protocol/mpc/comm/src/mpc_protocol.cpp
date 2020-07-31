@@ -17,7 +17,8 @@
 // ==============================================================================
 #include "cc/modules/protocol/mpc/comm/include/mpc_protocol.h"
 #include "cc/modules/protocol/mpc/comm/include/mpc_util.h"
-#include "cc/modules/io/include/net_io.h"
+#include "cc/modules/protocol/mpc/comm/include/config.h"
+#include "cc/modules/io/include/ex.h"
 
 #include <stdexcept>
 #include <string>
@@ -122,7 +123,7 @@ int MpcProtocol::Uninit() {
     log_debug << __FUNCTION__ << " beg sync :" << time(0) << endl;
     _net_io->sync_with(msgid);
     log_debug << __FUNCTION__ << " end sync :" << time(0) << endl;
-    usleep(500);
+    usleep(1000);
 
     _net_io->close();
     _net_io.reset();

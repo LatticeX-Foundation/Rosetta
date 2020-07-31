@@ -16,6 +16,7 @@ set_target_properties(mpc-snn PROPERTIES FOLDER "protocol/snn"
 )
 install_libraries(mpc-snn)
 
+IF(ROSETTA_COMPILE_TESTS)
 # examples & tests
 function(compile_ex_snn category)
   file(GLOB EXAMPLE_SOURCE_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/${category}" "${category}/*.cpp")
@@ -28,3 +29,4 @@ function(compile_ex_snn category)
 endfunction()
 compile_ex_snn(examples)
 compile_ex_snn(tests)
+ENDIF()

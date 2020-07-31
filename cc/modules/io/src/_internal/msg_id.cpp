@@ -17,6 +17,14 @@
 // ==============================================================================
 #include "cc/modules/io/include/internal/msg_id.h"
 
+#include <map>
+#include <vector>
+#include <string>
+#include <atomic>
+#include <mutex>
+#include <deque>
+#include <iostream>
+
 #if 0
 // the following variables are used in the map version
 std::mutex map_msgid_mtx_;

@@ -28,12 +28,10 @@
 #include "cc/modules/protocol/mpc/snn/src/internal/snn_helper.h"
 #include "cc/modules/common/include/utils/logger.h"
 #include "cc/modules/common/include/utils/helper.h"
-#include <Eigen/Dense>
 #include <bitset>
 #include <mutex>
 #include <stdint.h>
 using namespace std;
-using namespace Eigen;
 #define NANOSECONDS_PER_SEC 1E9
 
 // For time measurements
@@ -425,6 +423,7 @@ void print_linear(mpc_t var, string type) {
 void checkOverflow(
   const vector<mpc_t>& a, const vector<mpc_t>& b, size_t rows, size_t common_dim, size_t columns,
   size_t transpose_a, size_t transpose_b) {
+#if 0
   Matrix<mpc_t, Dynamic, Dynamic, RowMajor> eigen_a(rows, common_dim);
   Matrix<mpc_t, Dynamic, Dynamic, RowMajor> eigen_b(common_dim, columns);
 
@@ -483,6 +482,7 @@ void checkOverflow(
       }
     }
   }
+#endif
 }
 
 void sigmoidSA(const vector<mpc_t>& input, vector<mpc_t>& output, size_t rows, size_t cols) {

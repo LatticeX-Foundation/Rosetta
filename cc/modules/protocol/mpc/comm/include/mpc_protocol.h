@@ -18,8 +18,6 @@
 #pragma once
 #include "cc/modules/protocol/public/include/protocol_base.h"
 #include "cc/modules/protocol/mpc/comm/include/mpc_prg.h"
-#include "cc/modules/protocol/mpc/comm/include/config.h"
-#include "cc/modules/io/include/net_io.h"
 
 #include <memory>
 #include <string>
@@ -29,6 +27,7 @@
 extern int FLOAT_PRECISION_M;
 
 namespace rosetta {
+class RosettaConfig;
 class MpcProtocol : public ProtocolBase {
   using ProtocolBase::ProtocolBase;
 

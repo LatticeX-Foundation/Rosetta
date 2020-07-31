@@ -21,10 +21,15 @@
 #include <unordered_map>
 #include <vector>
 #include <stdexcept>
-#include "cc/modules/io/include/ex.h"
+#include <memory>
+#include <vector>
+#include <string>
+#include <iostream>
 
 namespace rosetta {
 
+using std::cout;
+using std::endl;
 using std::shared_ptr;
 using std::string;
 using std::unordered_map;

@@ -17,14 +17,13 @@
 // ==============================================================================
 #pragma once
 
+#include "cc/modules/protocol/public/include/protocol_base.h"
+#include "cc/modules/protocol/public/include/protocol_ops.h"
+#include "cc/modules/protocol/mpc/snn/include/snn_opsets.h"
+
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "cc/modules/protocol/public/include/protocol_base.h"
-#include "cc/modules/protocol/public/include/protocol_ops.h"
-#include "cc/modules/io/include/ex.h"
-
-#include "cc/modules/protocol/mpc/snn/include/snn_opsets.h"
 
 namespace rosetta {
 //namespace protocol {

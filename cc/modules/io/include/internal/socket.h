@@ -17,6 +17,8 @@
 // ==============================================================================
 #pragma once
 
+#include "cc/modules/common/include/utils/helper.h"
+#include "cc/modules/common/include/utils/logger.h"
 #include "cc/modules/io/include/internal/comm.h"
 
 #include <stdio.h>

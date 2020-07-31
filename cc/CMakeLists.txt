@@ -32,6 +32,8 @@ else()
     message(STATUS "ROSETTA_MPC_128: ${ROSETTA_MPC_128}, use 64-bits MPC")
 endif()
 
+option(ROSETTA_COMPILE_TESTS "" OFF)
+
 # modules
 add_subdirectory(modules)
 add_subdirectory(tf)
