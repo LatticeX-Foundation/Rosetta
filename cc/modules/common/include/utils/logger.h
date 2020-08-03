@@ -64,7 +64,7 @@ class Logger {
   int pid_;
   std::string filename_;
 
-  bool to_stdout_ = false; //false;
+  bool to_stdout_ = true; //false;
   bool to_file_ = false;
 };
 

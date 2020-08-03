@@ -196,7 +196,7 @@ void BasicIO::clear_statistics() { net_stat_st_.reset(); }
 
 void BasicIO::statistics(string str) {
   auto stat = net_stat();
-  cout << setw(15) << str << " communications P(" << party_ << "/" << parties_ << ") " << stat
+  log_debug << setw(15) << str << " communications P(" << party_ << "/" << parties_ << ") " << stat
        << endl;
 }
 
