@@ -172,15 +172,15 @@ class OpBase : public OpBase_ {
     init();
   }
 
-  explicit OpBase(const msg_id_t& key, shared_ptr<_SNN_IO> io__) : msg_id_(key) {
+  explicit OpBase(const msg_id_t& key, shared_ptr<NET_IO> io__) : msg_id_(key) {
     io = io__;
     init();
   }
-  explicit OpBase(const std::string& key, shared_ptr<_SNN_IO> io__) : msg_id_(key) {
+  explicit OpBase(const std::string& key, shared_ptr<NET_IO> io__) : msg_id_(key) {
     io = io__;
     init();
   }
-  explicit OpBase(const std::shared_ptr<OpBase>& op, shared_ptr<_SNN_IO> io__)
+  explicit OpBase(const std::shared_ptr<OpBase>& op, shared_ptr<NET_IO> io__)
       : msg_id_(op->msg_id()) {
     io = io__;
     init();

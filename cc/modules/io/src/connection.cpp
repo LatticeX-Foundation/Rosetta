@@ -17,6 +17,8 @@
 // ==============================================================================
 #include "cc/modules/io/include/internal/connection.h"
 
+#include <thread>
+
 namespace rosetta {
 namespace io {
 

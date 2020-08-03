@@ -3,6 +3,7 @@
 
 - [Release Notes](#release-notes)
   - [Introduction](#introduction)
+  - [Rosetta v0.2.1](#rosetta-v021)
   - [Rosetta v0.2.0](#rosetta-v020)
   - [Rosetta v0.1.1](#rosetta-v011)
     - [Features](#features)
@@ -21,8 +22,8 @@ This document will maintain and continually update the release notes of each ver
 ## Rosetta v0.2.1
 
 1. Support 128-bit integer data type, which enables big integer and high precision float-point operations.
+   
 2. Refactor python directories of dynamic libraries and use `ROSETTA_MPC_128=ON` to enable 128-bit privacy computation.
-
 
 ## Rosetta v0.2.0
 

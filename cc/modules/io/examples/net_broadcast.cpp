@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <thread>
+#include <cassert>
 #include <mutex>
 using namespace std;
 

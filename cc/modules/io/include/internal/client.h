@@ -18,10 +18,8 @@
 #pragma once
 
 #include "cc/modules/io/include/internal/comm.h"
-
 #include "cc/modules/io/include/internal/connection.h"
 #include "cc/modules/io/include/internal/socket.h"
-#include "cc/modules/io/include/internal/msg_id.h"
 
 namespace rosetta {
 namespace io {
@@ -29,20 +27,12 @@ namespace io {
 class TCPClient : public Socket {
  public:
   TCPClient(const std::string& ip, int port) : ip_(ip), port_(port) {}
-  ~TCPClient() {
-    close();
-  }
+  ~TCPClient() { close(); }
 
  public:
-  bool connected() const {
-    return connected_;
-  }
-  void setcid(int cid) {
-    cid_ = cid;
-  }
-  void setsid(int sid) {
-    sid_ = sid;
-  }
+  bool connected() const { return connected_; }
+  void setcid(int cid) { cid_ = cid; }
+  void setsid(int sid) { sid_ = sid; }
 
  public:
   /**

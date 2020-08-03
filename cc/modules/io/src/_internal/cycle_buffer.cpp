@@ -17,6 +17,14 @@
 // ==============================================================================
 #include "cc/modules/io/include/internal/cycle_buffer.h"
 
+#include <cstring>
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <assert.h>
+using namespace std;
+
 namespace rosetta {
 namespace io {
 

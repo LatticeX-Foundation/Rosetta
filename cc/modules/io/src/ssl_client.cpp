@@ -16,7 +16,6 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #include "cc/modules/io/include/internal/client.h"
-#include "cc/modules/common/include/utils/helper.h"
 
 int init_ssl_locking();
 namespace rosetta {

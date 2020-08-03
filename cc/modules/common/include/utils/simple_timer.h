@@ -16,6 +16,7 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #pragma once
+
 #include <chrono>
 
 class SimpleTimer {
@@ -23,54 +24,13 @@ class SimpleTimer {
   SimpleTimer() { start(); }
   virtual ~SimpleTimer() {}
 
-  void start() {
-    begin = std::chrono::steady_clock::now();
-    end = begin;
-    stoped = false;
-  }
+  void start();
+  double stop();
 
-  double stop() {
-    end = std::chrono::steady_clock::now();
-    stoped = true;
-    std::chrono::duration<double> elapsed_seconds = end - begin;
-    double costTime = elapsed_seconds.count();
-    return costTime;
-  }
-
-  double elapse() const {
-    auto ending = std::chrono::steady_clock::now();
-    if (stoped)
-      ending = end;
-    std::chrono::duration<double> elapsed_seconds = ending - begin;
-    return elapsed_seconds.count();
-  }
-
-  long long int ms_elapse() const {
-    auto ending = std::chrono::steady_clock::now();
-    if (stoped)
-      ending = end;
-    std::chrono::duration<long long int, std::micro> elapsed_milliseconds =
-      std::chrono::duration_cast<std::chrono::duration<long long int, std::milli>>(ending - begin);
-    return elapsed_milliseconds.count();
-  }
-
-  long long int us_elapse() const {
-    auto ending = std::chrono::steady_clock::now();
-    if (stoped)
-      ending = end;
-    std::chrono::duration<long long int, std::micro> elapsed_microseconds =
-      std::chrono::duration_cast<std::chrono::duration<long long int, std::micro>>(ending - begin);
-    return elapsed_microseconds.count();
-  }
-
-  long long int ns_elapse() const {
-    auto ending = std::chrono::steady_clock::now();
-    if (stoped)
-      ending = end;
-    std::chrono::duration<long long int, std::nano> elapsed_microseconds =
-      std::chrono::duration_cast<std::chrono::duration<long long int, std::nano>>(ending - begin);
-    return elapsed_microseconds.count();
-  }
+  double elapse() const;
+  long long int ms_elapse() const;
+  long long int us_elapse() const;
+  long long int ns_elapse() const;
 
  private:
   bool stoped;

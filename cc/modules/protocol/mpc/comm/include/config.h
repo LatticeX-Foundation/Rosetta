@@ -20,25 +20,13 @@
 /**
  * @todo
  * This file and its implement will be migrate to the `protocol/` directory.
- * 
  */
-#include <unistd.h>
-
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 using namespace std;
 
 #include <rapidjson/document.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
-using namespace rapidjson;
-
-#include "cc/modules/common/include/utils/logger.h"
+using rapidjson::Document;
 
 namespace rosetta {
 

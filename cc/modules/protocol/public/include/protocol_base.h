@@ -18,16 +18,20 @@
 #pragma once
 
 #include "cc/modules/protocol/public/include/protocol_ops.h"
-#include "cc/modules/io/include/ex.h"
-#include "cc/modules/common/include/utils/helper.h"
+//#include "cc/modules/common/include/utils/helper.h"
 
 #include <memory>
 #include <vector>
 #include <string>
+#include <iostream>
+#include <mutex>
 
 namespace rosetta {
-
-using NET_IO = io::ParallelIO;
+namespace io {
+class BasicIO;
+}
+//! the unique NET_IO defined here!
+using NET_IO = io::BasicIO;
 
 /**
  * This is the base interface class for all secure cryptographic protocols

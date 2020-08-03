@@ -212,7 +212,7 @@ ext_modules = [
         # cc_files,
         include_dirs=include_dirs,
         libraries=['tf-dpass', 'mpc-snn', 'mpc-io', 'mpc-comm',
-                   'protocol-base', 'protocol-api'],
+                   'common', 'protocol-base', 'protocol-api'],
         library_dirs=library_dirs,
         extra_compile_args=extra_cflags,
         extra_link_args=extra_lflags,
@@ -276,4 +276,3 @@ setup(
     license='LGPLv3',
     keywords='privacy-preserving machine learning',
 )
-
