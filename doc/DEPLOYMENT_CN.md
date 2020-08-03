@@ -134,31 +134,39 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 
 ```json
 {
-    "BASE_PORT":32000,
-    "P0":{
+  "PARTY_ID": 0,
+  "MPC": {
+    "FLOAT_PRECISION": 16,
+    "P0": {
       "NAME": "PartyA(P0)",
-      "HOST": "127.0.0.1"
+      "HOST": "127.0.0.1",
+      "PORT": 11121
     },
-    "P1":{
+    "P1": {
       "NAME": "PartyB(P1)",
-      "HOST": "127.0.0.1"
+      "HOST": "127.0.0.1",
+      "PORT": 12144
     },
-    "P2":{
-      "NAME":"PartyC(P2)",
-      "HOST": "127.0.0.1"
+    "P2": {
+      "NAME": "PartyC(P2)",
+      "HOST": "127.0.0.1",
+      "PORT": 13169
     },
+    "SAVER_MODE": 7,
     "SERVER_CERT": "certs/server-nopass.cert",
     "SERVER_PRIKEY": "certs/server-prikey",
-    "SERVER_PRIKEY_PASSWORD":"",
-    "SAVER_MODE":4
+    "SERVER_PRIKEY_PASSWORD": ""
+  }
 }
 ```
 字段说明: 
-- `BASE_PORT`: 通信起始端口. `P0`, `P1`, `P2` 将分别监听本地的 `BASE_PORT`、 `BASE_PORT+1` 和 `BASE_PORT+2` 端口。所以请在配置时务必保证端口没有被占用。
-  
+- `PARTY_ID`: 计算节点参与的角色ID，可取0，1，2，分别对应`P0`、`P1`、`P2`
+- `MPC`: 指定为安全多方计算协议配置
+- `FLOAT_PRECISION`: 安全多方浮点计算的精度位数
 - `P0`、`P1`、`P2`: 别为三方`MPC`联合训练player `P0`，`P1`，`P2`
 - `NAME`: `MPC` player名字标识
 - `HOST`: 主机地址
+- `PORT`: 通信端口
 - `SERVER_CERT`: 服务端签名证书
 - `SERVER_PRIKEY`: 服务端私钥
 - `SERVER_PRIKEY_PASSWORD`: 服务端私钥密码口令（没有设置则为空字符串）

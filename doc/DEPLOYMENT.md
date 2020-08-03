@@ -1,4 +1,5 @@
 # Rosetta Deployment Guide
+
 - [Rosetta Deployment Guide](#rosetta-deployment-guide)
   - [System requirements](#system-requirements)
   - [Installation](#installation)
@@ -10,9 +11,9 @@
     - [Example](#example)
   - [Preparation](#preparation)
     - [Configuration](#configuration)
-    - [Run the test](#run-the-test)
-      - [Stand-alone testing](#stand-alone-testing)
-      - [Multi-machine testing](#multi-machine-testing)
+  - [Run the test](#run-the-test)
+    - [Stand-alone testing](#stand-alone-testing)
+    - [Multi-machine testing](#multi-machine-testing)
 
 ----
 
@@ -81,7 +82,7 @@ Since we have wrapped all the steps in a script, so just get the source code and
 git clone https://github.com/LatticeX-Foundation/Rosetta.git --recursive
 # compile, install and run test cases
 cd Rosetta && bash compile_and_test_all.sh
-````
+```
 
 ## Deployment testing
 
@@ -101,7 +102,7 @@ Here we use the famous [demo of millionaire's problem][millionaire-example] as o
 Create separate directories for three computing nodes `P0`, `P1`, `P2`, e.g. `millionaire0`, `millionaire1`, `millionaire2`. 
 ```bash
 mkdir millionaire0 millionaire1 millionaire2
-````
+```
 - Download the demo
 
 Download the [python script](../example/millionaire/millionaire.py) to `millionaire0`, `millionaire1`, `millionaire2` directory for `P0`, `P1`, `P2` respectively.
@@ -133,39 +134,48 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 Write a configuration file `CONFIG.json` with the following template: 
 ```json
 {
-    "BASE_PORT":32000,
-    "P0":{
+  "PARTY_ID": 0,
+  "MPC": {
+    "FLOAT_PRECISION": 16,
+    "P0": {
       "NAME": "PartyA(P0)",
-      "HOST": "127.0.0.1"
+      "HOST": "127.0.0.1",
+      "PORT": 11121
     },
-    "P1":{
+    "P1": {
       "NAME": "PartyB(P1)",
-      "HOST": "127.0.0.1"
+      "HOST": "127.0.0.1",
+      "PORT": 12144
     },
-    "P2":{
-      "NAME":"PartyC(P2)",
-      "HOST": "127.0.0.1"
+    "P2": {
+      "NAME": "PartyC(P2)",
+      "HOST": "127.0.0.1",
+      "PORT": 13169
     },
+    "SAVER_MODE": 7,
     "SERVER_CERT": "certs/server-nopass.cert",
     "SERVER_PRIKEY": "certs/server-prikey",
-    "SERVER_PRIKEY_PASSWORD":"",
-    "SAVER_MODE":4
+    "SERVER_PRIKEY_PASSWORD": "123456"
+  }
 }
-````
+```
 Field Description: 
-- `BASE_PORT`: Communication starting port. `P0`, `P1`, `P2` will listen on their local port `BASE_PORT`, `BASE_PORT + 1` and `BASE_PORT + 2` respectively. So please MAKE SURE THEY ARE NOT IN USE WHEN CONFIGURED.
+- `PARTY_ID`: role of Secure Multipart Computation, the valid values are 0,1,2, corresponding to `P0`, `P1`, `P2` respectively
+- `MPC`: specify the protocol of Secure Multipart Computation
+- `FLOAT_PRECISION`: the float-point precision of Secure Multipart Computation
 - `P0`, `P1`, `P2`: `Three-Parties-MPC` players `P0`, `P1`, `P2`
 - `NAME`: `MPC` player name tag
 - `HOST`: host address
-- `SERVER_CERT`: Server-side signature certificate
+- `PORT`: communication port
+- `SERVER_CERT`: server-side signature certificate
 - `SERVER_PRIKEY`: server private key
 - `SERVER_PRIKEY_PASSWORD`: server private key password (empty string if not set)
-- `SAVER_MODE`: This indicates how the output checkpoint files are saved. Please refer to `MpcSaveV2` in our [API document](./API_DOC.md) for details.
+- `SAVER_MODE`: this indicates how the output checkpoint files are saved. Please refer to `MpcSaveV2` in our [API document](./API_DOC.md) for details.
 
 
-### Run the test
+## Run the test
 
-#### Stand-alone testing
+### Stand-alone testing
 
 Perform stand-alone testing in the Millionaire directory, Firstly, configure the configuration file using the template and save it as CONFIG.json.
 
@@ -179,33 +189,35 @@ Run the `Millionaire Problem` example:
 mkdir log
 # MPC player 2
 python3 millionaire.py --party_id=2
-````
+```
+
 - **`P1`node**
 
 ```bash
 mkdir log
 # MPC player 1
 python3 millionaire.py --party_id=1
-````
+```
+
 - **`P0` node**
 
 ```bash
 mkdir log
 # MPC player 0
 python3 millionaire.py --party_id=0
-````
+```
 
 After execution, output should be like this: 
 ```bash
 -------------------------------------------------
 1.0
 -------------------------------------------------
-````
+```
 
 It means that your example has run smoothly and the standalone deployment test has passed, otherwise the test has failed, and please check the above deployment steps.
 
 
-#### Multi-machine testing
+### Multi-machine testing
 
 Multi-machine testing is similar to stand-alone testing, with the difference that the configuration file needs to be set to a different `HOST` field corresponding to the IP address.
 
