@@ -38,9 +38,8 @@ struct Connection {
 
  public:
   virtual void handshake() {}
-  bool is_server() const {
-    return is_server_;
-  }
+  virtual void close() {}
+  bool is_server() const { return is_server_; }
 
  public:
   size_t send(const char* data, size_t len, int64_t timeout = -1L);
@@ -108,8 +107,10 @@ class SSLConnection : public Connection {
  public:
   ~SSLConnection();
 #if USE_LIBEVENT_AS_BACKEND
+  virtual void close() {}
   virtual void handshake() {}
 #else
+  virtual void close();
   virtual void handshake();
   virtual ssize_t readImpl(int fd, char* data, size_t len) {
     int rd = 0;

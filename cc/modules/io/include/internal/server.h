@@ -28,9 +28,7 @@ namespace io {
 
 class TCPServer : public Socket {
  public:
-  TCPServer() {
-    main_buffer_ = new char[1024 * 1024 * 2];
-  }
+  TCPServer() { main_buffer_ = new char[1024 * 1024 * 2]; }
   virtual ~TCPServer() {
     stop();
     delete[] main_buffer_;
@@ -51,12 +49,8 @@ class TCPServer : public Socket {
   /**
    * about certifications
    */
-  virtual bool init_ssl() {
-    return true;
-  }
-  void set_server_cert(string server_cert) {
-    server_cert_ = server_cert;
-  }
+  virtual bool init_ssl() { return true; }
+  void set_server_cert(string server_cert) { server_cert_ = server_cert; }
   void set_server_prikey(string server_prikey, string password = "") {
     server_prikey_ = server_prikey;
     server_prikey_password_ = password;
@@ -88,7 +82,7 @@ class TCPServer : public Socket {
  protected:
   SSL_CTX* ctx_ = nullptr;
   std::mutex connections_mtx_;
-  std::map<int, Connection*> connections_;
+  std::map<int, Connection*> connections_; // client id --> connection
   char* main_buffer_ = nullptr;
   int port_ = 0;
   int stop_ = 0;
@@ -120,7 +114,10 @@ class TCPServer : public Socket {
   static void onWrite(struct bufferevent* bev, void* ctx);
   static void onEvent(struct bufferevent* bev, short what, void* ctx);
   static void onAccept(
-    struct evconnlistener* listener, evutil_socket_t fd, struct sockaddr* address, int socklen,
+    struct evconnlistener* listener,
+    evutil_socket_t fd,
+    struct sockaddr* address,
+    int socklen,
     void* ctx);
 #endif
 };

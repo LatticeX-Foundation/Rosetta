@@ -123,7 +123,6 @@ int MpcProtocol::Uninit() {
     log_debug << __FUNCTION__ << " beg sync :" << time(0) << endl;
     _net_io->sync_with(msgid);
     log_debug << __FUNCTION__ << " end sync :" << time(0) << endl;
-    usleep(1000);
 
     _net_io->close();
     _net_io.reset();

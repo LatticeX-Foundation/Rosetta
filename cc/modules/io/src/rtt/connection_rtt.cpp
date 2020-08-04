@@ -20,6 +20,17 @@
 #if !USE_LIBEVENT_AS_BACKEND
 namespace rosetta {
 namespace io {
+void SSLConnection::close() {
+  state_ = Connection::State::Closing;
+  if (ssl_ != nullptr) {
+    SSL_shutdown(ssl_);
+    SSL_free(ssl_);
+    ssl_ = nullptr;
+  }
+  ::close(fd_);
+  state_ = Connection::State::Closed;
+}
+
 void SSLConnection::handshake() {
   if (state_ == State::Connected) {
     return;
@@ -57,7 +68,7 @@ void SSLConnection::handshake() {
       } else if (err == SSL_ERROR_WANT_READ) {
         continue;
       } else {
-        cout << "SSL_do_handshake error " << err << endl;
+        cout << "SSL_do_handshake error " << err << ":" << errno << endl;
         usleep(50000);
       }
       usleep(50000);

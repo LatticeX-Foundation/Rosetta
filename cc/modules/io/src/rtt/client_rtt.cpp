@@ -84,13 +84,12 @@ bool TCPClient::connect(int64_t timeout) {
 
 void TCPClient::close() {
   if (connected_) {
-    log_debug << "client closing." << endl;
+    log_debug << getpid() << " " << cid_ << " client closing." << conn_ << endl;
     connected_ = false;
 
     delete conn_;
     conn_ = nullptr;
-    ::close(fd_);
-    log_debug << "client closed." << endl;
+    log_debug << getpid() << " " << cid_ << " client closed." << conn_ << endl;
   }
 }
 } // namespace io

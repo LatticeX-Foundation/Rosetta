@@ -17,6 +17,9 @@
 // ==============================================================================
 #include "cc/modules/io/include/internal/server.h"
 
+#include <iostream>
+using namespace std;
+
 #if !USE_LIBEVENT_AS_BACKEND
 namespace rosetta {
 namespace io {
@@ -141,10 +144,27 @@ void TCPServer::handle_accept(Connection* conn) {
   epoll_add(epollfd_, tc);
   epoll_mod(epollfd_, listen_conn_);
 }
+
 void TCPServer::handle_error(Connection* conn) {
-  //cout << __FUNCTION__ << " errno:" << errno << endl;
-  //epoll_del(epollfd_, conn);
-  //close(conn->fd_);
+  if (verbose_ > 1)
+    cout << __FUNCTION__ << " errno:" << errno << endl;
+  {
+    //! double check
+    struct tcp_info info;
+    int len = sizeof(info);
+    getsockopt(conn->fd_, IPPROTO_TCP, TCP_INFO, &info, (socklen_t*)&len);
+    if (verbose_ > 1)
+      cout << "fd:" << conn->fd_ << " tcp_info.tcpi_state: " << to_string(info.tcpi_state) << endl;
+    if (info.tcpi_state == TCP_CLOSE) {
+      ssize_t len = conn->readImpl(conn->fd_, main_buffer_, 8192);
+      if (len > 0) { // Normal
+        conn->buffer_->write(main_buffer_, len);
+      }
+
+      epoll_del(epollfd_, conn);
+      conn->close();
+    }
+  }
 }
 
 void TCPServer::handle_write(Connection* conn) { cout << __FUNCTION__ << endl; }
@@ -157,64 +177,42 @@ void TCPServer::handle_read(Connection* conn) {
   if (verbose_ > 1)
     cout << __FUNCTION__ << endl;
 
+  if ((conn->state_ == Connection::State::Closing) || (conn->state_ == Connection::State::Closed)) {
+    log_debug << "Closing or Closed." << endl;
+    return;
+  }
+
   // handle data read
   conn->handshake();
 
-  int a = 0;
   while (true) {
-    a++;
     ssize_t len = conn->readImpl(conn->fd_, main_buffer_, 8192);
     if (len > 0) { // Normal
       conn->buffer_->write(main_buffer_, len);
     } else if (len == 0) { // EOF
       if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-        // continue;
-      }
-
-      if (false) { // for double check
-        struct tcp_info info;
-        int len = sizeof(info);
-        getsockopt(conn->fd_, IPPROTO_TCP, TCP_INFO, &info, (socklen_t*)&len);
-        cout << "getsockopt info.tcpi_state: " << to_string(info.tcpi_state) << endl;
-        if (info.tcpi_state == TCP_CLOSE) {
-          cout << "info.tcpi_state == TCP_CLOSE" << endl;
-        }
-      }
-
-      if (false) { // for double check
-        sockaddr_in peer, local;
-        socklen_t alen = sizeof(peer);
-        int ret = getpeername(conn->fd_, (sockaddr*)&peer, &alen);
-        cout << "getpeername ret:" << ret << ", errno:" << errno << endl;
-        if (ret = -1 && errno == ENOTCONN) {
-          cout << "ret = -1 && errno == ENOTCONN" << endl;
-        }
+        continue;
       }
 
       if (verbose_ > 1)
         cout << "fd: " << conn->fd_ << " server read 0 , client close. errno: " << errno << endl;
-      close(conn->fd_);
+
+      epoll_del(epollfd_, conn);
+      conn->close();
       return;
     } else { // Error or Interrupt
       if (errno == EINTR) {
-        if (a % 1000 == 0) {
-          cout << "if (errno == EINTR) {" << endl;
-        }
         continue;
       }
       if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-        //continue;
         break;
       }
-      cout << "fd: " << conn->fd_ << " server 2 read errno: " << errno << endl;
       break;
     }
   }
   if (verbose_ > 2) {
-    cout << __FUNCTION__ << "      ........END " << a << " buffer.size() " << conn->buffer_->size()
-         << endl;
+    cout << __FUNCTION__ << " END  buffer.size() " << conn->buffer_->size() << endl;
   }
-  epoll_mod(epollfd_, conn);
 }
 
 int timeout_counter = 0;
@@ -253,27 +251,43 @@ void TCPServer::loop_main() {
   while (!stop_) {
     loop_once(epollfd_, 1000);
   }
+
+  bool all_closed = false;
+  while (!all_closed) {
+    all_closed = true;
+    for (auto& c : connections_) {
+      if (c.second != nullptr) {
+        if (c.second->state_ != Connection::State::Closed) {
+          all_closed = false;
+          break;
+        }
+      }
+    }
+    if (!all_closed) {
+      loop_once(epollfd_, 1000);
+    }
+  }
+
   running_ = false;
 }
 
 bool TCPServer::init() {
-  // -1
-  signal(SIGINT, handleInterrupt);
   // 0
+  signal(SIGINT, handleInterrupt);
 
   // 1
   epollfd_ = epoll_create1(EPOLL_CLOEXEC);
-  //cout << "server epollfd_:" << epollfd_ << endl;
 
   // 2
   listenfd_ = create_server(port_);
-  //cout << "server listenfd:" << listenfd_ << endl;
 
+  // 3
   if (is_ssl_socket_)
     listen_conn_ = new SSLConnection(listenfd_, EPOLL_EVENTS, true);
   else
     listen_conn_ = new Connection(listenfd_, EPOLL_EVENTS, true);
 
+  // 4
   epoll_add(epollfd_, listen_conn_);
 
   // 5
@@ -300,14 +314,14 @@ bool TCPServer::stop() {
     return true;
   stoped_ = true;
 
-  //! @todo will delete this line later
-  usleep(200000);
-
   stop_ = 1;
   loop_thread_.join();
 
   for (auto& c : connections_) {
     if (c.second != nullptr) {
+      if (c.second->state_ != Connection::State::Closed) {
+        cout << "in fact, never enter here!" << endl;
+      }
       delete c.second;
       c.second = nullptr;
     }

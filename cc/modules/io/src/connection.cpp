@@ -29,12 +29,7 @@ Connection::Connection(int _fd, int _events, bool _is_server) {
   buffer_ = make_shared<cycle_buffer>(1024 * 1024 * 10);
 }
 
-SSLConnection::~SSLConnection() {
-  if (ssl_ != nullptr) {
-    SSL_free(ssl_);
-    ssl_ = nullptr;
-  }
-}
+SSLConnection::~SSLConnection() { close(); }
 
 size_t Connection::send(const char* data, size_t len, int64_t timeout) {
   if (is_server()) {
@@ -70,6 +65,7 @@ size_t Connection::recv(char* data, size_t len, int64_t timeout) {
   }
   return n;
 }
+
 size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t timeout) {
   if (!is_server()) {
     cerr << "not supports client's recv at present!" << endl;

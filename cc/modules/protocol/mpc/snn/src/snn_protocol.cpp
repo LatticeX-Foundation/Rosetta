@@ -37,14 +37,12 @@ shared_ptr<ProtocolOps> SnnProtocol::GetOps(const string& op_token) {
   return o;
 }
 
-void SnnProtocol::_initialize_mpc_enviroment() { 
-    partyNum = my_party_id;
-    NUM_OF_PARTIES = 3;/// set to 3PC
-    initializeMPC();
+void SnnProtocol::_initialize_mpc_enviroment() {
+  partyNum = my_party_id;
+  NUM_OF_PARTIES = 3; /// set to 3PC
+  initializeMPC();
 }
 int SnnProtocol::_init_aeskeys() {
-  cout << "_init_aeskeys" << endl;
-
   using namespace rosetta::mpc;
   {
     // gen private key
