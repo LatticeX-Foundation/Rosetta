@@ -40,8 +40,11 @@ You could use an example to check everything runs OK. Please refer to [Deploymen
 
 ## Usage
 
-The following is a simple example for matrix multiplication using Rosetta.
+The following is a toy example for matrix multiplication using Rosetta.
 
+In this example, we assume that three guys want to get the product of their private matrix, while do not want others to know what they hold. For brevity, we call them P0, P1 and P2.
+
+With Rosetta, each of them can run the following script, from which you can see that only a small amount of codes are needed besides the native TensorFlow lines.
 
 ```python
 #!/usr/bin/env python3
@@ -72,6 +75,44 @@ with tf.Session() as sess:
     # Get the result of Rosetta matmul
     print('plaintext matmul result:', sess.run(rtt.SecureReveal(cipher_result, a_and_c_can_get_plain)))
 ```
+
+To run this jointly, after configuration networks, the three guys can run the following commandline respectively:
+```bash
+python rosetta_demo.py --party_id=0
+```
+,
+```bash
+python rosetta_demo.py --party_id=1
+```
+and
+```bash
+python rosetta_demo.py --party_id=2
+```
+
+Then each party will be prompted to input his private matrix, for example P0 may have:
+
+> [2020-07-29 20:10:49.070] [info] Rosetta: Protocol [SecureNN] backend initialization succeeded!
+>
+> please input the private data (float or integer, 6 items, separated by space): 2 3 1 7 6 2 
+
+note that input from console like this is purely for pedagogical purpose in this toy example. See our [Doc](doc/API_DOC.md) for production-ready data APIs.
+
+At the end, P0 and P2 will get the plaintext output while P1 dose not, just as required. Specifically, P0 and P2 may have: 
+
+> plaintext matmul result: [[b'8.000000' b'14.000000' b'18.000000' b'4.000000']
+> [b'4.000000' b'7.000000' b'9.000000' b'2.000000']
+> [b'24.000000' b'42.000000' b'54.000000' b'12.000000']]
+>
+> [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
+
+while P1 have:
+> plaintext matmul result: [[b'0.000000' b'0.000000' b'0.000000' b'0.000000']
+>  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
+>  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
+> [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
+
+That's all, you can see Rosetta is so easy to use.
+
 For more details, please check [Tutorials](doc/TUTORIALS.md) and [Examples](./example).
 
 > Note: Currently Rosetta already supports 128-bit integer data type, which can be enabled by configuring the environment variable `export ROSETTA_MPC_128=ON`.
@@ -81,6 +122,18 @@ For more details, please check [Tutorials](doc/TUTORIALS.md) and [Examples](./ex
 To help you start with your first workable program with Rosetta easily, our [Tutorials](doc/TUTORIALS.md) will lead you to this fantastic world. In this detailed tutorials, we will assist you learn the basic concepts about Rosetta, then show you how to use the interfaces that we provide by easy-to-understand examples, and finally help you build a workable privacy-preserving machine learning model on real-world datasets.
 
 Hopefully, this tutorial, and more other examples in [Examples](./example), will whet your appetite to dive in knowing more about this privacy-preserving framework.
+
+## How Rosetta Works
+
+Rosetta works by extending and hacking both Python frontend and the Operation Kernels in backend of TensorFlow. It douples the development of TensorFlow-related components and privacy technology so that both developers from AI and cryptography can focus on what they are interested.
+
+![LOGO](doc/_static/figs/architecture_detail_en.png)
+
+When running your Rosetta program, the native Tensorflow dataflow graph will be transformed with the native Operations replaced with SecureOps at the frist stage.
+![LOGO](doc/_static/figs/static_pass.png)
+
+And in the second Stage, the specific Operation implementation of cryptographic protocol will be called to carry out actual secure computation.
+![LOGO](doc/_static/figs/dynamic_pass.png)
 
 
 ## Contributing to Rosetta
