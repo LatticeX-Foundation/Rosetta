@@ -36,9 +36,10 @@ cd Rosetta
 bash compile_and_test_all.sh
 ```
 
-You could use an example to check everything runs OK. Please refer to [Deployment Guide](doc/DEPLOYMENT.md) for the detailed steps of configuration, installation and deployment of Rosetta. In short, a distributed network will be created  for parties to communicate with each other.
+You could use an example to check everything runs OK. Please refer to [Deployment Guide](doc/DEPLOYMENT.md) for the detailed steps of configuration, installation and deployment of Rosetta. In short, a distributed network will be established for parties to communicate with each other.
 
-![deployment_fig](doc/_static/figs/depolyment.png)
+<img src='doc/_static/figs/deployment.png' width = "600" height = "400" align="middle"/>
+
 
 ## Usage
 
@@ -111,6 +112,7 @@ while P1 has:
 > plaintext matmul result: [[b'0.000000' b'0.000000' b'0.000000' b'0.000000']
 >  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
 >  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
+>
 > [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
 
 That's all, you can see Rosetta is so easy to use.
@@ -129,13 +131,16 @@ Hopefully, this tutorial, and more other examples in [Examples](./example), will
 
 Rosetta works by extending and hacking both Python frontend and the Operation Kernels in backend of TensorFlow. It decouples the development of TensorFlow-related components and privacy technology so that both developers from AI and cryptography can focus on what they are interested.
 
-![architecture_fig](doc/_static/figs/architecture_detail_en.png)
+<img src='doc/_static/figs/architecture_detail_en.png' width = "700" height = "600" align="middle"/>
 
 When running your Rosetta program, the native TensorFlow dataflow graph will be transformed with the native Operations replaced with SecureOps at the first stage.
-![static_pass](doc/_static/figs/static_pass.png)
+
+
+<img src='doc/_static/figs/static_pass.png' width = "800" height = "400" align="middle"/>
 
 And in the second Stage, the specific Operation implementation of cryptographic protocol will be called to carry out actual secure computation.
-![dynamic_pass](doc/_static/figs/dynamic_pass.png)
+
+<img src='doc/_static/figs/dynamic_pass.png' width = "800" height = "400" align="middle"/>
 
 
 ## Contributing to Rosetta
