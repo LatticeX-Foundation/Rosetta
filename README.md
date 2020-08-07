@@ -36,7 +36,9 @@ cd Rosetta
 bash compile_and_test_all.sh
 ```
 
-You could use an example to check everything runs OK. Please refer to [Deployment Guide](doc/DEPLOYMENT.md) for the detailed steps of configuration, installation and deployment of Rosetta.
+You could use an example to check everything runs OK. Please refer to [Deployment Guide](doc/DEPLOYMENT.md) for the detailed steps of configuration, installation and deployment of Rosetta. In short, a distributed network will be created  for parties to communicate with each other.
+
+![deployment_fig](doc/_static/figs/depolyment.png)
 
 ## Usage
 
@@ -105,7 +107,7 @@ At the end, P0 and P2 will get the plaintext output while P1 dose not, just as r
 >
 > [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
 
-while P1 have:
+while P1 has:
 > plaintext matmul result: [[b'0.000000' b'0.000000' b'0.000000' b'0.000000']
 >  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
 >  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
@@ -125,15 +127,15 @@ Hopefully, this tutorial, and more other examples in [Examples](./example), will
 
 ## How Rosetta Works
 
-Rosetta works by extending and hacking both Python frontend and the Operation Kernels in backend of TensorFlow. It douples the development of TensorFlow-related components and privacy technology so that both developers from AI and cryptography can focus on what they are interested.
+Rosetta works by extending and hacking both Python frontend and the Operation Kernels in backend of TensorFlow. It decouples the development of TensorFlow-related components and privacy technology so that both developers from AI and cryptography can focus on what they are interested.
 
-![LOGO](doc/_static/figs/architecture_detail_en.png)
+![architecture_fig](doc/_static/figs/architecture_detail_en.png)
 
-When running your Rosetta program, the native Tensorflow dataflow graph will be transformed with the native Operations replaced with SecureOps at the frist stage.
-![LOGO](doc/_static/figs/static_pass.png)
+When running your Rosetta program, the native TensorFlow dataflow graph will be transformed with the native Operations replaced with SecureOps at the first stage.
+![static_pass](doc/_static/figs/static_pass.png)
 
 And in the second Stage, the specific Operation implementation of cryptographic protocol will be called to carry out actual secure computation.
-![LOGO](doc/_static/figs/dynamic_pass.png)
+![dynamic_pass](doc/_static/figs/dynamic_pass.png)
 
 
 ## Contributing to Rosetta
