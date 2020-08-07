@@ -38,7 +38,7 @@ bash compile_and_test_all.sh
 
 You could use an example to check everything runs OK. Please refer to [Deployment Guide](doc/DEPLOYMENT.md) for the detailed steps of configuration, installation and deployment of Rosetta. In short, a distributed network will be established for parties to communicate with each other.
 
-<img src='doc/_static/figs/deployment.png' width = "600" height = "400" align="middle"/>
+<img src='doc/_static/figs/deployment.png'  width = "667" height = "400" align="middle"/>
 
 
 ## Usage
