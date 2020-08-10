@@ -141,7 +141,7 @@ When running your Rosetta program, the native TensorFlow dataflow graph will be 
 
 <img src='doc/_static/figs/static_pass.png' width = "800" height = "400" align="middle"/>
 
-And in the second stage, the specific Operation implementation of cryptographic protocol will be called to carry out actual secure computation.
+And at the second stage, the backend kernels of operations, implemented with specific cryptographic protocol, will be called to carry out underlying secure computation.
 
 <img src='doc/_static/figs/dynamic_pass.png' width = "800" height = "400" align="middle"/>
 
