@@ -4,6 +4,8 @@
 
 --------------------------------------------------------------------------------
 
+[中文版](./README_CN.md)
+
 ## Overview
 
 Rosetta is a privacy-preserving framework based on [TensorFlow](https://www.tensorflow.org). It integrates with mainstream privacy-preserving computation technologies, including cryptography, federated learning and trusted execution environment. Rosetta aims to provide privacy-preserving solutions for artificial intelligence without requiring expertise in cryptography, federated learning and trusted execution environment. Rosetta reuses the APIs of TensorFlow and allows to transfer traditional TensorFlow codes into a privacy-preserving manner with minimal changes. E.g., just add the following line.
@@ -17,7 +19,7 @@ The current version integrates the secure multi-party computation protocols for 
 
 For now, Rosetta runs on Ubuntu 18.04, and is based on TensorFlow 1.14 with CPUs. Windows is not currently supported. Install Rosetta as follows.
 
-Please check that your local system meets our base environment requirement. 
+Please check that your local system meets our [base environment requirement](doc/DEPLOYMENT.md#rosetta-deployment-guide). 
 
 Install the native TensorFlow with the following codes. Note that you could also install it from source code, check [here](doc/TENSORFLOW_INSTALL.md) for details.
 
@@ -36,12 +38,19 @@ cd Rosetta
 bash compile_and_test_all.sh
 ```
 
-You could use an example to check everything runs OK. Please refer to [Deployment Guide](doc/DEPLOYMENT.md) for the detailed steps of configuration, installation and deployment of Rosetta.
+Before running your program, you should configure with your network topology so that a distributed network can be established for parties to communicate with each other.
+
+<img src='doc/_static/figs/deployment.png'  width = "667" height = "400" align="middle"/>
+
+You could use an example to check everything runs OK. Please refer to [Deployment Guide](doc/DEPLOYMENT.md) for the detailed steps of installation, configuration and deployment of Rosetta.
 
 ## Usage
 
-The following is a simple example for matrix multiplication using Rosetta.
+The following is a toy [example](example/tutorials/code/rosetta_demo.py) for matrix multiplication using Rosetta.
 
+In this example, we assume that three guys want to get the product of their private matrix, while do not want others to know what they hold. For brevity, we call them P0, P1 and P2.
+
+With Rosetta, each of them can run the following script, from which you can see that only a small amount of codes are needed besides the native TensorFlow lines.
 
 ```python
 #!/usr/bin/env python3
@@ -72,6 +81,45 @@ with tf.Session() as sess:
     # Get the result of Rosetta matmul
     print('plaintext matmul result:', sess.run(rtt.SecureReveal(cipher_result, a_and_c_can_get_plain)))
 ```
+
+To run this jointly, after configuration networks, the three guys can run the following commandline respectively:
+```bash
+python rosetta_demo.py --party_id=0
+```
+,
+```bash
+python rosetta_demo.py --party_id=1
+```
+and
+```bash
+python rosetta_demo.py --party_id=2
+```
+
+Then each party will be prompted to input his private matrix, for example P0 may have:
+
+> [2020-07-29 20:10:49.070] [info] Rosetta: Protocol [SecureNN] backend initialization succeeded!
+>
+> please input the private data (float or integer, 6 items, separated by space): 2 3 1 7 6 2 
+
+Note that input from console like this is purely for pedagogical purpose in this toy example. See our [Doc](doc/API_DOC.md) for production-ready data APIs.
+
+At the end, P0 and P2 will get the plaintext output while P1 dose not, just as required. Specifically, P0 and P2 may have: 
+
+> plaintext matmul result: [[b'8.000000' b'14.000000' b'18.000000' b'4.000000']
+> [b'4.000000' b'7.000000' b'9.000000' b'2.000000']
+> [b'24.000000' b'42.000000' b'54.000000' b'12.000000']]
+>
+> [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
+
+while P1 has:
+> plaintext matmul result: [[b'0.000000' b'0.000000' b'0.000000' b'0.000000']
+>  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
+>  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
+>
+> [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
+
+That's all, you can see Rosetta is so easy to use.
+
 For more details, please check [Tutorials](doc/TUTORIALS.md) and [Examples](./example).
 
 > Note: Currently Rosetta already supports 128-bit integer data type, which can be enabled by configuring the environment variable `export ROSETTA_MPC_128=ON`.
@@ -82,6 +130,20 @@ To help you start with your first workable program with Rosetta easily, our [Tut
 
 Hopefully, this tutorial, and more other examples in [Examples](./example), will whet your appetite to dive in knowing more about this privacy-preserving framework.
 
+## How Rosetta Works
+
+Rosetta works by extending and hacking both Python frontend and the Operation Kernels in backend of TensorFlow. It decouples the development of TensorFlow-related components and privacy technology so that both developers from AI and cryptography can focus on what they are interested.
+
+<img src='doc/_static/figs/architecture_detail_en.png' width = "700" height = "600" align="middle"/>
+
+When running your Rosetta program, the native TensorFlow dataflow graph will be transformed with the native Operations replaced with SecureOps at the first stage.
+
+
+<img src='doc/_static/figs/static_pass.png' width = "800" height = "400" align="middle"/>
+
+And in the second stage, the specific Operation implementation of cryptographic protocol will be called to carry out actual secure computation.
+
+<img src='doc/_static/figs/dynamic_pass.png' width = "800" height = "400" align="middle"/>
 
 ## Contributing to Rosetta
 
