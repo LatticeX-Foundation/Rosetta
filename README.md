@@ -82,7 +82,7 @@ with tf.Session() as sess:
     print('plaintext matmul result:', sess.run(rtt.SecureReveal(cipher_result, a_and_c_can_get_plain)))
 ```
 
-To run this jointly, after configuration networks, the three guys can run the following commandline respectively:
+To run this jointly, after configuration networks, the three guys can run the following command-line respectively:
 ```bash
 python rosetta_demo.py --party_id=0
 ```
@@ -136,7 +136,7 @@ Rosetta works by extending and hacking both Python frontend and the Operation Ke
 
 <img src='doc/_static/figs/architecture_detail_en.png' width = "700" height = "600" align="middle"/>
 
-When running your Rosetta program, the native TensorFlow dataflow graph will be transformed with the native Operations replaced with SecureOps at the first stage.
+When running your Rosetta program, firstly the native TensorFlow data flow graph will be converted, and during this process the native Operations within the graph will be replaced with SecureOps.
 
 
 <img src='doc/_static/figs/static_pass.png' width = "800" height = "400" align="middle"/>
