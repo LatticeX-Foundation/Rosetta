@@ -42,8 +42,7 @@ class Input {
  public:
   Input() {}
 
-  void public_input() {}
-
+  void public_input() { throw; }
 
   py::array_t<np_str_t> private_input(int party_id, const py::array_t<double>& input) {
     py::buffer_info buf = input.request();

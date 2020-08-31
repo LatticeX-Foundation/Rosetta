@@ -48,14 +48,13 @@ PYBIND11_MODULE(_rosetta, m) {
 
   py::module m_dataset = m.def_submodule("dataset");
   py::class_<DataSet>(m_dataset, "DataSet")
-    .def(py::init<bool, int, int>())
+    .def(py::init<const vector<int>&, int, int>())
     .def("private_input_x", &DataSet::private_input_x)
     .def("private_input_y", &DataSet::private_input_y);
 
   py::module m_input = m.def_submodule("input");
   py::class_<Input>(m_input, "Input")
     .def(py::init<>())
-    //.def("private_input", (np_str_t(Input::*)(int, double)) & Input::private_input)
     .def("private_input", (py::array_t<np_str_t>(Input::*)(int, const py::array_t<double>&)) & Input::private_input);
 
   py::module m_msgid_handle = m.def_submodule("msgid_handle");
