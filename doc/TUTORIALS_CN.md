@@ -394,7 +394,8 @@ rtt.rtt.activate("SecureNN")
 # ######################################## difference from tensorflow
 file_x = '../dsets/P' + str(rtt.mpc_player.id) + "/reg_train_x.csv"
 file_y = '../dsets/P' + str(rtt.mpc_player.id) + "/reg_train_y.csv"
-real_X, real_Y = rtt.SecureDataSet(label_owner=1).load_XY(file_x, file_y)
+real_X, real_Y = rtt.PrivateDataset(data_owner=(
+    0, 1), label_owner=1).load_data(file_x, file_y, header=None)
 # ######################################## difference from tensorflow
 DIM_NUM = real_X.shape[1]
 ```

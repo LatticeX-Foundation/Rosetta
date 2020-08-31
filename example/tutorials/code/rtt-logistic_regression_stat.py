@@ -24,8 +24,8 @@ mpc_player_id = rtt.py_protocol_handler.get_party_id()
 # ######################################## difference from tensorflow
 file_x = '../dsets/P' + str(mpc_player_id) + "/cls_train_x.csv"
 file_y = '../dsets/P' + str(mpc_player_id) + "/cls_train_y.csv"
-real_X, real_Y = rtt.SecureDataSet(
-    label_owner=0).load_XY(file_x, file_y, header=None)
+real_X, real_Y = rtt.PrivateDataset(data_owner=(
+    0, 1), label_owner=0).load_data(file_x, file_y, header=None)
 # ######################################## difference from tensorflow
 real_X = real_X[:500, :]
 real_Y = real_Y[:500, :]
