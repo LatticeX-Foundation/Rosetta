@@ -16,11 +16,6 @@ include(GlobalSettings)
 execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/install_basic_deps_by_cmake.sh ${PROJECT_BINARY_DIR} ${CMAKE_BUILD_TYPE} ${THIRD_PARTY_DIR} 
                 WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
                 
-option(BUILD_EMP_TOOL "" OFF)
-if(BUILD_EMP_TOOL)
-execute_process(COMMAND bash ${CMAKE_SOURCE_DIR}/install_all_deps_by_cmake.sh ${PROJECT_BINARY_DIR} ${CMAKE_BUILD_TYPE} ${THIRD_PARTY_DIR} 
-                WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
-endif()
 
 # config mpc with 128-bits
 option(ROSETTA_MPC_128 "" OFF)

@@ -387,7 +387,7 @@ rtt.rtt.activate("SecureNN")
 
 我们标识了不同于 `tensorflow` 的地方，对照着 `tensorflow` 版本，除了导入了 `rosetta` 包外，就只有这一处是不同的。
 
-`rosetta` 提供了一个专门于处理私有数据集的类，`SecureDataSet`。详情查阅相关源代码。
+`rosetta` 提供了一个专门于处理私有数据集的类，`PrivateDataset`。详情查阅相关源代码。
 
 ```py
 # real data

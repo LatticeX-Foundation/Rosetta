@@ -379,7 +379,7 @@ Please refers to the appendix at the end of this article for the dataset descrip
 
 We have highlighted the spots that are different from `tensorflow`. In contrast to the native `tensorflow` version without data privacy. Except for the importing of the `rosetta` package, only these several lines are different.
 
-`rosetta` provides a class, `SecureDataSet`, specifically for handling private data sets. Check the relevant source code for details.
+`rosetta` provides a class, `PrivateDataset`, specifically for handling private data sets. Check the relevant source code for details.
 
 ```py
 # real data
