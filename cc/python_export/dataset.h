@@ -37,12 +37,12 @@ using np_str_t = std::array<char, 33>; // at most 33 bytes
 
 class DataSet {
   vector<int> data_owner_;
-  bool p2_owns_data_ = false;
   int label_owner_ = -1;
   int dataset_type_ = -1;
   int partyid = -1;
   // -1, have not checked; 0, have checked, but not ok; 1, have checked, but ok
   int args_checked_ok_ = -1;
+  std::string args_check_errmsg;
 
   bool p0_has_data = false;
   bool p1_has_data = false;
@@ -56,10 +56,16 @@ class DataSet {
  public:
   DataSet(const vector<int>& data_owner, int label_owner, int dataset_type)
       : data_owner_(data_owner), label_owner_(label_owner), dataset_type_(dataset_type) {
-    log_debug << "DataSet, p2 owns data:" << data_owner.size() << ", dataset type:" << dataset_type_
-              << endl;
     std::sort(data_owner_.begin(), data_owner_.end());
     std::unique(data_owner_.begin(), data_owner_.end());
+
+    stringstream ss;
+    ss << "data owner(";
+    for (auto& owner : data_owner_) {
+      ss << owner << ",";
+    }
+    ss << "), label owner(" << label_owner_ << "), dataset_type(" << dataset_type_ << ")";
+    log_info << ss.str() << endl;
   }
 
  public:
@@ -78,45 +84,48 @@ class DataSet {
       throw runtime_error("In Dataset, no protocol have activated!");
     }
     partyid = rosetta::ProtocolManager::Instance()->GetProtocol()->GetPartyId();
-    // cout << "-args_checked_ok_:" << args_checked_ok_ << endl;
-    __check_args();
-    // cout << "+args_checked_ok_:" << args_checked_ok_ << endl;
+    __check_args(args_check_errmsg);
     if (args_checked_ok_ == 0) {
-      //! @todo, print more error messages.
-      throw invalid_argument("Invalid_argument!");
+      throw invalid_argument("Invalid_argument - " + args_check_errmsg);
     }
   }
 
-  void __check_args() {
+  void __check_args(std::string& errmsg) {
     if (args_checked_ok_ != -1)
       return;
 
     // locally check
     int local_check_ok = 1;
     /// owner \in {0,1,2}
-    for (auto& owner : data_owner_) {
-      if ((owner < 0) || (owner > 2)) {
-        local_check_ok = 0;
-      }
-      if (owner == 0) {
-        p0_has_data = true;
-      } else if (owner == 1) {
-        p1_has_data = true;
-      } else if (owner == 2) {
-        p2_has_data = true;
-      }
-    }
+    errmsg = "locally check:";
     if (data_owner_.size() == 0) {
+      errmsg = errmsg + " data owner size() == 0.";
       local_check_ok = 0;
+    } else {
+      for (auto& owner : data_owner_) {
+        if ((owner < 0) || (owner > 2)) {
+          errmsg = errmsg + " invalid data owner(" + std::to_string(owner) + ").";
+          local_check_ok = 0;
+        }
+        if (owner == 0) {
+          p0_has_data = true;
+        } else if (owner == 1) {
+          p1_has_data = true;
+        } else if (owner == 2) {
+          p2_has_data = true;
+        }
+      }
     }
 
     /// label_owner \in {0,1,2}
     if ((label_owner_ < -1) || (label_owner_ > 2)) {
+      errmsg = " invalid label owner(" + std::to_string(label_owner_) + ").";
       local_check_ok = 0;
     }
 
     /// dataset_type \in {1,2}
     if ((dataset_type_ < 1) || (dataset_type_ > 2)) {
+      errmsg = " invalid dataset type(" + std::to_string(dataset_type_) + ").";
       local_check_ok = 0;
     }
 
@@ -139,6 +148,7 @@ class DataSet {
       }
     }
 
+    errmsg = "data owner size check:";
     {
       // 2. check owner size
       int a, b, c;
@@ -146,11 +156,14 @@ class DataSet {
       sync_d(netio, a, b, c);
 
       if (!((a == b) && (b == c))) { // at least one of Pi is not equal to other(s) (if not ok)
+        errmsg = errmsg + " invalid data owner size: a(" + std::to_string(a) + ") b(" +
+          std::to_string(b) + ") c(" + std::to_string(c) + ").";
         args_checked_ok_ = 0;
         return;
       }
     }
 
+    errmsg = "all check:";
     {
       // 3. check all arguments
       vector<int> a, b, c;
@@ -161,14 +174,23 @@ class DataSet {
       sync_d(netio, a, b, c);
 
       for (int i = 0; i < a.size(); i++) {
+        if (i == a.size() - 1) { // label owner
+          if (dataset_type_ == DatasetType::FeatureAligned) {
+            continue; //
+          }
+        }
+
         if (!((a[i] == b[i]) &&
               (b[i] == c[i]))) { // at least one of Pi is not equal to other(s) (if not ok)
+          errmsg = errmsg + " invalid in [i=" + std::to_string(i) + "]: a(" + std::to_string(a[i]) +
+            ") b(" + std::to_string(b[i]) + ") c(" + std::to_string(c[i]) + ").";
           args_checked_ok_ = 0;
           return;
         }
       }
     }
 
+    errmsg = "ok.";
     args_checked_ok_ = 1;
   }
 

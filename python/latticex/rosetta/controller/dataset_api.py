@@ -96,9 +96,8 @@ class PrivateDataset(object):
         self.data_owner_ = list(data_owner)
         self.label_owner_ = label_owner
         self.dataset_type_ = dataset_type
-        # print("self.data_owner_", self.data_owner_)
-        # print("self.label_owner_", self.label_owner_)
-        # print("self.dataset_type_", self.dataset_type_)
+        if self.dataset_type_ == DatasetType.FeatureAligned:
+            self.label_owner_ = 0  # reset to a valid value
 
         self.dataset_ = _rtt.dataset.DataSet(
             self.data_owner_, self.label_owner_, self.dataset_type_.value)
