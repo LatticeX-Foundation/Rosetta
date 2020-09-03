@@ -34,7 +34,7 @@
   }                                                                       \
   timer.stop();                                                           \
   ss << " |" << setw(14) << timer.elapse() << " |" << setw(14)            \
-     << timer.us_elapse() / 1234.0 / ntimes << " |" << setw(21) << shape; \
+     << timer.us_elapse() / 1000.0 / ntimes << " |" << setw(21) << shape; \
   ss << " |";                                                             \
   cout << ss.str() << endl;                                               \
   }                                                                       \

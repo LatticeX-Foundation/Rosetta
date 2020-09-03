@@ -198,7 +198,7 @@ void powconst_check_func(
   int size = X.size();
   for (int i = 0; i < size; i++) {
     auto r = pow(X[i], (int)Y[i]);
-    if (f_equal(r, Z[i])) {
+    if (f_equal(r, Z[i], 0.001)) {
       continue;
     }
     cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << " z:" << Z[i]
