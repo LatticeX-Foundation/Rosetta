@@ -59,7 +59,7 @@ void to_hex_str(const vector<T>& ss, vector<string>& ts) {
 template <typename T>
 T from_hex_str(const string& s) {
   T t;
-  memcpy((void*)&t, s.data(), sizeof(t));//cns.size());
+  memcpy((void*)&t, s.data(), sizeof(t)); //cns.size());
   return t;
 }
 
@@ -82,33 +82,11 @@ vector<T> from_hex_str(const vector<string>& s) {
   return t;
 }
 
-static vector<double> from_double_str(const vector<string>& s) {
-  vector<double> t(s.size());
-  for (int i = 0; i < s.size(); i++)
-    t[i] = std::stod(s[i]);
+vector<double> from_double_str(const vector<string>& s);
+void from_double_str(const vector<string>& s, vector<double>& t);
 
-  return t;
-}
-
-static void from_double_str(const vector<string>& s, vector<double>& t) {
-  t.resize(s.size());
-  for (int i = 0; i < s.size(); i++)
-    t[i] = std::stod(s[i]);
-}
-
-static vector<int64_t> from_int_str(const vector<string>& s) {
-  vector<int64_t> t(s.size());
-  for (int i = 0; i < s.size(); i++)
-    t[i] = std::stod(s[i]);
-
-  return t;
-}
-
-static void from_int_str(const vector<string>& s, vector<int64_t>& t) {
-  t.resize(s.size());
-  for (int i = 0; i < s.size(); i++)
-    t[i] = std::stoll(s[i]);
-}
+vector<int64_t> from_int_str(const vector<string>& s);
+void from_int_str(const vector<string>& s, vector<int64_t>& t);
 
 } // namespace convert
 } // namespace rosetta

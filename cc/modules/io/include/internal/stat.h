@@ -51,11 +51,17 @@ class NetStat {
   std::string fmt_string() const;
   void print(std::string str = "") const;
 
+ public:
+  uint64_t bytes_sent() { return bytes_sent_; }
+  uint64_t bytes_received() { return bytes_received_; }
+  uint64_t message_sent() { return message_sent_; }
+  uint64_t message_received() { return message_received_; }
+
  private:
-  uint64_t bytes_sent = 0;
-  uint64_t bytes_received = 0;
-  uint64_t message_sent = 0;
-  uint64_t message_received = 0;
+  uint64_t bytes_sent_ = 0;
+  uint64_t bytes_received_ = 0;
+  uint64_t message_sent_ = 0;
+  uint64_t message_received_ = 0;
 };
 
 } // namespace io

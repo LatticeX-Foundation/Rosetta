@@ -22,6 +22,8 @@
 #include <sstream>
 #include <iostream>
 #include <atomic>
+#include <string>
+#include <vector>
 
 #define DO_ELAPSED_STATISTIC 0
 namespace rosetta {
@@ -78,43 +80,38 @@ namespace rosetta {
 namespace rosetta {
 class PerfStats {
  public:
-  std::string vmpeak = "";
+  // name,tag,...
+  std::string name = "default";
   struct __stat {
     // io
-    int64_t bytes_sent = 0;
-    int64_t bytes_recv = 0;
-    int64_t msg_sent = 0;
-    int64_t msg_recv = 0;
+    uint64_t bytes_sent = 0;
+    uint64_t bytes_recv = 0;
+    uint64_t msg_sent = 0;
+    uint64_t msg_recv = 0;
     double elapsed_sent = 0;
     double elapsed_recv = 0;
     // time
     double clock_seconds = 0;
     double cpu_seconds = 0;
-    clock_t start = 0;
-    struct timespec req_start, req_end;
-  } p, r, a; // prepare,run,all(p+r)
-  friend __stat operator+(const __stat& l, const __stat& r) {
-    __stat t;
-#define _add(v) t.v = l.v + r.v
-    _add(bytes_sent);
-    _add(bytes_recv);
-    _add(msg_sent);
-    _add(msg_recv);
-    _add(elapsed_sent);
-    _add(elapsed_recv);
+    double elapse = 0;
+  } s;
 
-    _add(clock_seconds);
-    _add(cpu_seconds);
-#undef _add
-    return t;
-  }
   void reset() {
-    memset(&p, 0, sizeof(__stat));
-    memset(&r, 0, sizeof(__stat));
-    memset(&a, 0, sizeof(__stat));
-    vmpeak = "";
+    name = "default";
+    memset(&s, 0, sizeof(__stat));
   }
-  std::string stats(int party);
-  std::string stats2(int party);
+
+  std::string to_console();
+
+  //! return an object. eg: {...}
+  std::string to_json(bool pretty = false) const;
+
+  //! return an object-array. eg: {{...},{...},...}
+  static std::string to_json(const std::vector<PerfStats>& ps, bool pretty = false);
 };
+
+PerfStats operator+(const PerfStats& l, const PerfStats& r);
+PerfStats operator-(const PerfStats& l, const PerfStats& r);
+PerfStats operator/(const PerfStats& l, int r);
+
 } // namespace rosetta

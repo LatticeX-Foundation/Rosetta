@@ -51,15 +51,18 @@ static inline void convert_plain_double_to_mpctype(const vector<double>& a, vect
 
 static inline int snn_decode_(const StrVec& a, MpcVec& sa) {
   ELAPSED_STATISTIC_BEG(convert_string_to_share_timer);
-  
+
   if (rosetta::convert::is_secure_text(a[0])) {
     sa.resize(a.size());
     for (auto i = 0; i < a.size(); ++i)
       memcpy((char*)&sa[i], a[i].data(), sizeof(mpc_t));
-  } else
+
+    ELAPSED_STATISTIC_END(convert_string_to_share_timer);
+  } else {
+    ELAPSED_STATISTIC_END(convert_string_to_share_timer);
     convert_plain_double_to_mpctype(rosetta::convert::from_double_str(a), sa);
-  
-  ELAPSED_STATISTIC_END(convert_string_to_share_timer);
+  }
+
   return 0;
 }
 
@@ -503,6 +506,19 @@ int SnnProtocolOps::Reveal(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
+  vector<double> dvalues;
+  Reveal(a, dvalues, attr_info);
+  output.resize(dvalues.size());
+  for (int i = 0; i < dvalues.size(); ++i) {
+    output[i] = std::to_string(dvalues[i]);
+  }
+  return 0;
+}
+
+int SnnProtocolOps::Reveal(
+  const vector<string>& a,
+  vector<double>& output,
+  const attr_type* attr_info) {
   log_debug << "----> Reveal\n" << endl;
 
   int party = attr_info ? std::stoi(attr_info->at("receive_party")) : 1;
@@ -516,12 +532,8 @@ int SnnProtocolOps::Reveal(
     ->RunEx(private_a, out_vec, party);
 
   // to double values
-  vector<double> dvalues(out_vec.size());
-  convert_mpctype_to_double(out_vec, dvalues);
-  // to double literal strings
-  for (int i = 0; i < dvalues.size(); ++i) {
-    output[i] = std::to_string(dvalues[i]);
-  }
+  output.resize(out_vec.size());
+  convert_mpctype_to_double(out_vec, output);
 
   log_debug << "Reveal ok. <----\n";
   return 0;

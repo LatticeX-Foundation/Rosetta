@@ -132,4 +132,23 @@ int MpcProtocol::Uninit() {
   }
   return 0;
 }
+
+PerfStats MpcProtocol::GetPerfStats() {
+  PerfStats perf_stats;
+  if (!_is_inited) {
+    return perf_stats;
+  }
+
+  // Network
+  io::NetStat net_stat = _net_io->net_stat();
+  perf_stats.s.bytes_sent = net_stat.bytes_sent();
+  perf_stats.s.bytes_recv = net_stat.bytes_received();
+  perf_stats.s.msg_sent = net_stat.message_sent();
+  perf_stats.s.msg_recv = net_stat.message_received();
+
+  // Time
+
+  return perf_stats;
+}
+
 } // namespace rosetta

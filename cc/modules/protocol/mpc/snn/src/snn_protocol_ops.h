@@ -175,6 +175,12 @@ class SnnProtocolOps : public ProtocolOps {
     const vector<string>& a, vector<string>& output,
     const attr_type* attr_info = nullptr);
 
+  int Reveal(
+    const vector<string>& a,
+    vector<double>& output,
+    const attr_type* attr_info = nullptr);
+    
+
   /**
     @desc: This is for Tensorflow's SaveV2 Op.
 

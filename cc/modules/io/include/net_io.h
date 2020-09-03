@@ -253,7 +253,7 @@ class BasicIO {
   vector<vector<shared_ptr<TCPClient>>> client; // [party_id][thread_id]
 };
 
-#include "internal/net_io.hpp"
+#include "cc/modules/io/include/internal/net_io.hpp"
 
 /**
  * General Net IO.

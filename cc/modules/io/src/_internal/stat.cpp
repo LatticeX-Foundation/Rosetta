@@ -31,19 +31,19 @@ void NetStat_st::reset() {
 }
 
 NetStat::NetStat(const NetStat_st& ns_st) {
-  bytes_sent = ns_st.bytes_sent.load();
-  bytes_received = ns_st.bytes_received.load();
-  message_sent = ns_st.message_sent.load();
-  message_received = ns_st.message_received.load();
+  bytes_sent_ = ns_st.bytes_sent.load();
+  bytes_received_ = ns_st.bytes_received.load();
+  message_sent_ = ns_st.message_sent.load();
+  message_received_ = ns_st.message_received.load();
 }
 
 NetStat operator-(const NetStat& ns1, const NetStat& ns2) {
   NetStat ns;
   // clang-format off
-    ns.bytes_sent       = ns1.bytes_sent        - ns2.bytes_sent;
-    ns.bytes_received   = ns1.bytes_received    - ns2.bytes_received;
-    ns.message_sent     = ns1.message_sent      - ns2.message_sent;
-    ns.message_received = ns1.message_received  - ns2.message_received;
+    ns.bytes_sent_       = ns1.bytes_sent_        - ns2.bytes_sent_;
+    ns.bytes_received_   = ns1.bytes_received_    - ns2.bytes_received_;
+    ns.message_sent_     = ns1.message_sent_      - ns2.message_sent_;
+    ns.message_received_ = ns1.message_received_  - ns2.message_received_;
   // clang-format on
   return ns;
 }
@@ -51,10 +51,10 @@ NetStat operator-(const NetStat& ns1, const NetStat& ns2) {
 NetStat operator+(const NetStat& ns1, const NetStat& ns2) {
   NetStat ns;
   // clang-format off
-    ns.bytes_sent       = ns1.bytes_sent        + ns2.bytes_sent;
-    ns.bytes_received   = ns1.bytes_received    + ns2.bytes_received;
-    ns.message_sent     = ns1.message_sent      + ns2.message_sent;
-    ns.message_received = ns1.message_received  + ns2.message_received;
+    ns.bytes_sent_       = ns1.bytes_sent_        + ns2.bytes_sent_;
+    ns.bytes_received_   = ns1.bytes_received_    + ns2.bytes_received_;
+    ns.message_sent_     = ns1.message_sent_      + ns2.message_sent_;
+    ns.message_received_ = ns1.message_received_  + ns2.message_received_;
   // clang-format on
   return ns;
 }
@@ -66,10 +66,10 @@ std::ostream& operator<<(std::ostream& os, const NetStat& ns) {
 
 std::string NetStat::fmt_string() const {
   std::stringstream sss;
-  sss << " bytes sent:" << std::setw(15) << bytes_sent;
-  sss << " bytes recv:" << std::setw(15) << bytes_received;
-  sss << " msges sent:" << std::setw(06) << message_sent;
-  sss << " msges recv:" << std::setw(06) << message_received;
+  sss << " bytes sent:" << std::setw(15) << bytes_sent_;
+  sss << " bytes recv:" << std::setw(15) << bytes_received_;
+  sss << " msges sent:" << std::setw(06) << message_sent_;
+  sss << " msges recv:" << std::setw(06) << message_received_;
   return sss.str();
 }
 

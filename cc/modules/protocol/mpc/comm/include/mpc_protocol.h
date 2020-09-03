@@ -18,6 +18,7 @@
 #pragma once
 #include "cc/modules/protocol/public/include/protocol_base.h"
 #include "cc/modules/protocol/mpc/comm/include/mpc_prg.h"
+#include "cc/modules/common/include/utils/perf_stats.h"
 
 #include <memory>
 #include <string>
@@ -41,6 +42,10 @@ class MpcProtocol : public ProtocolBase {
   //! @attention! internal use, for cpp test cases
   virtual int Init(int partyid, std::string config_json_str = "");
   virtual int Init(int partyid, std::string config_json_str, std::string logfile);
+
+ public:
+  //! get current performance statistic info
+  PerfStats GetPerfStats();
 
  public:
   virtual shared_ptr<ProtocolOps> GetOps(const string& op_token = "") = 0;
