@@ -1,10 +1,9 @@
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required(VERSION 2.8)
 SET(LIBNAME mpc-io)
 project(${LIBNAME})
 
 # setup directory where we should look for cmake modules files
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(GlobalSettings)
 
 #3rd
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd)

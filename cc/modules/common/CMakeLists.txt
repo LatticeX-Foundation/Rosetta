@@ -1,16 +1,13 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 2.8)
 project(common)
-include(GlobalSettings)
 
 # External packages
-find_package(Threads REQUIRED)
 if(UNIX)
   find_package(LibDL)
   find_package(LibRT)
 endif()
 
 # Link libraries
-list(APPEND LINKLIBS Threads::Threads)
 if(UNIX)
   list(APPEND LINKLIBS ${LIBDL_LIBRARIES})
   list(APPEND LINKLIBS ${LIBRT_LIBRARIES})

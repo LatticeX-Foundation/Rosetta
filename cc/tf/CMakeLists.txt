@@ -1,5 +1,5 @@
 # tensorflow op libraries
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 2.8)
 project(tf)
 
 SET(THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/third_party)

@@ -1,6 +1,6 @@
 # chain: (outer) ---> op ---> io ---> common
 # tensorflow op libraries
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 2.8)
 project(modules)
 
 include(SetThirdParty)

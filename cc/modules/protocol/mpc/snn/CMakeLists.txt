@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 2.8)
 project(mpc-snn)
-include(GlobalSettings)
 
 # SecureNN Operations
 file(GLOB_RECURSE MPC_SNN_SOURCES_FILES "src/*.cpp")

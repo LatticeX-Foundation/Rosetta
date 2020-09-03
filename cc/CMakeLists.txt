@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required(VERSION 2.8)
 project(rosetta)
 
 set(CMAKE_THREAD_LIBS_INIT "-lpthread")
