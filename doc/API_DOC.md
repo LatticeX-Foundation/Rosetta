@@ -14,7 +14,7 @@
     - [Input and Dataset Utils](#input-and-dataset-utils)
       - [`private_input(party_id: int, input_val)`](#private_inputparty_id-int-input_val)
       - [`private_console_input(party_id: int)`](#private_console_inputparty_id-int)
-      - [`class SecureDataSet`](#class-securedataset)
+      - [`class PrivateDataSet`](#class-privatedataset)
   - [Operation API](#operation-api)
     - [Terms and definition](#terms-and-definition)
     - [Common notes](#common-notes)
@@ -44,7 +44,7 @@
       - [`SecureAbsPrime(x, name=None)`](#secureabsprimex-namenone)
       - [`SecureMax(input_tensor, axis=None, name=None)`](#securemaxinput_tensor-axisnone-namenone)
       - [`SecureMean(input_tensor, axis=None, name=None)`](#securemeaninput_tensor-axisnone-namenone)
-      - [`SecureReveal(a, reveal_party=-1)`](#securereveala-reveal_party-1)
+      - [`SecureReveal(a, reveal_party=7)`](#securereveala-reveal_party7)
     - [I/O SecureOps](#io-secureops)
       - [`SecureSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`](#securesavev2prefix-tensor_names-shape_and_slices-tensors-namenone)
 
@@ -133,30 +133,45 @@ The APIs can mainly be classified into two types: 'Control API', which should be
 
   Just the same as private_input while the values will be fetched from console.
 
-#### `class SecureDataSet`
+#### `class PrivateDataSet`
 
-  A wrapper class for multiparty to align and 'encrypt' ('share') its private dataset from a local CSV file. Every party's dataset should have the same user or ID while disjoint feature partition.
+  A wrapper class for multiparty to align and 'encrypt' ('share') its private dataset from a local CSV file or `ndarray` target of numpy. 
+  
+  Every party's dataset should be either sample-aligned or feature-aligned already.
 
-  - **load_X(self, file: str, \*args, \*\*kwargs)**
+  When instantiation, for example, if dataset_type == DatasetType.SampleAligned (default dataset_type is SampleAligned),
+  assuming P0, P1 owns private data, P1 owns label, then all the parties do respectively:
+  ```python
+  # get private data from its own data source, set None if no private data
+  XX, YY = ...
+  X, y = PrivateDataset(data_owner=(0,1), label_owner=1).load_data(XX, YY)
+  ```
+  Otherwise, if dataset_type == DatasetType.FeatureAligned, label_owner is useless.
+  For example, assuming P0,P1 owns private data and label, then all the parties do respectively:
+  ```python
+  # get private data from its own data source, set None if no private data
+  XX, YY = ... 
+  X,y = PrivateDataset(data_owner=(0,1),
+                      dataset_type=DatasetType.FeatureAligned).load_data(XX, YY)
+  ```
+  - **load_X(self, x: str or np.ndarray or None, \*args, \*\*kwargs)**
     
-    Load and 'secret-shared' private ATTRIBUTE values from local dataset files.
+    Load and 'secret-shared' private ATTRIBUTE values from local dataset files or `ndarray` object of `numpy`.
 
-    Since only COMMON_N_V_SPLIT is supported now, different party can have different number of attributes while having the same number of samples.
-
-    For example, if dataset of P0 is N * d0, dataset of P1 is N * d1, and P2 has no data at all.
-    Then the resulting 'ciphertext' local dataset returned for each party is of the shape N * (d0+d1).
+    For example, if dataset shape of P0 is N * d0, dataset shape of P1 is N * d1, and P2 has no data at all.
+    Then the resulting 'ciphertext' local dataset returned for each party is of the shape N * (d0 + d1).
 
     Return:
       The shared 'ciphertext' local dataset, and its datatype is string with format specific to your current activated protocol.
 
-  - **load_Y(self, file: str, \*args, \*\*kwargs)**
+  - **load_Y(self, y: str or np.ndarray or None, \*args, \*\*kwargs)**
     
-    Load and 'secret-shared' private LABEL values from local dataset files.
+    Load and 'secret-shared' private LABEL values from local dataset files or `ndarray` object of `numpy`.
     
     Only the input file of 'label_owner'-party will be processed.
     Return:
       The shared 'ciphertext' local label dataset, and its datatype is string with format specific to your current activated protocol.
-  - **load_XY(self, fileX: str, fileY: str = '', \*args, \*\*kwargs)**
+  - **load_XY(self, X: str or np.ndarray or None, y: str or np.ndarray or None, \*args, \*\*kwargs)**
 
     The combination of the above two functions.
 
@@ -658,14 +673,14 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
 
   
 
-#### `SecureReveal(a, reveal_party=-1)`
+#### `SecureReveal(a, reveal_party=7)`
 
   This auxiliary `SecureOp` can reveal the plaintext value of the `Tensor` `a`. **Since the output of this interface can be plaintext, be cautious and reach a consensus among all the parties when using this in production environment.**  
 
   **Args:**
 
   - **`a`**: A  `Tensor` in Tensorflow, whose values are in shared status. 
-  - **`reveal_party(optional)`**: Configure which party can get the plaintext output, It can be set to: $0$, meaning that only party `P0` can get the plaintext output values; $1$, meaning that only party `P1` can get the  plaintext output values. **By default, it is set to `-1`, meaning that both `P0` and `P1` can get the plaintext output values.**
+  - **`reveal_party(optional)`**: Configure which party can get the plaintext output, and this value should be 0~7, which is interpreted as 3-bit bitmap flags $[P2\ P1 \ P0]$, for example, `3` means only the return of party `P0` and` P1` will be plaintext. **By default, it is set to `7`, meaning that all `P0`, `P1` and `P2` can get the plaintext output values.**
 
   **Returns:**
   
