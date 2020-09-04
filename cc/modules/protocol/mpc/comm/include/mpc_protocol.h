@@ -44,7 +44,16 @@ class MpcProtocol : public ProtocolBase {
   virtual int Init(int partyid, std::string config_json_str, std::string logfile);
 
  public:
-  //! get current performance statistic info
+  /**
+   * get current performance statistic info
+   * 
+   * @code
+   * auto ps0 = GetPerfStats();
+   * // some code
+   * auto ps1 = GetPerfStats();
+   * auto ps = ps1 - ps0;
+   * @endcode
+   */
   PerfStats GetPerfStats();
 
  public:

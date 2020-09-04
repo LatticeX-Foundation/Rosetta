@@ -139,14 +139,14 @@ PerfStats MpcProtocol::GetPerfStats() {
     return perf_stats;
   }
 
-  // Network
+  //! Network
   io::NetStat net_stat = _net_io->net_stat();
   perf_stats.s.bytes_sent = net_stat.bytes_sent();
   perf_stats.s.bytes_recv = net_stat.bytes_received();
   perf_stats.s.msg_sent = net_stat.message_sent();
   perf_stats.s.msg_recv = net_stat.message_received();
 
-  // Time
+  //! Time @todo
 
   return perf_stats;
 }

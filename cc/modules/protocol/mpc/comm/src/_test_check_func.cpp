@@ -408,19 +408,46 @@ void min_check_func(const vector<double>& X, const vector<double>& Y, int rows, 
  * 
  * 
  */
+#include <Eigen/Dense> // for matmul
+using namespace Eigen;
 void matmul_check_func(
   const vector<double>& X,
   const vector<double>& Y,
   const vector<double>& Z,
   int m,
   int K,
-  int n,
-  bool t_a,
-  bool t_b) {
+  int n) {
+  MatrixXd mat_a = MatrixXd(m, K);
+  MatrixXd mat_b = MatrixXd(K, n);
+  MatrixXd mat_c = MatrixXd(m, n);
+
+  for (int i = 0; i < m; i++) {
+    for (int j = 0; j < K; j++) {
+      mat_a(i, j) = X[i * K + j];
+    }
+  }
+
+  for (int i = 0; i < K; i++) {
+    for (int j = 0; j < n; j++) {
+      mat_b(i, j) = Y[i * n + j];
+    }
+  }
+
+  mat_c = mat_a * mat_b;
+
+  vector<double> T(Z.size());
+  for (int i = 0; i < m; i++) {
+    for (int j = 0; j < n; j++) {
+      T[i * n + j] = mat_c(i, j);
+    }
+  }
+
   int size = Z.size();
-  //! @todo
   for (int i = 0; i < size; i++) {
+    if (f_equal(Z[i], T[i], 0.0003)) {
+      continue;
+    }
     cout << "In " << __FUNCTION__ << " i:" << i << " x:" << X[i] << " y:" << Y[i] << " z:" << Z[i]
-         << endl;
+         << " t:" << T[i] << endl;
   }
 }

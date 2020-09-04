@@ -43,4 +43,4 @@ void run(int partyid) {
   SNN_PROTOCOL_TEST_UNINIT(partyid);
 }
 
-RUN_HELIX_TEST(run);
+RUN_MPC_TEST(run);

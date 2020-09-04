@@ -1,17 +1,23 @@
 
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
+  string msgid(protocol_name + " performance test");
+  cout << __FUNCTION__ << " " << msgid << endl;
   Logger::Get().log_to_stdout(true);
 
   stringstream ssheader;
   // clang-format off
-      ssheader << "Notes:" << endl;
+      ssheader << "Notes: (partyid:" << partyid << ")" << endl;
       ssheader << "    OP: operator name. eg. 0.1.OpName: 0 means variable, 1 means constant." << endl;
-      ssheader << "    avg-elap.(ms): elapsed/times " << endl;
-      ssheader << "    shape size: k = r * c = m * K = K * n" << endl;
+      ssheader << "    loops: how many loops to execute." << endl;
+      ssheader << "    elapsed(s): the total time spent executing the OP (loops)." << endl;
+      ssheader << "    avg-elapse(ms): (elapsed(s)*1000.0)/loops." << endl;
+      ssheader << "    shape size: k = r * c = m * K = K * n." << endl;
+      ssheader << "    sent data/recv data: IO total bytes. (per operator; including message id)" << endl;
+      ssheader << "    sent msgs/recv msgs: IO interface invocation times. (per operator)" << endl;
       ssheader << "+-------------------------+------------+---------------+---------------+----------------------+------------+------------+------------+------------+" << endl;
-      ssheader << "|" << setw(25) << "OP "         << "|" << setw(12) << "times "
-               << "|" << setw(15) << "elapsed(s) " << "|" << setw(15) << "average(ms) " << "|" << setw(22) << "shape size "
+      ssheader << "|" << setw(25) << "OP "         << "|" << setw(12) << "loops "
+               << "|" << setw(15) << "elapsed(s) " << "|" << setw(15) << "avg-elapse(ms) " << "|" << setw(22) << "shape size "
                << "|" << setw(12) << "sent data "  << "|" << setw(12) << "recv data "
                << "|" << setw(12) << "sent msgs "  << "|" << setw(12) << "recv msgs "
                << "|" << endl;
@@ -22,49 +28,93 @@
       ssender  << "+-------------------------+------------+---------------+---------------+----------------------+------------+------------+------------+------------+";
   // clang-format on
 
+  // statitics beg ============
+  auto ps_cmp = [](const rosetta::PerfStats& l, const rosetta::PerfStats& r) -> bool {
+    return l.s.elapse < r.s.elapse;
+  };
+  vector<rosetta::PerfStats> vecPerfStats;
+  auto copePerf = [&](rosetta::PerfStats& ps) {
+    //
+    vecPerfStats.push_back(ps);
+  };
+  auto endPerf = [&]() {
+    // print_vec(vecx);
+    std::sort(vecPerfStats.begin(), vecPerfStats.end(), ps_cmp);
+    // for (auto& ps : vecPerfStats) {
+    //   cout.precision(11);
+    //   cout << "op:" << ps.name << " " << ps.s.elapse << endl;
+    // }
+    // cout << vecPerfStats.back().to_json(true) << endl;
+    std::string jsonstr = rosetta::PerfStats::to_json(vecPerfStats, true);
+    //cout << jsonstr << endl;
+    {
+      ofstream ofile;
+      ofile.open(
+        protocol_name + "-party-" + to_string(partyid) + "-perf-ops-sorted-by-elapse.json");
+      if (ofile.good()) {
+        ofile << jsonstr << endl;
+        ofile.close();
+      }
+    }
+  };
+  // statitics end ============
+
 #define _perf_test_beg() do {
-#define _perf_test_for(op, times)                                    \
-  auto ntimes = times;                                               \
-  stringstream ss;                                                   \
-  ss.precision(11);                                                  \
-  ss << "|" << setw(24) << string(#op) << " |" << setw(11) << times; \
-  SimpleTimer timer;                                                 \
-  for (int i = 0; i < times; i++) {
-#define _perf_test_end(shape)                                             \
-  }                                                                       \
-  timer.stop();                                                           \
-  ss << " |" << setw(14) << timer.elapse() << " |" << setw(14)            \
-     << timer.us_elapse() / 1000.0 / ntimes << " |" << setw(21) << shape; \
-  ss << " |";                                                             \
-  cout << ss.str() << endl;                                               \
-  }                                                                       \
+#define _perf_test_for(op, loops)                                \
+  auto nloops = loops;                                           \
+  /*nloops = nloops / 10 + 1;*/                                  \
+  /*nloops = nloops*1.5;*/                                       \
+  std::string opname(#op);                                       \
+  stringstream ss;                                               \
+  ss.precision(11);                                              \
+  ss << "|" << setw(24) << opname << " |" << setw(11) << nloops; \
+  auto ps0 = prot0.GetPerfStats();                               \
+  SimpleTimer timer;                                             \
+  for (int i = 0; i < nloops; i++) {
+#define _perf_test_end(shape)                                                                      \
+  }                                                                                                \
+  timer.stop();                                                                                    \
+  auto ps1 = prot0.GetPerfStats();                                                                 \
+  auto ps = ps1 - ps0;                                                                             \
+  ss << " |" << setw(14) << timer.elapse() << " |" << setw(14) << (timer.elapse() * 1000) / nloops \
+     << " |" << setw(21) << shape;                                                                 \
+  ss << " |" << setw(11) << ps.s.bytes_sent / nloops << " |" << setw(11)                           \
+     << ps.s.bytes_recv / nloops << " |" << setw(11) << ps.s.msg_sent / nloops << " |" << setw(11) \
+     << ps.s.msg_recv / nloops;                                                                    \
+  ss << " |";                                                                                      \
+  cout << ss.str() << endl;                                                                        \
+  ps = ps / nloops;                                                                                \
+  ps.name = opname;                                                                                \
+  ps.s.elapse = (timer.elapse() * 1000) / nloops;                                                  \
+  copePerf(ps);                                                                                    \
+  }                                                                                                \
   while (0)
 
-#define binary_perf_test(lh, rh, sX, sY, op, times)                      \
-  _perf_test_beg() attr_type attr;                                       \
-  attr["lh_is_const"] = to_string(lh);                                   \
-  attr["rh_is_const"] = to_string(rh);                                   \
-  _perf_test_for(lh.rh.op, times) prot0.GetOps(msgid)->op(sX, sY, strZ); \
+#define binary_perf_test(lh, rh, sX, sY, op, loops)                             \
+  _perf_test_beg() attr_type attr;                                              \
+  attr["lh_is_const"] = to_string(lh);                                          \
+  attr["rh_is_const"] = to_string(rh);                                          \
+  _perf_test_for(lh.rh.op, loops) prot0.GetOps(msgid)->op(sX, sY, strZ, &attr); \
   _perf_test_end("k=" + to_string(sX.size()) + ",k=" + to_string(sY.size()))
 
-#define unary_perf_test(op, times)                                      \
+#define unary_perf_test(op, loops)                                      \
   _perf_test_beg() attr_type attr;                                      \
-  _perf_test_for(op, times) prot0.GetOps(msgid)->op(strX, strZ, &attr); \
+  _perf_test_for(op, loops) prot0.GetOps(msgid)->op(strX, strZ, &attr); \
   _perf_test_end("k=" + to_string(strX.size()))
 
-#define reduce_perf_test(op, times, r, c)                               \
+#define reduce_perf_test(op, loops, r, c)                               \
   _perf_test_beg() attr_type attr;                                      \
   attr["rows"] = to_string(r);                                          \
   attr["cols"] = to_string(c);                                          \
-  _perf_test_for(op, times) prot0.GetOps(msgid)->op(strX, strZ, &attr); \
+  _perf_test_for(op, loops) prot0.GetOps(msgid)->op(strX, strZ, &attr); \
   _perf_test_end("r=" + to_string(r) + ",c=" + to_string(c))
 
-#define matmul_perf_test(op, times, m, K, n)                                  \
+#define matmul_perf_test(op, loops, m, K, n)                                  \
   _perf_test_beg() attr_type attr;                                            \
   attr["m"] = to_string(m);                                                   \
   attr["k"] = to_string(K);                                                   \
   attr["n"] = to_string(n);                                                   \
-  _perf_test_for(op, times) prot0.GetOps(msgid)->op(strX, strY, strZ, &attr); \
+  _perf_test_for(op, loops) prot0.GetOps(msgid)->op(strX, strY, strZ, &attr); \
   _perf_test_end("m=" + to_string(m) + ",K=" + to_string(K) + ",n=" + to_string(n))
 
   //////////////////////////////////////////////////////////////////
@@ -117,65 +167,66 @@
   SimpleTimer all_tests_timer;
 
   // variable vs variable
-  binary_perf_test(0, 0, strX, strY, Add, 23456);
-  binary_perf_test(0, 0, strX, strY, Sub, 23456);
-  binary_perf_test(0, 0, strX, strY, Mul, 3456);
+  binary_perf_test(0, 0, strX, strY, Add, 1234);
+  binary_perf_test(0, 0, strX, strY, Sub, 2345);
+  binary_perf_test(0, 0, strX, strY, Mul, 4567);
   binary_perf_test(0, 0, strX, strY, Truediv, 3);
   binary_perf_test(0, 0, strX, strY, Floordiv, 4); ////////////////////
-  binary_perf_test(0, 0, strX, strY, Less, 123);
-  binary_perf_test(0, 0, strX, strY, LessEqual, 111);
-  binary_perf_test(0, 0, strX, strY, Equal, 31);
-  binary_perf_test(0, 0, strX, strY, NotEqual, 33);
-  binary_perf_test(0, 0, strX, strY, Greater, 35);
-  binary_perf_test(0, 0, strX, strY, GreaterEqual, 37); ////////////////////
-  binary_perf_test(0, 0, strX, strY, SigmoidCrossEntropy, 13);
+  binary_perf_test(0, 0, strX, strY, Less, 234);
+  binary_perf_test(0, 0, strX, strY, LessEqual, 234);
+  binary_perf_test(0, 0, strX, strY, Equal, 71);
+  binary_perf_test(0, 0, strX, strY, NotEqual, 73);
+  binary_perf_test(0, 0, strX, strY, Greater, 235);
+  binary_perf_test(0, 0, strX, strY, GreaterEqual, 237); ////////////////////
+  binary_perf_test(0, 0, strX, strY, SigmoidCrossEntropy, 63);
   // constant vs variable
-  binary_perf_test(1, 0, strCX, strY, Add, 23456);
-  binary_perf_test(1, 0, strCX, strY, Sub, 23456);
-  binary_perf_test(1, 0, strCX, strY, Mul, 3456);
+  binary_perf_test(1, 0, strCX, strY, Add, 1234);
+  binary_perf_test(1, 0, strCX, strY, Sub, 2345);
+  binary_perf_test(1, 0, strCX, strY, Mul, 4567);
   binary_perf_test(1, 0, strCX, strY, Truediv, 3);
   binary_perf_test(1, 0, strCX, strY, Floordiv, 4); ////////////////////
-  binary_perf_test(1, 0, strCX, strY, Less, 123);
-  binary_perf_test(1, 0, strCX, strY, LessEqual, 111);
-  binary_perf_test(1, 0, strCX, strY, Equal, 31);
-  binary_perf_test(1, 0, strCX, strY, NotEqual, 33);
-  binary_perf_test(1, 0, strCX, strY, Greater, 35);
-  binary_perf_test(1, 0, strCX, strY, GreaterEqual, 37); ////////////////////
-  binary_perf_test(1, 0, strCX, strY, SigmoidCrossEntropy, 13);
+  binary_perf_test(1, 0, strCX, strY, Less, 234);
+  binary_perf_test(1, 0, strCX, strY, LessEqual, 234);
+  binary_perf_test(1, 0, strCX, strY, Equal, 71);
+  binary_perf_test(1, 0, strCX, strY, NotEqual, 73);
+  binary_perf_test(1, 0, strCX, strY, Greater, 235);
+  binary_perf_test(1, 0, strCX, strY, GreaterEqual, 237); ////////////////////
+  binary_perf_test(1, 0, strCX, strY, SigmoidCrossEntropy, 63);
   // variable vs constant
-  binary_perf_test(0, 1, strX, strCY, Add, 23456);
-  binary_perf_test(0, 1, strX, strCY, Sub, 23456);
-  binary_perf_test(0, 1, strX, strCY, Mul, 3456);
+  binary_perf_test(0, 1, strX, strCY, Add, 1234);
+  binary_perf_test(0, 1, strX, strCY, Sub, 2345);
+  binary_perf_test(0, 1, strX, strCY, Mul, 4567);
   binary_perf_test(0, 1, strX, strCY, Truediv, 3);
   binary_perf_test(0, 1, strX, strCY, Floordiv, 4); ////////////////////
-  binary_perf_test(0, 1, strX, strCY, Less, 123);
-  binary_perf_test(0, 1, strX, strCY, LessEqual, 111);
-  binary_perf_test(0, 1, strX, strCY, Equal, 31);
-  binary_perf_test(0, 1, strX, strCY, NotEqual, 33);
-  binary_perf_test(0, 1, strX, strCY, Greater, 35);
-  binary_perf_test(0, 1, strX, strCY, GreaterEqual, 37); ////////////////////
-  binary_perf_test(0, 1, strX, strCY, SigmoidCrossEntropy, 13);
-  binary_perf_test(0, 1, strX, positiveCY, Pow, 11);
+  binary_perf_test(0, 1, strX, strCY, Less, 234);
+  binary_perf_test(0, 1, strX, strCY, LessEqual, 234);
+  binary_perf_test(0, 1, strX, strCY, Equal, 71);
+  binary_perf_test(0, 1, strX, strCY, NotEqual, 73);
+  binary_perf_test(0, 1, strX, strCY, Greater, 235);
+  binary_perf_test(0, 1, strX, strCY, GreaterEqual, 237); ////////////////////
+  binary_perf_test(0, 1, strX, strCY, SigmoidCrossEntropy, 63);
+  binary_perf_test(0, 1, strX, positiveCY, Pow, 7);
 
-  unary_perf_test(Square, 3210);
-  unary_perf_test(Negative, 23456);
-  unary_perf_test(Abs, 63);
-  unary_perf_test(AbsPrime, 75);
-  unary_perf_test(Log, 81);
-  unary_perf_test(Log1p, 47);
-  unary_perf_test(HLog, 3);
-  unary_perf_test(Relu, 123);
-  unary_perf_test(ReluPrime, 132);
-  unary_perf_test(Sigmoid, 30);
+  unary_perf_test(Square, 5432);
+  unary_perf_test(Negative, 9876);
+  unary_perf_test(Abs, 121);
+  unary_perf_test(AbsPrime, 135);
+  unary_perf_test(Log, 76);
+  unary_perf_test(Log1p, 57);
+  unary_perf_test(HLog, 4);
+  unary_perf_test(Relu, 257);
+  unary_perf_test(ReluPrime, 211);
+  unary_perf_test(Sigmoid, 53);
 
-  reduce_perf_test(Mean, 12345, r, c);
-  reduce_perf_test(Sum, 12345, r, c);
-  reduce_perf_test(AddN, 23456, r, c);
-  reduce_perf_test(Max, 31, r, c);
-  reduce_perf_test(Min, 31, r, c);
+  reduce_perf_test(Mean, 9981, r, c);
+  reduce_perf_test(Sum, 8864, r, c);
+  reduce_perf_test(AddN, 7749, r, c);
+  reduce_perf_test(Max, 61, r, c);
+  reduce_perf_test(Min, 63, r, c);
 
-  matmul_perf_test(Matmul, 1234, m, K, n);
+  matmul_perf_test(Matmul, 6789, m, K, n);
   cout << ssender.str() << endl;
   cout << "Total elapsed(s): " << all_tests_timer.elapse() << endl;
+  endPerf();
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////

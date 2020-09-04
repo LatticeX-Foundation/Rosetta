@@ -99,6 +99,4 @@ void matmul_check_func(
   const vector<double>& Z,
   int m,
   int K,
-  int n,
-  bool t_a = false,
-  bool t_b = false);
+  int n);

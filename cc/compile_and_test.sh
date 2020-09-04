@@ -68,36 +68,38 @@ function run_mpc_io_tests() {
     sleep 1
 }
 
-function test_protocol() {
+function test_mpc_protocol() {
     name=$1
     echo "run $name"
     killall -q $name
     if [ -f "./$name" ]; then
         ./$name
-        sleep 1
+        sleep 0.5
     else
         echo -e "\033[31m./$name not exist!\033[0m"
     fi
 }
 
-function run_protocol_mpc_snn() {
-    # echo "run protocol_mpc_SNN"
-    test_protocol protocol_mpc_snn_tests_snn_check
-    #test_protocol protocol_mpc_snn_tests_snn_perf
-    echo "run_protocol_mpc_snn ok."
+function run_protocol_mpc_checks() {
+    echo "run run protocol mpc check tests."
+    # check
+    test_mpc_protocol protocol_mpc_snn_tests_snn__check
+
+    echo "run run protocol mpc check tests ok !"
+}
+function run_protocol_mpc_perfs() {
+    echo "run run protocol mpc performance tests."
+    # performance
+    test_mpc_protocol protocol_mpc_snn_tests_snn__perf
+
+    echo "run run protocol mpc performance tests ok !"
 }
 
-# run all tests (including common, io, op, ..)
 function run_all_modules_tests() {
-    # run all tests (including common, io, op, ..)
-    echo "rum common tests..."
     run_common_tests
-
-    echo "run mpc-io tests..."
     run_mpc_io_tests
-
-    echo "run protocol mpc-SNN test.."
-    run_protocol_mpc_snn
+    run_protocol_mpc_checks
+    #run_protocol_mpc_perfs
 }
 
 # run tests

@@ -28,7 +28,9 @@
 #include <mutex>
 #include <iostream>
 #include <atomic>
+#include <algorithm>
 #include <sstream>
+#include <fstream>
 using namespace std;
 
 #include "cc/modules/common/include/utils/random_util.h"
@@ -70,5 +72,12 @@ static inline int _mpc_main(int argc, char* argv[], _mpc_run_func run) {
   return ret;
 }
 
-#define RUN_HELIX_TEST(func) \
+#if print_result
+#define if_print_vec print_vec
+#else
+template <class T>
+inline void if_print_vec(const vector<T>& a, int length = -1, string msg = "") {}
+#endif
+
+#define RUN_MPC_TEST(func) \
   int main(int argc, char* argv[]) { return _mpc_main(argc, argv, func); }
