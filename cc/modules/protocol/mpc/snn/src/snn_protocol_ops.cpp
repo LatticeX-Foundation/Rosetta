@@ -521,7 +521,7 @@ int SnnProtocolOps::Reveal(
   const attr_type* attr_info) {
   log_debug << "----> Reveal\n" << endl;
 
-  int party = attr_info ? std::stoi(attr_info->at("receive_party")) : 1;
+  int party = attr_info ? std::stoi(attr_info->at("receive_party")) : 7;
 
   vector<mpc_t> out_vec(a.size());
   vector<mpc_t> private_a(a.size());
