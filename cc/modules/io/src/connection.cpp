@@ -28,6 +28,14 @@ Connection::Connection(int _fd, int _events, bool _is_server) {
   is_server_ = _is_server;
   buffer_ = make_shared<cycle_buffer>(1024 * 1024 * 10);
 }
+Connection::~Connection() { close(); }
+void Connection::close() {
+  if (state_ != Connection::State::Closed) {
+    state_ = Connection::State::Closing;
+    ::close(fd_);
+    state_ = Connection::State::Closed;
+  }
+}
 
 SSLConnection::~SSLConnection() { close(); }
 

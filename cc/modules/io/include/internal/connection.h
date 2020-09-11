@@ -34,11 +34,11 @@ namespace io {
 struct Connection {
  public:
   Connection(int _fd, int _events, bool _is_server);
-  virtual ~Connection() {}
+  virtual ~Connection();
 
  public:
   virtual void handshake() {}
-  virtual void close() {}
+  virtual void close();
   bool is_server() const { return is_server_; }
 
  public:

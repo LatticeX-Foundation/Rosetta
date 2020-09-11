@@ -22,7 +22,7 @@
 /**
  * This header for io tests and examples
  */
-#define USE_SSL_SOCKET 1
+#define USE_SSL_SOCKET 0
 namespace rosetta {
 namespace io {
 #if USE_SSL_SOCKET
