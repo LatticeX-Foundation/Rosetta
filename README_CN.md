@@ -164,7 +164,7 @@ Rosetta是一个由[Lattice基金会]((https://latticex.foundation/))维护的�
 
 ## 联系方式
 
-你可以通过[邮箱](mailto:rosetta@latticex.foundation)联系我们，也可以加入我们在[Slack](https://latticexrosetta.slack.com)上的Rosetta社区。
+你可以通过[邮箱](mailto:rosetta@latticex.foundation)联系我们，也可以加入我们在[Slack](https://join.slack.com/t/latticexrosetta/shared_invite/zt-dum6j65d-MTxp~Bxq5OwouJW8zUKB1Q)上的Rosetta社区。
 
 ## 许可证
 
