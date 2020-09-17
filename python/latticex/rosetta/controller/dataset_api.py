@@ -209,4 +209,3 @@ class SecureDataSet(object):
         return self.dataset_.load_y(inp)
 
 
-dataset = SecureDataSet()
