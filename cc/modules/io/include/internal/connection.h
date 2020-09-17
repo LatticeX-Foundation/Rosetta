@@ -61,6 +61,8 @@ struct Connection {
     return ret;
   }
 
+ protected:
+  std::mutex mtx_send_;
  public:
   enum State {
     Invalid = 1,

@@ -224,6 +224,8 @@ int Connection::writen(int connfd, const char* vptr, size_t n) {
   int nleft, nwritten;
   const char* ptr;
 
+  std::unique_lock<mutex> lck(mtx_send_);
+  
   ptr = vptr;
   nleft = n;
 
