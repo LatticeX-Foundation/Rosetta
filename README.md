@@ -17,18 +17,18 @@ The current version integrates the secure multi-party computation protocols for 
 
 ## Installation
 
-For now, Rosetta runs on Ubuntu 18.04, and is based on TensorFlow 1.14 with CPUs. Windows is not currently supported. Install Rosetta as follows.
+For now, Rosetta runs on Ubuntu 18.04, and is based on TensorFlow 1.14 with CPUs (Windows OS is not currently supported yet). You can install Rosetta as follows.
 
-Please check that your local system meets our [base environment requirement](doc/DEPLOYMENT.md#rosetta-deployment-guide). 
+First, please check that your local system meets our [base environment requirement](doc/DEPLOYMENT.md#rosetta-deployment-guide). 
 
-Install the native TensorFlow with the following codes. Note that you could also install it from source code, check [here](doc/TENSORFLOW_INSTALL.md) for details.
+Then install the native TensorFlow with the following codes. Note that you could also install it from source code, check [here](doc/TENSORFLOW_INSTALL.md) for details.
 
 ```bash
 # install tensorflow
 pip3 install tensorflow==1.14.0
 ```
 
-Build and install Rosetta with our all-in-one script as follows.
+And then build and install Rosetta with our all-in-one script as follows.
 
 ```bash
 # clone rosetta git repository
@@ -82,7 +82,7 @@ with tf.Session() as sess:
     print('plaintext matmul result:', sess.run(rtt.SecureReveal(cipher_result, a_and_c_can_get_plain)))
 ```
 
-To run this jointly, after configuration networks, the three guys can run the following command-line respectively:
+To run this jointly, after configuring networks, the three guys can run the following command-line respectively:
 ```bash
 python rosetta_demo.py --party_id=0
 ```
@@ -166,7 +166,7 @@ Rosetta is an open source project developed under the LPGLv3 license and maintai
 
 ## Contact
 
-You could reach us by [email](mailto:rosetta@latticex.foundation), and join Rosetta community on [Slack](https://join.slack.com/t/latticexrosetta/shared_invite/zt-dum6j65d-MTxp~Bxq5OwouJW8zUKB1Q).
+You could reach us by [email](mailto:rosetta@latticex.foundation). **And you are welcome to join Rosetta community on [Slack](https://join.slack.com/t/latticexrosetta/shared_invite/zt-dum6j65d-MTxp~Bxq5OwouJW8zUKB1Q) to ask any questions and discuss on any interesting topics with other developers**.
 
 
 ## License
