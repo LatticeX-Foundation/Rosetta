@@ -110,7 +110,7 @@ size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t 
       //std::this_thread::yield();
     }
 
-    {
+    if (false) {
       // remove `one` empty <msg_id, buffer>
       for (auto iter = mapbuffer_.begin(); iter != mapbuffer_.end(); ++iter) {
         if (iter->second->can_remove(20.0)) {
@@ -134,7 +134,7 @@ size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t 
       continue;
     }
 
-    int alen = 0;
+    int32_t alen = 0;
     buffer_->peek((char*)&alen, len1);
     if (!buffer_->can_read(alen)) {
       if (verbose_ > 1) {
@@ -225,7 +225,7 @@ int Connection::writen(int connfd, const char* vptr, size_t n) {
   const char* ptr;
 
   std::unique_lock<mutex> lck(mtx_send_);
-  
+
   ptr = vptr;
   nleft = n;
 

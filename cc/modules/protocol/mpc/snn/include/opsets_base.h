@@ -463,12 +463,24 @@ class OpBase_ {
 
     std::shared_ptr<AESObject> obj = nullptr;
     if (r_type == "COMMON") {
+      if (partyNum == PARTY_C) {
+        vec.resize(size);
+        return;
+      }
       assert((partyNum == PARTY_A || partyNum == PARTY_B) && "Only A and B can call for common");
       obj = aes_common;
     } else if (r_type == "a_1") {
+      if (partyNum == PARTY_B) {
+        vec.resize(size);
+        return;
+      }
       assert((partyNum == PARTY_A || partyNum == PARTY_C) && "Only A and C can call for a_1");
       obj = aes_a_1;
     } else if (r_type == "a_2") {
+      if (partyNum == PARTY_A) {
+        vec.resize(size);
+        return;
+      }
       assert((partyNum == PARTY_B || partyNum == PARTY_C) && "Only B and C can call for a_2");
       obj = aes_a_2;
     } else {

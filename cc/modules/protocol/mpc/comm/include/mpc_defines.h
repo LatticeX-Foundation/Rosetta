@@ -102,7 +102,7 @@ const __m128i BIT128 = _mm_setr_epi8(128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 
 
 // for debug
-#define MPC_DEBUG_USE_FIXED_AESKEY  1
+#define MPC_DEBUG_USE_FIXED_AESKEY  0
 #define MPC_DEBUG                   0
 
 // for basic operations

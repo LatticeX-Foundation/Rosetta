@@ -23,9 +23,11 @@ from latticex.rosetta.rtt.framework.rtt_tensor import *
 from latticex.rosetta.rtt.ops.array_ops import *
 from latticex.rosetta.rtt.ops.resource_variable_ops import *
 from latticex.rosetta.rtt.ops.rtt_math_ops import *
+from latticex.rosetta.rtt.ops.state_ops import *
 from latticex.rosetta.rtt.ops.variables import *
 from latticex.rosetta.rtt.ops.variable_scope import *
 from latticex.rosetta.rtt.ops.gradients_util import *
+
 
 # utils
 from latticex.rosetta.rtt.utils.common import *

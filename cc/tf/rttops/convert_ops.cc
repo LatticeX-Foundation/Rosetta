@@ -24,14 +24,12 @@
 REGISTER_OP("TfToRtt")
   .Attr("dtype: {int32, int64, float, double, string}")
   .Input("input: dtype")
-  .Output("output: string")
-  .SetIsStateful();
+  .Output("output: string");
 
 /// Note[georgeshi]: we can NOT use string in native TF op
 REGISTER_OP("RttToTf")
   .Input("val: string")
   .Output("out: dtype")
-  .Attr("dtype: {float, double, int32, int64, string}")
-  .SetIsStateful();
+  .Attr("dtype: {float, double, int32, int64, string}");
   //.SetShapeFn(::tensorflow::shape_inference::UnchangedShape);
 
