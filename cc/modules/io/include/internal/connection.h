@@ -63,6 +63,8 @@ struct Connection {
 
  protected:
   std::mutex mtx_send_;
+  std::atomic<int> atomic_send_{0};
+
  public:
   enum State {
     Invalid = 1,

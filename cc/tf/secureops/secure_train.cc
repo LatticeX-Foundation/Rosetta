@@ -12,14 +12,13 @@ using namespace std;
 using namespace tensorflow;
 using rosetta::ProtocolManager;
 
-static constexpr char kErrorMessage[] = "SecureApplyGradientDescentOp could not correctly convert string: ";
+static constexpr char kErrorMessage[] =
+  "SecureApplyGradientDescentOp could not correctly convert string: ";
 
-namespace tensorflow
-{
-  
+namespace tensorflow {
+
 template <typename T>
 class SecureApplyGradientDescentOp : public SecureOpKernel {
-  
  public:
   explicit SecureApplyGradientDescentOp(OpKernelConstruction* ctx) : SecureOpKernel(ctx) {
     OP_REQUIRES_OK(ctx, ctx->GetAttr("use_locking", &use_exclusive_lock_));
@@ -78,16 +77,22 @@ class SecureApplyGradientDescentOp : public SecureOpKernel {
     vector<string> out_var(ele_nums);
     attrs_["lh_is_const"] = "1";
     attrs_["rh_is_const"] = "0";
-   
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Mul(input_alpha, input_delta, out_var, &attrs_);
+
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id().str())
+      ->Mul(input_alpha, input_delta, out_var, &attrs_);
     attrs_["lh_is_const"] = "0";
     attrs_["rh_is_const"] = "0";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Sub(input_var, out_var, out_var, &attrs_);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id().str())
+      ->Sub(input_var, out_var, out_var, &attrs_);
 
     // TODO[georgeshi]: why we canot and need not use this?? due to string?
     //new_var.setZero();
 
-    for(int i = 0; i < ele_nums; ++i){
+    for (int i = 0; i < ele_nums; ++i) {
       new_var(i) = out_var[i];
     }
 
@@ -109,6 +114,39 @@ REGISTER_KERNEL_BUILDER(
   SecureApplyGradientDescentOp<int>);
 
 /// we do not support resourceAGD for now
-// REGISTER_KERNEL_BUILDER(                      
+// REGISTER_KERNEL_BUILDER(
 //   Name("RttApplyGradientDescent").Device(DEVICE_CPU).HostMemory("var").TypeConstraint<float>("T"), cls<Eigen::ThreadPoolDevice, type>);
-}
+} // namespace tensorflow
+
+namespace tensorflow {
+
+class SecureAssignOp : public SecureOpKernel {
+ public:
+  explicit SecureAssignOp(OpKernelConstruction* ctx) : SecureOpKernel(ctx) {
+    OP_REQUIRES_OK(ctx, ctx->GetAttr("use_locking", &use_locking_));
+  }
+
+  void Compute(OpKernelContext* ctx) override {
+    //cout << "begin debuging SecureAssignOp!" << endl;
+    Tensor var = ctx->mutable_input(0, use_locking_);
+    const Tensor& value = ctx->input(1);
+    auto var_flat = var.flat<string>();
+    auto value_flat = value.flat<string>();
+
+    auto ele_nums = value.NumElements();
+    for (int i = 0; i < ele_nums; ++i) {
+      var_flat(i) = value_flat(i);
+    }
+
+    if (ctx->input_dtype(0) != DT_RESOURCE) {
+      ctx->forward_ref_input_to_ref_output(0, 0);
+    }
+  }
+
+ private:
+  bool use_locking_ = true;
+};
+
+REGISTER_STR_CPU_KERNEL(SecureAssign, SecureAssignOp);
+
+} // namespace tensorflow

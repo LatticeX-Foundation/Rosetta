@@ -806,11 +806,23 @@ class Sigmoid : public OpBase {
   int RunPieceWise(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
     MPCOP_RETURN(funcSigmoidPieceWiseMPC(a, b, size));
   }
+  int Run3PieceWise(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
+    MPCOP_RETURN(funcSigmoid3PieceWiseMPC(a, b, size));
+  }
   int RunAliPieceWise(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
     MPCOP_RETURN(funcSigmoidAliPieceWiseMPC(a, b, size));
   }
+  int RunChebyshevPoly(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
+    MPCOP_RETURN(funcSigmoidChebyshevPolyMPC(a, b, size));
+  }
+  
   int Run(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
-#if USE_PIECE_WISE_SIGMOID
+#define USE_SIGMOID_VERSION 1
+#if USE_SIGMOID_VERSION == 0
+    return RunChebyshevPoly(a, b, size);
+#elif USE_SIGMOID_VERSION == 1
+    return Run3PieceWise(a, b, size);
+#elif USE_SIGMOID_VERSION == 2 //USE_PIECE_WISE_SIGMOID
     return RunPieceWise(a, b, size);
 #else
     return RunG3(a, b, size);
@@ -825,7 +837,9 @@ class Sigmoid : public OpBase {
     bool use_fastPow3 = true);
   int funcSigmoidG3PrimeMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size);
   int funcSigmoidPieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size);
+  int funcSigmoid3PieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size);
   int funcSigmoidAliPieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size);
+  int funcSigmoidChebyshevPolyMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size);
 
  private:
   int funcPrivateCompareMPCEx(

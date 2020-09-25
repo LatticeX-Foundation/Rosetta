@@ -1,9 +1,11 @@
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/shape_inference.h"
-
+#include "tensorflow/core/util/bcast.h"
 
 #include <iostream>
+#include <vector>
+#include <string>
 
 using namespace std;
 using namespace tensorflow;
@@ -97,5 +99,41 @@ REGISTER_KERNEL_BUILDER(
   RttApplyGradientDescentOp<int>);
 
 /// we do not support resourceAGD in Demo for now
-// REGISTER_KERNEL_BUILDER(                      
+// REGISTER_KERNEL_BUILDER(
 //   Name("RttApplyGradientDescent").Device(DEVICE_CPU).HostMemory("var").TypeConstraint<float>("T"), cls<Eigen::ThreadPoolDevice, type>);
+
+namespace tensorflow {
+
+
+class RttAssignOp : public OpKernel {
+ public:
+  explicit RttAssignOp(OpKernelConstruction* ctx) : OpKernel(ctx) {
+    OP_REQUIRES_OK(ctx, ctx->GetAttr("use_locking", &use_locking_));
+  }
+
+  void Compute(OpKernelContext* ctx) override {
+    // cout << "begin SecureAssignOp..." << endl;
+    Tensor var = ctx->mutable_input(0, use_locking_);
+    const Tensor& value = ctx->input(1);
+    auto var_flat = var.flat<string>();
+    auto value_flat = value.flat<string>();
+
+    auto ele_nums = value.NumElements();
+    for (int i = 0; i < ele_nums; ++i) {
+      var_flat(i) = value_flat(i);
+    }
+
+    if (ctx->input_dtype(0) != DT_RESOURCE) {
+      ctx->forward_ref_input_to_ref_output(0, 0);
+    }
+
+    // cout << "end SecureAssignOp..." << endl;
+  }
+
+ private:
+  bool use_locking_ = true;
+};
+
+REGISTER_KERNEL_BUILDER(Name("RttAssign").Device(DEVICE_CPU), RttAssignOp);
+
+} // namespace tensorflow

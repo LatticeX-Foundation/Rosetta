@@ -51,6 +51,9 @@ class StaticReplacePass():
     # class variable, map tf native graph to secure rosetta graph
     tf_graph_mapto_secure_graph = {}
 
+    # class variable, map tf native src op to rosetta secure dest op
+    tf_op_mapto_secure_op = {}
+
     # class variable, Optimized Conversion ops(TfToRtt\RttToTf) flag
     enable_opt_conv = True
     support_conv_op_def_name = ("TfToRtt", "RttToTf")
@@ -344,13 +347,21 @@ class StaticReplacePass():
             if (self.enable_opt_conv):
                 op = self.skip_conversion_ops(op)
 
+            # If the source op has been replaced, return the replaced op directly.
+            if (op in StaticReplacePass.tf_op_mapto_secure_op.keys()):
+                return StaticReplacePass.tf_op_mapto_secure_op[op]
+
             # Take action based on the op, if the op must secure op, we must
             # replace the op with secure op, otherwise, deep copy it.
             if self._is_need_secure_op(op) and self._is_support_secure_op(op):
                 self.need_secure_op_name.append(new_name)
-                return self.create_secure_op(op, to_graph)
+                dest_op = self.create_secure_op(op, to_graph)
             else:
-                return self.deep_copy_op(op, to_graph)
+                dest_op = self.deep_copy_op(op, to_graph)
+
+            # save the dest op, then return
+            StaticReplacePass.tf_op_mapto_secure_op[op] = dest_op
+            return dest_op
 
         else:
             # If the instance is not Tensor/Operation, then show error
@@ -791,8 +802,8 @@ class StaticReplacePass():
         """
         
         attrs_map = {}
-        for attr in tf_op.op_def.attr:
-            attrs_map[attr.name] = attr.default_value.b
+        attrs_map['transpose_a'] = tf_op.get_attr("transpose_a")
+        attrs_map['transpose_b'] = tf_op.get_attr("transpose_b")
         
         return secure_op(inputs[0], inputs[1], transpose_a=attrs_map['transpose_a'], transpose_b=attrs_map['transpose_b'], name=secure_name).op
 

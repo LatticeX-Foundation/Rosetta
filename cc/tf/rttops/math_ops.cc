@@ -97,34 +97,28 @@ REGISTER_RTT_BINARY_OP(RttLessEqual).Doc(R"doc(
 
 REGISTER_OP("RttNegative")
   .Input("x: string")
-  .Output("res: string")
-  .SetIsStateful();
+  .Output("res: string");
 
 REGISTER_OP("RttAbs")
   .Input("x: string")
-  .Output("res: string")
-  .SetIsStateful();
+  .Output("res: string");
 
 REGISTER_OP("RttAbsPrime")
   .Input("x: string")
-  .Output("res: string")
-  .SetIsStateful();
+  .Output("res: string");
 
 REGISTER_OP("RttLog")
   .Input("x: string")
-  .Output("res: string")
-  .SetIsStateful();
+  .Output("res: string");
 
 REGISTER_OP("RttLog1p")
   .Input("x: string")
-  .Output("res: string")
-  .SetIsStateful();
+  .Output("res: string");
 
 REGISTER_OP("RttReveal")
   .Input("x: string")
   .Output("res: string")
-  .Attr("receive_party: int = 0")
-  .SetIsStateful();
+  .Attr("receive_party: int = 0");
 
 REGISTER_OP("RttAddN")
     .Input("inputs: N * T")
@@ -139,10 +133,9 @@ REGISTER_OP("RttMatmul")
   .Input("y: string")
   .Output("res: string")
   .Attr("transpose_a: bool = false")
-  .Attr("transpose_b: bool = false")
-  .SetIsStateful();
+  .Attr("transpose_b: bool = false");
 
-REGISTER_OP("RttSquare").Input("x: string").Output("res: string").SetIsStateful();
+REGISTER_OP("RttSquare").Input("x: string").Output("res: string");
 
 
 REGISTER_OP("RttReduceMean")

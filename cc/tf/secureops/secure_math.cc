@@ -537,7 +537,6 @@ class SecureAddNOp : public SecureOpKernel {
   ~SecureAddNOp() {}
 
   void ComputeImpl(OpKernelContext* context) {
-    cout << "--> AddN OpKernel compute...\n\n";
     if (!context->ValidateInputsAreSameShape(this)) return;
 
     const Tensor& input0 = context->input(0);
@@ -545,13 +544,12 @@ class SecureAddNOp : public SecureOpKernel {
 
     if (num == 1) {
       context->set_output(0, input0);
-      cout << "=====  add_n input_nums: " << context->num_inputs() <<  "just copy and return ?????" << endl;
       return;
     }
 
-    log_debug << "=====  add_n input_nums: " << context->num_inputs();
-    log_debug << "          in0.dims():" << input0.dims();
-    log_debug << "    in0_num_elements:" << input0.NumElements();
+    // log_debug << "=====  add_n input_nums: " << context->num_inputs();
+    // log_debug << "          in0.dims():" << input0.dims();
+    // log_debug << "    in0_num_elements:" << input0.NumElements();
 
     Tensor* z = nullptr;
     OP_REQUIRES_OK(context, context->allocate_output(0, input0.shape(), &z));

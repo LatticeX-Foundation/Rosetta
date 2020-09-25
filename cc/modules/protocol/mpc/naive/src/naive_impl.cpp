@@ -15,21 +15,24 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
+#include "cc/modules/protocol/mpc/naive/include/naive_impl.h"
+#include "cc/modules/protocol/mpc/naive/include/naive_ops_impl.h"
+#include "cc/modules/io/include/net_io.h"
 
-//#include "tensorflow/core/framework/common_shape_fns.h"
-#include "tensorflow/core/framework/op.h"
-//#include "tensorflow/core/framework/shape_inference.h"
+#include <stdexcept>
+#include <string>
+#include <vector>
+using namespace std;
 
-/// Note[georgeshi]: for now, please only use INT32 or INT64!
-REGISTER_OP("TfToRtt")
-  .Attr("dtype: {int32, int64, float, double, string}")
-  .Input("input: dtype")
-  .Output("output: string");
+namespace rosetta {
 
-/// Note[georgeshi]: we can NOT use string in native TF op
-REGISTER_OP("RttToTf")
-  .Input("val: string")
-  .Output("out: dtype")
-  .Attr("dtype: {float, double, int32, int64, string}");
-  //.SetShapeFn(::tensorflow::shape_inference::UnchangedShape);
+shared_ptr<ProtocolOps> NaiveProtocol::GetOps(const string& op_token) {
+  auto naive_ops_ptr = make_shared<NaiveOpsImpl>(op_token);
+  // In this insecure naive protocol, we pass the party role ID to inner NaiveOpsImpl directly
+  // in this inelegant way. For production protocol, please refer to SecureNN implementation. 
+  naive_ops_ptr->op_config_map["PID"] = "P" + to_string(my_party_id);
+  naive_ops_ptr->io = GetNetHandler();
+  return std::dynamic_pointer_cast<ProtocolOps>(naive_ops_ptr);
+}
 
+} // namespace rosetta

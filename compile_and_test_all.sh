@@ -40,19 +40,7 @@ function run_stage_2() {
 }
 
 function run_stage_3() {
-    echo -e "stage 3: compile dynamic pass for tensorflow, [run stage2] !"
-    return
-
-    cd ${dynamic_pass}
-    bash ./compile_and_test.sh
-    echo -e "${GREEN}compile dynamic pass ok.${NC}"
-
-    cd ${curdir}
-    echo -e "${GREEN}run stage 3 ok.${NC}"
-}
-
-function run_stage_4() {
-    echo -e "stage 4: build and install .whl for python"
+    echo -e "stage 3: build and install .whl for python"
     cd ${curdir}
 
     python3 setup.py build_ext
@@ -71,11 +59,23 @@ function run_stage_4() {
     fi
 
     cd ${curdir}
-    echo -e "${GREEN}run stage 4 ok.${NC}"
+    echo -e "${GREEN}run stage 3 ok.${NC}"
 }
 
 # run all the stages
 function run_all() {
+    unset ROSETTA_MPC_128
+    use_128=64
+
+    run_stage_prepare ${build_type} ${use_128}
+    run_stage_1
+    run_stage_2
+
+    echo -e "run 64bits binary all ok."
+}
+
+# run all the stages
+function run_all_with_128() {
     if [ ${use_128} == "128" ]; then
         echo -e "run and compile 128 bits binaries..."
     else
@@ -87,7 +87,7 @@ function run_all() {
     run_stage_prepare ${build_type} ${use_128}
     run_stage_1
     run_stage_2
-    run_stage_3
+
     echo -e "run and compile 128 bits binaries ok."
 
     # build 128 _rosetta.xxxx.so and backup
@@ -99,8 +99,8 @@ function run_all() {
     run_stage_prepare ${build_type} ${use_128}
     run_stage_1
     run_stage_2
+
     run_stage_3
-    run_stage_4
     echo -e "run and compile 64 bits binaries ok."
 
     echo -e "run 128-bits, 64-bits binaries all ok."
@@ -111,7 +111,7 @@ stage_choice=x
 # build_type, default is Release
 build_type=Release
 # use 128 bits mpc type
-use_128=128
+use_128=64
 if [ $# -ge 1 ]; then
     stage_choice=$1
     echo -e "run stage: ${stage_choice}..."
@@ -149,9 +149,14 @@ function run_main() {
         echo -e "choice is stage 2, tensorflow libraries compilation or test."
         run_stage_2
         ;;
-    4)
+    3)
         echo -e "choice is stage 4, compile setup.py."
-        run_stage_4
+        run_stage_3
+        ;;
+    4)
+        echo -e "choice for all with 128 bits binaries, test mpcop (python)."
+        use_128=128 # force 128 bits
+        run_all_with_128
         ;;
     *)
         echo -e "bad choice of stage!!!"

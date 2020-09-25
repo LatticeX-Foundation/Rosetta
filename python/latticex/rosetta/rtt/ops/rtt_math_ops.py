@@ -138,7 +138,7 @@ def rtt_matmul(x, y, transpose_a=False, transpose_b=False, name=None):
     """Multiplies matrix `a` by matrix `b`, producing `a` * `b`."""
     x = rtt_ts.convert_to_rtttensor(x)
     y = rtt_ts.convert_to_rtttensor(y)
-    _result = rtt_ts.rtt_ops.rtt_matmul(x._raw, y._raw, name)
+    _result = rtt_ts.rtt_ops.rtt_matmul(x._raw, y._raw, transpose_a=transpose_a, transpose_b=transpose_b, name=name)
     return rtt_ts.RttTensor(_result)
 
 
@@ -315,6 +315,7 @@ def static_override_tf_ops_to_rtt_ops():
     tf.log = rtt_log
     tf.log1p = rtt_log1p
     tf.sigmoid = rtt_sigmoid
+    tf.nn.sigmoid = rtt_sigmoid
     tf.nn.relu = rtt_relu
     tf.abs = rtt_abs
     tf.reduce_max = rtt_max
@@ -322,6 +323,7 @@ def static_override_tf_ops_to_rtt_ops():
     tf.reduce_mean = rtt_mean
     tf.reduce_sum = rtt_sum
     tf.cast = rtt_cast
+    
 
 
 # run static override

@@ -18,6 +18,7 @@
 #include "cc/modules/common/include/utils/logger.h"
 #include "cc/modules/protocol/public/protocol_manager.h"
 #include "cc/modules/protocol/mpc/snn/src/snn_protocol.h"
+#include "cc/modules/protocol/mpc/naive/include/naive_impl.h"
 
 #include <iostream>
 
@@ -145,5 +146,6 @@ struct ProtocolRegistrar {
   static ProtocolRegistrar<Prot> _protocol_registrar_##Prot(Name)
 
 REGISTER_SECURE_PROTOCOL(SnnProtocol, "SecureNN");
+REGISTER_SECURE_PROTOCOL(NaiveProtocol, "Naive");
 
 } // namespace rosetta
