@@ -13,4 +13,4 @@ add_subdirectory(comm)
 
 # mpc sub protocols
 add_subdirectory(snn)
-
+add_subdirectory(naive)

@@ -23,6 +23,7 @@ install_libraries(protocol-base)
 
 list(APPEND LINKLIBS protocol-base)
 list(APPEND LINKLIBS mpc-snn)
+list(APPEND LINKLIBS mpc-naive)
 
 # Library protocol-api
 add_library(protocol-api SHARED "${CMAKE_CURRENT_SOURCE_DIR}/protocol_manager.cpp")
