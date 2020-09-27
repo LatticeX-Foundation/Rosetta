@@ -10,8 +10,8 @@ target_link_libraries(mpc-naive PUBLIC ${LINKLIBS} mpc-comm)
 set_target_properties(mpc-naive PROPERTIES FOLDER "protocol/naive"
                     APPEND_STRING PROPERTY LINK_FLAGS " ${ADD_LINK_LIB_FLAGS}"
 )
-
 install_libraries(mpc-naive)
+
 
 # IF(ROSETTA_COMPILE_TESTS)
 # # examples & tests

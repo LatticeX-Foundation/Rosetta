@@ -200,3 +200,29 @@ def set_backend_loglevel(loglevel: int):
         6: Fatal
     """
     py_protocol_handler.set_loglevel(loglevel)
+
+
+def start_perf_stats():
+    py_protocol_handler.start_perf_stats()
+
+
+def get_perf_stats(pretty: bool = False):
+    """
+    return the communications and elapsed between .activate()/.start_perf_stats() and this call.
+    Return json string, eg:
+    {
+      "name": "default",
+      "elapsed(s)": {
+        "clock": 0.0,
+        "cpu": 0.0,
+        ""elapse": 1.785008878
+      },
+      "communication(B)": {
+        "bytes-sent": 968974,
+        "bytes-recv": 245330,
+        "msg-sent": 595,
+        "msg-recv": 432
+      }
+    }
+    """
+    return py_protocol_handler.get_perf_stats(pretty)

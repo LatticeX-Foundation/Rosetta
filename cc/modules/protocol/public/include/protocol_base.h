@@ -17,8 +17,8 @@
 // ==============================================================================
 #pragma once
 
+#include "cc/modules/common/include/utils/perf_stats.h"
 #include "cc/modules/protocol/public/include/protocol_ops.h"
-//#include "cc/modules/common/include/utils/helper.h"
 
 #include <memory>
 #include <vector>
@@ -91,6 +91,19 @@ class ProtocolBase {
    */
   int GetPartyId() const { return my_party_id; }
 
+  /**
+   * get current performance statistic info
+   * 
+   * @code
+   * auto ps0 = GetPerfStats();
+   * // some code
+   * auto ps1 = GetPerfStats();
+   * auto ps = ps1 - ps0;
+   * @endcode
+   */
+  virtual PerfStats GetPerfStats() { return PerfStats(); }
+  virtual void StartPerfStats() {}
+
  protected:
   int my_party_id = -1;
   bool _is_inited = false;
@@ -100,5 +113,7 @@ class ProtocolBase {
   shared_ptr<NET_IO> _net_io = nullptr;
 
   unordered_map<string, string> config_map;
+
+  PerfStats perf_stats_;
 };
 } // namespace rosetta

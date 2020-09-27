@@ -39,6 +39,7 @@ int MpcProtocol::Init(std::string config_json_str) {
       _init_with_config();
       _init_aeskeys();
       _is_inited = true;
+      StartPerfStats();
     }
   }
   log_debug << "MpcProtocol::Init done!" << endl;
@@ -65,6 +66,7 @@ int MpcProtocol::Init(int partyid, string config_json_str, string logfile) {
       _init_with_config();
       _init_aeskeys();
       _is_inited = true;
+      StartPerfStats();
     }
   }
   log_info << "Rosetta: MpcProtocol::Init with CONFIG file done!" << endl;
@@ -147,8 +149,17 @@ PerfStats MpcProtocol::GetPerfStats() {
   perf_stats.s.msg_recv = net_stat.message_received();
 
   //! Time @todo
+  // elapse = between StartPerfStats() and GetPerfStats()
+  perf_stats.s.elapse = perf_stats_.timer.elapse();
 
   return perf_stats;
+}
+void MpcProtocol::StartPerfStats() {
+  //! Network
+  _net_io->clear_statistics();
+
+  //! Time @todo
+  perf_stats_.timer.start();
 }
 
 } // namespace rosetta

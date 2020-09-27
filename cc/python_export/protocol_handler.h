@@ -104,4 +104,18 @@ class ProtocolHandler {
   void set_logfile(const std::string& logfile) { Logger::Get().set_filename(logfile); }
   // Note: LogLevel \in { Cout = 0, Trace, Debug, Info, Warn, Error, Fatal };
   void set_loglevel(int loglevel) { Logger::Get().set_level(loglevel); }
+
+  // stats
+  void start_perf_stats() {
+    if (is_activated()) {
+      rosetta::ProtocolManager::Instance()->GetProtocol()->StartPerfStats();
+    }
+  }
+  std::string get_perf_stats(bool pretty = false) {
+    if (!is_activated()) {
+      return "{}";
+    }
+    auto stats = rosetta::ProtocolManager::Instance()->GetProtocol()->GetPerfStats();
+    return stats.to_json(pretty);
+  }
 };

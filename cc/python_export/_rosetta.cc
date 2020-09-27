@@ -44,7 +44,10 @@ PYBIND11_MODULE(_rosetta, m) {
     .def("log_to_stdout", &ProtocolHandler::log_to_stdout)
     .def("set_logfile", &ProtocolHandler::set_logfile)
     .def("set_loglevel", &ProtocolHandler::set_loglevel)
-    .def("rand_seed", &ProtocolHandler::rand_seed);
+    .def("rand_seed", &ProtocolHandler::rand_seed)
+    .def("start_perf_stats", &ProtocolHandler::start_perf_stats)
+    .def("get_perf_stats", &ProtocolHandler::get_perf_stats)
+    ;
 
   py::module m_dataset = m.def_submodule("dataset");
   py::class_<DataSet>(m_dataset, "DataSet")

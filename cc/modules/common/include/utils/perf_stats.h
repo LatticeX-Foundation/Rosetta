@@ -80,6 +80,9 @@ namespace rosetta {
 namespace rosetta {
 class PerfStats {
  public:
+  SimpleTimer timer; // for elapse field
+
+ public:
   // name,tag,...
   std::string name = "default";
   struct __stat {
