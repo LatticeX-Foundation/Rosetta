@@ -70,6 +70,7 @@ function run_all() {
     run_stage_prepare ${build_type} ${use_128}
     run_stage_1
     run_stage_2
+    run_stage_3
 
     echo -e "run 64bits binary all ok."
 }
