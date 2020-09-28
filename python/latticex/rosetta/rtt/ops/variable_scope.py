@@ -32,7 +32,7 @@ def convert_init_value_to_string(initial_value, dtype):
     if (dtype != tf.string and dtype != None):
         initial_value = tf.as_string(initial_value)
     elif isinstance(initial_value, np.ndarray):
-        if initial_value.dtype.type != np.str and initial_value.dtype.type != np.str_ and initial_value.dtype.type != np.bytes_:
+        if initial_value.dtype.type != np.str and initial_value.dtype.type != np.object_ and initial_value.dtype.type != np.bytes_:
             initial_value = tf.as_string(initial_value)
     elif isinstance(initial_value, (list, tuple)):
         if (type("") != type(initial_value[0])):
