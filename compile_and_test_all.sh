@@ -2,7 +2,6 @@
 # find . -name '*.sh' | xargs chmod 755
 # find . -name '*.py' | xargs chmod 755
 
-
 # This script for compiling all c++ projects and python-setup project
 # Also runing all tests
 
@@ -71,7 +70,7 @@ function run_all() {
     run_stage_1
     run_stage_2
     run_stage_3
-
+    
     echo -e "run 64bits binary all ok."
 }
 
@@ -88,7 +87,7 @@ function run_all_with_128() {
     run_stage_prepare ${build_type} ${use_128}
     run_stage_1
     run_stage_2
-
+    
     echo -e "run and compile 128 bits binaries ok."
 
     # build 128 _rosetta.xxxx.so and backup

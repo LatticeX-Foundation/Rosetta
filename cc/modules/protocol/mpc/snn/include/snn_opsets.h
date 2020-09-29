@@ -1047,6 +1047,10 @@ class DotProduct : public BinaryOp {
     return funcBinaryOp(b, a, c, size);
   }
 
+public:
+  // this is actually the AND functionality for bit-share.
+  int BitMul(const vector<small_mpc_t>& a, const vector<small_mpc_t>& b, vector<small_mpc_t> & c, size_t size);
+
  private:
   int funcDotProduct(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size);
 };
@@ -1483,11 +1487,22 @@ class Equal : public CompareOp {
     const vector<mpc_t>& b,
     vector<mpc_t>& c,
     size_t size) {
-    return funcEqual(a, b, c, size);
+    return funcFastEqual(a, b, c, size);
   }
 
- private:
+// temp make these as public funcs
+public:
+  // retired! NOT use this any more.
   int funcEqual(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size);
+  // Optimized version, default one.
+  int funcFastEqual(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size);
+  
+  // for each a_i in a, get a_i[0] AND a_i[1] AND a_i[2] ... AND a_i[n] as c[i]
+  int FanInBitAdd(const vector<vector<small_mpc_t>>& a,
+                  vector<small_mpc_t>& c,
+                  size_t size);
+  // convert binary bit-share to arithematic share of the same plain value.
+  int B2A(const vector<small_mpc_t>& bit_shares, vector<mpc_t>& arith_shares, size_t size);
 };
 
 class NotEqual : public CompareOp {
@@ -1499,11 +1514,14 @@ class NotEqual : public CompareOp {
     vector<mpc_t>& c,
     size_t size) {
     c.resize(size);
-    return funcNotEqual(a, b, c, size);
+    return funcFastNotEqual(a, b, c, size);
   }
 
- private:
+private:
+  // retired! NOT use this any more.
   int funcNotEqual(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size);
+    // Optimized version, default one.
+  int funcFastNotEqual(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size);
 };
 
 class Less : public CompareOp {
@@ -1518,7 +1536,7 @@ class Less : public CompareOp {
     return funcLess(a, b, c, size);
   }
 
- private:
+private:
   int funcLess(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size);
 };
 

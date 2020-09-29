@@ -20,6 +20,91 @@
 namespace rosetta {
 namespace snn {
 
+// beaver-triple style MUltiplication for bit-AND
+int DotProduct::BitMul(const vector<small_mpc_t>& a,
+                        const vector<small_mpc_t>& b,
+                        vector<small_mpc_t> & c,
+                        size_t size) {
+  if (FOUR_PC) {
+    notYet();
+  }
+
+  if (THREE_PC) {
+    vector<small_mpc_t> A(size, 0), B(size, 0), C(size, 0);
+
+    if (HELPER) {
+      vector<small_mpc_t> A1(size, 0), A2(size, 0), B1(size, 0), B2(size, 0), C1(size, 0), C2(size, 0);
+      // We only use the last bit!
+      populateRandomVector<small_mpc_t>(A1, size, "a_1", "POSITIVE");
+      populateRandomVector<small_mpc_t>(A2, size, "a_2", "POSITIVE");
+      populateRandomVector<small_mpc_t>(B1, size, "b_1", "POSITIVE");
+      populateRandomVector<small_mpc_t>(B2, size, "b_2", "POSITIVE");
+      populateRandomVector<small_mpc_t>(C1, size, "c_1", "POSITIVE");
+
+      for(int i = 0; i < size; ++i) {
+        A[i] = A1[i] ^ A2[i] & 0x01;
+        B[i] = B1[i] ^ B2[i] & 0x01;
+        C[i] = A[i] & B[i] & 0x01;
+        C2[i] = C[i] ^ C1[i] & 0x01;
+      }
+      sendBitVector(C2, PARTY_B, size);
+    }
+
+    if (PRIMARY) {
+      if (partyNum == PARTY_A) {
+        populateRandomVector<small_mpc_t>(A, size, "a_1", "POSITIVE");
+        populateRandomVector<small_mpc_t>(B, size, "b_1", "POSITIVE");
+        populateRandomVector<small_mpc_t>(C, size, "c_1", "POSITIVE");
+      }
+
+      if (partyNum == PARTY_B) {
+        populateRandomVector<small_mpc_t>(A, size, "a_2", "POSITIVE");
+        populateRandomVector<small_mpc_t>(B, size, "b_2", "POSITIVE");
+        receiveBitVector(C, PARTY_C, size);
+        //cout << "partyNum " << partyNum << ",  C[0]:" << C[0] << endl;
+      }
+
+      // receiveThreeVectors<mpc_t>(A, B, C, PARTY_C, size, size, size);
+      vector<small_mpc_t> E(size), F(size), temp_E(size), temp_F(size);
+
+      for(int i = 0; i < size; ++i) {
+        E[i] = a[i] ^ A[i] & 0x01;
+        F[i] = b[i] ^ B[i] & 0x01;
+      }
+
+      thread* threads = new thread[2];
+      threads[0] = thread(
+        &OpBase_::sendTwoBitVector, this, ref(E), ref(F), adversary(partyNum), size, size);
+      threads[1] = thread(
+        &OpBase_::receiveTwoBitVector, this, ref(temp_E), ref(temp_F), adversary(partyNum),
+        size, size);
+
+      for (int i = 0; i < 2; i++)
+        threads[i].join();
+
+      delete[] threads;
+
+      for(int i = 0; i < size; ++i) {
+        E[i] = E[i] ^ temp_E[i] & 0x01;
+        F[i] = F[i] ^ temp_F[i] & 0x01;
+      }
+
+      for (size_t i = 0; i < size; ++i) {
+        c[i] = a[i] & F[i] & 0x01;
+        small_mpc_t temp = E[i] & b[i] & 0x01;
+        c[i] = c[i] ^ temp & 0x01;
+
+        if (partyNum == PARTY_A) {
+          temp = E[i] & F[i] & 0x01;
+          c[i] = c[i] ^ temp & 0x01;
+        }
+        c[i] = c[i] ^ C[i] & 0x01;
+      }
+    }
+  }
+  return 0;
+}
+
 int DotProduct::funcDotProduct(
   const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
   if (FOUR_PC) {
