@@ -20,6 +20,64 @@
 
 namespace rosetta {
 namespace snn {
+ void OpBase_::sendBitVector(const vector<small_mpc_t>& vec, size_t player, size_t size) {
+    int len = (size + 7) / 8;
+    unsigned char* ptr = new unsigned char[len];
+    memset(ptr, 0, len);
+    int i = 0;
+    for (int j = 0; j < len; j++) {
+      for (int k = 0; k < 8; k++) {
+        if (i < size) {
+          ptr[j] = (((vec[i++] & 0x1) << k) & 0xFF) | ptr[j];
+        }
+      }
+    }
+    int ret = io->send(player, (const char*)ptr, len, msg_id());
+    delete[] ptr;
+ }
+
+void OpBase_::receiveTwoBitVector(vector<small_mpc_t>& vec_a,
+                                vector<small_mpc_t>& vec_b,
+                                size_t player, size_t size_a, size_t size_b) {
+    vector<small_mpc_t> temp(size_a + size_b);
+    receiveBitVector(temp, player, size_a + size_b);
+
+    for (size_t i = 0; i < size_a; ++i)
+      vec_a[i] = temp[i];
+
+    for (size_t i = 0; i < size_b; ++i)
+      vec_b[i] = temp[size_a + i];
+ }
+ 
+
+ void OpBase_::sendTwoBitVector(const vector<small_mpc_t>& vec_a,
+                                const vector<small_mpc_t>& vec_b,
+                                size_t player, size_t size_a, size_t size_b) {
+    vector<small_mpc_t> temp(size_a + size_b);
+    for (size_t i = 0; i < size_a; ++i)
+      temp[i] = vec_a[i];
+    for (size_t i = 0; i < size_b; ++i)
+      temp[size_a + i] = vec_b[i];
+    
+    sendBitVector(temp, player, size_a + size_b);
+ }
+
+ void OpBase_::receiveBitVector(vector<small_mpc_t>& vec, size_t player, size_t size) {
+    int len = (size + 7) / 8;
+    unsigned char* ptr = new unsigned char[len];
+    memset(ptr, 0, len);
+    int ret = io->recv(player, (char*)ptr, len, msg_id());
+
+    int i = 0;
+    for (int j = 0; j < len; j++) {
+      for (int k = 0; k < 8; k++) {
+        if (i < size) {
+          vec[i++] = (ptr[j] >> k) & 0x01;
+        }
+      }
+    }
+    delete[] ptr;
+ }
 
 void OpBase_::sendBuf(int player, const char* buf, int length, int conn /* = 0*/) {
   message_sent_.fetch_add(1);

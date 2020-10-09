@@ -418,41 +418,76 @@ class OpBase_ {
     if (r_type == "a_1") {
       assert((partyNum == PARTY_A || partyNum == PARTY_C) && "Only A and C can call for a_1");
       assert(neg_type == "POSITIVE" && "neg_type should be POSITIVE");
-      assert(sizeof(T) == sizeof(mpc_t) && "sizeof(T) == sizeof(mpc_t)");
-      for (size_t i = 0; i < size; ++i)
-        vec[i] = aes_a_1->get64Bits();
+      // assert(sizeof(T) == sizeof(mpc_t) && "sizeof(T) == sizeof(mpc_t)");
+      // for (size_t i = 0; i < size; ++i)
+      //  vec[i] = aes_a_1->get64Bits();
+      if (sizeof(T) == sizeof(mpc_t)) {
+        for (size_t i = 0; i < size; ++i)
+          vec[i] = aes_a_1->get64Bits();
+      } else {
+        for (size_t i = 0; i < size; ++i)
+          vec[i] = aes_a_1->get8Bits();
+      }
     }
 
     if (r_type == "b_1") {
       assert((partyNum == PARTY_A || partyNum == PARTY_C) && "Only A and C can call for b_1");
       assert(neg_type == "POSITIVE" && "neg_type should be POSITIVE");
-      assert(sizeof(T) == sizeof(mpc_t) && "sizeof(T) == sizeof(mpc_t)");
-      for (size_t i = 0; i < size; ++i)
-        vec[i] = aes_b_1->get64Bits();
+      // assert(sizeof(T) == sizeof(mpc_t) && "sizeof(T) == sizeof(mpc_t)");
+      // for (size_t i = 0; i < size; ++i)
+      //   vec[i] = aes_b_1->get64Bits();
+      if (sizeof(T) == sizeof(mpc_t)) {
+        for (size_t i = 0; i < size; ++i)
+          vec[i] = aes_b_1->get64Bits();
+      } else {
+        for (size_t i = 0; i < size; ++i)
+          vec[i] = aes_b_1->get8Bits();
+      }      
     }
 
     if (r_type == "c_1") {
       assert((partyNum == PARTY_A || partyNum == PARTY_C) && "Only A and C can call for c_1");
       assert(neg_type == "POSITIVE" && "neg_type should be POSITIVE");
-      assert(sizeof(T) == sizeof(mpc_t) && "sizeof(T) == sizeof(mpc_t)");
-      for (size_t i = 0; i < size; ++i)
-        vec[i] = aes_c_1->get64Bits();
+      // assert(sizeof(T) == sizeof(mpc_t) && "sizeof(T) == sizeof(mpc_t)");
+      // for (size_t i = 0; i < size; ++i)
+      //   vec[i] = aes_c_1->get64Bits();
+      if (sizeof(T) == sizeof(mpc_t)) {
+        for (size_t i = 0; i < size; ++i)
+          vec[i] = aes_c_1->get64Bits();
+      } else {
+        for (size_t i = 0; i < size; ++i)
+          vec[i] = aes_c_1->get8Bits();
+      }       
     }
 
     if (r_type == "a_2") {
       assert((partyNum == PARTY_B || partyNum == PARTY_C) && "Only B and C can call for a_2");
       assert(neg_type == "POSITIVE" && "neg_type should be POSITIVE");
-      assert(sizeof(T) == sizeof(mpc_t) && "sizeof(T) == sizeof(mpc_t)");
-      for (size_t i = 0; i < size; ++i)
-        vec[i] = aes_a_2->get64Bits();
+      // assert(sizeof(T) == sizeof(mpc_t) && "sizeof(T) == sizeof(mpc_t)");
+      // for (size_t i = 0; i < size; ++i)
+      //   vec[i] = aes_a_2->get64Bits();
+      if (sizeof(T) == sizeof(mpc_t)) {
+        for (size_t i = 0; i < size; ++i)
+          vec[i] = aes_a_2->get64Bits();
+      } else {
+        for (size_t i = 0; i < size; ++i)
+          vec[i] = aes_a_2->get8Bits();
+      }            
     }
 
     if (r_type == "b_2") {
       assert((partyNum == PARTY_B || partyNum == PARTY_C) && "Only B and C can call for b_2");
       assert(neg_type == "POSITIVE" && "neg_type should be POSITIVE");
-      assert(sizeof(T) == sizeof(mpc_t) && "sizeof(T) == sizeof(mpc_t)");
-      for (size_t i = 0; i < size; ++i)
-        vec[i] = aes_b_2->get64Bits();
+      // assert(sizeof(T) == sizeof(mpc_t) && "sizeof(T) == sizeof(mpc_t)");
+      // for (size_t i = 0; i < size; ++i)
+      //   vec[i] = aes_b_2->get64Bits();
+      if (sizeof(T) == sizeof(mpc_t)) {
+        for (size_t i = 0; i < size; ++i)
+          vec[i] = aes_b_2->get64Bits();
+      } else {
+        for (size_t i = 0; i < size; ++i)
+          vec[i] = aes_b_2->get8Bits();
+      }       
     }
   }
 
@@ -559,6 +594,17 @@ class OpBase_ {
   void synchronize(const msg_id_t& msg_id);
 
  public:
+ // Added in 20200928 by Junjie Shi, and used by Equal only for now.
+ // Attention!! only the LAST bit is USED!!
+  void sendBitVector(const vector<small_mpc_t>& vec, size_t player, size_t size);
+  void receiveBitVector(vector<small_mpc_t>& vec, size_t player, size_t size);
+  void sendTwoBitVector(const vector<small_mpc_t>& vec_a,
+                        const vector<small_mpc_t>& vec_b,
+                        size_t player, size_t size_a, size_t size_b);
+  void receiveTwoBitVector(vector<small_mpc_t>& vec_a,
+                        vector<small_mpc_t>& vec_b,
+                        size_t player, size_t size_a, size_t size_b);
+
   template <typename T>
   void sendVector(const vector<T>& vec, size_t player, size_t size) {
     sendBuf(player, (const char*)vec.data(), size * sizeof(T), 0);
@@ -568,6 +614,7 @@ class OpBase_ {
   void receiveVector(vector<T>& vec, size_t player, size_t size) {
     receiveBuf(player, (char*)vec.data(), size * sizeof(T), 0);
   }
+
 
   template <typename T>
   void sendTwoVectors(
