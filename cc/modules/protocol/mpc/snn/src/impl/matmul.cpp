@@ -62,9 +62,9 @@ int MatMul::funcMatMulMPC(
 
       populateRandomVector<mpc_t>(A1, size_left, "a_1", "POSITIVE");
       populateRandomVector<mpc_t>(A2, size_left, "a_2", "POSITIVE");
-      populateRandomVector<mpc_t>(B1, size_right, "b_1", "POSITIVE");
-      populateRandomVector<mpc_t>(B2, size_right, "b_2", "POSITIVE");
-      populateRandomVector<mpc_t>(C1, size, "c_1", "POSITIVE");
+      populateRandomVector<mpc_t>(B1, size_right, "a_1", "POSITIVE");
+      populateRandomVector<mpc_t>(B2, size_right, "a_2", "POSITIVE");
+      populateRandomVector<mpc_t>(C1, size, "a_1", "POSITIVE");
 
       addVectors<mpc_t>(A1, A2, A, size_left);
       addVectors<mpc_t>(B1, B2, B, size_right);
@@ -81,13 +81,13 @@ int MatMul::funcMatMulMPC(
 
       if (partyNum == PARTY_A) {
         populateRandomVector<mpc_t>(A, size_left, "a_1", "POSITIVE");
-        populateRandomVector<mpc_t>(B, size_right, "b_1", "POSITIVE");
-        populateRandomVector<mpc_t>(C, size, "c_1", "POSITIVE");
+        populateRandomVector<mpc_t>(B, size_right, "a_1", "POSITIVE");
+        populateRandomVector<mpc_t>(C, size, "a_1", "POSITIVE");
       }
 
       if (partyNum == PARTY_B) {
         populateRandomVector<mpc_t>(A, size_left, "a_2", "POSITIVE");
-        populateRandomVector<mpc_t>(B, size_right, "b_2", "POSITIVE");
+        populateRandomVector<mpc_t>(B, size_right, "a_2", "POSITIVE");
         receiveVector<mpc_t>(C, PARTY_C, size);
       }
 
@@ -129,5 +129,5 @@ int MatMul::funcMatMulMPC(
   }
   return 0;
 }
-} // namespace mpc
+} // namespace snn
 } // namespace rosetta

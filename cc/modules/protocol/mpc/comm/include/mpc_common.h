@@ -53,7 +53,7 @@ namespace rosetta {
     (((signed_mpc_t)(a)) << FLOAT_PRECISION_M) + \
     (signed_mpc_t)(((a) - (signed_mpc_t)(a)) * (1L << FLOAT_PRECISION_M))))
 #define MpcTypeToFloat(a) ((double((signed_mpc_t)(a))) / (1L << FLOAT_PRECISION_M))
-// TODO(george): to reimplement this
+// TODO(george): to re-implement this
 /* 
     @brief: Customized for polynomial interpolation coefficients so that 
     we have higher precision (more significant decimal points)!

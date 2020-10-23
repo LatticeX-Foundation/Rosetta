@@ -81,22 +81,11 @@ FuncPolyFactories* func_polynomials_factories() {
 void PolyConfFactory::func_register(
   const std::string& func_name,
   vector<ConstPolynomial>* approx_polys) {
-  // cout << "DEBUG register: " << func_name << " with:" << endl;
-  // auto poly_vec = *approx_polys;
-  // for(int i = 0; i < poly_vec.size(); ++i) {
-  // 	cout << poly_vec[i].to_string() << endl;
-  // }
   if (func_polynomials_factories()->find(func_name) != func_polynomials_factories()->end()) {
-    // cout << "DEBUG: [" << func_name << "] UPDATE!" << endl;
     (*func_polynomials_factories())[func_name] = approx_polys;
   } else {
-    // cout << "DEBUG: [" << func_name << "] INSERT!" << endl;
     func_polynomials_factories()->insert({func_name, approx_polys});
   }
-  // if(!func_polynomials_factories()->insert({func_name, approx_polys}).second){
-  // 	cout <<"ERROR in registering!" <<endl;
-  // 	return;
-  // }
 }
 
 bool PolyConfFactory::get_func_polys(
@@ -105,11 +94,6 @@ bool PolyConfFactory::get_func_polys(
   FuncPolyFactories* curr_fac = func_polynomials_factories();
   if (curr_fac->find(func_name) != curr_fac->end()) {
     *approx_polys = curr_fac->at(func_name);
-    // cout << "DEBUG:" << "PolyConfFactory::get_func_polys [" << func_name << "]: " <<endl;
-    // auto poly_vec = **approx_polys;
-    // for(int i = 0; i < poly_vec.size(); ++i) {
-    // 	cout << poly_vec[i].to_string() << endl;
-    // }
     return true;
   } else {
     cout << "ERROR！ can not find" << func_name << endl;
@@ -132,13 +116,13 @@ struct LogFuncRegistrar {
       {3, 8.57287151}, {4, -4.31242379}, {5, 0.91630145}};
 
     /// OPTION A (not used any more): single polynomial
-    /// This apprximation is best for x \in [0.3, 1.8)
+    /// This approximation is best for x \in [0.3, 1.8)
     const std::vector<std::vector<double>> FUNC_APPROX_LOG_OPTION_A = {
       {0, -3.35674972}, {1, 12.79333646},  {2, -26.18955259},
       {3, 30.24596692}, {4, -17.30367641}, {5, 3.82474222}};
 
     const std::vector<std::vector<double>> FUNC_APPROX_LOG_OPTION_B_SEGMENTS = {{}};
-    /// OPTION B: 3-segement polynomial
+    /// OPTION B: 3-segment polynomial
     // This approximation is best for x in [1.2, 10]
     const std::vector<std::vector<double>> FUNC_APPROX_LOG_OPTION_B_3 = {
       {0, -0.147409486}, {1, 0.463403306}, {2, -0.022636005}};
@@ -150,6 +134,7 @@ struct LogFuncRegistrar {
     // This approximation is best for x in [0.0001, 0.05]
     const std::vector<std::vector<double>> FUNC_APPROX_LOG_OPTION_B_1 = {
       {0, -6.805568387}, {1, 284.0022382}, {2, -8360.491679}, {3, 85873.96716}};
+
     ConstPolynomial log_default_appro_poly = ConstPolynomial(0, 0, FUNC_APPROX_LOG_OPTION_HD);
     log_default_vec = new vector<ConstPolynomial>({log_default_appro_poly});
     PolyConfFactory::func_register(string("LOG_HD"), log_default_vec);
@@ -158,7 +143,7 @@ struct LogFuncRegistrar {
     vector<ConstPolynomial>* log_v1_vec = new vector<ConstPolynomial>({log_v1_appro_poly});
     PolyConfFactory::func_register(string("LOG_V1"), log_v1_vec);
     // Note: Attention! The result may become worse when X < 0.0001.
-    //		In Machine Laerning, It will be better to recap it.
+    //		In Machine Learning, It will be better to clip it.
     ConstPolynomial log_v2_appro_poly_1 = ConstPolynomial(0.0001, 0.05, FUNC_APPROX_LOG_OPTION_B_1);
     ConstPolynomial log_v2_appro_poly_2 = ConstPolynomial(0.05, 1.2, FUNC_APPROX_LOG_OPTION_B_2);
     // Note: Attention! The result may become worse when X > 10.

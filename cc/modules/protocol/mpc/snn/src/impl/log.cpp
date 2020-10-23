@@ -271,7 +271,7 @@ void Log::mpc_log_v2(const mpc_t& shared_X,
 	   mpc_t seg_end = curr_seg.get_end();
 		curr_seg.get_power_list(curr_power_list);
 		curr_seg.get_coff_list(curr_coff_list);
-		/// S1: use ReLUPrime to get whether to use this segemnt[ multiplier is 0 or 1]
+		/// S1: use ReLUPrime to get whether to use this segment[ multiplier is 0 or 1]
 		/// 1.1 check start point
 		// x >= start && (1 - (x >= end))
 		shared_cmp[0] = shared_X;

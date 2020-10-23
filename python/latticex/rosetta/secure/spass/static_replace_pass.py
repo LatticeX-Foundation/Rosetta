@@ -351,6 +351,11 @@ class StaticReplacePass():
             if (op in StaticReplacePass.tf_op_mapto_secure_op.keys()):
                 return StaticReplacePass.tf_op_mapto_secure_op[op]
 
+            # If the source op is IteratorGetNext, reuse the tf native op. 
+            if op.op_def.name == "IteratorGetNext":
+                StaticReplacePass.tf_op_mapto_secure_op[op] = op
+                return op
+
             # Take action based on the op, if the op must secure op, we must
             # replace the op with secure op, otherwise, deep copy it.
             if self._is_need_secure_op(op) and self._is_support_secure_op(op):
@@ -401,6 +406,21 @@ class StaticReplacePass():
         elif isinstance(op, ops.Operation):
             # If the op is placeholder, return true
             if (op.op_def.name == "Placeholder"):
+                return True
+
+            # If the op is IteratorV2, subgraph data flow analysis, 
+            # check the subgraph(root op is MakeIterator) has need secure op?
+            if (op.op_def.name == "IteratorV2"):
+                for unit_op in tf.get_default_graph().get_operations():
+                    if (unit_op.op_def.name == "MakeIterator"):
+                        assert len(unit_op.inputs) == 2, "MakeIterator op inputs is incorrect."
+                        if (unit_op.inputs[0].op == op):
+                            return self._is_need_secure_op(unit_op.inputs[1])
+                        elif (unit_op.inputs[1].op == op):
+                            return self._is_need_secure_op(unit_op.inputs[0])
+            
+            # If the op is BatchDatasetV2, return true
+            if (op.op_def.name == "BatchDatasetV2"):
                 return True
 
             # If it has inputs, call this function recursively on each.

@@ -45,6 +45,7 @@ static int validate_input(const vector<mpc_t> &a, const vector<mpc_t> &b, const 
   return 0;
 }
 
+// retired! NOT use this any more! Use FastEqual.
 int Equal::funcEqual(const vector<mpc_t> &a, const vector<mpc_t> &b, vector<mpc_t> &c, size_t size)
 {
   if (validate_input(a, b, c, size) != 0)
