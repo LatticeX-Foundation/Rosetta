@@ -1,4 +1,29 @@
+// ==============================================================================
+// Copyright 2020 The LatticeX Foundation
+// This file is part of the Rosetta library.
+//
+// The Rosetta library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Rosetta library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
+// ==============================================================================
+// only for disable vscode warnings
+#ifndef PROTOCOL_MPC_TEST
+#define PROTOCOL_MPC_TEST_SNN 1
+#endif
 
+#include "test.h"
+
+void run(int partyid) {
+  PROTOCOL_MPC_TEST_INIT(partyid);
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
   string msgid(protocol_name + " performance test");
@@ -13,7 +38,7 @@
       ssheader << "    elapsed(s): the total time spent executing the OP (loops)." << endl;
       ssheader << "    avg-elapse(ms): (elapsed(s)*1000.0)/loops." << endl;
       ssheader << "    shape size: k = r * c = m * K = K * n." << endl;
-      ssheader << "    sent data/recv data: IO total bytes. (per operator; including message id)" << endl;
+      ssheader << "    sent data/recv data: IO total bytes. (per operator with size items; including message id)" << endl;
       ssheader << "    sent msgs/recv msgs: IO interface invocation times. (per operator)" << endl;
       ssheader << "+-------------------------+------------+---------------+---------------+----------------------+------------+------------+------------+------------+" << endl;
       ssheader << "|" << setw(25) << "OP "         << "|" << setw(12) << "loops "
@@ -68,13 +93,13 @@
   stringstream ss;                                               \
   ss.precision(11);                                              \
   ss << "|" << setw(24) << opname << " |" << setw(11) << nloops; \
-  auto ps0 = prot0.GetPerfStats();                               \
+  auto ps0 = mpc_proto->GetPerfStats();                          \
   SimpleTimer timer;                                             \
   for (int i = 0; i < nloops; i++) {
 #define _perf_test_end(shape)                                                                      \
   }                                                                                                \
   timer.stop();                                                                                    \
-  auto ps1 = prot0.GetPerfStats();                                                                 \
+  auto ps1 = mpc_proto->GetPerfStats();                                                            \
   auto ps = ps1 - ps0;                                                                             \
   ss << " |" << setw(14) << timer.elapse() << " |" << setw(14) << (timer.elapse() * 1000) / nloops \
      << " |" << setw(21) << shape;                                                                 \
@@ -90,31 +115,31 @@
   }                                                                                                \
   while (0)
 
-#define binary_perf_test(lh, rh, sX, sY, op, loops)                             \
-  _perf_test_beg() attr_type attr;                                              \
-  attr["lh_is_const"] = to_string(lh);                                          \
-  attr["rh_is_const"] = to_string(rh);                                          \
-  _perf_test_for(lh.rh.op, loops) prot0.GetOps(msgid)->op(sX, sY, strZ, &attr); \
+#define binary_perf_test(lh, rh, sX, sY, op, loops)                                  \
+  _perf_test_beg() attr_type attr;                                                   \
+  attr["lh_is_const"] = to_string(lh);                                               \
+  attr["rh_is_const"] = to_string(rh);                                               \
+  _perf_test_for(lh.rh.op, loops) mpc_proto->GetOps(msgid)->op(sX, sY, strZ, &attr); \
   _perf_test_end("k=" + to_string(sX.size()) + ",k=" + to_string(sY.size()))
 
-#define unary_perf_test(op, loops)                                      \
-  _perf_test_beg() attr_type attr;                                      \
-  _perf_test_for(op, loops) prot0.GetOps(msgid)->op(strX, strZ, &attr); \
+#define unary_perf_test(op, loops)                                           \
+  _perf_test_beg() attr_type attr;                                           \
+  _perf_test_for(op, loops) mpc_proto->GetOps(msgid)->op(strX, strZ, &attr); \
   _perf_test_end("k=" + to_string(strX.size()))
 
-#define reduce_perf_test(op, loops, r, c)                               \
-  _perf_test_beg() attr_type attr;                                      \
-  attr["rows"] = to_string(r);                                          \
-  attr["cols"] = to_string(c);                                          \
-  _perf_test_for(op, loops) prot0.GetOps(msgid)->op(strX, strZ, &attr); \
+#define reduce_perf_test(op, loops, r, c)                                    \
+  _perf_test_beg() attr_type attr;                                           \
+  attr["rows"] = to_string(r);                                               \
+  attr["cols"] = to_string(c);                                               \
+  _perf_test_for(op, loops) mpc_proto->GetOps(msgid)->op(strX, strZ, &attr); \
   _perf_test_end("r=" + to_string(r) + ",c=" + to_string(c))
 
-#define matmul_perf_test(op, loops, m, K, n)                                  \
-  _perf_test_beg() attr_type attr;                                            \
-  attr["m"] = to_string(m);                                                   \
-  attr["k"] = to_string(K);                                                   \
-  attr["n"] = to_string(n);                                                   \
-  _perf_test_for(op, loops) prot0.GetOps(msgid)->op(strX, strY, strZ, &attr); \
+#define matmul_perf_test(op, loops, m, K, n)                                       \
+  _perf_test_beg() attr_type attr;                                                 \
+  attr["m"] = to_string(m);                                                        \
+  attr["k"] = to_string(K);                                                        \
+  attr["n"] = to_string(n);                                                        \
+  _perf_test_for(op, loops) mpc_proto->GetOps(msgid)->op(strX, strY, strZ, &attr); \
   _perf_test_end("m=" + to_string(m) + ",K=" + to_string(K) + ",n=" + to_string(n))
 
   //////////////////////////////////////////////////////////////////
@@ -161,8 +186,8 @@
       positiveCY[i] = std::to_string(abs(CY[i]));
     }
   }
-  prot0.GetOps(msgid)->PrivateInput(0, X, strX);
-  prot0.GetOps(msgid)->PrivateInput(1, Y, strY);
+  mpc_proto->GetOps(msgid)->PrivateInput(0, X, strX);
+  mpc_proto->GetOps(msgid)->PrivateInput(1, Y, strY);
 
   SimpleTimer all_tests_timer;
 
@@ -170,8 +195,8 @@
   binary_perf_test(0, 0, strX, strY, Add, 1234);
   binary_perf_test(0, 0, strX, strY, Sub, 2345);
   binary_perf_test(0, 0, strX, strY, Mul, 4567);
-  binary_perf_test(0, 0, strX, strY, Truediv, 3);
-  binary_perf_test(0, 0, strX, strY, Floordiv, 4); ////////////////////
+  binary_perf_test(0, 0, strX, strY, Truediv, 5);
+  binary_perf_test(0, 0, strX, strY, Floordiv, 5); ////////////////////
   binary_perf_test(0, 0, strX, strY, Less, 234);
   binary_perf_test(0, 0, strX, strY, LessEqual, 234);
   binary_perf_test(0, 0, strX, strY, Equal, 71);
@@ -183,8 +208,8 @@
   binary_perf_test(1, 0, strCX, strY, Add, 1234);
   binary_perf_test(1, 0, strCX, strY, Sub, 2345);
   binary_perf_test(1, 0, strCX, strY, Mul, 4567);
-  binary_perf_test(1, 0, strCX, strY, Truediv, 3);
-  binary_perf_test(1, 0, strCX, strY, Floordiv, 4); ////////////////////
+  binary_perf_test(1, 0, strCX, strY, Truediv, 5);
+  binary_perf_test(1, 0, strCX, strY, Floordiv, 5); ////////////////////
   binary_perf_test(1, 0, strCX, strY, Less, 234);
   binary_perf_test(1, 0, strCX, strY, LessEqual, 234);
   binary_perf_test(1, 0, strCX, strY, Equal, 71);
@@ -196,8 +221,8 @@
   binary_perf_test(0, 1, strX, strCY, Add, 1234);
   binary_perf_test(0, 1, strX, strCY, Sub, 2345);
   binary_perf_test(0, 1, strX, strCY, Mul, 4567);
-  binary_perf_test(0, 1, strX, strCY, Truediv, 3);
-  binary_perf_test(0, 1, strX, strCY, Floordiv, 4); ////////////////////
+  binary_perf_test(0, 1, strX, strCY, Truediv, 5);
+  binary_perf_test(0, 1, strX, strCY, Floordiv, 5); ////////////////////
   binary_perf_test(0, 1, strX, strCY, Less, 234);
   binary_perf_test(0, 1, strX, strCY, LessEqual, 234);
   binary_perf_test(0, 1, strX, strCY, Equal, 71);
@@ -205,7 +230,7 @@
   binary_perf_test(0, 1, strX, strCY, Greater, 235);
   binary_perf_test(0, 1, strX, strCY, GreaterEqual, 237); ////////////////////
   binary_perf_test(0, 1, strX, strCY, SigmoidCrossEntropy, 63);
-  binary_perf_test(0, 1, strX, positiveCY, Pow, 7);
+  binary_perf_test(0, 1, strX, positiveCY, Pow, 11);
 
   unary_perf_test(Square, 5432);
   unary_perf_test(Negative, 9876);
@@ -213,7 +238,7 @@
   unary_perf_test(AbsPrime, 135);
   unary_perf_test(Log, 76);
   unary_perf_test(Log1p, 57);
-  unary_perf_test(HLog, 4);
+  unary_perf_test(HLog, 5);
   unary_perf_test(Relu, 257);
   unary_perf_test(ReluPrime, 211);
   unary_perf_test(Sigmoid, 53);
@@ -230,3 +255,7 @@
   endPerf();
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
+  PROTOCOL_MPC_TEST_UNINIT(partyid);
+}
+
+RUN_MPC_TEST(run);

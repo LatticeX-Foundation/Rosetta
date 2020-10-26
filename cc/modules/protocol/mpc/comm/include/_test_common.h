@@ -72,6 +72,7 @@ static inline int _mpc_main(int argc, char* argv[], _mpc_run_func run) {
   return ret;
 }
 
+#define print_result 0
 #if print_result
 #define if_print_vec print_vec
 #else

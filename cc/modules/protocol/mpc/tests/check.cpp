@@ -1,4 +1,29 @@
+// ==============================================================================
+// Copyright 2020 The LatticeX Foundation
+// This file is part of the Rosetta library.
+//
+// The Rosetta library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Rosetta library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
+// ==============================================================================
+// only for disable vscode warnings
+#ifndef PROTOCOL_MPC_TEST
+#define PROTOCOL_MPC_TEST_SNN 1
+#endif
 
+#include "test.h"
+
+void run(int partyid) {
+  PROTOCOL_MPC_TEST_INIT(partyid);
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
   {
@@ -19,10 +44,10 @@
     attr["lh_is_const"] = to_string(lh);                                          \
     attr["rh_is_const"] = to_string(rh);                                          \
     vector<string> strZ;                                                          \
-    prot0.GetOps(msgid)->op(strX, strY, strZ, &attr);                             \
+    mpc_proto->GetOps(msgid)->op(strX, strY, strZ, &attr);                        \
     if_print_vec(strZ, 10, "strX " + tag + " strY = strZ");                       \
     vector<double> Z;                                                             \
-    prot0.GetOps(msgid)->Reveal(strZ, Z);                                         \
+    mpc_proto->GetOps(msgid)->Reveal(strZ, Z);                                    \
     if_print_vec(Z, 10, tag + " Z");                                              \
     if (partyid == 2)                                                             \
       check_func(X, Y, Z);                                                        \
@@ -53,8 +78,8 @@
         strCY[i] = std::to_string(CY[i]);
       }
     }
-    prot0.GetOps(msgid)->PrivateInput(2, X, strX);
-    prot0.GetOps(msgid)->PrivateInput(2, Y, strY);
+    mpc_proto->GetOps(msgid)->PrivateInput(2, X, strX);
+    mpc_proto->GetOps(msgid)->PrivateInput(2, Y, strY);
 
     //
     //  general random tests and check (VV)
@@ -104,8 +129,8 @@
       vector<double> X = {-1.01, -2.00, -3.01, 0, 1.3, 2.02, 3.14, +2, -0.01};
       vector<double> Y = {-1.00, -2.01, -3.01, 0, 1.3, 2.03, 3.12, -2, +0.01};
       vector<string> strX, strY;
-      prot0.GetOps(msgid)->PrivateInput(2, X, strX);
-      prot0.GetOps(msgid)->PrivateInput(2, Y, strY);
+      mpc_proto->GetOps(msgid)->PrivateInput(2, X, strX);
+      mpc_proto->GetOps(msgid)->PrivateInput(2, Y, strY);
 
       helix_binary_f(0, 0, Add, strX, strY, add_check_func, X, Y);
       helix_binary_f(0, 0, Sub, strX, strY, sub_check_func, X, Y);
@@ -148,22 +173,22 @@
     string msgid("All basic Unary OP(s) (share)");
     cout << __FUNCTION__ << " " << msgid << endl;
 
-#define helix_unary_f(op, strX, check_func, X)    \
-  do {                                            \
-    string tag(#op);                              \
-    cout << "\nTEST AND CHECK:" << tag << endl;   \
-    if_print_vec(strX, 10, "strX");               \
-    if_print_vec(X, 10, "X");                     \
-                                                  \
-    attr_type attr;                               \
-    vector<string> strY;                          \
-    prot0.GetOps(msgid)->op(strX, strY, &attr);   \
-    if_print_vec(strY, 10, tag + " strX = strY"); \
-    vector<double> Y;                             \
-    prot0.GetOps(msgid)->Reveal(strY, Y);         \
-    if_print_vec(Y, 10, tag + " Y");              \
-    if (partyid == 2)                             \
-      check_func(X, Y);                           \
+#define helix_unary_f(op, strX, check_func, X)       \
+  do {                                               \
+    string tag(#op);                                 \
+    cout << "\nTEST AND CHECK:" << tag << endl;      \
+    if_print_vec(strX, 10, "strX");                  \
+    if_print_vec(X, 10, "X");                        \
+                                                     \
+    attr_type attr;                                  \
+    vector<string> strY;                             \
+    mpc_proto->GetOps(msgid)->op(strX, strY, &attr); \
+    if_print_vec(strY, 10, tag + " strX = strY");    \
+    vector<double> Y;                                \
+    mpc_proto->GetOps(msgid)->Reveal(strY, Y);       \
+    if_print_vec(Y, 10, tag + " Y");                 \
+    if (partyid == 2)                                \
+      check_func(X, Y);                              \
   } while (0)
 
     // initialize
@@ -172,7 +197,7 @@
 
     int k = 10;
     random_vector(X, k, -3, 3);
-    prot0.GetOps(msgid)->PrivateInput(2, X, strX);
+    mpc_proto->GetOps(msgid)->PrivateInput(2, X, strX);
 
     //
     //  general random tests and check
@@ -205,10 +230,10 @@
     attr["rows"] = to_string(r);                      \
     attr["cols"] = to_string(c);                      \
     vector<string> strY;                              \
-    prot0.GetOps(msgid)->op(strX, strY, &attr);       \
+    mpc_proto->GetOps(msgid)->op(strX, strY, &attr);  \
     if_print_vec(strY, 10, tag + " strX = strY");     \
     vector<double> Y;                                 \
-    prot0.GetOps(msgid)->Reveal(strY, Y);             \
+    mpc_proto->GetOps(msgid)->Reveal(strY, Y);        \
     if_print_vec(Y, 10, tag + " Y");                  \
     if (partyid == 2)                                 \
       check_func(X, Y, r, c);                         \
@@ -221,7 +246,7 @@
     int r = 3, c = 4;
     int k = r * c;
     random_vector(X, k, -3, 3);
-    prot0.GetOps(msgid)->PrivateInput(2, X, strX);
+    mpc_proto->GetOps(msgid)->PrivateInput(2, X, strX);
 
     //
     //  general random tests and check
@@ -251,10 +276,10 @@
     attr["k"] = to_string(K);                                     \
     attr["n"] = to_string(n);                                     \
     vector<string> strZ;                                          \
-    prot0.GetOps(msgid)->op(strX, strY, strZ, &attr);             \
+    mpc_proto->GetOps(msgid)->op(strX, strY, strZ, &attr);        \
     if_print_vec(strZ, 10, "strX " + tag + " strY = strZ");       \
     vector<double> Z;                                             \
-    prot0.GetOps(msgid)->Reveal(strZ, Z);                         \
+    mpc_proto->GetOps(msgid)->Reveal(strZ, Z);                    \
     if_print_vec(Z, 10, tag + " Z");                              \
     if (partyid == 2)                                             \
       check_func(X, Y, Z, m, K, n);                               \
@@ -267,8 +292,8 @@
     random_vector(X, m * K, -3, 3);
     random_vector(Y, K * n, -3, 3);
 
-    prot0.GetOps(msgid)->PrivateInput(2, X, strX);
-    prot0.GetOps(msgid)->PrivateInput(2, Y, strY);
+    mpc_proto->GetOps(msgid)->PrivateInput(2, X, strX);
+    mpc_proto->GetOps(msgid)->PrivateInput(2, Y, strY);
 
     //
     // general random tests and check
@@ -288,3 +313,7 @@
   }
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
+  PROTOCOL_MPC_TEST_UNINIT(partyid);
+}
+
+RUN_MPC_TEST(run);

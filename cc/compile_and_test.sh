@@ -83,14 +83,14 @@ function test_mpc_protocol() {
 function run_protocol_mpc_checks() {
     echo "run run protocol mpc check tests."
     # check
-    test_mpc_protocol protocol_mpc_snn_tests_snn__check
+    test_mpc_protocol protocol_mpc_tests_snn_check
 
     echo "run run protocol mpc check tests ok !"
 }
 function run_protocol_mpc_perfs() {
     echo "run run protocol mpc performance tests."
     # performance
-    test_mpc_protocol protocol_mpc_snn_tests_snn__perf
+    test_mpc_protocol protocol_mpc_tests_snn_perf
 
     echo "run run protocol mpc performance tests ok !"
 }
