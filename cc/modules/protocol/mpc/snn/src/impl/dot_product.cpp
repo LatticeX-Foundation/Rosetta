@@ -319,5 +319,5 @@ int DotProduct::funcDotProduct(
   return 0;
 }
 
-} // namespace mpc
+} // namespace snn
 } // namespace rosetta

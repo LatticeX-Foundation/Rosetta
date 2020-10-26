@@ -287,7 +287,7 @@ class DataSet {
         if (partyid == PARTY_A)
           valuesXX = valuesX;
         else
-          valuesXX.resize(n * dA);
+          valuesXX.resize(n * dA, 0);
         ops->PrivateInput(PARTY_A, valuesXX, SSA);
       }
       if (p1_has_data) {
@@ -295,7 +295,7 @@ class DataSet {
         if (partyid == PARTY_B)
           valuesXX = valuesX;
         else
-          valuesXX.resize(n * dB);
+          valuesXX.resize(n * dB, 0);
         ops->PrivateInput(PARTY_B, valuesXX, SSB);
       }
       if (p2_has_data) {
@@ -303,7 +303,7 @@ class DataSet {
         if (partyid == PARTY_C)
           valuesXX = valuesX;
         else
-          valuesXX.resize(n * dC);
+          valuesXX.resize(n * dC, 0);
         ops->PrivateInput(PARTY_C, valuesXX, SSC);
       }
 
@@ -403,7 +403,7 @@ class DataSet {
         if (partyid == PARTY_A)
           valuesXX = valuesX;
         else
-          valuesXX.resize(nA * d);
+          valuesXX.resize(nA * d, 0);
         ops->PrivateInput(PARTY_A, valuesXX, SSA);
       }
       if (p1_has_data) {
@@ -411,7 +411,7 @@ class DataSet {
         if (partyid == PARTY_B)
           valuesXX = valuesX;
         else
-          valuesXX.resize(nB * d);
+          valuesXX.resize(nB * d, 0);
         ops->PrivateInput(PARTY_B, valuesXX, SSB);
       }
       if (p2_has_data) {
@@ -419,7 +419,7 @@ class DataSet {
         if (partyid == PARTY_C)
           valuesXX = valuesX;
         else
-          valuesXX.resize(nC * d);
+          valuesXX.resize(nC * d, 0);
         ops->PrivateInput(PARTY_C, valuesXX, SSC);
       }
 
@@ -637,7 +637,7 @@ class DataSet {
         if (partyid == PARTY_A)
           valuesYY = valuesY;
         else
-          valuesYY.resize(nA * d);
+          valuesYY.resize(nA * d, 0);
         ops->PrivateInput(PARTY_A, valuesYY, SSA);
       }
       if (p1_has_data) {
@@ -645,7 +645,7 @@ class DataSet {
         if (partyid == PARTY_B)
           valuesYY = valuesY;
         else
-          valuesYY.resize(nB * d);
+          valuesYY.resize(nB * d, 0);
         ops->PrivateInput(PARTY_B, valuesYY, SSB);
       }
       if (p2_has_data) {
@@ -653,7 +653,7 @@ class DataSet {
         if (partyid == PARTY_C)
           valuesYY = valuesY;
         else
-          valuesYY.resize(nC * d);
+          valuesYY.resize(nC * d, 0);
         ops->PrivateInput(PARTY_C, valuesYY, SSC);
       }
 

@@ -172,6 +172,13 @@ int SnnProtocolOps::PrivateInput(
   int party_id,
   const vector<double>& in_vec,
   vector<string>& out_str_vec) {
+  if (party_id != PARTY_C) {
+    vector<mpc_t> out_vec(in_vec.size(), 0);
+    convert_double_to_mpctype(in_vec, out_vec);
+    snn_encode(out_vec, out_str_vec);
+    return 0;
+  }
+
   log_debug << "----> PrivateInput(vector<double>).";
   vector<mpc_t> out_vec;
   std::make_shared<rosetta::snn::PrivateInput>(_op_msg_id, net_io_)->Run(party_id, in_vec, out_vec);
