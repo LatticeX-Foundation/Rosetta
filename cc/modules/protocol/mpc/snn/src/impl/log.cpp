@@ -177,10 +177,10 @@ void Log::mpc_log_v2(const vector<mpc_t>& shared_X,
 		return;
    	}
 	
-   	// actually we will use the [start, end)-style for each segement!
+   	// actually we will use the [start, end)-style for each segment!
    	vector<mpc_t> curr_power_list;
    	vector<mpc_t> curr_coff_list;
-   	// some temprorary variables
+   	// some temporary variables
 	vector<mpc_t> shared_cmp_init(vec_size, 0);
 	vector<mpc_t> shared_cmp_end(vec_size, 0);
    	vector<mpc_t> shared_init(vec_size, 0);
@@ -198,7 +198,7 @@ void Log::mpc_log_v2(const vector<mpc_t>& shared_X,
 		//     cout << MpcTypeToFloat(curr_coff_list[i]) << "*X^" << 
 		//  			to_readable_hex(curr_power_list[i]) << " + ";
 		// }
-		// S1: use ReLUPrime to get whether to use this segemnt[ multiplier is 0 or 1]
+		// S1: use ReLUPrime to get whether to use this segment[ multiplier is 0 or 1]
 		/// 1.1 check start point
 		// x >= start && (1 - (x >= end))
 		shared_cmp_init = shared_X;
@@ -256,11 +256,11 @@ void Log::mpc_log_v2(const mpc_t& shared_X,
 		cout << "ERROR! empty polynomials in log_v2." << endl; 
 		return;
    	}
-   	// actually we will use the [start, end)-style for each segement!
+   	// actually we will use the [start, end)-style for each segment!
    	vector<mpc_t> curr_power_list;
    	vector<mpc_t> curr_coff_list;
    	mpc_t shared_seg_multiplier = 1;
-   	// some temprorary variables
+   	// some temporary variables
    	vector<mpc_t> shared_cmp(2, 0);
    	vector<mpc_t> shared_init(1, 0);
    	vector<mpc_t> shared_end(1, 0);

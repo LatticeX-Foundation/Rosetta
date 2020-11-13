@@ -17,9 +17,9 @@
 # =============================================================================="
 # import secure ops
 from latticex.rosetta.secure.decorator.secure_arithmetic_ops_ import *
-from latticex.rosetta.secure.decorator.secure_logic_ops_  import *
+from latticex.rosetta.secure.decorator.secure_logical_ops_ import *
 from latticex.rosetta.secure.decorator.secure_compare_ops_ import *
-from latticex.rosetta.secure.decorator.secure_matrix_ops_  import *
+from latticex.rosetta.secure.decorator.secure_matrix_ops_ import *
 from latticex.rosetta.secure.decorator.secure_reduce_ops_ import *
 from latticex.rosetta.secure.decorator.secure_ml_ops_  import *
 

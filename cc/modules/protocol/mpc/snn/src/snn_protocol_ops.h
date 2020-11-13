@@ -37,163 +37,194 @@ class SnnProtocolOps : public ProtocolOps {
   //void SetNetIO(RttIO* io);
 
   // template <typename T>
-  int TfToSecure(const vector<string>& in, vector<string>& out, const attr_type* attr_info = nullptr);
+  int TfToSecure(
+    const vector<string>& in,
+    vector<string>& out,
+    const attr_type* attr_info = nullptr);
 
   // decode the string in protocol-specific format to literal number
   // template <typename T>
-  int SecureToTf(const vector<string>& in, vector<string>& out, const attr_type* attr_info = nullptr);
+  int SecureToTf(
+    const vector<string>& in,
+    vector<string>& out,
+    const attr_type* attr_info = nullptr);
 
   int RandSeed(string op_seed, string& out_str);
 
   int PrivateInput(int party_id, const vector<double>& in_vec, vector<string>& out_str_vec);
 
+  int Broadcast(int from_party, const string& msg, string& result);
+
   //////////////////////////////////    math ops   //////////////////////////////////
   int Add(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int Sub(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int Mul(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int Div(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int Truediv(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int Floordiv(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   //// compare ops ////
   int Less(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int LessEqual(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int Equal(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int NotEqual(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int Greater(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int GreaterEqual(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
   //// compare ////
 
   int Pow(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int Matmul(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
-  int Square(
-    const vector<string>& a, vector<string>& output,
-    const attr_type* attr_info = nullptr);
+  int Square(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 
   int Negative(
-    const vector<string>& a, vector<string>& output,
+    const vector<string>& a,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
-  int Abs(
-    const vector<string>& a, vector<string>& output,
-    const attr_type* attr_info = nullptr);
+  int Abs(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 
   int AbsPrime(
-    const vector<string>& a, vector<string>& output,
+    const vector<string>& a,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
-  int Log(
-    const vector<string>& a, vector<string>& output,
-        const attr_type* attr_info = nullptr);
+  int Log(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 
-  int HLog(
-    const vector<string>& a, vector<string>& output,
-    const attr_type* attr_info = nullptr);
-  
-  int Log1p(
-    const vector<string>& a, vector<string>& output,
-    const attr_type* attr_info = nullptr);
+  int HLog(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 
-  int Max(
-    const vector<string>& a, vector<string>& output,
-    const attr_type* attr_info = nullptr);
+  int Log1p(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 
-  int Min(
-    const vector<string>& a, vector<string>& output,
-    const attr_type* attr_info = nullptr);
+  int Max(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 
-  int Mean(
-    const vector<string>& a, vector<string>& output,
-    const attr_type* attr_info = nullptr);
+  int Min(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 
-  int Sum(
-    const vector<string>& a, vector<string>& output,
-    const attr_type* attr_info = nullptr);
+  int Mean(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 
-  int AddN(
-    const vector<string>& a, vector<string>& output,
-    const attr_type* attr_info = nullptr);
+  int Sum(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
+
+  int AddN(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 
   ////////////////////////////////// nn ops //////////////////////////////////
-  int Relu(
-    const vector<string>& a, vector<string>& output,
-    const attr_type* attr_info = nullptr);
-  
+  int Relu(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
+
   int ReluPrime(
-    const vector<string>& a, vector<string>& output,
+    const vector<string>& a,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int Sigmoid(
-    const vector<string>& a, vector<string>& output,
+    const vector<string>& a,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
 
   int SigmoidCrossEntropy(
-    const vector<string>& a, const vector<string>& b, vector<string>& output,
-    const attr_type* attr_info = nullptr);
-
-  int Reveal(
-    const vector<string>& a, vector<string>& output,
-    const attr_type* attr_info = nullptr);
-
-  int Reveal(
     const vector<string>& a,
-    vector<double>& output,
+    const vector<string>& b,
+    vector<string>& output,
     const attr_type* attr_info = nullptr);
-    
+
+  int Reveal(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
+  int Reveal(const vector<string>& a, vector<double>& output, const attr_type* attr_info = nullptr);
+
+  ////////////////////////////////// logical ops //////////////////////////////////
+  int AND(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr);
+  int OR(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr);
+  int XOR(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr);
+  int NOT(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 
   /**
     @desc: This is for Tensorflow's SaveV2 Op.
-
   */
-  int ConditionalReveal(vector<string>& in_vec,
-                        vector<string>& out_cipher_vec,
-                        vector<double>& out_plain_vec);
-public:
-  shared_ptr<NET_IO> GetNetHandler() { return net_io_;}
+  int ConditionalReveal(
+    vector<string>& in_vec,
+    vector<string>& out_cipher_vec,
+    vector<double>& out_plain_vec);
 
-public:
+ public:
+  shared_ptr<NET_IO> GetNetHandler() { return net_io_; }
+
+ public:
   shared_ptr<NET_IO> net_io_ = nullptr;
-
 };
 
 //} // namespace protocol

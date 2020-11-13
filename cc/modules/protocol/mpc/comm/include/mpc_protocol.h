@@ -57,7 +57,7 @@ class MpcProtocol : public ProtocolBase {
   virtual int _init_aeskeys();
 
   //! @attention! now, only for snn, will remove in the future
-  virtual void _initialize_mpc_enviroment() {}
+  virtual void _initialize_mpc_environment() {}
 
  protected:
   std::shared_ptr<MpcPRG> gseed = nullptr; // for global random seed

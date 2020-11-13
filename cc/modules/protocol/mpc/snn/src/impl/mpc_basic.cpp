@@ -212,7 +212,7 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
 // a,b,c are shared across PARTY_A, PARTY_B
 int SelectShares::funcSelectShares3PC(
   const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
-  assert(THREE_PC && "funcSelectShares3PC called in non-3PC mdoe");
+  assert(THREE_PC && "funcSelectShares3PC called in non-3PC mode");
 
   //funcDotProductMPC(a, b, c, size);
   GetMpcOpInner(DotProduct)->Run(a, b, c, size);
@@ -222,7 +222,7 @@ int SelectShares::funcSelectShares3PC(
 
 int Square::funcSquareMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size)
 {
-  assert(THREE_PC && "funcSelectShares3PC called in non-3PC mdoe");
+  assert(THREE_PC && "funcSelectShares3PC called in non-3PC mode");
 
   //funcDotProductMPC(a, a, c, size);
   GetMpcOpInner(DotProduct)->Run(a, a, b, size);

@@ -35,7 +35,7 @@ int MpcProtocol::Init(std::string config_json_str) {
       _init_config(config_json_str);
       my_party_id = config->PARTY;
       config->fmt_print();
-      _initialize_mpc_enviroment();
+      _initialize_mpc_environment();
       _init_with_config();
       _init_aeskeys();
       _is_inited = true;
@@ -62,7 +62,7 @@ int MpcProtocol::Init(int partyid, string config_json_str, string logfile) {
       _init_config(partyid, config_json_str);
       my_party_id = config->PARTY;
       config->fmt_print();
-      _initialize_mpc_enviroment();
+      _initialize_mpc_environment();
       _init_with_config();
       _init_aeskeys();
       _is_inited = true;

@@ -109,12 +109,18 @@ class StaticReplacePass():
                             "rttlessequal":   ["SecureLessEqual",self._create_secure_relational_op,      secure_ops.SecureLessEqual,  True],
                             "rttgreaterequal":["SecureGreaterEqual", self._create_secure_relational_op,  secure_ops.SecureGreaterEqual,True],
 
+                            # logical operation
+                            "rttlogicaland" : ["SecureLogicalAnd",self._create_secure_logical_op, secure_ops.SecureLogicalAnd, True],
+                            "rttlogicalor" :  ["SecureLogicalOr", self._create_secure_logical_op, secure_ops.SecureLogicalOr,  True],
+                            "rttlogicalxor" : ["SecureLogicalXor",self._create_secure_logical_op, secure_ops.SecureLogicalXor, True],
+                            "rttlogicalnot" : ["SecureLogicalNot",self._create_secure_unary_op,   secure_ops.SecureLogicalNot, False],
+
                             # reduce operation
                             "rttreducemin" :  ["SecureReduceMin", self._create_secure_reduce_op,  secure_ops.SecureMin,   False],
                             "rttreducemax" :  ["SecureReduceMax", self._create_secure_reduce_op,  secure_ops.SecureMax,   False],
                             "rttreducemean":  ["SecureReduceMean",self._create_secure_reduce_op,  secure_ops.SecureMean,  False],
                             "rttreducesum" :  ["SecureReduceSum", self._create_secure_reduce_op,  secure_ops.SecureSum,   False],
-                            }
+                        }
 
 
         # source graph variable dict, save the train variables
@@ -632,6 +638,21 @@ class StaticReplacePass():
     def _create_secure_relational_op(self, src_op, secure_op_name, secure_op, to_graph):
         """
         create secure relational op(eg: secureless\securegreater\securelessequal...)
+
+        :param src_op: source op instance, it's not secure op, it's tensorflow native op
+        :param secure_op_name: secure op name.
+        :param secure_op: secure op
+        :param to_graph: dest graph
+        :return: the secure op instance
+        """
+        secure_op_input_nums = 2
+        return self._create_secure_op_helper(src_op, secure_op_name, 
+                    secure_op_input_nums, secure_op, to_graph)
+
+
+    def _create_secure_logical_op(self, src_op, secure_op_name, secure_op, to_graph):
+        """
+        create secure logical op(eg: securelogicaland\securelogicalor\securelogicalnot...)
 
         :param src_op: source op instance, it's not secure op, it's tensorflow native op
         :param secure_op_name: secure op name.

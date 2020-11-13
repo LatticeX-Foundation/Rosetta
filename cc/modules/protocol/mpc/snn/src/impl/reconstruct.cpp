@@ -55,7 +55,7 @@ int Reconstruct2PC::funcReconstruct2PC(
   if (a.size() < size)
     size = a.size();
 
-  cout << "----  recons 2222" << endl;
+  //cout << "----  recons 2222" << endl;
   out.resize(size, 0);
   int tempPartyA = (recv_party == PARTY_A) ? PARTY_A : PARTY_B;
   int tempPartyB = (recv_party == PARTY_A) ? PARTY_B : PARTY_A;

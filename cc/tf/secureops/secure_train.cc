@@ -27,7 +27,7 @@ class SecureApplyGradientDescentOp : public SecureOpKernel {
   void Compute(OpKernelContext* ctx) override {
     log_debug << "begin debuging SecureApplyGradientDescentOp!" << endl;
     // Step 1: check the lock level and validity of inputs the same as the native one.
-    //  Note: For now, we do NOT support the exclusice_lock feature.
+    //  Note: For now, we do NOT support the exclusive_lock feature.
     OP_REQUIRES(
       ctx, use_exclusive_lock_ == false,
       errors::FailedPrecondition(
@@ -36,7 +36,7 @@ class SecureApplyGradientDescentOp : public SecureOpKernel {
     OP_REQUIRES(
       ctx, ctx->input_dtype(0) != DT_RESOURCE,
       errors::FailedPrecondition(
-        "In this MPC version, we do NOT support the 'ResourceVarible'-type variable."));
+        "In this MPC version, we do NOT support the 'ResourceVariable'-type variable."));
     Tensor var;
     //Tensor* var_p;
     var = ctx->mutable_input(0, use_exclusive_lock_);
@@ -89,7 +89,7 @@ class SecureApplyGradientDescentOp : public SecureOpKernel {
       ->GetOps(msg_id().str())
       ->Sub(input_var, out_var, out_var, &attrs_);
 
-    // TODO[georgeshi]: why we canot and need not use this?? due to string?
+    // TODO[GeorgeShi]: why we cannot and need not use this?? due to string?
     //new_var.setZero();
 
     for (int i = 0; i < ele_nums; ++i) {

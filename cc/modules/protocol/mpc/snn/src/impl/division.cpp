@@ -366,44 +366,6 @@ int DivisionV2::funcDivisionMPCV2(
     quotient_vec = curr_q;
     ////funcDotProductMPC(quotient_vec, quotient_sign, shared_quotient_vec, vec_size);
     GetMpcOpInner(DotProduct)->Run(quotient_vec, quotient_sign, shared_quotient_vec, vec_size);
-
-    //////////////// The following is an alternative algorithm for the part II.
-    //		this algorithm is bases on SecureNN whitepaper algorithm 8.
-    // curr_y = denominator_vec;
-    // for(int i  = 1; i < FLOAT_PRECISION_M + 1; ++i) {
-    // 	//value z in whitepaper algorithm 8
-    // 	vector<mpc_t> candidate_x_update = curr_y;
-    // 	vector<mpc_t> candidate_q_update(vec_size, 0);
-    // 	vector<mpc_t> shared_x_monus_z(vec_size, 0);
-    // 	vector<mpc_t> shared_beta(vec_size, 0);
-    // 	if (PRIMARY){
-    // 		// z = y/(z^i)
-    // 		funcTruncate2PC(candidate_x_update, i, vec_size, PARTY_A, PARTY_B);
-    // 		subtractVectors(curr_x, candidate_x_update, shared_x_monus_z, vec_size);
-    // 	}
-    // 	funcRELUPrime3PC(shared_x_monus_z, shared_beta, vec_size);
-    // 	// selection base on beta
-
-    // 	if (PRIMARY) {
-    // 		for(auto j = 0; j < vec_size; ++j) {
-    // 			// share of 2^(f-i)
-    // 			if(partyNum == PARTY_A) {
-    // 				candidate_q_update[j] = 1 << (FLOAT_PRECISION_M - i);
-    // 			} else if(partyNum == PARTY_B) {
-    // 				candidate_q_update[j] = 0;
-    // 			}
-    // 		}
-    // 		if(PRIMARY)
-    // 			funcReconstruct2PC(shared_beta, vec_size, "curr_beta");
-    // 	}
-
-    // 	funcSelectShares3PC(candidate_x_update, shared_beta, candidate_x_update, vec_size);
-    // 	funcSelectShares3PC(candidate_q_update, shared_beta, candidate_q_update, vec_size);
-    // 	addVectors<mpc_t>(curr_q, candidate_q_update, curr_q, vec_size);
-    // 	subtractVectors<mpc_t>(curr_x, candidate_x_update, curr_x, vec_size);
-    // }
-    // quotient_vec = curr_q;
-    // funcDotProductMPC(quotient_vec, quotient_sign, shared_quotient_vec,vec_size);
   }
   if (FOUR_PC) {
     // cout << "ERROR! not support yet!" <<endl;
@@ -477,8 +439,7 @@ int FloorDivision::mpc_floor_division(
     auto curr_x = shared_numerator_vec;
     auto curr_y = shared_denominator_vec;
     // this is just like the original algorithm 8 in PET's paper.
-    // TODO: LEN - 1 - FLOAT_PRECISION_M
-    for (int i = LEN - 1; i >= 0; --i) {
+    for (int i = LEN - 1 - FLOAT_PRECISION_M; i >= 0; --i) {
       auto shared_z = curr_x;
       vector<mpc_t> shared_beta(common_vec_size, 0);
       if (PRIMARY) {
@@ -529,7 +490,7 @@ int FracDivision::mpc_frac_division(
     vector<mpc_t>& shared_quotient_vec = ori_quotient_vec;
     vector<mpc_t> quotient_sign(common_vec_size, 0);
     if (!all_positive) {
-      /// PART 0: determine whether the velues are positive or negative.
+      /// PART 0: determine whether the values are positive or negative.
       vector<mpc_t> shared_numer_sign(common_vec_size, 0);
       GetMpcOpInner(ComputeMSB)->Run3PC(shared_numerator_vec, shared_numer_sign, common_vec_size);
       

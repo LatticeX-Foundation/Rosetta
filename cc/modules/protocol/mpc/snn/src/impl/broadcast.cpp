@@ -15,21 +15,31 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#pragma once
-#include "cc/modules/protocol/mpc/comm/include/mpc_protocol.h"
+#include "cc/modules/protocol/mpc/snn/src/impl/op_impl.h"
+#include <stdexcept>
 
+// this will remvoe to rtt/
 namespace rosetta {
-class SnnProtocol : public MpcProtocol {
- public:
-  SnnProtocol() : MpcProtocol("SecureNN") {}
+namespace snn {
 
- public:
-  shared_ptr<ProtocolOps> GetOps(const string& op_token = "");
-  
+int Broadcast::funcBroadcast(int from_party, const string& msg, string& result) {
+  log_debug << "snn public input msg, size: " << msg.size();
 
- private:
-  int _init_aeskeys();
-  void _initialize_mpc_environment();
-};
+  result.clear();
+  vector<int> peers = get_mpc_peers(from_party);
+  if (from_party == partyNum) {
+    //send msg to peers
+    for (size_t i = 0; i < peers.size(); ++i)
+      sendBuf(peers[i], msg.data(), msg.size(), 0);
+  } else {
+    // receive msg
+    result.resize(msg.size());
+    receiveBuf(from_party, (char*)result.data(), msg.size(), 0);
+  }
 
+  log_debug << "snn public input msg ok.";
+  return 0;
+}
+
+} // namespace snn
 } // namespace rosetta
