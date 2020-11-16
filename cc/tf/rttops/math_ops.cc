@@ -20,9 +20,6 @@
 //#include "tensorflow/core/framework/shape_inference.h"
 
 
-
-
-
 #define REGISTER_RTT_BINARY_OP(name)                       \
   REGISTER_OP(#name)                                          \
     .Input("x: string")                                       \
@@ -94,6 +91,20 @@ REGISTER_RTT_BINARY_OP(RttGreaterEqual).Doc(R"doc(
 REGISTER_RTT_BINARY_OP(RttLessEqual).Doc(R"doc(
     RttLessEqual
 )doc");
+
+REGISTER_RTT_BINARY_OP(RttLogicalAnd).Doc(R"doc(
+    RttLogicalAnd
+)doc");
+REGISTER_RTT_BINARY_OP(RttLogicalOr).Doc(R"doc(
+    RttLogicalOr
+)doc");
+REGISTER_RTT_BINARY_OP(RttLogicalXor).Doc(R"doc(
+    RttLogicalXor
+)doc");
+REGISTER_OP("RttLogicalNot")
+  .Input("x: string")
+  .Output("y: string")
+  .SetIsStateful();
 
 REGISTER_OP("RttNegative")
   .Input("x: string")

@@ -175,7 +175,7 @@ static std::shared_ptr<MatrixRtt> AdjustInputForBcast(
   }
 
   return vec;
-} //class AdjustInputForBcast
+} //AdjustInputForBcast
 
 } // namespace utils
 } // namespace rosetta

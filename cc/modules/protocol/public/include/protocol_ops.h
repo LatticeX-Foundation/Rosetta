@@ -25,6 +25,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "cc/modules/protocol/mpc/comm/include/mpc_defines.h"
 
 namespace rosetta {
 
@@ -66,7 +67,7 @@ class ProtocolOps {
 
   /**
    * @desc: encode the literal number to a protocol-specific format 
-   *         wrappered as string.
+   *         wrapped as string.
    * @param:
    *     in, the vector of literal number
    *     out, the vector of the encoded strings
@@ -93,6 +94,10 @@ class ProtocolOps {
   virtual uint64_t RandSeed(vector<uint64_t>& seed) { return 0x123456; }
 
   virtual int PrivateInput(int party_id, const vector<double>& in_x, vector<string>& out_x) {
+    THROW_NOT_IMPL;
+  }
+
+  virtual int Broadcast(int from_party, const string& msg, string& result) {
     THROW_NOT_IMPL;
   }
 
@@ -272,7 +277,7 @@ class ProtocolOps {
 
   /**
    * @desc: optional, for high-precision logarithm. 
-   *    The default implementaion in base class will use the Log.
+   *    The default implementation in base class will use the Log.
    */
   virtual int HLog(
     const vector<string>& a,
@@ -362,6 +367,34 @@ class ProtocolOps {
   virtual int Reveal(
     const vector<string>& a,
     vector<double>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+  ////////////////////////////////// logical ops //////////////////////////////////
+  virtual int AND(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+  virtual int OR(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+  virtual int XOR(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+  virtual int NOT(
+    const vector<string>& a,
+    vector<string>& output,
     const attr_type* attr_info = nullptr) {
     THROW_NOT_IMPL;
   }

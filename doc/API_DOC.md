@@ -32,6 +32,10 @@
       - [`SecureGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securegreaterequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureLess(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelessx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureLessEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelessequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureLogicalAnd(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelogicalandx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureLogicalOr(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelogicalorx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureLogicalXor(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelogicalxorx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureLogicalNot(x, name=None)`](#securelogicalnotx-namenone)
       - [`SecureMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`](#securematmula-b-transpose_afalse-transpose_bfalse-namenone)
       - [`SecurePow(x, y, name=None, lh_is_const=False, rh_is_const=True)`](#securepowx-y-namenone-lh_is_constfalse-rh_is_consttrue)
       - [`SecureLog(x, name=None)`](#securelogx-namenone)
@@ -440,7 +444,85 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
    * Broadcasting is supported for this SecureOp.
    * The output values are still in the shared status, just like other `SecureOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
 
+#### `SecureLogicalAnd(x, y, name=None, lh_is_const=False, rh_is_const=False)`
   
+  Returns the truth value of `(x & y)` element-wise, as 0 for false and 1 for true.
+
+  **Args:**
+
+  - **`x`**: A  `Tensor` in TensorFlow, whose values are in shared status. 
+  - **`y`**: A `Tensor` in TensorFlow, whose values are in shared status. . Must have the same type as `x`.
+  - **`name(optional)`**: A name for the operation, the default value of it is None.
+  - **`lh_is_const(optional)`**: flag indicating whether the `x` is a const number. If it is set as True, the `x` will be added just as the sum of all parties' shared input pieces. The default value is `False`.
+  - **`rh_is_const(optional)`** :flag indicating whether the `y` is a const number. If it is set as True, the `y` will be added just as the sum of all parties' shared input pieces.The default value is `False`.
+
+  **Returns:**
+
+  ​	A `Tensor`. Has the same type as `x`.
+
+  *NOTE:* 
+
+   * Broadcasting is supported for this SecureOp.
+   * The output values are still in the shared status, just like other `SecureOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
+
+#### `SecureLogicalOr(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+
+  Returns the truth value of `(x | y)` element-wise, as 0 for false and 1 for true.
+
+  **Args:**
+
+  - **`x`**: A  `Tensor` in TensorFlow, whose values are in shared status. 
+  - **`y`**: A `Tensor` in TensorFlow, whose values are in shared status. . Must have the same type as `x`.
+  - **`name(optional)`**: A name for the operation, the default value of it is None.
+  - **`lh_is_const(optional)`**: flag indicating whether the `x` is a const number. If it is set as True, the `x` will be added just as the sum of all parties' shared input pieces. The default value is `False`.
+  - **`rh_is_const(optional)`** :flag indicating whether the `y` is a const number. If it is set as True, the `y` will be added just as the sum of all parties' shared input pieces.The default value is `False`.
+
+  **Returns:**
+
+  ​	A `Tensor`. Has the same type as `x`.
+
+  *NOTE:* 
+
+   * Broadcasting is supported for this SecureOp.
+   * The output values are still in the shared status, just like other `SecureOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
+
+#### `SecureLogicalXor(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+
+  Returns the truth value of `(x ^ y)` element-wise, as 0 for false and 1 for true.
+
+  **Args:**
+
+  - **`x`**: A  `Tensor` in TensorFlow, whose values are in shared status. 
+  - **`y`**: A `Tensor` in TensorFlow, whose values are in shared status. . Must have the same type as `x`.
+  - **`name(optional)`**: A name for the operation, the default value of it is None.
+  - **`lh_is_const(optional)`**: flag indicating whether the `x` is a const number. If it is set as True, the `x` will be added just as the sum of all parties' shared input pieces. The default value is `False`.
+  - **`rh_is_const(optional)`** :flag indicating whether the `y` is a const number. If it is set as True, the `y` will be added just as the sum of all parties' shared input pieces.The default value is `False`.
+
+  **Returns:**
+
+  ​	A `Tensor`. Has the same type as `x`.
+
+  *NOTE:* 
+
+   * Broadcasting is supported for this SecureOp.
+   * The output values are still in the shared status, just like other `SecureOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
+
+#### `SecureLogicalNot(x, name=None)`
+
+  Returns the truth value of `(!x)` element-wise, as 0 for false and 1 for true.
+
+  **Args:**
+
+  - **`x`**: A  `Tensor` in TensorFlow, whose values are in shared status. 
+  - **`name(optional)`**: A name for the operation, the default value of it is None.
+
+  **Returns:**
+
+  ​	A `Tensor`. Has the same type as `x`.
+
+  *NOTE:* 
+
+   * The output values are still in the shared status, just like other `SecureOps`. So in the current version, **you should not use the local output `Tensor` in any following predicate clause directly.**
 
 #### `SecureMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`
 

@@ -50,6 +50,8 @@ string to_readable_hex(const T& v) {
 string to_readable_dec(const uintlong& v);
 
 ////////////////////////////////////////////////
+void print_vector(vector<double>& vec, string msg, size_t print_size = 4, int precision = 3);
+////////////////////////////////////////////////
 void print_vec(const vector<uint8_t>& a, int length = -1, string msg = "");
 void print_vec(const vector<int>& a, int length = -1, string msg = "");
 void print_vec(const vector<uint64_t>& a, int length = -1, string msg = "");

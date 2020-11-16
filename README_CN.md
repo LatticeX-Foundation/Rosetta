@@ -46,7 +46,7 @@ bash compile_and_test_all.sh
 
 ## 使用示例
 
-这里我们用一个简单的多方联合执行 AI 中常见的矩阵乘法操作的 demo 示例来演示下 Rosetta 的基本用法。
+这里我们用一个简单的多方联合执行 AI 中常见的矩阵乘法操作的 [demo 示例](example/tutorials/code/rosetta_demo.py) 来演示下 Rosetta 的基本用法。
 
 在这个例子中，我们假设三个个体各自持有一个私有的矩阵数据，他们想在不泄露自己数据明文的前提下共同的计算出这三个矩阵的乘积。为了简便，我们称这三方分别为 P0，P1 和 P2。
 

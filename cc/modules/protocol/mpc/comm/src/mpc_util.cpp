@@ -107,3 +107,25 @@ void convert_mpctype_to_string(const vector<mpc_t>& a, vector<std::string>& b, b
     }
   }
 }
+
+
+/**
+ * get_mpc_peers
+ */
+vector<int> get_mpc_peers(int party) {
+  static vector<int> mpc_a_peers{PARTY_B, PARTY_C};
+  static vector<int> mpc_b_peers{PARTY_A, PARTY_C};
+  static vector<int> mpc_c_peers{PARTY_B, PARTY_A};
+  
+  switch (party)
+  {
+  case PARTY_A:
+    return mpc_a_peers;
+  case PARTY_B:
+    return mpc_b_peers;
+  case PARTY_C:
+    return mpc_c_peers;
+  default:
+    throw std::runtime_error(string("party id invalid"));
+  }
+}

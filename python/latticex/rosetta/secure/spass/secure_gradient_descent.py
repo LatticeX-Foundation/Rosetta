@@ -25,9 +25,6 @@ from latticex.rosetta.rtt.framework import rtt_tensor as rtt_ts
 from latticex.rosetta.controller.common_util import rtt_get_logger
 
 
-
-
-
 class SecureGradientDescentOptimizer(tf.compat.v1.train.GradientDescentOptimizer):
     """
     # Secure GradientDescent optimizer, only override __init__ & minimize functions

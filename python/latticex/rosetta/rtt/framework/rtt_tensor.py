@@ -207,6 +207,29 @@ class RttTensor(object):
         res = rtt_ops.rtt_not_equal(self._raw, other._raw)
         return RttTensor(res)
 
+    def __and__(self, other):
+        """ self & other """
+        other = convert_to_rtttensor(other)
+        res = rtt_ops.rtt_logical_and(self._raw, other._raw)
+        return RttTensor(res)
+
+    def __or__(self, other):
+        """ self | other """
+        other = convert_to_rtttensor(other)
+        res = rtt_ops.rtt_logical_or(self._raw, other._raw)
+        return RttTensor(res)
+    
+    def __xor__(self, other):
+        """ self ^ other """
+        other = convert_to_rtttensor(other)
+        res = rtt_ops.rtt_logical_xor(self._raw, other._raw)
+        return RttTensor(res)
+
+    def __invert__(self):
+        """ !self """
+        res = rtt_ops.rtt_logical_not(self._raw)
+        return RttTensor(res)
+
     def __pow__(self, other):
         """ self ** other """
         other = convert_to_rtttensor(other)

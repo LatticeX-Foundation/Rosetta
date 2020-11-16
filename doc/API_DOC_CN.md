@@ -19,6 +19,10 @@
       - [`SecureGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securegreaterequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureLess(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelessx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureLessEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelessequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureLogicalAnd(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelogicalandx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureLogicalOr(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelogicalorx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureLogicalXor(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securelogicalxorx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureLogicalNot(x, name=None)`](#securelogicalnotx-namenone)
       - [`SecureMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`](#securematmula-b-transpose_afalse-transpose_bfalse-namenone)
       - [`SecurePow(x, y, name=None, lh_is_const=False, rh_is_const=True)`](#securepowx-y-namenone-lh_is_constfalse-rh_is_consttrue)
       - [`SecureLog(x, name=None)`](#securelogx-namenone)
@@ -76,7 +80,7 @@
   - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
   - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
   - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
-  - **`rh_is_const(optional)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
 
   **返回值：**
 
@@ -96,7 +100,7 @@
   - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
   - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
   - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
-  - **`rh_is_const(optional)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
 
   **返回值：**
 
@@ -116,7 +120,7 @@
   - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
   - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
   - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
-  - **`rh_is_const(optional)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
 
   **返回值：**
 
@@ -137,7 +141,7 @@
   - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
   - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
   - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
-  - **`rh_is_const(optional)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
 
   **返回值：**
 
@@ -164,7 +168,7 @@
   - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
   - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
   - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
-  - **`rh_is_const(optional)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
 
   **返回值：**
 
@@ -198,7 +202,7 @@
   - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
   - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
   - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
-  - **`rh_is_const(optional)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
 
   **返回值：**
 
@@ -223,7 +227,7 @@
   - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
   - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
   - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
-  - **`rh_is_const(optional)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
 
   **返回值：**
 
@@ -247,7 +251,7 @@
   - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
   - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
   - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
-  - **`rh_is_const(optional)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
 
   **返回值：**
 
@@ -271,7 +275,7 @@
   - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
   - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
   - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
-  - **`rh_is_const(optional)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
 
   **返回值：**
 
@@ -294,7 +298,7 @@
   - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
   - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
   - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
-  - **`rh_is_const(optional)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
 
   **返回值：**
 
@@ -305,6 +309,81 @@
    * 这个SecureOp支持Tensorflow中的广播机制。
    * 由于和其他计算类算子一样，结果是密文共享状态的值，**所以不可以直接的在后续程序中直接的对此算子的结果进行判断类型语句的处理！**
 
+#### `SecureLogicalAnd(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+
+  返回逐元素进行“逻辑与”比较的结果`(x & y)` 。结果对应的真实值为 $0.0$ 时表示假，$1.0$ 则表示真。
+
+  **参数:**
+
+  - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
+  - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 `None`。
+  - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值, 默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+
+  **返回值：**
+
+  一个 `Tensor`。类型与`x`相同。
+
+  *注意:* 
+
+   * 这个SecureOp支持Tensorflow中的广播机制。
+   * 由于和其他计算类算子一样，结果是密文共享状态的值，**所以不可以直接的在后续程序中直接的对此算子的结果进行判断类型语句的处理！**
+
+#### `SecureLogicalOr(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+  返回逐元素进行“逻辑或”比较的结果`(x | y)` 。结果对应的真实值为 $0.0$ 时表示假，$1.0$ 则表示真。
+
+  **参数:**
+
+  - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
+  - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 `None`。
+  - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值, 默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+
+  **返回值：**
+
+  一个 `Tensor`。类型与`x`相同。
+
+  *注意:* 
+
+   * 这个SecureOp支持Tensorflow中的广播机制。
+   * 由于和其他计算类算子一样，结果是密文共享状态的值，**所以不可以直接的在后续程序中直接的对此算子的结果进行判断类型语句的处理！**
+
+#### `SecureLogicalXor(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+  返回逐元素进行“逻辑异或”比较的结果`(x ^ y)` 。结果对应的真实值为 $0.0$ 时表示假，$1.0$ 则表示真。
+
+  **参数:**
+
+  - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
+  - **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 `None`。
+  - **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值, 默认值为 `False`。
+  - **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y `将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+
+  **返回值：**
+
+  一个 `Tensor`。类型与`x`相同。
+
+  *注意:* 
+
+   * 这个SecureOp支持Tensorflow中的广播机制。
+   * 由于和其他计算类算子一样，结果是密文共享状态的值，**所以不可以直接的在后续程序中直接的对此算子的结果进行判断类型语句的处理！**
+
+#### `SecureLogicalNot(x, name=None)`
+  返回逐元素进行“逻辑非”比较的结果`!x` 。结果对应的真实值为 $0.0$ 时表示假，$1.0$ 则表示真。
+
+  **参数:**
+
+  - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 `None`。
+
+  **返回值：**
+
+  一个 `Tensor`。类型与`x`相同。
+
+  *注意:* 
+   * 由于和其他计算类算子一样，结果是密文共享状态的值，**所以不可以直接的在后续程序中直接的对此算子的结果进行判断类型语句的处理！**
   
 
 #### `SecureMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`
@@ -317,11 +396,11 @@
 
   - **`b`**: TensorFlow中的 `Tensor`，其值处于共享状态。且必须要和`a`的维度相兼容。
 
-  - **`name(optional)`**: 指定的该操作的名称，默认值为 None。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
 
-  - **`transpose_a(optional)`**: 如果值为`True`, `a` 在执行矩阵乘法之前先执行转置操作。默认值为 `Flase`.
+  - **`transpose_a(可选)`**: 如果值为`True`, `a` 在执行矩阵乘法之前先执行转置操作。默认值为 `Flase`.
 
-  - **`transpose_b(optional)`**: 如果值为`True`, `b` 在执行矩阵乘法之前先执行转置操作。默认值为 `Flase`.
+  - **`transpose_b(可选)`**: 如果值为`True`, `b` 在执行矩阵乘法之前先执行转置操作。默认值为 `Flase`.
 
   **返回值:**
 
@@ -339,9 +418,9 @@
 
   - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
   - **`y`**: TensorFlow中的 `Tensor`。**在当前版本中，其中的每一个值都需要是常量整数，且各方的此值输入都相同。** 此外, `y` 和 `x`的`shape`要一致.
-  - **`lh_is_const(optional)`**: **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
-  - **`rh_is_const(optional)`** :**`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `True`。 **当前版本，仅支持设为`True`。 在后续版本中我们将支持此值可变** 
-  - **`name(optional)`**: 指定的该操作的名称，默认值为 None。
+  - **`lh_is_const(可选)`**: **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
+  - **`rh_is_const(可选)`** :**`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `True`。 **当前版本，仅支持设为`True`。 在后续版本中我们将支持此值可变** 
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
 
   **返回值:**
 
@@ -357,7 +436,7 @@
   **参数:**
 
   - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
-  - **`name(optional)`**: 指定的该操作的名称，默认值为 None。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
 
   **返回值:**
   
@@ -378,7 +457,7 @@
   **参数:**
 
   - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
-  - **`name(optional)`**: 指定的该操作的名称，默认值为 None。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
 
   **返回值:**
   
@@ -395,7 +474,7 @@
   **参数:**
 
   - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
-  - **`name(optional)`**: 指定的该操作的名称，默认值为 None。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
 
   **返回值:**
   
@@ -414,7 +493,7 @@
   **参数:**
 
   - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
-  - **`name(optional)`**: 指定的该操作的名称，默认值为 None。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
 
   **返回值:**
 
@@ -436,7 +515,7 @@
   **参数:**
 
   - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
-  - **`name(optional)`**: 指定的该操作的名称，默认值为 None。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
 
   **返回值:**
   
@@ -451,7 +530,7 @@
   **参数:**
 
   - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
-  - **`name(optional)`**: 指定的该操作的名称，默认值为 None。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
 
   **返回值:**
 
@@ -466,7 +545,7 @@
   **参数:**
 
   - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
-  - **`name(optional)`**: 指定的该操作的名称，默认值为 None。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
 
   **返回值:**
 
@@ -481,7 +560,7 @@
   **参数:**
 
   - **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
-  - **`name(optional)`**: 指定的该操作的名称，默认值为 None。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
 
   **返回值:**
 
@@ -497,9 +576,9 @@
 
   - **`input_tensor`**: 待进行降维的`Tensor`. 
 
-  - **`axis(optional)`**: 指定待降维的维度。如果为`None`(默认值)，则在所有维度上进行降维。 **当前版本中支持设为0, 1 或 None.**
+  - **`axis(可选)`**: 指定待降维的维度。如果为`None`(默认值)，则在所有维度上进行降维。 **当前版本中支持设为0, 1 或 None.**
 
-  - **`name(optional)`**: 指定的该操作的名称，默认值为 None。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
 
     
 
@@ -517,9 +596,9 @@
 
   - **`input_tensor`**: 待进行降维的`Tensor`. 
 
-  - **`axis(optional)`**: 指定待降维的维度。如果为`None`(默认值)，则在所有维度上进行降维。 **当前版本中支持设为0, 1 或 None.**
+  - **`axis(可选)`**: 指定待降维的维度。如果为`None`(默认值)，则在所有维度上进行降维。 **当前版本中支持设为0, 1 或 None.**
 
-  - **`name(optional)`**: 指定的该操作的名称，默认值为 None。
+  - **`name(可选)`**: 指定的该操作的名称，默认值为 None。
 
     
   **返回值:**
@@ -564,7 +643,7 @@
   - **`tensor_name`**: `string`类型的 `Tensor` 。有${N}$个元素，用于指定具体需要保存的`Tensor`的自定义名称。 
   - **`shape_and_slices`**:`string`类型的 `Tensor` 。有${N}$个元素，用于指定具体需要保存的`Tensor`的具体切片配置。 
   - **`tensors`**: `Tensor` 对象列表，指定待保存的 $N$ 个`Tensor`。
-  - **`name(optional)`**: 指定的该操作的名称，默认为`None`。
+  - **`name(可选)`**: 指定的该操作的名称，默认为`None`。
 
   **返回值:**
 

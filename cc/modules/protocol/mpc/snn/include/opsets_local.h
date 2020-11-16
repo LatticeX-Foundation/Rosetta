@@ -28,6 +28,7 @@ namespace rosetta {
 namespace snn {
 // clang-format off
 void funcTruncate2PC(vector<mpc_t> &a, size_t power, size_t size, size_t party_1, size_t party_2);
+void funcTruncate2PC_many(vector<mpc_t>& a, vector<size_t> power, size_t size, size_t party_1, size_t party_2);
 void funcTruncateElem2PC(mpc_t &a, size_t power, size_t party_1, size_t party_2);
 mpc_t funcTruncateElem2PCConst(const mpc_t &a, size_t power = FLOAT_PRECISION_M, size_t party_1 = PARTY_A, size_t party_2 = PARTY_B);
 void funcXORModuloOdd2PC(vector<small_mpc_t> &bit, vector<mpc_t> &shares, vector<mpc_t> &output, size_t size);

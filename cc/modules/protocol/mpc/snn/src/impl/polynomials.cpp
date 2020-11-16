@@ -16,7 +16,7 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 /*
-    For implemention of general MPC polynomials and approximating non-arithmatic
+    For implemention of general MPC polynomials and approximating non-arithematic
     functionalities. 
 */
 
@@ -36,7 +36,7 @@ void Polynomial::mpc_pow_const(
   // cout << "DEBUG new mpc_pow_const" << endl;
   int vec_size = shared_X.size();
   shared_Y.resize(vec_size);
-  // init cyrr_Y to '1'
+  // init curr_Y to '1'
   vector<mpc_t> curr_Y(vec_size, FloatToMpcType(1.0/2));
 
   if (common_k == 0) {
@@ -57,6 +57,7 @@ void Polynomial::mpc_pow_const(
   vector<mpc_t> P = shared_X;
   vector<mpc_t> tmp_new_y = curr_Y;
   vector<mpc_t> tmp_new_P = P;
+  bool least_bit_covered = false;
   while (curr_k != 0) {
     curr_bit = curr_k % 2;
     if (curr_p != 1) {
@@ -64,8 +65,14 @@ void Polynomial::mpc_pow_const(
       P = tmp_new_P;
     }
     if (curr_bit) {
-      GetMpcOpInner(DotProduct)->Run(P, curr_Y, tmp_new_y, vec_size);
-      curr_Y = tmp_new_y;
+      // LSB bit, no need to use MPC to multiply const ONE.
+      if (!least_bit_covered) {
+        curr_Y = P;
+        least_bit_covered = true;
+      } else {
+        GetMpcOpInner(DotProduct)->Run(P, curr_Y, tmp_new_y, vec_size);
+        curr_Y = tmp_new_y;
+      }
     }
     curr_k = int(curr_k / 2);
     curr_p++;
@@ -95,6 +102,7 @@ void Polynomial::local_const_mul(
   }
 }
 
+// for continuous common_power_list with max order be N, round complexity is N. 
 void Polynomial::mpc_uni_polynomial(
   const vector<mpc_t>& shared_X,
   const vector<mpc_t>& common_power_list,
@@ -102,10 +110,15 @@ void Polynomial::mpc_uni_polynomial(
   vector<mpc_t>& shared_Y) {
   int vec_size = shared_X.size();
   shared_Y.resize(vec_size);
+  // this cache is for reduce calling Mul operation.
+  // It works for continuous common_power_list.
+  unordered_map<int, vector<mpc_t>> X_pow_cache;
+  X_pow_cache[1] = shared_X;
+
   // Step one:
   vector<mpc_t> local_value(vec_size, 0);
   for (auto i = 0; i < common_power_list.size(); ++i) {
-    //cout << "power" << i << endl;
+    // cout << "power" << i << endl;
     vector<mpc_t> tmp_coff_vec(vec_size, common_coff_list[i]);
     vector<mpc_t> tmp_prod(vec_size);
     if (common_power_list[i] == 0) {
@@ -122,7 +135,13 @@ void Polynomial::mpc_uni_polynomial(
     } else {
       vector<mpc_t> term_v(vec_size);
       mpc_t curr_k = common_power_list[i];
-      mpc_pow_const(shared_X, curr_k, term_v);
+      if(X_pow_cache.find(curr_k - 1) != X_pow_cache.end()) {
+        GetMpcOpInner(DotProduct)->Run(shared_X, X_pow_cache[curr_k - 1], term_v, vec_size);
+        X_pow_cache[curr_k] = term_v;
+      } else {
+        mpc_pow_const(shared_X, curr_k, term_v);
+        X_pow_cache[curr_k] = term_v;
+      }
       if (PRIMARY) {
         // local const multiply
         mpc_t coff_v = common_coff_list[i];
@@ -142,7 +161,6 @@ void Polynomial::mpc_uni_polynomial(
   // Step one:
   mpc_t local_value = 0;
   for (auto i = 0; i < common_power_list.size(); ++i) {
-    //cout << "power" << i << endl;
     vector<mpc_t> tmp_prod(1);
     if (common_power_list[i] == 0) {
       if (partyNum == PARTY_A) {

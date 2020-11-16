@@ -134,6 +134,37 @@ def rtt_lessequal(x, y, name=None):
     return rtt_ts.RttTensor(_result)
 
 
+def rtt_logical_and(x, y, name=None):
+    """Returns the truth value of (x & y) element-wise.."""
+    x = rtt_ts.convert_to_rtttensor(x)
+    y = rtt_ts.convert_to_rtttensor(y)
+    _result = rtt_ts.rtt_ops.rtt_logical_and(x._raw, y._raw, name=name)
+    return rtt_ts.RttTensor(_result)
+
+
+def rtt_logical_or(x, y, name=None):
+    """Returns the truth value of (x | y) element-wise."""
+    x = rtt_ts.convert_to_rtttensor(x)
+    y = rtt_ts.convert_to_rtttensor(y)
+    _result = rtt_ts.rtt_ops.rtt_logical_or(x._raw, y._raw, name=name)
+    return rtt_ts.RttTensor(_result)
+
+
+def rtt_logical_xor(x, y, name=None):
+    """Returns the truth value of (x ^ y) element-wise."""
+    x = rtt_ts.convert_to_rtttensor(x)
+    y = rtt_ts.convert_to_rtttensor(y)
+    _result = rtt_ts.rtt_ops.rtt_logical_xor(x._raw, y._raw, name=name)
+    return rtt_ts.RttTensor(_result)
+
+
+def rtt_logical_not(x, name=None):
+    """Returns the truth value of (!x) element-wise."""
+    x = rtt_ts.convert_to_rtttensor(x)
+    _result = rtt_ts.rtt_ops.rtt_logical_not(x._raw, name=name)
+    return rtt_ts.RttTensor(_result)
+
+
 def rtt_matmul(x, y, transpose_a=False, transpose_b=False, name=None):
     """Multiplies matrix `a` by matrix `b`, producing `a` * `b`."""
     x = rtt_ts.convert_to_rtttensor(x)
@@ -309,6 +340,10 @@ def static_override_tf_ops_to_rtt_ops():
     tf.greater_equal = rtt_greaterequal
     tf.less = rtt_less
     tf.less_equal = rtt_lessequal
+    tf.logical_and = rtt_logical_and
+    tf.logical_or = rtt_logical_or
+    tf.logical_xor = rtt_logical_xor
+    tf.logical_not = rtt_logical_not
     tf.matmul = rtt_matmul
     tf.square = rtt_square
     tf.pow = rtt_pow

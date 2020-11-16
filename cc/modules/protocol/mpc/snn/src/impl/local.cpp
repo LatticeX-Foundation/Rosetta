@@ -41,6 +41,22 @@ void funcTruncate2PC(vector<mpc_t>& a, size_t power, size_t size, size_t party_1
   }
 }
 
+void funcTruncate2PC_many(vector<mpc_t>& a, vector<size_t> power, size_t size, size_t party_1, size_t party_2) {
+  if (!PRIMARY)
+    return;
+  assert((partyNum == party_1 || partyNum == party_2) && "Truncate called by spurious parties");
+
+  if (partyNum == party_1) {
+    for (size_t i = 0; i < size; ++i)
+      a[i] = static_cast<mpc_t>(static_cast<signed_mpc_t>(a[i]) >> power[i]);
+  }
+
+  if (partyNum == party_2) {
+    for (size_t i = 0; i < size; ++i)
+      a[i] = -static_cast<mpc_t>(static_cast<signed_mpc_t>(-a[i]) >> power[i]);
+  }
+}
+
 void funcTruncateElem2PC(mpc_t& a, size_t power, size_t party_1, size_t party_2) {
   assert((partyNum == party_1 || partyNum == party_2) && "Truncate called by spurious parties");
 

@@ -75,6 +75,20 @@ REGISTER_SECURE_BINARY_OP(SecureLessEqual).Doc(R"doc(
     SecureLessEqual
 )doc");
 
+REGISTER_SECURE_BINARY_OP(SecureLogicalAnd).Doc(R"doc(
+    SecureLogicalAnd
+)doc");
+REGISTER_SECURE_BINARY_OP(SecureLogicalOr).Doc(R"doc(
+    SecureLogicalOr
+)doc");
+REGISTER_SECURE_BINARY_OP(SecureLogicalXor).Doc(R"doc(
+    SecureLogicalXor
+)doc");
+REGISTER_OP("SecureLogicalNot")
+  .Input("x: string")
+  .Output("y: string")
+  .SetIsStateful();
+
 REGISTER_OP("SecureNegative")
   .Input("x: string")
   .Output("res: string")

@@ -33,7 +33,7 @@ public:
             const vector<mpc_t>& shared_labels,
             vector<mpc_t>& shared_result,
             size_t vec_size) {
-            MPCOP_RETURN(sigmoid_cross_entropy(shared_logits, 
+            MPCOP_RETURN(sigmoid_cross_entropy_batch(shared_logits, 
                                                 shared_labels, 
                                                 shared_result, vec_size));
         }
@@ -47,6 +47,17 @@ public:
         }
 
     /**
+     * @Note: Speedup in low-bandthwith network environment, with less communication round.
+     * 
+     */
+    int sigmoid_cross_entropy_batch(const vector<mpc_t>& shared_logits,
+            const vector<mpc_t>& shared_labels,
+            vector<mpc_t>& shared_result,
+            size_t vec_size);
+
+
+    /**
+     * Obsoleted, please use the faster one, sigmoid_cross_entropy_batch
         @Note: Just like the 'sigmoid_cross_entropy_with_logits' in python/ops/nn_impl.py of
             original Tensorflow source code, we implement formulation:
             max(logit, 0) - logit * label + log(1 + exp(-abs(x)))

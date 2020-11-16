@@ -25,6 +25,8 @@ void run(int partyid) {
 
   SimpleTimer timer;
   snn0.GetOps(msgid)->Matmul(strX, strY, strZ, &attr);
+  snn0.GetOps(msgid)->Reveal(strZ, Z);
+  print_vec(Z, 20, "Matmul revealed result:");
   cout << ">>>>>>>>>>>>>>>>>>> timer:" << timer.elapse() << endl;
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////

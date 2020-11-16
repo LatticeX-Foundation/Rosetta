@@ -27,4 +27,6 @@ void convert_double_to_mpctype(const vector<double>& a, vector<mpc_t>& b);
 
 void convert_string_to_mpctype(const vector<std::string>& a, vector<mpc_t>& b, bool human = true);
 void convert_mpctype_to_string(const vector<mpc_t>& a, vector<std::string>& b, bool human = true);
+
+vector<int> get_mpc_peers(int party);
 // clang-format on

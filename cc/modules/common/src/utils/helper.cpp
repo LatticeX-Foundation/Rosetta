@@ -89,6 +89,83 @@ void print_vec(const vector<unsigned __int128>& a, int length, string msg) {
   cout << endl;
 }
 
+/*
+Helper function: Prints a vector of floating-point values.
+*/
+template <typename T>
+inline void print_vector_(vector<T> vec, string msg, size_t print_size = 4, int precision = 3) {
+  /*
+    Save the formatting information for cout.
+    */
+  std::ios old_fmt(nullptr);
+  old_fmt.copyfmt(cout);
+
+  size_t slot_count = vec.size();
+
+  cout << msg << ": size [" << vec.size() << "]" << endl;
+  cout << std::fixed << std::setprecision(precision);
+  //cout << endl;
+  if (slot_count <= 2 * print_size) {
+    cout << "  [";
+    for (size_t i = 0; i < slot_count; i++) {
+      cout << " " << vec[i] << ((i != slot_count - 1) ? "," : " ]\n");
+    }
+  } else {
+    vec.resize(std::max(vec.size(), 2 * print_size));
+    cout << "  [";
+    for (size_t i = 0; i < print_size; i++) {
+      cout << " " << vec[i] << ",";
+    }
+    if (vec.size() > 2 * print_size) {
+      cout << " ...,";
+    }
+    for (size_t i = slot_count - print_size; i < slot_count; i++) {
+      cout << " " << vec[i] << ((i != slot_count - 1) ? "," : " ]\n");
+    }
+  }
+  cout << endl;
+
+  /*
+    Restore the old cout formatting.
+    */
+  cout.copyfmt(old_fmt);
+}
+
+void print_vector(std::vector<double>& vec, std::string msg, size_t print_size, int precision) {
+  print_vector_(vec, msg, print_size, precision);
+}
+
+/*
+Helper function: Prints a matrix of values.
+*/
+template <typename T>
+inline void print_matrix(vector<T> matrix, size_t row_size) {
+  /*
+    We're not going to print every column of the matrix (there are 2048). Instead
+    print this many slots from beginning and end of the matrix.
+    */
+  size_t print_size = 5;
+
+  cout << endl;
+  cout << "    [";
+  for (size_t i = 0; i < print_size; i++) {
+    cout << setw(3) << std::right << matrix[i] << ",";
+  }
+  cout << setw(3) << " ...,";
+  for (size_t i = row_size - print_size; i < row_size; i++) {
+    cout << setw(3) << matrix[i] << ((i != row_size - 1) ? "," : " ]\n");
+  }
+  cout << "    [";
+  for (size_t i = row_size; i < row_size + print_size; i++) {
+    cout << setw(3) << matrix[i] << ",";
+  }
+  cout << setw(3) << " ...,";
+  for (size_t i = 2 * row_size - print_size; i < 2 * row_size; i++) {
+    cout << setw(3) << matrix[i] << ((i != 2 * row_size - 1) ? "," : " ]\n");
+  }
+  cout << endl;
+};
+
 void print_vec(const vector<double>& a, int length, string msg) {
   if (length < 0 || length > a.size())
     length = a.size();

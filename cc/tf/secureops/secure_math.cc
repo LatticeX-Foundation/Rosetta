@@ -604,6 +604,56 @@ class SecureRevealOp : public StrUnaryOp {
   }
 };
 
+/////////////////////// logical ops //////////////////////////
+class SecureLogicalAndOp : public SecureBinaryOp {
+ public:
+  SecureLogicalAndOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
+  ~SecureLogicalAndOp() {}
+
+  int BinaryCompute(
+    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->AND(in1, in2, output, &attrs_);
+    return 0;
+  }
+};
+
+class SecureLogicalOrOp : public SecureBinaryOp {
+ public:
+  SecureLogicalOrOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
+  ~SecureLogicalOrOp() {}
+
+  int BinaryCompute(
+    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->OR(in1, in2, output, &attrs_);
+    return 0;
+  }
+};
+
+class SecureLogicalXorOp : public SecureBinaryOp {
+ public:
+  SecureLogicalXorOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
+  ~SecureLogicalXorOp() {}
+
+  int BinaryCompute(
+    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->XOR(in1, in2, output, &attrs_);
+    return 0;
+  }
+};
+
+class SecureLogicalNotOp : public StrUnaryOp {
+ private:
+  int receive_party_ = 0;
+ public:
+  SecureLogicalNotOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  ~SecureLogicalNotOp() {}
+
+  int UnaryCompute(const vector<string>& input, vector<string>& output) {
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->NOT(input, output, &attrs_);
+    return 0;
+  }
+};
+
 //////////////    register kernels    //////////////
 REGISTER_STR_CPU_KERNEL(SecureAdd, SecureAddOp);
 REGISTER_STR_CPU_KERNEL(SecureSub, SecureSubOp);
@@ -638,4 +688,9 @@ REGISTER_STR_CPU_KERNEL(SecureReveal, SecureRevealOp);
 REGISTER_KERNEL_BUILDER(Name("SecureAddN").Device(DEVICE_CPU).TypeConstraint<std::string>("T"), \
                         SecureAddNOp);
 
+// logical ops
+REGISTER_STR_CPU_KERNEL(SecureLogicalAnd, SecureLogicalAndOp);
+REGISTER_STR_CPU_KERNEL(SecureLogicalOr, SecureLogicalOrOp);
+REGISTER_STR_CPU_KERNEL(SecureLogicalXor, SecureLogicalXorOp);
+REGISTER_STR_CPU_KERNEL(SecureLogicalNot, SecureLogicalNotOp);
 } // namespace tensorflow

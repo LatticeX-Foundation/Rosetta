@@ -26,36 +26,40 @@ from latticex.rosetta.secure.decorator.secure_base_ import _secure_ops
 # -----------------------------
 def SecureAdd(x, y, name=None, lh_is_const=False, rh_is_const=False):
     return _secure_ops.secure_add(x, y, name=name,
-                          lh_is_const=lh_is_const, rh_is_const=rh_is_const)
+                                  lh_is_const=lh_is_const, rh_is_const=rh_is_const)
 
 
 def SecureSub(x, y, name=None, lh_is_const=False, rh_is_const=False):
     return _secure_ops.secure_sub(x, y, name=name,
-                          lh_is_const=lh_is_const, rh_is_const=rh_is_const)
+                                  lh_is_const=lh_is_const, rh_is_const=rh_is_const)
 
 
 def SecureMul(x, y, name=None, lh_is_const=False, rh_is_const=False):
     return _secure_ops.secure_mul(x, y, name=name,
-                          lh_is_const=lh_is_const, rh_is_const=rh_is_const)
+                                  lh_is_const=lh_is_const, rh_is_const=rh_is_const)
 
 
 def SecureDiv(x, y, name=None, lh_is_const=False, rh_is_const=False):
     return _secure_ops.secure_div(x, y, name=name,
-                          lh_is_const=lh_is_const, rh_is_const=rh_is_const)
+                                  lh_is_const=lh_is_const, rh_is_const=rh_is_const)
+
 
 def SecureRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False):
     return _secure_ops.secure_realdiv(x, y, name=name,
-                          lh_is_const=lh_is_const, rh_is_const=rh_is_const)
+                                      lh_is_const=lh_is_const, rh_is_const=rh_is_const)
+
 
 def SecureFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False):
     return _secure_ops.secure_floordiv(x, y, name=name,
-                          lh_is_const=lh_is_const, rh_is_const=rh_is_const)
+                                       lh_is_const=lh_is_const, rh_is_const=rh_is_const)
+
 
 def SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False):
     return _secure_ops.secure_truediv(x, y, name=name,
-                              lh_is_const=lh_is_const, rh_is_const=rh_is_const)
+                                      lh_is_const=lh_is_const, rh_is_const=rh_is_const)
 
-#TODO: to align with TwnsorFlow naming. Should change this to backend implementation in the future
+
+# TODO: to align with TwnsorFlow naming. Should change this to backend implementation in the future
 SecureDivide = SecureDiv
 
 
@@ -90,28 +94,28 @@ def SecureHLog(x, name=None):
 def SecureAbs(x, name=None):
     return _secure_ops.secure_abs(x, name=name)
 
+
 def SecureAbsPrime(x, name=None):
     return _secure_ops.secure_abs_prime(x, name=name)
 
 
 def SecureAddN(inputs, name=None):
-  if not inputs or not isinstance(inputs, (list, tuple)):
-    raise ValueError("inputs must be a list of at least one "
-                     "Tensor/IndexedSlices with the same dtype and shape")
-  inputs = ops.convert_n_to_tensor_or_indexed_slices(inputs)
-  if not all(isinstance(x, (ops.Tensor, ops.IndexedSlices)) for x in inputs):
-    raise ValueError("inputs must be a list of at least one "
-                     "Tensor/IndexedSlices with the same dtype and shape")
+    if not inputs or not isinstance(inputs, (list, tuple)):
+        raise ValueError("inputs must be a list of at least one "
+                         "Tensor/IndexedSlices with the same dtype and shape")
+    inputs = ops.convert_n_to_tensor_or_indexed_slices(inputs)
+    if not all(isinstance(x, (ops.Tensor, ops.IndexedSlices)) for x in inputs):
+        raise ValueError("inputs must be a list of at least one "
+                         "Tensor/IndexedSlices with the same dtype and shape")
 
-  if len(inputs) == 1:
-    if isinstance(inputs[0], ops.IndexedSlices):
-      values = ops.convert_to_tensor(inputs[0])
-    else:
-      values = inputs[0]
+    if len(inputs) == 1:
+        if isinstance(inputs[0], ops.IndexedSlices):
+            values = ops.convert_to_tensor(inputs[0])
+        else:
+            values = inputs[0]
 
-    if name:
-      return array_ops.identity(values, name=name)
-    return values
+        if name:
+            return array_ops.identity(values, name=name)
+        return values
 
-  return _secure_ops.secure_add_n(inputs, name=name)
-
+    return _secure_ops.secure_add_n(inputs, name=name)

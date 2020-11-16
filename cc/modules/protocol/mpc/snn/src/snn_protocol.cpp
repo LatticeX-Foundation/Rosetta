@@ -37,7 +37,7 @@ shared_ptr<ProtocolOps> SnnProtocol::GetOps(const string& op_token) {
   return o;
 }
 
-void SnnProtocol::_initialize_mpc_enviroment() {
+void SnnProtocol::_initialize_mpc_environment() {
   partyNum = my_party_id;
   NUM_OF_PARTIES = 3; /// set to 3PC
   initializeMPC();

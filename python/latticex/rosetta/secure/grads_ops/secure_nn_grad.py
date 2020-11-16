@@ -27,7 +27,7 @@ from tensorflow.python.ops import gen_array_ops
 def SecureSigmoidCrossEntropyGrad(op, grad):
     """ The customized gradient for SecureSigmoidCrossEntropy Operator that is used
         in function sigmoid_cross_entropy_with_logits.
-        @note : the funtion is we use in the forward pass is 
+        @note : the function is we use in the forward pass is 
         max(logit, 0) - logit * label + log(1 + exp(-abs(logits))
         just as it is in Tendorflow.
         In the backward pass here, we use  - logits * labels + log(1 + exp(logits).
