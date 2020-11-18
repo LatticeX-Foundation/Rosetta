@@ -40,7 +40,7 @@ bool TCPClient::connect(int64_t timeout) {
   set_linger(fd_);
 
   while (1) {
-    ::connect(fd_, (struct sockaddr*)&server, sizeof(server));
+    err = ::connect(fd_, (struct sockaddr*)&server, sizeof(server));
     if (err < 0) {
       // #define	ECONNREFUSED	111	/* Connection refused */
       if (errno == ECONNREFUSED) {
