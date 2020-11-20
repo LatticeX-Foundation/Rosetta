@@ -26,6 +26,9 @@ from latticex.rosetta.rtt.framework import rtt_tensor as rtt_ts
 
 
 def convert_init_value_to_string(initial_value, dtype):
+    if callable(initial_value):
+        initial_value = initial_value()
+        
     if isinstance(initial_value, ops.Tensor):
         dtype = initial_value.dtype
 
