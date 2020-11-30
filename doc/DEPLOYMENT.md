@@ -88,7 +88,7 @@ cd Rosetta && bash compile_and_test_all.sh
 
 After Installing Rosetta, we can test whether it works or not. We can do this by building a demo of the [millionaire problem][millionaire-problem]. `Rosetta` uses a 3-party `MPC` model that requires the deployment of three computing nodes, which can be deployed on real multiple machines or be simulated in s single machine with multi-processes.
 
-> `Rosetta` is based on TensorFlow. And currently, we does NOT support its distributed execution model.
+> `Rosetta` is based on TensorFlow. Currently, it only supports non-distributed graph execution.
 
 ### Example
 
