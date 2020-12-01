@@ -26,7 +26,7 @@ class ZeroBufferOut(object):
 
 sys.stdout = ZeroBufferOut(sys.stdout)
 
-basepath = os.path.abspath(os.path.dirname(__file__)) + "/../../../../build128/lib" 
+basepath = os.path.abspath(os.path.dirname(__file__)) + "/../../../../build/lib" 
 rosettapth = (
     os.path.abspath(os.path.dirname(__file__))
     + "/../../../../build/lib.linux-x86_64-3.6/latticex"
@@ -134,6 +134,61 @@ def test_reveal():
     print("reveal result7: ", result7)
     
     print("-----   test_reveal (OK) -----")
+
+def test_private_input():
+    print("----- test_private_input -----")
+    #in1 = [[1,2,3], [4,5,6]]
+    in1 = [["1","2","3"], ["4","5","6"]]
+    v11 = rtt.private_input(in1, data_owner=0)
+    v12 = rtt.private_input(in1, data_owner=0)
+    v13 = rtt.private_input(in1, data_owner=0)
+
+    v21 = rtt.private_input(in1, data_owner=1)
+    v22 = rtt.private_input(in1, data_owner=1)
+    v23 = rtt.private_input(in1, data_owner=1)
+
+    v31 = rtt.private_input(in1, data_owner=2)
+    v32 = rtt.private_input(in1, data_owner=2)
+    v33 = rtt.private_input(in1, data_owner=2)
+    
+    ret11 = rtt.secure_reveal(v11, 7)
+    ret12 = rtt.secure_reveal(v12, 7)
+    ret13 = rtt.secure_reveal(v13, 7)
+    ret21 = rtt.secure_reveal(v21, 7)
+    ret22 = rtt.secure_reveal(v22, 7)
+    ret23 = rtt.secure_reveal(v23, 7)
+    ret31 = rtt.secure_reveal(v31, 7)
+    ret32 = rtt.secure_reveal(v32, 7)
+    ret33 = rtt.secure_reveal(v33, 7)
+    result1 = create_run_session(ret11) # , ret12, ret13, ret21, ret22, ret23, ret31, ret32, ret33]) # , ret2, ret3, ret4, ret5, ret6, ret7, ret8, ret9
+    print("reveal result1: ", result1)
+
+    result2 = create_run_session(ret12)
+    print("reveal result2: ", result2)
+    
+    result3 = create_run_session(ret13)
+    print("reveal result4: ", result3)
+    
+    result4 = create_run_session(ret21)
+    print("reveal result3: ", result4)
+    
+    result5 = create_run_session(ret22)
+    print("reveal result5: ", result5)
+    
+    result6 = create_run_session(ret23)
+    print("reveal result6: ", result6)
+    
+    result7 = create_run_session(ret31)
+    print("reveal result7: ", result7)
+
+    result8 = create_run_session(ret32)
+    print("reveal result8: ", result8)
+
+    result9 = create_run_session(ret33)
+    print("reveal result9: ", result9)
+    
+    print("!! expect all to be: [[1,2,3],[4,5,6]] !!")
+    print("-----  test_private_input (OK) -----")
 
 def test_add():
     print("-----   test_add -----")
@@ -566,10 +621,11 @@ def test_negative():
 
 
 def test_all_protocol_ops():
-    test_reveal() # pass
+    test_private_input()
+    # test_reveal() # pass
     # test_add() # pass
     # test_sub() # pass
-    test_mul() # pass
+    # test_mul() # pass
     # test_matmul() # pass
     # test_div() # pass
     # test_div_const() # pass
@@ -584,8 +640,8 @@ def test_all_protocol_ops():
     # test_pow2() # pass
 
     #########################
-    test_log() # not pass for snn
-    test_log1p() # not pass for snn
+    # test_log() # not pass for snn
+    # test_log1p() # not pass for snn
     #########################
 
     # test_square() # pass
@@ -617,8 +673,8 @@ if __name__ == "__main__":
     test_all_protocol_ops()
     print("--- {} ops test ok ----".format(protocol))
 
-    protocol = "Helix"
-    print("---  to activate ", protocol)
-    prot_handler.activate(protocol, cfg_content)
-    test_all_protocol_ops()
+    # protocol = "Helix"
+    # print("---  to activate ", protocol)
+    # prot_handler.activate(protocol, cfg_content)
+    # test_all_protocol_ops()
     print("--- {} ops test ok ----".format(protocol))

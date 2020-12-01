@@ -186,7 +186,7 @@ int SnnProtocolOps::PrivateInput(
   vector<mpc_t> out_vec;
   std::make_shared<rosetta::snn::PrivateInput>(_op_msg_id, net_io_)->Run(party_id, in_vec, out_vec);
 
-  snn_encode_(out_vec, out_str_vec);
+  snn_encode(out_vec, out_str_vec);
   return 0;
 }
 

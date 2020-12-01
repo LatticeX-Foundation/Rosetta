@@ -210,6 +210,96 @@ class SecureToTfOp<string> : public SecureOpKernel {
   }
 };
 
+template <typename T>
+class PrivateInputOp : public SecureOpKernel {
+ public:
+  explicit PrivateInputOp(OpKernelConstruction* ctx) : SecureOpKernel(ctx) {
+    OP_REQUIRES_OK(ctx, ctx->GetAttr("data_owner_", &data_owner_));
+    log_debug << "construct private input T op, data_owner_: " << data_owner_ << endl;
+  }
+
+  void Compute(OpKernelContext* context) override {
+    log_debug << "private_input OpKernel compute ..." << endl;
+    const Tensor *input_tensor, *data_owner;
+    OP_REQUIRES_OK(context, 
+                  context->input("input", &input_tensor));
+    OP_REQUIRES_OK(context, 
+                  context->input("data_owner", &data_owner));
+    Tensor* output_tensor = nullptr;
+    OP_REQUIRES_OK(context, 
+                  context->allocate_output("output", input_tensor->shape(), &output_tensor));
+    auto output_flat = output_tensor->flat<string>();
+
+    const auto& input_flat = input_tensor->flat<T>();
+    vector<double> inputs(input_flat.size());
+    for (int i = 0; i < input_flat.size(); ++i) {
+      inputs[i] = double(input_flat(i));
+    }
+
+    const auto& data_owner_flat = data_owner->flat<int>();
+    data_owner_ = data_owner_flat(0);
+
+    // PrivateInput input
+    vector<string> outputs(input_flat.size());
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->PrivateInput(data_owner_, inputs, outputs);
+
+    for (int i = 0; i < input_flat.size(); ++i) {
+      output_flat(i) = outputs[i];
+    }
+
+    log_debug << "run PrivateInput op ok." << endl;
+  }
+
+ private:
+  int data_owner_;
+};
+
+template <>
+class PrivateInputOp<string> : public SecureOpKernel {
+ public:
+  explicit PrivateInputOp(OpKernelConstruction* ctx) : SecureOpKernel(ctx) {
+    // OP_REQUIRES_OK(ctx, ctx->GetAttr("data_owner_", &data_owner_));
+    // log_debug << "construct private input string op, data_owner_: " << data_owner_ << endl;
+  }
+
+  void Compute(OpKernelContext* context) override {
+    log_debug << "private_input OpKernel compute ..." << endl;
+    const Tensor *input_tensor, *data_owner;
+    OP_REQUIRES_OK(context, 
+                  context->input("input", &input_tensor));
+    OP_REQUIRES_OK(context, 
+                  context->input("data_owner", &data_owner));
+    
+    Tensor* output_tensor = nullptr;
+    OP_REQUIRES_OK(context, 
+                  context->allocate_output("output", input_tensor->shape(), &output_tensor));
+    auto output_flat = output_tensor->flat<string>();
+
+    const auto& input_flat = input_tensor->flat<string>();
+    vector<double> inputs(input_flat.size());
+    for (int i = 0; i < input_flat.size(); ++i) {
+      inputs[i] = std::stod(input_flat(i));
+    }
+
+    const auto& data_owner_flat = data_owner->flat<int>();
+    data_owner_ = data_owner_flat(0);
+
+    // PrivateInput input
+    vector<string> outputs(input_flat.size());
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->PrivateInput(data_owner_, inputs, outputs);
+
+    for (int i = 0; i < input_flat.size(); ++i) {
+      output_flat(i) = outputs[i];
+    }
+
+    log_debug << "run PrivateInput op ok." << endl;
+  }
+
+ private:
+  int data_owner_;
+};
+
+
 // Registers the currently supported output types.
 #define REGISTER(type)     \
   REGISTER_KERNEL_BUILDER( \
@@ -221,6 +311,7 @@ REGISTER(int64);
 REGISTER(string);
 #undef REGISTER
 
+// tf_to_secure kernel
 REGISTER_KERNEL_BUILDER(
   Name("TfToSecure").Device(DEVICE_CPU).TypeConstraint<string>("dtype"), TfToSecureOp<string>);
 REGISTER_KERNEL_BUILDER(
@@ -230,9 +321,22 @@ REGISTER_KERNEL_BUILDER(
 REGISTER_KERNEL_BUILDER(
   Name("TfToSecure").Device(DEVICE_CPU).TypeConstraint<double>("dtype"), TfToSecureOp<double>);
 
-// REGISTER_KERNEL_BUILDER(
-//   Name("SecureToTf").Device(DEVICE_CPU).TypeConstraint<string>("dtype"), SecureToTfOp<string>);
-// REGISTER_KERNEL_BUILDER(
-//   Name("SecureToTf").Device(DEVICE_CPU).TypeConstraint<int32>("dtype"), SecureToTfOp<int32>);
+// private_input kernel
+REGISTER_KERNEL_BUILDER(
+  Name("PrivateInput")\
+  .Device(DEVICE_CPU)\
+  .TypeConstraint<string>("dtype"), PrivateInputOp<string>);
+REGISTER_KERNEL_BUILDER(
+  Name("PrivateInput")\
+  .Device(DEVICE_CPU)\
+  .TypeConstraint<int32>("dtype"), PrivateInputOp<int32>);
+REGISTER_KERNEL_BUILDER(
+  Name("PrivateInput")\
+  .Device(DEVICE_CPU)\
+  .TypeConstraint<int64>("dtype"), PrivateInputOp<int64>);
+REGISTER_KERNEL_BUILDER(
+  Name("PrivateInput")\
+  .Device(DEVICE_CPU)\
+  .TypeConstraint<double>("dtype"), PrivateInputOp<double>);
 
 }

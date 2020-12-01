@@ -18,27 +18,18 @@
 
 #include "tensorflow/core/framework/common_shape_fns.h"
 #include "tensorflow/core/framework/op.h"
+#include "tensorflow/core/framework/op_def_builder.h"
 #include "tensorflow/core/framework/shape_inference.h"
 
-/// Note[georgeshi]: for now, please only use INT32 or INT64!
-REGISTER_OP("TfToSecure")
-  .Attr("dtype: {int32, int64, float, double, string}")
-  .Input("input: dtype")
-  .Output("output: string")
-  .SetIsStateful();
+namespace tensorflow {
 
-/// Note[georgeshi]: we can NOT use string in native TF op
-REGISTER_OP("SecureToTf")
-  .Input("input: string")
-  .Output("output: dtype")
-  .Attr("dtype: {float, double, int32, int64, string}")
-  .SetIsStateful();
-  //.SetShapeFn(::tensorflow::shape_inference::UnchangedShape);
+REGISTER_OP("PrivateTextLineDataset")
+    .Input("filenames: string")
+    .Input("compression_type: string")
+    .Input("buffer_size: int64")
+    .Input("data_owner: int64")
+    .Output("handle: variant")
+    .SetIsStateful();
+    // shape function will depressed at present !!!!
 
-REGISTER_OP("PrivateInput")
-  .Attr("dtype: {int32, int64, float, double, string}")
-  .Attr("T: {int32, int64}")
-  .Input("input: dtype")
-  .Input("data_owner: T")
-  .Output("output: string");
-
+}

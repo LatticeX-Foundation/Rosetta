@@ -3,6 +3,7 @@
 
 - [Release Notes](#release-notes)
   - [Introduction](#introduction)
+  - [Rosetta v0.3.0](#rosetta-v030)
   - [Rosetta v0.2.1](#rosetta-v021)
   - [Rosetta v0.2.0](#rosetta-v020)
   - [Rosetta v0.1.1](#rosetta-v011)
@@ -18,6 +19,18 @@
 ## Introduction
 
 This document will maintain and continually update the release notes of each version of Rosetta. If you have questions or comments, please contact us via rosetta@latticex.foundation.
+
+## Rosetta v0.3.0
+
+1. Added `PrivateTextLineDataset`, `PrivateInput` secure operations.
+   
+2. Added `SecureLogicalAnd`, `SecureLogicalOr`,  `SecureLogicalXor`, `SecureLogicalNot` secure operations.
+   
+3. Speedup some backend operations.
+   
+4. Uses related python classes such as PrivateTextLineDataset and iterators to load large data sets, thereby reducing memory usage.
+   
+5. Some known bugs are fixed.
 
 ## Rosetta v0.2.1
 

@@ -15,6 +15,7 @@
       - [`private_input(party_id: int, input_val)`](#private_inputparty_id-int-input_val)
       - [`private_console_input(party_id: int)`](#private_console_inputparty_id-int)
       - [`class PrivateDataSet`](#class-privatedataset)
+      - [`class PrivateTextLineDataset`](#class-privatetextlinedataset)
   - [Operation API](#operation-api)
     - [Terms and definition](#terms-and-definition)
     - [Common notes](#common-notes)
@@ -51,6 +52,7 @@
       - [`SecureReveal(a, reveal_party=7)`](#securereveala-reveal_party7)
     - [I/O SecureOps](#io-secureops)
       - [`SecureSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`](#securesavev2prefix-tensor_names-shape_and_slices-tensors-namenone)
+      - [`PrivateInput(x, data_owner, name=None)`](#privateinputx-data_owner-namenone)
 
 ## Overview
 
@@ -178,6 +180,26 @@ The APIs can mainly be classified into two types: 'Control API', which should be
   - **load_XY(self, X: str or np.ndarray or None, y: str or np.ndarray or None, \*args, \*\*kwargs)**
 
     The combination of the above two functions.
+
+#### `class PrivateTextLineDataset`
+
+  A private Dataset comprising lines from one or more text files.
+
+  It is used in the same way as TextLineDataset, but has one more parameter `data_owner` than TextLineDataset, which represents which party holds the private data.
+
+  For example, assuming P0 owns private data, it instantiates like this:
+  ```python
+  file_x = ...
+  dataset_x0 = rtt.PrivateTextLineDataset(
+                    file_x, data_owner=0)  # P0 hold the file data
+  ```
+
+  For example, assuming P1 owns private data, it instantiates like this:
+  ```python
+  file_x = ...
+  dataset_x1 = rtt.PrivateTextLineDataset(
+                    file_x, data_owner=1)  # P1 hold the file data
+  ```
 
 
 ## Operation API
@@ -798,5 +820,17 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
   The created Operation.
   
   *NOTE*: Every party must have the same configured value so that the system call perform the correct actions. **This Configuration is important due to its output values, which may be sensitive,  are in plaintext . So be cautious and reach a consensus among all the parties.**
+
+#### `PrivateInput(x, data_owner, name=None)`
+
+  Define a private input，this represents a `private` input owned by the specified player into the graph.
+
+  **Args:**
+  - **`x`**: The data from data owner, supported data types: int32, int64, float, double, string.
+  - **`data_owner`**: The private data owner, data_owner = 0 means party P0 held the data, data_owner = 1 means party P1 held the data, data_owner = 2 means party P2 held the data.
+  - **`name`**: A name for the operation (optional).
+
+  **Returns:**
+  A `tensor`, Has the same type and shape as `x`. 
 
 

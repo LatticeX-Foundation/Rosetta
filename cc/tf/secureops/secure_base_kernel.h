@@ -31,6 +31,7 @@ using namespace std;
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
+#include "tensorflow/core/framework/function.h"
 #include "tensorflow/core/framework/common_shape_fns.h"
 #include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/kernel_def.pb.h"
@@ -104,6 +105,23 @@ class SecureOpKernel : public OpKernel {
 
     msg_id_ = msg_id_t(def.name());
     log_debug << "SecureOpKernel msgid:" << msg_id();
+
+    //-----------------------------------------------
+    //Deal with PrivateInput op in decode function
+    auto func_lib = context->function_library();
+    if (func_lib) {
+      auto func_def = func_lib->GetFunctionLibraryDefinition();
+      if (func_def) {
+        std::vector<string> func_name_lists = func_def->ListFunctionNames();
+        if (func_name_lists.size() == 1 && !strcmp(def.name().c_str(), "PrivateInput")) {
+          string op_unique_name = func_name_lists[0] + "/" +  def.name();
+          msg_id_ = msg_id_t(op_unique_name);
+          log_debug << "New SecureOpKernel msgid:" << msg_id();
+        }       
+      }
+    }
+    //-----------------------------------------------
+
   }
   void Compute(OpKernelContext* context) override {
     DEBUG_PRINT_BEFORE(context);

@@ -38,6 +38,7 @@
       - [`SecureReveal(a, reveal_party=-1)`](#securereveala-reveal_party-1)
     - [I/O SecureOps](#io-secureops)
       - [`SecureSaveV2(prefix, tensor_names, shape_and_slices, tensors, name=None)`](#securesavev2prefix-tensor_names-shape_and_slices-tensors-namenone)
+      - [`PrivateInput(x, data_owner, name=None)`](#privateinputx-data_owner-namenone)
 
 
 ## 概述
@@ -650,3 +651,17 @@
   ​	逻辑图上创建该IO逻辑的算子.
 
   *注意*: 每一个参与的计算法都必须要有同样的配置值，系统才可以正确的进行对应的操作。 **因为输出的文件中可以配置为保存明文，这一配置值很重要。所以使用此接口时务必小心，使用此接口前，在参与计算的多方之间对此要达成一致.**
+
+  #### `PrivateInput(x, data_owner, name=None)`
+  
+  定义一个 "私有" 输入, 这个 "私有" 的输入，由指定 `data_owner` 端拥有并输入到计算图中。
+
+  **参数:**
+  - **`x`**: 数据拥有方持有的数据，支持的数据类型： `int32`，`int64`，`float`， `double`， `string`。
+  - **`data_owner`**: 指定私有数据拥有方，data_owner = 0 代表 P0 方拥有私有数据，data_owner = 1 代表 P1 方拥有私有数据，data_owner = 2 代表 P2 方拥有私有数据。
+  - **`name(可选)`**: 指定的该操作的名称，默认为`None`。
+
+  **返回值:**
+    一个 `Tensor`。类型和形状与`x`相同。
+
+  *注意*: 返回值是一个跟 x 形状和类型一样的共享值。

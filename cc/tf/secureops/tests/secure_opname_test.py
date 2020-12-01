@@ -16,7 +16,7 @@ support_ops = ["secure_add", "secure_matmul",
                "secure_div", "secure_truediv", "secure_realdiv", "secure_floordiv",
                "secure_reduce_sum", "secure_reduce_mean", "secure_reduce_max","secure_reduce_min",
                "secure_negative", "secure_apply_gradient_descent",
-               "secure_save_v2", "secure_to_tf", "tf_to_secure",
+               "secure_save_v2", "secure_to_tf", "tf_to_secure", "private_input",
                "secure_less", "secure_less_equal", "secure_not_equal",
                "secure_equal", "secure_greater", "secure_greater_equal",
                "secure_sigmoid", "secure_relu", "secure_sigmoid_cross_entropy" ]

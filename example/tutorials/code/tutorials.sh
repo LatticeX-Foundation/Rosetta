@@ -109,6 +109,10 @@ function run_all() {
     run_x tf logistic_regression_stat
     run_x rtt logistic_regression_stat
     run_x stat logistic_regression_stat logistic
+
+    # dataset pipeline
+    run_x tf ds-lr 
+    run_x rtt ds-lr
 }
 
 function helper() {

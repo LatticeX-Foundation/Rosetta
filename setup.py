@@ -144,7 +144,7 @@ if 'ROSETTA_MPC_128' in os.environ and os.environ['ROSETTA_MPC_128'] == 'ON':
 
 
 DOCLINES = __doc__.split('\n')
-__version__ = '0.2.1'
+__version__ = '0.3.0'
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 include_dirs = []

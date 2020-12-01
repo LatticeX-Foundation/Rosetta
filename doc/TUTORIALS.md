@@ -17,6 +17,7 @@
     - [Model Saving](#model-saving)
     - [Model Loading and Prediction](#model-loading-and-prediction)
   - [Logistic Regression](#logistic-regression)
+  - [Support big data sets](#support-big-data-sets)
 - [Conclusion](#conclusion)
 - [Additional Notes](#additional-notes)
   - [Dataset Description](#dataset-description)
@@ -820,6 +821,50 @@ The following figure is about the error comparison between the predicted values 
 
 ![](./_static/tutorials/logistic_regression_stat-Y-diff4.png)
 
+
+### Support big data sets
+The above linear regression and logistic regression models all load the entire dataset into memory and then take it out in batch order for training, and as the size of the dataset grows, it becomes impractical to load the dataset into memory at once.
+
+Major plaintext AI frameworks such as TensorFlow are aware of and provide solutions, TensorFlow provides the relevant Dataset APIs to build low-memory consuming, complex, reusable data pipelines, since Rosetta uses Tensorflow as a backend, it can be reused with minor modifications.
+
+We use logistic regression model as an example to illustrate how to train a model with large datasets.
+
+For the TensorFlow version complete code, please refer to [tf-ds-lr.py](../example/tutorials/code/tf-ds-lr.py).
+
+For the Rosetta version complete code, please refer to [rtt-ds-lr.py](../example/tutorials/code/rtt-ds-lr.py).
+
+Analysis of the code in tf-ds-lr.py and rtt-ds-lr.py reveals two main differences.
+
+1. Create a text line dataset, use TextLineDataset class in TensorFlow and use PrivateTextLineDataset class in Rosetta.
+    The code used in TensorFlow is as following:
+    ```py
+    dataset_x = tf.data.TextLineDataset(file_x)
+    ...
+    ```
+    The code used in Rosetta is as following:
+    ```py
+    dataset_x0 = rtt.PrivateTextLineDataset(
+                    file_x, data_owner=0)  # P0 hold the file data
+    ...
+    ```
+
+2. Decode functions are implemented differently. TensorFlow version of the decode function split rows to corresponding fields and then converts the fields to floating-point numbers, while the Rosetta version of the decode function also first split rows to corresponding fields and then calls `PrivateInput` function to share the data.
+    The code used in TensorFlow is as following:
+    ```py
+    # dataset decode
+    def decode_x(line):
+        fields = tf.string_split([line], ',').values
+        fields = tf.string_to_number(fields, tf.float64)
+        return fields
+    ```
+    The code used in Rosetta is as following:
+    ```py
+    # dataset decode
+    def decode_p0(line):
+        fields = tf.string_split([line], ',').values
+        fields = rtt.PrivateInput(fields, data_owner=0) # P0 hold the file data
+        return fields
+    ```
 
 ## Conclusion
 

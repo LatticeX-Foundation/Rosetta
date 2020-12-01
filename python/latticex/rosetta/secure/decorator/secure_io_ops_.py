@@ -15,14 +15,21 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 # =============================================================================="
-# import secure ops
-from latticex.rosetta.secure.decorator.secure_arithmetic_ops_ import *
-from latticex.rosetta.secure.decorator.secure_logical_ops_ import *
-from latticex.rosetta.secure.decorator.secure_compare_ops_ import *
-from latticex.rosetta.secure.decorator.secure_matrix_ops_ import *
-from latticex.rosetta.secure.decorator.secure_reduce_ops_ import *
-from latticex.rosetta.secure.decorator.secure_ml_ops_  import *
-from latticex.rosetta.secure.decorator.secure_io_ops_ import *
+import tensorflow as tf
+from tensorflow.python.ops import array_ops
+from tensorflow.python.framework import ops
+from latticex.rosetta.secure.decorator.secure_base_ import _secure_ops
 
+
+# -----------------------------
+# Secure arithmetic IO ops
+# -----------------------------
+
+def PrivateInput(x, data_owner, name=None):
+    return _secure_ops.private_input(x, data_owner, name=name)
+
+
+# export SecureInput name
+SecureInput = PrivateInput
 
 

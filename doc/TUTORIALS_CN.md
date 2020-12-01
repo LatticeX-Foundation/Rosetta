@@ -1,28 +1,27 @@
-
-- [概述](#%e6%a6%82%e8%bf%b0)
-- [安装部署](#%e5%ae%89%e8%a3%85%e9%83%a8%e7%bd%b2)
-- [快速入门](#%e5%bf%ab%e9%80%9f%e5%85%a5%e9%97%a8)
-- [安全多方计算](#%e5%ae%89%e5%85%a8%e5%a4%9a%e6%96%b9%e8%ae%a1%e7%ae%97)
-  - [百万富翁](#%e7%99%be%e4%b8%87%e5%af%8c%e7%bf%81)
-    - [tensorflow 版本](#tensorflow-%e7%89%88%e6%9c%ac)
-    - [rosetta 版本](#rosetta-%e7%89%88%e6%9c%ac)
-- [隐私机器学习](#%e9%9a%90%e7%a7%81%e6%9c%ba%e5%99%a8%e5%ad%a6%e4%b9%a0)
-  - [线性回归](#%e7%ba%bf%e6%80%a7%e5%9b%9e%e5%bd%92)
-    - [tensorflow 版本](#tensorflow-%e7%89%88%e6%9c%ac-1)
-    - [rosetta 基础版](#rosetta-%e5%9f%ba%e7%a1%80%e7%89%88)
-    - [rosetta 版本-Reveal](#rosetta-%e7%89%88%e6%9c%ac-reveal)
-    - [对比与评估 1](#%e5%af%b9%e6%af%94%e4%b8%8e%e8%af%84%e4%bc%b0-1)
-    - [对比与评估 2](#%e5%af%b9%e6%af%94%e4%b8%8e%e8%af%84%e4%bc%b0-2)
-    - [模型保存](#%e6%a8%a1%e5%9e%8b%e4%bf%9d%e5%ad%98)
-    - [模型加载与预测](#%e6%a8%a1%e5%9e%8b%e5%8a%a0%e8%bd%bd%e4%b8%8e%e9%a2%84%e6%b5%8b)
-  - [逻辑回归](#%e9%80%bb%e8%be%91%e5%9b%9e%e5%bd%92)
-- [结语](#%e7%bb%93%e8%af%ad)
-- [附加](#%e9%99%84%e5%8a%a0)
-  - [数据集说明](#%e6%95%b0%e6%8d%ae%e9%9b%86%e8%af%b4%e6%98%8e)
+- [概述](#概述)
+- [安装部署](#安装部署)
+- [快速入门](#快速入门)
+- [安全多方计算](#安全多方计算)
+  - [百万富翁](#百万富翁)
+    - [tensorflow 版本](#tensorflow-版本)
+    - [rosetta 版本](#rosetta-版本)
+- [隐私机器学习](#隐私机器学习)
+  - [线性回归](#线性回归)
+    - [tensorflow 版本](#tensorflow-版本-1)
+    - [rosetta 基础版](#rosetta-基础版)
+    - [rosetta 版本-Reveal](#rosetta-版本-reveal)
+    - [对比与评估 1](#对比与评估-1)
+    - [对比与评估 2](#对比与评估-2)
+    - [模型保存](#模型保存)
+    - [模型加载与预测](#模型加载与预测)
+  - [逻辑回归](#逻辑回归)
+  - [支持超大数据集](#支持超大数据集)
+- [结语](#结语)
+- [附加](#附加)
+  - [数据集说明](#数据集说明)
 
 
 ## 概述
-
 
 ## 安装部署
 
@@ -837,6 +836,50 @@ rosetta:
 
 ![](./_static/tutorials/logistic_regression_stat-Y-diff4.png)
 
+
+### 支持超大数据集
+
+以上的线性回归、逻辑回归模型都是把数据集全部加载到内存中，然后依次按批量取出来进行训练，随着数据集规模越来越大，一次性把数据集加载到内存已经变的不现实。
+
+TensorFlow 等主流明文 AI 框架已经意识并提供解决方案，TensorFlow 中提供相关的 Dataset APIs 来构建低内存消耗的、复杂的、可复用的数据管道，由于 Rosetta 使用 TensorFlow 作为后端，因此稍微修改即可复用。
+
+我们使用逻辑回归模型作为例子来说明如何使用大数据集进行训练。
+
+TensorFlow 完整代码参考 [tf-ds-lr.py](../example/tutorials/code/tf-ds-lr.py) 。
+
+Rosetta 完整代码参考 [rtt-ds-lr.py](../example/tutorials/code/rtt-ds-lr.py)。
+
+仔细分析 tf-ds-lr.py 和 rtt-ds-lr.py 中的代码，主要有两个不同点：
+1. 创建文本行数据集，TensorFlow 中使用 TextLineDataset 类，而 Rosetta 中使用 PrivateTextLineDataset 类。
+    TensorFlow 中代码如下：
+    ```py
+    dataset_x = tf.data.TextLineDataset(file_x)
+    ...
+    ```
+    Rosetta 中代码如下：
+    ```py
+    dataset_x0 = rtt.PrivateTextLineDataset(
+                    file_x, data_owner=0)  # P0 hold the file data
+    ...
+    ```
+
+2. Decode 函数实现不一样，TensorFlow 版本中 Decode 函数中把行筛分为对应的字段后，然后把筛分后的字段转换为数值，而 Rosetta 版本中的 Decode 函数首先也是把行筛分为对应的字段后，然后调用 `PrivateInput` 进行数据分享。
+    TensorFlow 中代码如下：
+    ```py
+    # dataset decode
+    def decode_x(line):
+        fields = tf.string_split([line], ',').values
+        fields = tf.string_to_number(fields, tf.float64)
+        return fields
+    ```
+    Rosetta 中代码如下：
+    ```py
+    # dataset decode
+    def decode_p0(line):
+        fields = tf.string_split([line], ',').values
+        fields = rtt.PrivateInput(fields, data_owner=0) # P0 hold the file data
+        return fields
+    ```
 
 ## 结语
 

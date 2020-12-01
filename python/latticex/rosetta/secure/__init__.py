@@ -18,6 +18,9 @@
 # decorator of secure operators
 from latticex.rosetta.secure.decorator import *
 
+# dataset ops
+from latticex.rosetta.secure.data.ops.readers import *
+
 # ops
 from latticex.rosetta.secure.ops.nn_util import *
 from latticex.rosetta.secure.ops.gradients_util import *

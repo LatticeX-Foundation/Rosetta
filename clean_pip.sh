@@ -1,5 +1,5 @@
 rm python/latticex_rosetta.egg-info -rf
-rm python/latticex/lib*.so
+rm python/latticex/lib*.so -rf
 rm python/latticex/lib128 -rf
 rm dist -rf
 

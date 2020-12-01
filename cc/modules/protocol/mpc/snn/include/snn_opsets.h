@@ -667,7 +667,7 @@ class ReconstructBit2PC : public OpBase {
 
 /*
   @note: this Polynomial is mostly for internal usage, 
-    especially for complex functionalities, such as Log and Log1p, that 
+    especially for complex funtionalities, such as Log and Log1p, that 
     are implemented with polynomial interpolation.
   
   @attention: for now DO NOT use this directly if you are not sure.
@@ -809,7 +809,7 @@ class Sigmoid : public OpBase {
   }
 
   int Run(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
-#define USE_SIGMOID_VERSION 1
+#define USE_SIGMOID_VERSION 2
 #if USE_SIGMOID_VERSION == 0
     return RunChebyshevPoly(a, b, size);
 #elif USE_SIGMOID_VERSION == 1
