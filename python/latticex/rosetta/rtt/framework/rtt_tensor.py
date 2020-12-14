@@ -19,6 +19,7 @@ import tensorflow as tf
 from tensorflow.python.keras.utils import tf_utils
 from tensorflow.python.client import session as tf_session
 from tensorflow.python.framework import ops as tf_ops
+from tensorflow.python.ops import array_ops as tf_array_ops
 from latticex.rosetta.secure.spass.static_replace_pass import replace_tf_subgraph_with_secure_subgraph
 import numpy as np
 import re
@@ -60,6 +61,7 @@ class RttTensor(object):
       "__ge__",
       "__eq__",
       "__ne__",
+      "__getitem__",
       "__pow__",
       "__rpow__",
       "__matmul__",
@@ -228,6 +230,11 @@ class RttTensor(object):
     def __invert__(self):
         """ !self """
         res = rtt_ops.rtt_logical_not(self._raw)
+        return RttTensor(res)
+
+    def __getitem__(self, slice_spec):
+        """ override [] """
+        res = tf_array_ops._slice_helper(self._raw, slice_spec)
         return RttTensor(res)
 
     def __pow__(self, other):
