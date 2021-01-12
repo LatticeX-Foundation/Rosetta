@@ -4,7 +4,7 @@
 import latticex.rosetta as rtt
 import tensorflow as tf
 
-# Attention! 
+# Attention!
 # This is just for presentation of integrating a new protocol.
 # NEVER USE THIS PROTOCOL IN PRODUCTION ENVIRONMENT!
 rtt.activate("Naive")
@@ -26,3 +26,5 @@ with tf.Session() as sess:
     print('local ciphertext result:\n', cipher_result_v)
     # Get the result of Rosetta multiply
     print('plaintext result:\n', sess.run(rtt.SecureReveal(cipher_result)))
+
+rtt.deactivate()

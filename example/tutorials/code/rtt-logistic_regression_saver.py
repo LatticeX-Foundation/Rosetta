@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+from tensorflow.python.tools import inspect_checkpoint as chkp
 import latticex.rosetta as rtt  # difference from tensorflow
 import math
 import os
@@ -36,8 +38,8 @@ print(X)
 print(Y)
 
 # initialize W & b
-W = tf.Variable(tf.zeros([DIM_NUM, 1], dtype=tf.float64))
-b = tf.Variable(tf.zeros([1], dtype=tf.float64))
+W = tf.Variable(tf.zeros([DIM_NUM, 1], dtype=tf.float64), name='w')
+b = tf.Variable(tf.zeros([1], dtype=tf.float64), name='b')
 print(W)
 print(b)
 
@@ -89,7 +91,14 @@ with tf.Session() as sess:
                     j, e, i, xW, xb))
 
     saver.save(sess, './log/ckpt'+str(mpc_player_id)+'/model')
+    chkp.print_tensors_in_checkpoint_file(
+        './log/ckpt'+str(mpc_player_id)+'/model', tensor_name='', all_tensors=True)
 
     # predict
     Y_pred = sess.run(pred_Y, feed_dict={X: real_X, Y: real_Y})
     print("Y_pred:", Y_pred)
+
+    reveal_y = sess.run(reveal_Y, feed_dict={X: real_X})
+    print("reveal_Y:", reveal_y)
+
+rtt.deactivate()

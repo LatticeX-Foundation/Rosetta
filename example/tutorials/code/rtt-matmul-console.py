@@ -21,3 +21,5 @@ with tf.Session() as sess:
 
     # Get the result of Rosetta matmul
     print('matmul:', sess.run(rtt.SecureReveal(res)))
+
+rtt.deactivate()

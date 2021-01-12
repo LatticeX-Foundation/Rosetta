@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import latticex.rosetta as rtt  # difference from tensorflow
 import math
 import os
@@ -80,3 +81,5 @@ with tf.Session() as sess:
     # predict
     Y_pred = sess.run(pred_Y, feed_dict={X: real_X, Y: real_Y})
     print("Y_pred:", Y_pred)
+
+rtt.deactivate()

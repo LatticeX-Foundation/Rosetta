@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # rosetta LR with sample based (horizonal federated learning)
 import latticex.rosetta as rtt  # difference from tensorflow
 import math
@@ -50,6 +51,7 @@ def decode_p0(line):
     fields = tf.string_split([line], ',').values
     fields = rtt.PrivateInput(fields, data_owner=0)
     return fields
+
 
 def decode_p1(line):
     fields = tf.string_split([line], ',').values
@@ -119,9 +121,9 @@ with tf.Session() as sess:
 
     for e in range(EPOCHES):
         for i in range(BATCHES):
-            sess.run([assign_update_w, assign_update_b]) 
+            sess.run([assign_update_w, assign_update_b])
 
     training_use_time = time.time()-start_time
     print("training_use_time: {} seconds".format(training_use_time))
 
-
+rtt.deactivate()

@@ -22,6 +22,9 @@ with tf.Session() as sess:
     cipher_result_v = sess.run(cipher_result)
     print('local ciphertext result:', cipher_result_v)
     # Set only party a and c can get plain result
-    a_and_c_can_get_plain = 0b101 
+    a_and_c_can_get_plain = 0b101
     # Get the result of Rosetta matmul
-    print('plaintext matmul result:', sess.run(rtt.SecureReveal(cipher_result, a_and_c_can_get_plain)))
+    print('plaintext matmul result:', sess.run(
+        rtt.SecureReveal(cipher_result, a_and_c_can_get_plain)))
+
+rtt.deactivate()

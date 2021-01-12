@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import math
 import os
 import sys
@@ -23,7 +24,7 @@ filex_name = "cls_train_x.csv"
 filey_name = "cls_train_y.csv"
 
 file_x = "../dsets/ALL/" + filex_name
-file_y = "../dsets/ALL/"  + filey_name
+file_y = "../dsets/ALL/" + filey_name
 
 print("file_x:", file_x)
 print("file_y:", file_y)
@@ -40,6 +41,7 @@ def decode_x(line):
     fields = tf.string_split([line], ',').values
     fields = tf.string_to_number(fields, tf.float64)
     return fields
+
 
 def decode_y(line):
     fields = tf.string_split([line], ',').values

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import latticex.rosetta as rtt  # difference from tensorflow
 import math
 import os
@@ -101,3 +102,5 @@ with tf.Session() as sess:
     if mpc_player_id == 0:
         print("Y_pred:", Y_pred)
         savecsv("{}-pred-{}.csv".format(csvprefix, "Y"), Y_pred.astype(float))
+
+rtt.deactivate()
