@@ -22,10 +22,10 @@ mpc_player_id = rtt.py_protocol_handler.get_party_id()
 
 # real data
 # ######################################## difference from tensorflow
-file_x = '../dsets/P' + str(mpc_player_id) + "/cls_test_x.csv"
-file_y = '../dsets/P' + str(mpc_player_id) + "/cls_test_y.csv"
+file_x = '../dsets/P' + str(mpc_player_id) + "/reg_test_x.csv"
+file_y = '../dsets/P' + str(mpc_player_id) + "/reg_test_y.csv"
 real_X, real_Y = rtt.PrivateDataset(data_owner=(
-    0, 1), label_owner=0).load_data(file_x, file_y, header=None)
+    0, 1), label_owner=1).load_data(file_x, file_y, header=None)
 # ######################################## difference from tensorflow
 DIM_NUM = real_X.shape[1]
 
@@ -35,13 +35,13 @@ print(X)
 print(Y)
 
 # initialize W & b
-W = tf.Variable(tf.zeros([DIM_NUM, 1], dtype=tf.float64), name='w')
-b = tf.Variable(tf.zeros([1], dtype=tf.float64), name='b')
+W = tf.Variable(tf.zeros([DIM_NUM, 1], dtype=tf.float64))
+b = tf.Variable(tf.zeros([1], dtype=tf.float64))
 print(W)
 print(b)
 
 # predict
-pred_Y = tf.sigmoid(tf.matmul(X, W) + b)
+pred_Y = tf.matmul(X, W) + b
 print(pred_Y)
 
 

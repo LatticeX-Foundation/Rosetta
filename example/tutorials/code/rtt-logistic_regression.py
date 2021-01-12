@@ -27,8 +27,6 @@ file_y = '../dsets/P' + str(mpc_player_id) + "/cls_train_y.csv"
 real_X, real_Y = rtt.PrivateDataset(data_owner=(
     0, 1), label_owner=0).load_data(file_x, file_y, header=None)
 # ######################################## difference from tensorflow
-real_X = real_X[:100, :]
-real_Y = real_Y[:100, :]
 DIM_NUM = real_X.shape[1]
 
 X = tf.placeholder(tf.float64, [None, DIM_NUM])

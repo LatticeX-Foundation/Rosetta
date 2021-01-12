@@ -60,6 +60,7 @@ os.makedirs("./log/ckpt"+str(mpc_player_id), exist_ok=True)
 # init
 init = tf.global_variables_initializer()
 print(init)
+reveal_Y = rtt.SecureReveal(pred_Y)
 
 with tf.Session() as sess:
     sess.run(init)
@@ -83,7 +84,10 @@ with tf.Session() as sess:
     saver.save(sess, './log/ckpt'+str(mpc_player_id)+'/model')
 
     # predict
-    Y_pred = sess.run(pred_Y, feed_dict={X: real_X, Y: real_Y})
+    Y_pred = sess.run(pred_Y, feed_dict={X: real_X})
     print("Y_pred:", Y_pred)
+
+    reveal_y = sess.run(reveal_Y, feed_dict={X: real_X})
+    print("reveal_Y:", reveal_y)
 
 rtt.deactivate()
