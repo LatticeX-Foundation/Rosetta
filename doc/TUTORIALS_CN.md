@@ -705,12 +705,12 @@ with tf.Session() as sess:
 ```
 
 
-完整代码参考 [tf-linear_regression_saver.py](../example/tutorials/code/tf-linear_regression_saver.py)。
+完整代码参考 [tf-linear_regression_restore.py](../example/tutorials/code/tf-linear_regression_restore.py)。
 
 执行 
 
 ```sh
-./tutorials.sh tf linear_regression_saver
+./tutorials.sh tf linear_regression_restore
 ```
 
 输出如下：
@@ -774,20 +774,22 @@ loss = tf.reduce_mean(loss)
 
 tensorflow 版本
 
-|                |                                                                                              |
-| -------------- | -------------------------------------------------------------------------------------------- |
-| 基础           | [tf-logistic_regression.py](../example/tutorials/code/tf-logistic_regression.py)             |
-| 模型加载与预测 | [tf-logistic_regression_saver.py](../example/tutorials/code/tf-logistic_regression_saver.py) |
-| 评估           | [tf-logistic_regression_stat.py](../example/tutorials/code/tf-logistic_regression_stat.py)   |
+|                |                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------ |
+| 基础           | [tf-logistic_regression.py](../example/tutorials/code/tf-logistic_regression.py)                 |
+| 模型训练与保存 | [tf-logistic_regression_saver.py](../example/tutorials/code/tf-logistic_regression_saver.py)     |
+| 模型加载与预测 | [tf-logistic_regression_restore.py](../example/tutorials/code/tf-logistic_regression_restore.py) |
+| 评估           | [tf-logistic_regression_stat.py](../example/tutorials/code/tf-logistic_regression_stat.py)       |
 
 rosetta 版本
 
-|                  |                                                                                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------ |
-| 基础             | [rtt-logistic_regression.py](../example/tutorials/code/rtt-logistic_regression.py)               |
-| 基础（输出明文） | [rtt-logistic_regression_reveal.py](../example/tutorials/code/rtt-logistic_regression_reveal.py) |
-| 模型训练与保存   | [rtt-logistic_regression_saver.py](../example/tutorials/code/rtt-logistic_regression_saver.py)   |
-| 评估             | [rtt-logistic_regression_stat.py](../example/tutorials/code/rtt-logistic_regression_stat.py)     |
+|                      |                                                                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| 基础                 | [rtt-logistic_regression.py](../example/tutorials/code/rtt-logistic_regression.py)                 |
+| 基础（输出明文）     | [rtt-logistic_regression_reveal.py](../example/tutorials/code/rtt-logistic_regression_reveal.py)   |
+| 模型训练与保存       | [rtt-logistic_regression_saver.py](../example/tutorials/code/rtt-logistic_regression_saver.py)     |
+| 模型(密文)加载与预测 | [rtt-logistic_regression_restore.py](../example/tutorials/code/rtt-logistic_regression_restore.py) |
+| 评估                 | [rtt-logistic_regression_stat.py](../example/tutorials/code/rtt-logistic_regression_stat.py)       |
 
 
 

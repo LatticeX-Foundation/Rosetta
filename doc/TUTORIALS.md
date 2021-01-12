@@ -689,12 +689,12 @@ with tf.Session() as sess:
 ```
 
 
-For the complete code, please refer to [tf-linear_regression_saver.py](../example/tutorials/code/tf-linear_regression_saver.py).
+For the complete code, please refer to [tf-linear_regression_restore.py](../example/tutorials/code/tf-linear_regression_restore.py).
 
 And then run it as follows:
 
 ```sh
-./tutorials.sh tf linear_regression_saver
+./tutorials.sh tf linear_regression_restore
 ```
 
 The output will be as follows:
@@ -717,20 +717,22 @@ Complete source code list reference
 
 TensorFlow version
 
-|                              |                                                                                          |
-| ---------------------------- | ---------------------------------------------------------------------------------------- |
-| Basics                       | [tf-linear_regression.py](../example/tutorials/code/tf-linear_regression.py)             |
-| Model loading and prediction | [tf-linear_regression_saver.py](../example/tutorials/code/tf-linear_regression_saver.py) |
-| Evaluation                   | [tf-linear_regression_stat.py](../example/tutorials/code/tf-linear_regression_stat.py)   |
+|                              |                                                                                              |
+| ---------------------------- | -------------------------------------------------------------------------------------------- |
+| Basics                       | [tf-linear_regression.py](../example/tutorials/code/tf-linear_regression.py)                 |
+| Model Training and Saving    | [tf-linear_regression_saver.py](../example/tutorials/code/tf-linear_regression_saver.py)     |
+| Model loading and prediction | [tf-linear_regression_restore.py](../example/tutorials/code/tf-linear_regression_restore.py) |
+| Evaluation                   | [tf-linear_regression_stat.py](../example/tutorials/code/tf-linear_regression_stat.py)       |
 
 Rosetta version
 
-|                           |                                                                                              |
-| ------------------------- | -------------------------------------------------------------------------------------------- |
-| Basics                    | [rtt-linear_regression.py](../example/tutorials/code/rtt-linear_regression.py)               |
-| Basic (output plain text) | [rtt-linear_regression_reveal.py](../example/tutorials/code/rtt-linear_regression_reveal.py) |
-| Model Training and Saving | [rtt-linear_regression_saver.py](../example/tutorials/code/rtt-linear_regression_saver.py)   |
-| Evaluation                | [rtt-linear_regression_stat.py](../example/tutorials/code/rtt-linear_regression_stat.py)     |
+|                                       |                                                                                                |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Basics                                | [rtt-linear_regression.py](../example/tutorials/code/rtt-linear_regression.py)                 |
+| Basic (output plain text)             | [rtt-linear_regression_reveal.py](../example/tutorials/code/rtt-linear_regression_reveal.py)   |
+| Model Training and Saving             | [rtt-linear_regression_saver.py](../example/tutorials/code/rtt-linear_regression_saver.py)     |
+| Model (Cipher) loading and prediction | [rtt-linear_regression_restore.py](../example/tutorials/code/rtt-linear_regression_restore.py) |
+| Evaluation                            | [rtt-linear_regression_stat.py](../example/tutorials/code/rtt-linear_regression_stat.py)       |
 
 ### Logistic Regression
 
@@ -758,20 +760,22 @@ Complete source code list reference:
 
 TensorFlow version
 
-|                              |                                                                                              |
-| ---------------------------- | -------------------------------------------------------------------------------------------- |
-| Basics                       | [tf-logistic_regression.py](../example/tutorials/code/tf-logistic_regression.py)             |
-| Model loading and prediction | [tf-logistic_regression_saver.py](../example/tutorials/code/tf-logistic_regression_saver.py) |
-| Evaluation                   | [tf-logistic_regression_stat.py](../example/tutorials/code/tf-logistic_regression_stat.py)   |
+|                              |                                                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------------------------------ |
+| Basics                       | [tf-logistic_regression.py](../example/tutorials/code/tf-logistic_regression.py)                 |
+| Model Training and Saving    | [tf-logistic_regression_saver.py](../example/tutorials/code/tf-logistic_regression_saver.py)     |
+| Model loading and prediction | [tf-logistic_regression_restore.py](../example/tutorials/code/tf-logistic_regression_restore.py) |
+| Evaluation                   | [tf-logistic_regression_stat.py](../example/tutorials/code/tf-logistic_regression_stat.py)       |
 
 Rosetta version
 
-|                           |                                                                                                  |
-| ------------------------- | ------------------------------------------------------------------------------------------------ |
-| Basics                    | [rtt-logistic_regression.py](../example/tutorials/code/rtt-logistic_regression.py)               |
-| Basic (output plain text) | [rtt-logistic_regression_reveal.py](../example/tutorials/code/rtt-logistic_regression_reveal.py) |
-| Model Training and Saving | [rtt-logistic_regression_saver.py](../example/tutorials/code/rtt-logistic_regression_saver.py)   |
-| Evaluation                | [rtt-logistic_regression_stat.py](../example/tutorials/code/rtt-logistic_regression_stat.py)     |
+|                                       |                                                                                                    |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Basics                                | [rtt-logistic_regression.py](../example/tutorials/code/rtt-logistic_regression.py)                 |
+| Basic (output plain text)             | [rtt-logistic_regression_reveal.py](../example/tutorials/code/rtt-logistic_regression_reveal.py)   |
+| Model Training and Saving             | [rtt-logistic_regression_saver.py](../example/tutorials/code/rtt-logistic_regression_saver.py)     |
+| Model (Cipher) loading and prediction | [rtt-logistic_regression_restore.py](../example/tutorials/code/rtt-logistic_regression_restore.py) |
+| Evaluation                            | [rtt-logistic_regression_stat.py](../example/tutorials/code/rtt-logistic_regression_stat.py)       |
 
 
 
