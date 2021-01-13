@@ -46,7 +46,7 @@ long long int SimpleTimer::ms_elapse() const {
   auto ending = steady_clock::now();
   if (stoped)
     ending = end;
-  duration<long long int, std::micro> elapsed_milliseconds =
+  duration<long long int, std::milli> elapsed_milliseconds =
     duration_cast<duration<long long int, std::milli>>(ending - begin);
   return elapsed_milliseconds.count();
 }
