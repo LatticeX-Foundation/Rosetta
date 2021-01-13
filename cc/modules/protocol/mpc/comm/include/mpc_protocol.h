@@ -43,8 +43,8 @@ class MpcProtocol : public ProtocolBase {
   virtual int Init(int partyid, std::string config_json_str = "");
   virtual int Init(int partyid, std::string config_json_str, std::string logfile);
 
-  PerfStats GetPerfStats();
-  void StartPerfStats();
+  virtual PerfStats GetPerfStats();
+  virtual void StartPerfStats();
 
  public:
   virtual shared_ptr<ProtocolOps> GetOps(const string& op_token = "") = 0;

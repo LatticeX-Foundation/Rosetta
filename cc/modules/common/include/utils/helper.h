@@ -121,3 +121,6 @@ double to_double(const char* p);
  */
 uint64_t log2floor(uint64_t value);
 uint64_t log2ceil(uint64_t value);
+
+//! return end - start
+double operator-(const timespec& end, const timespec& start);

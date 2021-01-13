@@ -318,3 +318,15 @@ uint64_t log2ceil(uint64_t value) {
   auto floor = log2floor(value);
   return floor + (value > (1ull << floor));
 }
+
+double operator-(const timespec& end, const timespec& start) {
+  timespec temp;
+  if ((end.tv_nsec - start.tv_nsec) < 0) {
+    temp.tv_sec = end.tv_sec - start.tv_sec - 1;
+    temp.tv_nsec = 1000000000 + end.tv_nsec - start.tv_nsec;
+  } else {
+    temp.tv_sec = end.tv_sec - start.tv_sec;
+    temp.tv_nsec = end.tv_nsec - start.tv_nsec;
+  }
+  return temp.tv_sec + (double)temp.tv_nsec / 1e9;
+}

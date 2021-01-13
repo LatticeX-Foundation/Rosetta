@@ -53,6 +53,8 @@ Logger::log_stream::~log_stream() {
   std::string s(std::move(str()));
   // if (s.empty() || (s[s.length() - 1] != '\n'))
   //   s += "\n";
+  if (!s.empty() && (s[s.length() - 1] == '\n'))
+    s.pop_back();
 
 #ifndef NDEBUG
   s = oss_prefix_.str() + s;
@@ -62,8 +64,10 @@ Logger::log_stream::~log_stream() {
   }
 
   auto logger = spdlog::get("Rosetta");
-  if (logger_.to_file_ && logger.get())
+  if (logger_.to_file_ && logger.get()) {
     logger->log(static_cast<spdlog::level::level_enum>(level_), s.data());
+    logger->flush();
+  }
 }
 
 Logger& Logger::Get() {

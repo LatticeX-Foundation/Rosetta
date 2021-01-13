@@ -24,6 +24,7 @@
 #include <atomic>
 #include <string>
 #include <vector>
+#include <iomanip>
 
 #define DO_ELAPSED_STATISTIC 0
 namespace rosetta {
@@ -47,7 +48,7 @@ namespace rosetta {
   static std::atomic<int64_t> __reg_exit_counter{0}; \
   static void __elapsed_atexit_fn() {
 #define DEFINE_AT_EXIT_FUNCTION_BODY(timer) \
-  std::cout << "-> " #timer ": " << __##timer * 1.0 / 1e9 << std::endl;
+  std::cout << "-> " << std::setw(30) << #timer "(s): " << __##timer * 1.0 / 1e9 << std::endl;
 #define DEFINE_AT_EXIT_FUNCTION_END() }
 
 /**
@@ -80,7 +81,7 @@ namespace rosetta {
 namespace rosetta {
 class PerfStats {
  public:
-  SimpleTimer timer; // for elapse field
+  SimpleTimer timer; // for s.elapse field
 
  public:
   // name,tag,...
@@ -98,6 +99,8 @@ class PerfStats {
     double cpu_seconds = 0;
     double elapse = 0;
   } s;
+  struct timespec real_time;
+  struct timespec process_cpu_time; // for s.cpu_seconds field
 
   void reset() {
     name = "default";
