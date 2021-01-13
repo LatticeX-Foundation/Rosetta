@@ -103,4 +103,5 @@ with tf.Session() as sess:
         print("Y_pred:", Y_pred)
         savecsv("{}-pred-{}.csv".format(csvprefix, "Y"), Y_pred.astype(float))
 
+print(rtt.get_perf_stats(True))
 rtt.deactivate()

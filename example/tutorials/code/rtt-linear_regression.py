@@ -79,4 +79,5 @@ with tf.Session() as sess:
     Y_pred = sess.run(pred_Y, feed_dict={X: real_X, Y: real_Y})
     print("Y_pred:", Y_pred)
 
+print(rtt.get_perf_stats(True))
 rtt.deactivate()

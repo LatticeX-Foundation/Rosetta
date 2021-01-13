@@ -126,4 +126,5 @@ with tf.Session() as sess:
     training_use_time = time.time()-start_time
     print("training_use_time: {} seconds".format(training_use_time))
 
+print(rtt.get_perf_stats(True))
 rtt.deactivate()

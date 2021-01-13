@@ -64,4 +64,5 @@ with tf.Session() as sess:
     reveal_y = sess.run(reveal_Y, feed_dict={X: real_X})
     print("reveal_Y:", reveal_y)
 
+print(rtt.get_perf_stats(True))
 rtt.deactivate()
