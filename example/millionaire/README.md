@@ -1,5 +1,4 @@
-
-## Quick Start
+# Quick Start
 
 Run the following on three different terminals (you can understand that these three different terminals simulate three different host nodes):
 
