@@ -164,7 +164,7 @@ The APIs can mainly be classified into two types: 'Control API', which should be
 
     Load and 'secret-shared' private ATTRIBUTE values from local dataset files or `ndarray` object of `numpy`.
 
-    For example, if dataset shape of P0 is N *d0, dataset shape of P1 is N* d1, and P2 has no data at all.
+    For example, if dataset shape of P0 is N * d0, dataset shape of P1 is N * d1, and P2 has no data at all.
     Then the resulting 'ciphertext' local dataset returned for each party is of the shape N * (d0 + d1).
 
     Return:
