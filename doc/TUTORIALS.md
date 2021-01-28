@@ -1,5 +1,4 @@
 
-
 - [Overview](#overview)
 - [Installation and Deployment](#installation-and-deployment)
 - [Quick Start](#quick-start)
@@ -9,7 +8,7 @@
     - [Rosetta Version](#rosetta-version)
 - [Privacy-Preserving Machine Learning](#privacy-preserving-machine-learning)
   - [Linear Regression](#linear-regression)
-    - [TensorFlow Version](#tensorflow-version-1)
+    - [TensorFlow Version Linear Regression](#tensorflow-version-linear-regression)
     - [Rosetta Basic Version](#rosetta-basic-version)
     - [Rosetta Version-with Reveal](#rosetta-version-with-reveal)
     - [Comparison and Evaluation 1](#comparison-and-evaluation-1)
@@ -22,9 +21,7 @@
 - [Additional Notes](#additional-notes)
   - [Dataset Description](#dataset-description)
 
-
 ## Overview
-
 
 ## Installation and Deployment
 
@@ -42,13 +39,13 @@ Unless otherwise noted, all commands are run in the path of `example/tutorials/c
 
 Now, let us enter this exciting moment together: how to use `rosetta` in the easiest way?
 
-The steps are very simple. Whenever you want to use `rosetta` (` Python` script file), just import our `rosetta` package, as follows:
+The steps are very simple. Whenever you want to use `rosetta` (`Python` script file), just import our `rosetta` package, as follows:
 
 ```python
 import latticex.rosetta as rtt
 ```
 
-<font style = "color: green"> Note: </font> 
+<font style = "color: green"> Note: </font>
 
 `rtt` is short for `rosetta`, just like `tf` for `tensorflow`, `np` for `numpy`, `pd` for `pandas` . Let's just view this as a convention.
 
@@ -80,13 +77,11 @@ python3 quickstart.py --party_id=2
 If you see `DONE!` in the output, you have accomplished the first goal.
 
 > `--party_id` This is a command line option that specifies which role the current running script is playing.
-
->  In the following, in order to describe examples concisely, we will just directly uses `./tutorials.sh` to show that we are running the three steps above. 
+> In the following, in order to describe examples concisely, we will just directly uses `./tutorials.sh` to show that we are running the three steps above.
 
 <br/>
 
 The following tutorial is just as easy as this `Quick Start`. Let's continue.
-
 
 ## Secure Multi-Party Computation
 
@@ -94,13 +89,13 @@ Let's assume that there are `two` `honest` rich millionaires who are discussing 
 
 ### Millionaires' Problem
 
-The problem we have just proposed is a famous example in MPC, called [Yao's Millionaires' Problem](https://en.wikipedia.org/wiki/Yao%27s_Millionaires%27_Problem). 
+The problem we have just proposed is a famous example in MPC, called [Yao's Millionaires' Problem](https://en.wikipedia.org/wiki/Yao%27s_Millionaires%27_Problem).
 
 Let‘s be a little more specific. In the following example, we will introduce two millionaires, one called `Alice` and the other called `Bob`, have `$2000001` and `$2000000` respectively. You see, the difference between the two people's wealth is just `one` dollars.
 
 #### TensorFlow Version
 
-For comparison，Let's just solve this problem without taking their privacy into consideration at first. 
+For comparison，Let's just solve this problem without taking their privacy into consideration at first.
 
 This is trivial, every child can do this in less than one second. But in order to compare with `rosetta`, here we write a toy program in `tensorflow` style:
 
@@ -144,7 +139,6 @@ ret: True
 
 The result shows that `Alice` has more wealth than `Bob`.
 
-
 It's intuitive, I won't go into details.
 
 #### Rosetta Version
@@ -157,7 +151,6 @@ The first step is to import the `rosetta` package.
 import latticex.rosetta as rtt
 import tensorflow as tf
 ```
-
 
 The second step is activate protocol.
 
@@ -187,9 +180,7 @@ with tf.Session() as sess:
 
 The above output of `res` is a `sharing` value in [Secret-Sharing scheme](GLOSSARY.md).
 
-
 > The `sharing` value is a random number essentially. an original true value x, is randomly split into two 64-bit values ​​x0, x1 (with x = x0 + x1), which are held by P0 and P1, respectively.
-
 
 How do we know the plaintext value? We provide a `reveal` interface to get the plain text value for convenience in debugging and testing. Just add it after the forth step:
 
@@ -228,7 +219,7 @@ Of course, `Rosetta` can not only be used to solve simple problems  like `Millio
 
 ## Privacy-Preserving Machine Learning
 
-We will talk about the combination of `Privacy-Preserving` and` Machine Learning (ML)` in this part. Let's start with the simplest machine learning model: `Linear Regression`.
+We will talk about the combination of `Privacy-Preserving` and`Machine Learning (ML)` in this part. Let's start with the simplest machine learning model: `Linear Regression`.
 
 ### Linear Regression
 
@@ -236,7 +227,7 @@ This section introduces how to use `rosetta` to perform a complete `Linear Regre
 
 Before using `rosetta` for machine learning, in order to compare with `rosetta`-backed MPC version, let's see how we do the same task in native `tensorflow` style without the concern of data privacy.
 
-#### TensorFlow Version
+#### TensorFlow Version Linear Regression
 
 Here is a simple `Linear Regression` with `tensorflow`.
 
@@ -303,7 +294,6 @@ train = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
 init = tf.global_variables_initializer()
 ```
 
-
 - Model training.
 
 ```py
@@ -333,7 +323,6 @@ with tf.Session() as sess:
 
 For complete code reference Please refer to [tf-linear_regression.py](../example/tutorials/code/tf-linear_regression.py) for the complete source code.
 
-
 And then, we run this program as follows:
 
 ```sh
@@ -352,9 +341,7 @@ Y_pred: [[5.409453 ]
  [5.9929996]]
 ```
 
-
 #### Rosetta Basic Version
-
 
 As mentioned above, if you have an existing model training script (`.py`) written with `tensorflow`, then all you need to do is import the following packages on the first line of this script file:
 
@@ -372,11 +359,9 @@ rtt.rtt.activate("SecureNN")
 
 > Note: The protocol must be activated before any `MPC` related `API` can be used.
 
-
 - Load dataset
 
-Please refers to the appendix at the end of this article for the dataset description. 
-
+Please refers to the appendix at the end of this article for the dataset description.
 
 We have highlighted the spots that are different from `tensorflow`. In contrast to the native `tensorflow` version without data privacy. Except for the importing of the `rosetta` package, only these several lines are different.
 
@@ -470,7 +455,6 @@ with tf.Session() as sess:
 
 Please refer to [rtt-linear_regression_reveal.py](../example/tutorials/code/rtt-linear_regression_reveal.py) for the complete source code.
 
-
 Then, we run it as follows:
 
 ```sh
@@ -489,9 +473,7 @@ Y_pred: [[5.40625 ]
  [5.984375]]
 ```
 
-
 Try to compare this output with the output of the `tensorflow` version to see how much the error is.
-
 
 #### Comparison and Evaluation 1
 
@@ -531,21 +513,16 @@ Rosetta:
 
 We can see that the evaluation scores (with little loss on precision) are almost the same.
 
-
 > R^2 is lower because this dataset is a Logistic Regression model, not a Linear Regression model
-
 > Here we only need to care about the error between the two versions (it is very small)
-
 
 The following figure is about the error comparison between the predicted values ​​of `tensorflow` and `rosetta`.
 
-![](./_static/tutorials/linear_regression_stat-Y-diff4.png)
-
+![linear_regression_stat-Y-diff4](./_static/tutorials/linear_regression_stat-Y-diff4.png)
 
 #### Comparison and Evaluation 2
 
 We only show the final result in `Comparison and Evaluation 1` section. Here we dive a little deeper with the inner process. You can skip this section if not interested.
-
 
 > In this section, Linear Regression is evaluated using R^2, and Logistic Regression is evaluated using AUC/ACC/F1 Evaluation.
 
@@ -596,7 +573,6 @@ Please refer to [tf-linear_regression_stat.py](../example/tutorials/code/tf-line
 
 Please refer to  [rtt-linear_regression_stat.py](../example/tutorials/code/rtt-linear_regression_stat.py) for the complete code.
 
-
 Then, you will get the evaluation results after running it as follows:
 
 ```sh
@@ -605,13 +581,11 @@ Then, you will get the evaluation results after running it as follows:
 ./tutorials.sh stat linear_regression_stat linear
 ```
 
-
 #### Model Saving
 
 So far, we just output the model parameters and predicted values ​​to the terminal. How can we save the trained model as we often do in machine learning?
 
 You may wonder, since we are doing all these in a multi-party way, WHERE will the trained model (should) be saved after running with `rosetta`? And HOW to save it? Good question. Let’s talk about the model saving.
-
 
 There are several conventions:
 
@@ -625,7 +599,7 @@ Regarding the saving of the plaintext result, you can choose to save at node 0, 
 
 `SAVER_MODE` is a flag of a bitmap combination, and its meaning is as follows
 
-```
+```sh
 // 0: Save the cipher text. (And the number 1 ~ 7 below indicates which specific parties to  save the plain text files)
 // 1: P0,
 // 2: P1,
@@ -635,7 +609,6 @@ Regarding the saving of the plaintext result, you can choose to save at node 0, 
 // 6: P1 and P2
 // 7: P0, P1 and P2
 ```
-
 
 <br/>
 
@@ -658,8 +631,8 @@ After training:
 ```py
 saver.save(sess, './log/ckpt'+str(party_id)+'/model')
 ```
-Please refer to [rtt-linear_regression_saver.py](../example/tutorials/code/rtt-linear_regression_saver.py) for details.
 
+Please refer to [rtt-linear_regression_saver.py](../example/tutorials/code/rtt-linear_regression_saver.py) for details.
 
 And then run it as follows:
 
@@ -670,7 +643,6 @@ And then run it as follows:
 #### Model Loading and Prediction
 
 The model has been saved to the corresponding node in the previous step (according to the configuration file). Now use `tensorflow` to load the plaintext model saved in the previous step and make predictions.
-
 
 ```py
 # save
@@ -687,7 +659,6 @@ with tf.Session() as sess:
     Y_pred = sess.run(pred_Y)
     print("Y_pred:", Y_pred)
 ```
-
 
 For the complete code, please refer to [tf-linear_regression_restore.py](../example/tutorials/code/tf-linear_regression_restore.py).
 
@@ -740,7 +711,7 @@ With the foundation of `Linear Regression` above, then `Logistic Regression` is 
 
 Based on Linear Regression, we use `sigmoid` as a binary classifier and `cross entropy` as a loss function to build a Logistic Regression model.
 
-Regardless of the `tensorflow` version or the` rosetta` version, the changes are the same. Compared with the `Linear Regression` version, only the model construction part needs to be changed, that is, only the following modification is needed:
+Regardless of the `tensorflow` version or the`rosetta` version, the changes are the same. Compared with the `Linear Regression` version, only the model construction part needs to be changed, that is, only the following modification is needed:
 
 - On the predicted value part, add `sigmoid` functionality
 
@@ -777,15 +748,11 @@ Rosetta version
 | Model (Cipher) loading and prediction | [rtt-logistic_regression_restore.py](../example/tutorials/code/rtt-logistic_regression_restore.py) |
 | Evaluation                            | [rtt-logistic_regression_stat.py](../example/tutorials/code/rtt-logistic_regression_stat.py)       |
 
-
-
 Just run these programs in the same as in `Linear Regression`.
-
 
 <br/>
 
 Here is the comparison of the two different versions of Logistic Regression model.
-
 
 TensorFlow:
 
@@ -801,6 +768,7 @@ TensorFlow:
   "score_f1": 0.6419753086419753
 }
 ```
+
 Rosetta:
 
 ```json
@@ -817,16 +785,14 @@ Rosetta:
 ```
 
 > Here we only care about the error between the two versions (we can see that it is very small)
-
 > Rosetta is even slightly better than TensorFlow
-
 
 The following figure is about the error comparison between the predicted values ​​of `tensorflow` and `rosetta`.
 
-![](./_static/tutorials/logistic_regression_stat-Y-diff4.png)
-
+![logistic_regression_stat-Y-diff4](./_static/tutorials/logistic_regression_stat-Y-diff4.png)
 
 ### Support big data sets
+
 The above linear regression and logistic regression models all load the entire dataset into memory and then take it out in batch order for training, and as the size of the dataset grows, it becomes impractical to load the dataset into memory at once.
 
 Major plaintext AI frameworks such as TensorFlow are aware of and provide solutions, TensorFlow provides the relevant Dataset APIs to build low-memory consuming, complex, reusable data pipelines, since Rosetta uses Tensorflow as a backend, it can be reused with minor modifications.
@@ -841,11 +807,14 @@ Analysis of the code in tf-ds-lr.py and rtt-ds-lr.py reveals two main difference
 
 1. Create a text line dataset, use TextLineDataset class in TensorFlow and use PrivateTextLineDataset class in Rosetta.
     The code used in TensorFlow is as following:
+
     ```py
     dataset_x = tf.data.TextLineDataset(file_x)
     ...
     ```
+
     The code used in Rosetta is as following:
+
     ```py
     dataset_x0 = rtt.PrivateTextLineDataset(
                     file_x, data_owner=0)  # P0 hold the file data
@@ -854,6 +823,7 @@ Analysis of the code in tf-ds-lr.py and rtt-ds-lr.py reveals two main difference
 
 2. Decode functions are implemented differently. TensorFlow version of the decode function split rows to corresponding fields and then converts the fields to floating-point numbers, while the Rosetta version of the decode function also first split rows to corresponding fields and then calls `PrivateInput` function to share the data.
     The code used in TensorFlow is as following:
+
     ```py
     # dataset decode
     def decode_x(line):
@@ -861,7 +831,9 @@ Analysis of the code in tf-ds-lr.py and rtt-ds-lr.py reveals two main difference
         fields = tf.string_to_number(fields, tf.float64)
         return fields
     ```
+
     The code used in Rosetta is as following:
+
     ```py
     # dataset decode
     def decode_p0(line):
@@ -878,9 +850,7 @@ Now, you have fully mastered the usage of `Rosetta`, go to find a real problem t
 
 welcome!
 
-
 ## Additional Notes
-
 
 ### Dataset Description
 
@@ -888,7 +858,7 @@ The data set source reference [here](http://archive.ics.uci.edu/ml/datasets/Wine
 
 We have performed simple pre-process steps to get the results as follows, the path is in `dsets/`, and the directory structure is as follows:
 
-```
+```sh
 dsets/
 ├── ALL
 │   ├── cls_test_x.csv
@@ -929,10 +899,9 @@ dsets/
 
 Description:
 
-For comparison with the plaintext (TensorFlow version), we divided the original data set into two parts in the vertical direction, one as private data of `P0` and the other as private data of` P1`.
+For comparison with the plaintext (TensorFlow version), we divided the original data set into two parts in the vertical direction, one as private data of `P0` and the other as private data of`P1`.
 
 1. The data under ALL is used for TensorFlow version.
 2. The private data of each node of P0/P1 is stored on each node.
 3. P2 has no data.
 4. The label for Logistic Regression is owned by P0, and the label for Linear Regression is owned by P1.
-

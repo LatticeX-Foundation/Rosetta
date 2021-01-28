@@ -1,12 +1,12 @@
 # TensorFlow安装指南
 
-- [TensorFlow安装指南](#tensorflow%e5%ae%89%e8%a3%85%e6%8c%87%e5%8d%97)
-  - [文档说明](#%e6%96%87%e6%a1%a3%e8%af%b4%e6%98%8e)
-  - [系统要求](#%e7%b3%bb%e7%bb%9f%e8%a6%81%e6%b1%82)
-  - [系统软件安装](#%e7%b3%bb%e7%bb%9f%e8%bd%af%e4%bb%b6%e5%ae%89%e8%a3%85)
-  - [二进制安装](#%e4%ba%8c%e8%bf%9b%e5%88%b6%e5%ae%89%e8%a3%85)
-  - [源码安装](#%e6%ba%90%e7%a0%81%e5%ae%89%e8%a3%85)
-  - [安装检验](#%e5%ae%89%e8%a3%85%e6%a3%80%e9%aa%8c)
+- [TensorFlow安装指南](#tensorflow安装指南)
+  - [文档说明](#文档说明)
+  - [系统要求](#系统要求)
+  - [系统软件安装](#系统软件安装)
+  - [二进制安装](#二进制安装)
+  - [源码安装](#源码安装)
+  - [安装检验](#安装检验)
 
 ## 文档说明
 
@@ -23,9 +23,11 @@
 ## 系统软件安装
 
 - **检查ubuntu**
+
 ```bash
-lsb_release -r      # e.g. Release:	18.04
+lsb_release -r      # e.g. Release: 18.04
 ```
+
 ***如果输出发布版本非`18.04`，则需要安装对应版本操作系统，然后执行后续步骤。***
 
 - **检查python3、pip3**
@@ -65,6 +67,7 @@ pip3 install tensorflow==1.14.0 --user
 > TensorFlow源码安装前建议磁盘空闲空间100GB以上
 
 1. **安装python依赖包**
+
     ```bash
     pip3 install -U --user pip six wheel setuptools mock 'future>=0.17.1' 'numpy==1.16.4'
     pip3 install -U --user keras_applications --no-deps
@@ -90,6 +93,7 @@ pip3 install tensorflow==1.14.0 --user
 
 3. **TensorFlow源码编译**
     > 安装时间将很长（约6小时），建议配置8G以上的内存
+
     ```bash
     # clone TensorFlow github repository
     git clone https://github.com/tensorflow/tensorflow.git
@@ -104,7 +108,8 @@ pip3 install tensorflow==1.14.0 --user
     # install tensorflow
     pip3 install /tmp/tensorflow_pkg/*.whl --user
     ```
-    > TensorFlow源码安装可以参考[官方文档][tensorflow-source-install] 
+
+    > TensorFlow源码安装可以参考[官方文档][tensorflow-source-install]
 
 ## 安装检验
 

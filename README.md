@@ -13,13 +13,14 @@ Rosetta is a privacy-preserving framework based on [TensorFlow](https://www.tens
 ```python
 import latticex.rosetta
 ```
+
 The current version integrates the secure multi-party computation protocols for 3 parties. The underlying protocol is [SecureNN](https://eprint.iacr.org/2018/442.pdf). It is secure in the semi-honest model with honest majority.
 
 ## Installation
 
 For now, Rosetta runs on Ubuntu 18.04, and is based on TensorFlow 1.14 with CPUs (Windows OS is not currently supported yet). You can install Rosetta as follows.
 
-First, please check that your local system meets our [base environment requirement](doc/DEPLOYMENT.md#rosetta-deployment-guide). 
+First, please check that your local system meets our [base environment requirement](doc/DEPLOYMENT.md#rosetta-deployment-guide).
 
 Then install the native TensorFlow with the following codes. Note that you could also install it from source code, check [here](doc/TENSORFLOW_INSTALL.md) for details.
 
@@ -83,14 +84,19 @@ with tf.Session() as sess:
 ```
 
 To run this jointly, after configuring networks, the three guys can run the following command-line respectively:
+
 ```bash
 python rosetta_demo.py --party_id=0
 ```
+
 ,
+
 ```bash
 python rosetta_demo.py --party_id=1
 ```
+
 and
+
 ```bash
 python rosetta_demo.py --party_id=2
 ```
@@ -99,11 +105,11 @@ Then each party will be prompted to input his private matrix, for example P0 may
 
 > [2020-07-29 20:10:49.070] [info] Rosetta: Protocol [SecureNN] backend initialization succeeded!
 >
-> please input the private data (float or integer, 6 items, separated by space): 2 3 1 7 6 2 
+> please input the private data (float or integer, 6 items, separated by space): 2 3 1 7 6 2
 
 Note that input from console like this is purely for pedagogical purpose in this toy example. See our [Doc](doc/API_DOC.md) for production-ready data APIs.
 
-At the end, P0 and P2 will get the plaintext output while P1 dose not, just as required. Specifically, P0 and P2 may have: 
+At the end, P0 and P2 will get the plaintext output while P1 dose not, just as required. Specifically, P0 and P2 may have:
 
 > plaintext matmul result: [[b'8.000000' b'14.000000' b'18.000000' b'4.000000']
 > [b'4.000000' b'7.000000' b'9.000000' b'2.000000']
@@ -113,8 +119,8 @@ At the end, P0 and P2 will get the plaintext output while P1 dose not, just as r
 
 while P1 has:
 > plaintext matmul result: [[b'0.000000' b'0.000000' b'0.000000' b'0.000000']
->  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
->  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
+> [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
+> [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
 >
 > [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
 
@@ -137,7 +143,6 @@ Rosetta works by extending and hacking both Python frontend and the Operation Ke
 <img src='doc/_static/figs/architecture_detail_en.png' width = "700" height = "600" align="middle"/>
 
 When running your Rosetta program, firstly the native TensorFlow data flow graph will be converted, and during this process the native Operations within the graph will be replaced with SecureOps.
-
 
 <img src='doc/_static/figs/static_pass.png' width = "800" height = "400" align="middle"/>
 
@@ -163,11 +168,9 @@ Rosetta is an open source project developed under the LPGLv3 license and maintai
 
 * [Rosetta Release Notes](RELEASE.md)
 
-
 ## Contact
 
 You could reach us by [email](mailto:rosetta@latticex.foundation). **And you are welcome to join Rosetta community on [Slack](https://join.slack.com/t/latticexrosetta/shared_invite/zt-dum6j65d-MTxp~Bxq5OwouJW8zUKB1Q) to ask any questions and discuss on any interesting topics with other developers**.
-
 
 ## License
 

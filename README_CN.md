@@ -7,12 +7,12 @@
 ## 概述
 
 Rosetta 是基于[TensorFlow](https://www.tensorflow.org)开发的一个隐私计算框架。它将陆续集成密码学、联邦学习和可行执行环境（TEE）等主流的隐私计算技术。Rosetta 旨在为人工智能快速提供隐私保护技术解决方案，而不需要用户掌握任何密码学、联邦学习和TEE领域的专门知识。Rosetta 在用户接口层复用了 TensorFlow 的对外 API 从而使得用户可以以最低的改造成本将隐私保护功能集成到现有的 TensorFlow 程序中。比如在简单场景下，你可能只需要添加如下一行代码就可以完成这样的转换：
+
 ```python
 import latticex.rosetta
 ```
 
 当前版本集成了3方参与的安全多方计算（MPC）协议。当前使用的默认底层协议是 [SecureNN](https://eprint.iacr.org/2018/442.pdf)。这一协议可以在诚实者占多数的半诚实安全模型假设下保障数据安全。
-
 
 ## 安装
 
@@ -43,7 +43,6 @@ bash compile_and_test_all.sh
 
 更多完整具体的安装、配置和部署的步骤请参考[部署指南](doc/DEPLOYMENT_CN.md)。
 
-
 ## 使用示例
 
 这里我们用一个简单的多方联合执行 AI 中常见的矩阵乘法操作的 [demo 示例](example/tutorials/code/rosetta_demo.py) 来演示下 Rosetta 的基本用法。
@@ -51,7 +50,6 @@ bash compile_and_test_all.sh
 在这个例子中，我们假设三个个体各自持有一个私有的矩阵数据，他们想在不泄露自己数据明文的前提下共同的计算出这三个矩阵的乘积。为了简便，我们称这三方分别为 P0，P1 和 P2。
 
 基于 Rosetta，每一方可以直接运行下面的代码即可完成这个任务。如果你熟悉 TensorFlow 的话，你可以看出只需要改动简单的几行代码就可以完全的复用 TensorFlow 中的 API 接口了。
-
 
 ```python
 #!/usr/bin/env python3
@@ -88,11 +86,15 @@ with tf.Session() as sess:
 ```bash
 python rosetta_demo.py --party_id=0
 ```
+
 ,
+
 ```bash
 python rosetta_demo.py --party_id=1
 ```
+
 以及
+
 ```bash
 python rosetta_demo.py --party_id=2
 ```
@@ -101,9 +103,9 @@ python rosetta_demo.py --party_id=2
 
 > [2020-07-29 20:10:49.070] [info] Rosetta: Protocol [SecureNN] backend initialization succeeded!
 >
-> please input the private data (float or integer, 6 items, separated by space): 2 3 1 7 6 2 
+> please input the private data (float or integer, 6 items, separated by space): 2 3 1 7 6 2
 
-在程序的最后，如我们在程序中特意指定的那样，只有 P0 和 P2 可以得到最后的明文结果： 
+在程序的最后，如我们在程序中特意指定的那样，只有 P0 和 P2 可以得到最后的明文结果：
 
 > plaintext matmul result: [[b'8.000000' b'14.000000' b'18.000000' b'4.000000']
 > [b'4.000000' b'7.000000' b'9.000000' b'2.000000']
@@ -113,8 +115,8 @@ python rosetta_demo.py --party_id=2
 
 而 P1 方则不会拿到有意义的明文结果:
 > plaintext matmul result: [[b'0.000000' b'0.000000' b'0.000000' b'0.000000']
->  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
->  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
+> [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
+> [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
 >
 > [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
 

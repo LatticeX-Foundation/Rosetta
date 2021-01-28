@@ -15,6 +15,7 @@
     - [运行测试](#%e8%bf%90%e8%a1%8c%e6%b5%8b%e8%af%95)
       - [单机测试](#%e5%8d%95%e6%9c%ba%e6%b5%8b%e8%af%95)
       - [多机测试](#%e5%a4%9a%e6%9c%ba%e6%b5%8b%e8%af%95)
+
 ----
 
 ## 文档说明
@@ -37,15 +38,18 @@
 
 ### 系统组件
 
-- **Ubuntu**:   
-  检查版本:   
+- **Ubuntu**:
+  检查版本:
+
   ```bash
-  lsb_release -r      # e.g. Release:	18.04
+  lsb_release -r      # e.g. Release: 18.04
   ```
+
   > ***注意：如果输出发布版本好比`18.04`小，则需要升级操作系统，然后执行后续步骤。***
 
 - **Python3 & Pip3 & Openssl & CMake**
-  检查版本:   
+  检查版本:
+
   ```bash
   python3 --version   # e.g. Python 3.6.9
   pip3 --version      # e.g. pip 20.0.2
@@ -53,7 +57,8 @@
   cmake --version     # e.g. cmake version 3.15.2
   ```
 
-  如果不符合系统要求，则执行以下步骤: 
+  如果不符合系统要求，则执行以下步骤:
+
   ```bash
   # install python3, pip3, openssl
   sudo apt update
@@ -94,12 +99,12 @@ cd Rosetta && bash compile_and_test_all.sh
 直接使用`Rosetta`源码仓库的[百万富翁问题范例][millionaire-example]。
 
 > 注意: [Rosetta开发教程][tutorials]有多个隐私机器学习开发实例可以参考，详情参考[Tutorials](./TUTORIALS.md)。
-
 > 注意: 单机部署可以直接在Rosetta仓库`example/millionaire`目录下，直接运行`run.sh`进行验证。
 
 ### 准备
 
 为三个计算节点`P0`、`P1`、`P2`分别创建工作目录，比如: `millionaire0`、`millionaire1`、`millionaire2`
+
 ```bash
 mkdir millionaire0 millionaire1 millionaire2
 ```
@@ -111,8 +116,9 @@ mkdir millionaire0 millionaire1 millionaire2
 ```bash
 wget https://github.com/LatticeX-Foundation/Rosetta/tree/master/example/millionaire/millionaire.py
 ```
+
 - 生成证书和key
-`P0`、`P1`、`P2`分别生成ssl服务端证书和key，执行命令: 
+`P0`、`P1`、`P2`分别生成ssl服务端证书和key，执行命令:
 
 ```bash
 mkdir certs
@@ -130,7 +136,7 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 
 ### 配置
 
-编写配置文件，配置文件模版如下: 
+编写配置文件，配置文件模版如下:
 
 ```json
 {
@@ -159,7 +165,9 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
   }
 }
 ```
-字段说明: 
+
+字段说明:
+
 - `PARTY_ID`: 计算节点参与的角色ID，可取0，1，2，分别对应`P0`、`P1`、`P2`
 - `MPC`: 指定为安全多方计算协议配置
 - `FLOAT_PRECISION`: 安全多方浮点计算的精度位数
@@ -172,7 +180,6 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 - `SERVER_PRIKEY_PASSWORD`: 服务端私钥密码口令（没有设置则为空字符串）
 - `SAVER_MODE`: 模型保存配置值，可以通过此值的配置设定保存的模型中的参数值是否为明文值，或者在具体哪一参与方中保存为明文，具体请参考[算子API文档](API_DOC_CN.md)。
 
-
 ### 运行测试
 
 #### 单机测试
@@ -184,25 +191,31 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 > 注意：运行过程将提示控制台输入值
 
 - **`P2`节点**
+
 ```bash
 mkdir log
 # MPC player 2
 python3 millionaire.py --party_id=2
 ```
+
 - **`P1`节点**
+
 ```bash
 mkdir log
 # MPC player 1
 python3 millionaire.py --party_id=1
 ```
+
 - **`P0`节点**
+
 ```bash
 mkdir log
 # MPC player 0
 python3 millionaire.py --party_id=0
 ```
 
-执行完成后，如果可以查看到类似输出: 
+执行完成后，如果可以查看到类似输出:
+
 ```bash
 -------------------------
 1.0
@@ -215,11 +228,9 @@ python3 millionaire.py --party_id=0
 
 多机测试类似于单机测试，不同点在于配置文件需要设置不同的`HOST`字段为对应IP地址。
 
-
--------
+----
 
 [tensorFlow-install]:TENSORFLOW_INSTALL_CN.md
 [millionaire-problem]:https://en.wikipedia.org/wiki/Yao%27s_Millionaires%27_Problem
 [millionaire-example]:../example/millionaire/millionaire.py
 [tutorials]:TUTORIALS.md
-
