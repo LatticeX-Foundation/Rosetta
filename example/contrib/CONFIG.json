@@ -1,0 +1,30 @@
+{
+  "PARTY_ID": 0,
+  "PSI": {
+    "HOST": "127.0.0.1",
+    "PORT": 12345,
+    "RECV_PARTY": 2
+  },
+  "MPC": {
+    "FLOAT_PRECISION": 16,
+    "P0": {
+      "NAME": "PartyA(P0)",
+      "HOST": "127.0.0.1",
+      "PORT": 11121
+    },
+    "P1": {
+      "NAME": "PartyB(P1)",
+      "HOST": "127.0.0.1",
+      "PORT": 12144
+    },
+    "P2": {
+      "NAME": "PartyC(P2)",
+      "HOST": "127.0.0.1",
+      "PORT": 13169
+    },
+    "SAVER_MODE": 7,
+    "SERVER_CERT": "certs/server-nopass.cert",
+    "SERVER_PRIKEY": "certs/server-prikey",
+    "SERVER_PRIKEY_PASSWORD": "123456"
+  }
+}
