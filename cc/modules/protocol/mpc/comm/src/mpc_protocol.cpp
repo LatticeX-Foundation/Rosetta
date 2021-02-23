@@ -141,6 +141,9 @@ PerfStats MpcProtocol::GetPerfStats() {
     return perf_stats;
   }
 
+  //! Time/Mem/Cpu
+  perf_stats.s = perf_stats_.get_perf_stats();
+
   //! Name
   perf_stats.name = Name() + " P" + to_string(GetPartyId());
 
@@ -151,13 +154,6 @@ PerfStats MpcProtocol::GetPerfStats() {
   perf_stats.s.msg_sent = net_stat.message_sent();
   perf_stats.s.msg_recv = net_stat.message_received();
 
-  //! Time @todo
-  // elapse = between StartPerfStats() and GetPerfStats()
-  perf_stats.s.elapse = perf_stats_.timer.elapse();
-  struct timespec process_cpu_time_end;
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &process_cpu_time_end);
-  perf_stats.s.cpu_seconds = process_cpu_time_end - perf_stats_.process_cpu_time;
-
   return perf_stats;
 }
 void MpcProtocol::StartPerfStats() {
@@ -165,12 +161,10 @@ void MpcProtocol::StartPerfStats() {
     return;
   }
 
-  //! Network
-  _net_io->clear_statistics();
+  //! Time/Mem/Cpu
+  perf_stats_.start_perf_stats(); // true false
 
-  //! Time @todo
-  perf_stats_.timer.start();
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &perf_stats_.process_cpu_time);
+  //! Network
 }
 
 } // namespace rosetta

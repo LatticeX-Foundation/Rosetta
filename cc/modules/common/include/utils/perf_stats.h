@@ -98,14 +98,24 @@ class PerfStats {
     double clock_seconds = 0;
     double cpu_seconds = 0;
     double elapse = 0;
+    // mem
+    int64_t max_vmrss = 0; // kB
+    // cpu
+    double max_cpuusage = 0; // %CPU
+    double avg_cpuusage = 0; // %CPU
   } s;
-  struct timespec real_time;
   struct timespec process_cpu_time; // for s.cpu_seconds field
 
-  void reset() {
-    name = "default";
-    memset(&s, 0, sizeof(__stat));
-  }
+  bool do_memcpu_stats = false;
+  /**
+   * start timer/mem/cpu/...
+   * \param sampling whether to sample statistics for memory, etc.
+   */
+  void start_perf_stats(bool sampling = false);
+  //! \param stop when set to true, statistics will stop
+  __stat get_perf_stats(bool stop = false);
+
+  void reset();
 
   std::string to_console();
 

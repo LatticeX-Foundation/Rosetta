@@ -64,7 +64,7 @@ long long int SimpleTimer::ns_elapse() const {
   auto ending = steady_clock::now();
   if (stoped)
     ending = end;
-  duration<long long int, std::nano> elapsed_microseconds =
+  duration<long long int, std::nano> elapsed_nanoseconds =
     duration_cast<duration<long long int, std::nano>>(ending - begin);
-  return elapsed_microseconds.count();
+  return elapsed_nanoseconds.count();
 }
