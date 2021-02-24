@@ -7,7 +7,7 @@ rm build/*.linux-* -rf
 
 # TODO: for user install latticex-rosetta with sudo please uncomment the  command blow
 #sudo pip3 uninstall latticex-rosetta
-if [ $USER == "root" ]; then
+if [ "$USER" == "root" ]; then
   sudo pip3 uninstall latticex-rosetta -y
 else
   python3 -m pip uninstall latticex-rosetta -y # for the current user

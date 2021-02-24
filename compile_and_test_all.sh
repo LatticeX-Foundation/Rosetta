@@ -47,11 +47,11 @@ function run_stage_3() {
 
     pv=$(python3 -c 'import sys; print(sys.version_info[0])')
     pip_cmd=pip
-    if [ $pv == '3' ]; then
+    if [ "$pv" == '3' ]; then
         pip_cmd=pip3
     fi
 
-    if [ $USER == "root" ]; then
+    if [ "$USER" == "root" ]; then
         ${pip_cmd} install dist/*.whl
     else
         ${pip_cmd} install dist/*.whl --user
@@ -70,13 +70,13 @@ function run_all() {
     run_stage_1
     run_stage_2
     run_stage_3
-    
+
     echo -e "run 64bits binary all ok."
 }
 
 # run all the stages
 function run_all_with_128() {
-    if [ ${use_128} == "128" ]; then
+    if [ "${use_128}" == "128" ]; then
         echo -e "run and compile 128 bits binaries..."
     else
         echo -e "please specify 128 bits to compile and run !!!"
@@ -87,7 +87,7 @@ function run_all_with_128() {
     run_stage_prepare ${build_type} ${use_128}
     run_stage_1
     run_stage_2
-    
+
     echo -e "run and compile 128 bits binaries ok."
 
     # build 128 _rosetta.xxxx.so and backup

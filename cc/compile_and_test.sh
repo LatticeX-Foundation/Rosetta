@@ -22,11 +22,11 @@ cd ${builddir}
 TF_CFLGS=$(python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_compile_flags()[1])')
 #TF_CFLAGS=$(python3 -c "import tensorflow as tf; print(' '.join(tf.sysconfig.get_compile_flags()), end='')")
 if [ $# -ge 2 ]; then
-    if [ $1 == "Debug" ]; then
+    if [ "$1" == "Debug" ]; then
         BUILD_TYPE=Debug
     fi
 
-    if [ $2 == "128" ]; then
+    if [ "$2" == "128" ]; then
         MPC_128=ON
     fi
 
@@ -36,9 +36,9 @@ if [ $# -ge 2 ]; then
 else
     echo "compile $1 ..."
     if [ "$1" == "modules" ]; then
-        cd modules && make -j8 && make install
+        cd modules && make -j4 && make install
     elif [ "$1" == "tf" ]; then
-        cd tf && make -j8 && make install
+        cd tf && make -j4 && make install
     else
         echo "bad target: $1"
         exit 1
@@ -107,7 +107,7 @@ if [ $# -ge 1 ]; then
     echo "run tests of cc ... "
     if [ "$1" == "modules" ]; then
         run_all_modules_tests
-    elif [ $1 == "tf" ]; then
+    elif [ "$1" == "tf" ]; then
         echo "run tensorflow test... now [nothing]."
     else
         echo "bad target: $1"
