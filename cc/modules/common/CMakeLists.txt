@@ -19,6 +19,9 @@ configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/src/version.cpp"
 )
 
+SET(ADD_LINK_LIB_FLAGS "-Wl,--rpath=$ORIGIN../:$ORIGIN")
+SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${ADD_LINK_LIB_FLAGS}")
+
 # Library
 file(GLOB_RECURSE LIB_HEADER_FILES "include/*.h")
 file(GLOB_RECURSE LIB_SOURCE_FILES "src/*.cpp")
@@ -26,7 +29,8 @@ set_source_files_properties(${LIB_SOURCE_FILES} PROPERTIES COMPILE_FLAGS "${PEDA
 add_library(common SHARED ${LIB_HEADER_FILES} ${LIB_SOURCE_FILES})
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/utils")
 target_link_libraries(common ${LINKLIBS})
-set_target_properties(common PROPERTIES FOLDER libraries)
+set_target_properties(common PROPERTIES FOLDER "common"
+    APPEND_STRING PROPERTY LINK_FLAGS " ${ADD_LINK_LIB_FLAGS}")
 list(APPEND LINKLIBS common)
 
 

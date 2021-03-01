@@ -5,7 +5,7 @@ project(mpc)
 list(APPEND LINKLIBS common)
 list(APPEND LINKLIBS mpc-io)
 
-set(ADD_LINK_LIB_FLAGS "-Wl,--rpath=$ORIGIN../:$ORIGIN")
+SET(ADD_LINK_LIB_FLAGS "-Wl,--rpath=$ORIGIN../:$ORIGIN")
 SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${ADD_LINK_LIB_FLAGS}")
 
 # mpc-comm

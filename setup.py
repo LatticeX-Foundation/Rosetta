@@ -211,7 +211,7 @@ ext_modules = [
         ['cc/python_export/_rosetta.cc'],
         # cc_files,
         include_dirs=include_dirs,
-        libraries=['tf-dpass', 'mpc-snn', 'mpc-io', 'mpc-comm',
+        libraries=['tf-dpass', 'mpc-io', 'mpc-comm',
                    'common', 'protocol-base', 'protocol-api'],
         library_dirs=library_dirs,
         extra_compile_args=extra_cflags,

@@ -11,6 +11,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd)
 # threads
 find_package(Threads REQUIRED)
 
+SET(ADD_LINK_LIB_FLAGS "-Wl,--rpath=$ORIGIN../:$ORIGIN")
+SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${ADD_LINK_LIB_FLAGS}")
 
 # OpenSSL
 #set(OPENSSL_USE_STATIC_LIBS TRUE)
@@ -29,6 +31,8 @@ target_link_libraries(${LIBNAME} PUBLIC pthread common)
 if(USE_LIBEVENT)
 target_link_libraries(${LIBNAME} PUBLIC event event_core event_extra event_pthreads event_openssl)
 endif()
+set_target_properties(${LIBNAME} PROPERTIES FOLDER "io"
+    APPEND_STRING PROPERTY LINK_FLAGS " ${ADD_LINK_LIB_FLAGS}")
 
 # tests
 function(compile_tests projname)
