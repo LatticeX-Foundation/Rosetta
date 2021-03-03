@@ -59,12 +59,8 @@ function load_compile_options() {
 
 # install emp-toolkit
 function install_emptoolkit() {
-    # install emp-tool
-    #if [ ! -e ${builddir}/include/emp-tool ]; then
-    #echo "emp-tool not exist"
     echo "to install emp-tool..."
 
-    #if [ ! -e ${third_builddir}/include/emp-tool ]; then mkdir -p ${third_builddir}/emp-tool; fi
     mkdir -p ${third_builddir}/emp-tool
     cd ${third_builddir}/emp-tool
     cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare" \
@@ -73,22 +69,6 @@ function install_emptoolkit() {
         -DENABLE_FLOAT=ON
     make -j && make install
     echo "install emp-tool ok."
-    #fi
-
-    # install emp-ot
-    #if [ ! -e ${builddir}/include/emp-otl ]; then
-    #echo "emp-ot not exist"
-    echo "to install emp-ot..."
-
-    #if [ ! -e ${third_builddir}/emp-ot ]; then mkdir -p ${third_builddir}/emp-ot; fi
-    mkdir -p ${third_builddir}/emp-ot
-    cd ${third_builddir}/emp-ot
-    cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare" \
-        ${third_code_dir}/emp-toolkit/emp-ot -DCMAKE_INSTALL_PREFIX=${builddir} -DCMAKE_PREFIX_PATH=${builddir} \
-        -DCMAKE_BUILD_TYPE=${rtt_build_type}
-    make -j && make install
-    echo "install emp-ot ok."
-    #fi
 }
 
 # compile c++
@@ -186,7 +166,6 @@ function run_protocol_mpc_snn_perfs() {
 
     echo "run run protocol mpc snn performance end."
 }
-
 
 function run_all_modules_perfs() {
     if [ $rtt_perf_cpp_mpc_securenn -eq 1 ]; then
