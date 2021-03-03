@@ -18,9 +18,10 @@
 
 #pragma once
 #include "cc/modules/io/include/internal/comm.h"
-#include "cc/modules/io/include/internal/msg_id.h"
-#include "cc/modules/io/include/internal/socket.h"
+#include "cc/modules/common/include/utils/msg_id.h"
 #include "cc/modules/io/include/internal/cycle_buffer.h"
+#include "cc/modules/io/include/internal/socket.h"
+#include "cc/modules/io/include/internal/ssl_socket.h"
 
 #include <atomic>
 #include <map>
@@ -37,27 +38,27 @@ struct Connection {
   virtual ~Connection();
 
  public:
-  virtual void handshake() {}
+  virtual bool handshake() {return true;}
   virtual void close();
   bool is_server() const { return is_server_; }
 
  public:
-  size_t send(const char* data, size_t len, int64_t timeout = -1L);
-  size_t recv(char* data, size_t len, int64_t timeout = -1L);
-  size_t recv(const msg_id_t& msg_id, char* data, size_t len, int64_t timeout = -1L);
+  ssize_t send(const char* data, size_t len, int64_t timeout = -1L);
+  ssize_t recv(char* data, size_t len, int64_t timeout = -1L);
+  ssize_t recv(const msg_id_t& msg_id, char* data, size_t len, int64_t timeout = -1L);
 
   // Read & Write
  public:
   ssize_t peek(int sockfd, void* buf, size_t len);
-  int readn(int connfd, char* vptr, int n);
-  int writen(int connfd, const char* vptr, size_t n);
+  ssize_t readn(int connfd, char* vptr, size_t n);
+  ssize_t writen(int connfd, const char* vptr, size_t n);
 
   virtual ssize_t readImpl(int fd, char* data, size_t len) {
-    int ret = ::read(fd, data, len);
+    ssize_t ret = ::read(fd, data, len);
     return ret;
   }
   virtual ssize_t writeImpl(int fd, const char* data, size_t len) {
-    int ret = ::write(fd, data, len);
+    ssize_t ret = ::write(fd, data, len);
     return ret;
   }
 
@@ -112,34 +113,12 @@ class SSLConnection : public Connection {
   ~SSLConnection();
 #if USE_LIBEVENT_AS_BACKEND
   virtual void close() {}
-  virtual void handshake() {}
+  virtual bool handshake() {return true;}
 #else
   virtual void close();
-  virtual void handshake();
-  virtual ssize_t readImpl(int fd, char* data, size_t len) {
-    int rd = 0;
-    {
-      unique_lock<std::mutex> lck(ssl_rw_mtx_);
-      rd = SSL_read(ssl_, data, len);
-      int ssle = SSL_get_error(ssl_, rd);
-      if (rd < 0 && ssle != SSL_ERROR_WANT_READ) {
-        cerr << "ssl readImpl error:" << errno << endl;
-      }
-    }
-    return rd;
-  }
-  virtual ssize_t writeImpl(int fd, const char* data, size_t len) {
-    int wd = 0;
-    {
-      unique_lock<std::mutex> lck(ssl_rw_mtx_);
-      wd = SSL_write(ssl_, data, len);
-      int ssle = SSL_get_error(ssl_, wd);
-      if (wd < 0 && ssle != SSL_ERROR_WANT_WRITE) {
-        cerr << "ssl writeImpl error:" << errno << endl;
-      }
-    }
-    return wd;
-  }
+  virtual bool handshake();
+  virtual ssize_t readImpl(int fd, char* data, size_t len);
+  virtual ssize_t writeImpl(int fd, const char* data, size_t len);
 #endif
 };
 

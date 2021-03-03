@@ -17,44 +17,38 @@
 // ==============================================================================
 #pragma once
 
-#include "cc/modules/io/include/internal/comm.h"
-#include "cc/modules/common/include/utils/msg_id.h"
+#include "cc/modules/io/include/internal/socket.h"
+
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <openssl/rand.h>
+#include <openssl/crypto.h>
+#include <openssl/x509v3.h>
 
 namespace rosetta {
 namespace io {
-
-/**
- * This class for packing msg_id and real_data, with a total len
- */
-class simple_buffer {
- public:
-  simple_buffer(const msg_id_t& msg_id, const char* data, size_t data_len) {
-    len_ = sizeof(int32_t) + msg_id_t::Size() + data_len;
-    buf_ = new char[len_];
-    memset(buf_, 0, len_);
-    memcpy(buf_, (const char*)&len_, sizeof(int32_t));
-    memcpy(buf_ + sizeof(int32_t), msg_id.data(), msg_id_t::Size());
-    memcpy(buf_ + sizeof(int32_t) + msg_id_t::Size(), data, data_len);
-  }
-  ~simple_buffer() {
-    delete[] buf_;
-  }
-
- public:
-  char* data() {
-    return buf_;
-  }
-  const char* data() const {
-    return buf_;
-  }
-  int32_t len() {
-    return len_;
-  }
-
- private:
-  int32_t len_ = 0;
-  char* buf_ = nullptr;
-};
-
+int gmtassl_init_ssl_ctx(
+  bool is_server,
+  SSL_CTX** ctx,
+  std::string root_,
+  std::string prik_,
+  std::string cert_,
+  std::string enc_prik_,
+  std::string enc_cert_,
+  std::string pass_);
+int openssl_init_ssl_ctx(
+  bool is_server,
+  SSL_CTX** ctx,
+  std::string root_,
+  std::string prik_,
+  std::string cert_,
+  std::string pass_);
 } // namespace io
 } // namespace rosetta
+
+namespace netutil {
+bool show_certs(SSL* ssl, const std::string& client_ip);
+bool ssl_valid_check(void* x509_cert, void* x509_enc_cert, const std::string& ip);
+bool ssl_params_valid_check_mpc(int partyid);
+} // namespace netutil

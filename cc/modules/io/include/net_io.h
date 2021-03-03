@@ -18,7 +18,7 @@
 #pragma once
 
 #include "cc/modules/io/include/internal/comm.h"
-#include "cc/modules/io/include/internal/msg_id.h"
+#include "cc/modules/common/include/utils/msg_id.h"
 #include "cc/modules/io/include/internal/simple_buffer.h"
 #include "cc/modules/io/include/internal/server.h"
 #include "cc/modules/io/include/internal/client.h"
@@ -38,7 +38,7 @@ using namespace std;
 /**
  * Users only need to include this one header file.
  * 
- * Provides NetIO/SSLNetIO/ParallelNetIO/SSLParallelNetIO
+ * Provides NetIOInterface/SSLNetIO/ParallelNetIO/SSLParallelNetIO
  * 
  * Note:
  * 
@@ -165,7 +165,7 @@ class BasicIO {
    * \param len legth size bytes will be received \n
    * \param tid thread id \n
    */
-  int recv(int party, char* data, size_t len, int tid = 0);
+  ssize_t recv(int party, char* data, size_t len, int tid = 0);
   /**
    * thread version \n
    * send len size data to the server which id is party. \n
@@ -175,12 +175,12 @@ class BasicIO {
    * \param len legth size bytes will be sent \n
    * \param tid thread id \n
    */
-  int send(int party, const char* data, size_t len, int tid = 0);
+  ssize_t send(int party, const char* data, size_t len, int tid = 0);
   /**
    * thread version \n
    * current party send len size data to the server which id is not current party. \n
    */
-  int broadcast(const char* data, size_t len, int tid = 0);
+  ssize_t broadcast(const char* data, size_t len, int tid = 0);
 
   /**
    * thread version \n
@@ -188,47 +188,47 @@ class BasicIO {
    * \see recv
    */
   template <typename T>
-  int recv(int party, vector<T>& data, size_t n, int tid = 0);
+  ssize_t recv(int party, vector<T>& data, size_t n, int tid = 0);
   /**
    * thread version \n
    */
   template <typename T>
-  int send(int party, const vector<T>& data, size_t n, int tid = 0);
+  ssize_t send(int party, const vector<T>& data, size_t n, int tid = 0);
   /**
    * thread version \n
    */
   template <typename T>
-  int broadcast(const vector<T>& data, size_t n, int tid = 0);
+  ssize_t broadcast(const vector<T>& data, size_t n, int tid = 0);
 
  public:
   /**
    * message-id version \n
    */
-  int recv(int party, char* data, size_t len, const msg_id_t& msg_id);
+  ssize_t recv(int party, char* data, size_t len, const msg_id_t& msg_id);
   /**
    * message-id version \n
    */
-  int send(int party, const char* data, size_t len, const msg_id_t& msg_id);
+  ssize_t send(int party, const char* data, size_t len, const msg_id_t& msg_id);
   /**
    * message-id version \n
    */
-  int broadcast(const char* data, size_t len, const msg_id_t& msg_id);
+  ssize_t broadcast(const char* data, size_t len, const msg_id_t& msg_id);
 
   /**
    * message-id version \n
    */
   template <typename T>
-  int recv(int party, vector<T>& data, size_t n, const msg_id_t& msg_id);
+  ssize_t recv(int party, vector<T>& data, size_t n, const msg_id_t& msg_id);
   /**
    * message-id version \n
    */
   template <typename T>
-  int send(int party, const vector<T>& data, size_t n, const msg_id_t& msg_id);
+  ssize_t send(int party, const vector<T>& data, size_t n, const msg_id_t& msg_id);
   /**
    * message-id version \n
    */
   template <typename T>
-  int broadcast(const vector<T>& data, size_t n, const msg_id_t& msg_id);
+  ssize_t broadcast(const vector<T>& data, size_t n, const msg_id_t& msg_id);
 
  protected:
   int verbose_ = 0;
@@ -258,10 +258,10 @@ class BasicIO {
 /**
  * General Net IO.
  */
-class NetIO : public BasicIO {
+class NetIOInterface : public BasicIO {
  public:
   using BasicIO::BasicIO;
-  virtual ~NetIO() = default;
+  virtual ~NetIOInterface() = default;
 };
 
 /**

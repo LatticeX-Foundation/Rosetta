@@ -17,26 +17,12 @@
 // ==============================================================================
 #pragma once
 
-#include "cc/modules/io/include/net_io.h"
+namespace netutil {
+//! From dev-spdb, only support the following switch.
 
 /**
- * This header for io tests and examples
+ * Is enable ssl(OpenSSL)
  */
-#define USE_SSL_SOCKET 0
-namespace rosetta {
-namespace io {
-#if USE_SSL_SOCKET
-typedef SSLServer Server;
-typedef SSLClient Client;
-typedef SSLNetIO IO;
-typedef SSLParallelNetIO ParallelIO;
-#else
-typedef TCPServer Server;
-typedef TCPClient Client;
-typedef NetIO IO;
-typedef ParallelNetIO ParallelIO;
-#endif
-} // namespace io
-} // namespace rosetta
-
-using namespace rosetta::io;
+void enable_ssl_socket(bool _enable);
+bool is_enable_ssl_socket();
+} // namespace netutil

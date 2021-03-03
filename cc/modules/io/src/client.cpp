@@ -19,28 +19,31 @@
 
 namespace rosetta {
 namespace io {
-size_t TCPClient::send(const char* data, size_t len, int64_t timeout) {
-  if (timeout < 0) {
-    timeout = 999999999999L;
-  }
+ssize_t TCPClient::send(const char* data, size_t len, int64_t timeout) {
+  if (timeout < 0)
+    timeout = 1000 * 1000000;
 
   if (conn_ == nullptr) {
-    cerr << "client fatal error !" << endl;
-    throw;
+    log_error << "TCPClient conn_ is nullptr!" << endl;
+    return -1;
   }
-  int n = conn_->send(data, len, timeout);
-  if (n != len) {
-    cerr << "client n != len (" << n << " != " << len << ")" << endl;
-    throw;
+
+  ssize_t ret = conn_->send(data, len, timeout);
+  if (ret != len) {
+    string errmsg =
+      "TCPClient send error. expected:" + to_string(len) + " but got:" + to_string(ret);
+    log_error << errmsg << endl;
+    return -1;
   }
-  return n;
+
+  return ret;
 }
 
 /**
  * @todo not completed supports client's recv at present
  */
-size_t TCPClient::recv(char* data, size_t len, int64_t timeout) {
-  int n = conn_->recv(data, len);
+ssize_t TCPClient::recv(char* data, size_t len, int64_t timeout) {
+  ssize_t n = conn_->recv(data, len);
   return n;
 }
 } // namespace io

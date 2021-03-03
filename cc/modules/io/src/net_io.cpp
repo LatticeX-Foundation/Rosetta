@@ -21,14 +21,18 @@ namespace rosetta {
 namespace io {
 
 void BasicIO::close() {
-  for (int i = 0; i < parties_; i++) {
-    for (int j = 0; j < thread_nums_; j++) {
+  for (int i = 0; i < client.size(); i++) { // parties_
+    for (int j = 0; j < client[i].size(); j++) { // thread_nums_
       if (party_ != i) {
         client[i][j]->close();
       }
     }
+    client[i].clear();
   }
-  server->stop();
+  client.clear();
+
+  if (server != nullptr)
+    server->stop();
 }
 
 BasicIO::~BasicIO() {
@@ -66,22 +70,14 @@ bool BasicIO::init() {
 
   init_inner();
 
-  // init server with each party's port
-  if (is_ssl_io_)
-    server = make_shared<SSLServer>();
-  else
-    server = make_shared<TCPServer>();
-
-  server->set_server_cert(server_cert_);
-  server->set_server_prikey(server_prikey_, server_prikey_password_);
-  server->start(ports_[party_]);
-  if (verbose_ > 1)
-    cout << "init server end" << endl;
-
   // init client id, which is `party_id * thread_nums + thread_id`
+  vector<int> expected_cids;
   for (int i = 0; i < parties_; i++) {
     for (int j = 0; j < thread_nums_; j++) {
       int cid = thread_nums_ * i + j;
+      if (party_ != i) {
+        expected_cids.push_back(cid);
+      }
       party_cids_[i].insert({j, cid});
       if (verbose_ > 1) {
         cout << "party " << i << " in tid " << j << " with cid " << party_cids_[i][j] << endl;
@@ -91,30 +87,66 @@ bool BasicIO::init() {
   if (verbose_ > 1)
     cout << "init client ids end" << endl;
 
+  // init server with each party's port
+  if (is_ssl_io_)
+    server = make_shared<SSLServer>();
+  else
+    server = make_shared<TCPServer>();
+  server->set_server_cert(server_cert_);
+  server->set_server_prikey(server_prikey_, server_prikey_password_);
+  server->set_expected_cids(expected_cids);
+  server->setsid(party_);
+
+  if (!server->start(ports_[party_]))
+    return false;
+  if (verbose_ > 1)
+    cout << "init server end" << endl;
+
   // init clients, each have parties's clients. one which i==party_id is not use
+  /////////////////////////////////////////////////////
   client.resize(parties_);
+  vector<thread> client_threads(parties_ * thread_nums_);
   for (int i = 0; i < parties_; i++) {
     for (int j = 0; j < thread_nums_; j++) {
-      if (party_ != i) {
-        if (is_ssl_io_)
-          client[i].push_back(make_shared<SSLClient>(ips_[i], ports_[i]));
-        else
-          client[i].push_back(make_shared<TCPClient>(ips_[i], ports_[i]));
-
-        client[i][j]->setcid(party_cids_[party_][j]);
-        client[i][j]->setsid(i);
-        if (verbose_ > 1) {
-          cout << "party " << i << " in tid " << j << " with cid " << party_cids_[i][j] << endl;
-        }
-        if (!client[i][j]->connect()) {
-          cout << "error ......" << endl;
-          return false;
-        }
-      } else {
-        client[i].push_back(nullptr);
-      }
+      client[i].push_back(nullptr);
     }
   }
+
+  bool init_client_ok = true;
+  auto conn_f = [&](int i, int j) -> bool {
+    if (party_ != i) {
+      if (is_ssl_io_)
+        client[i][j] = make_shared<SSLClient>(ips_[i], ports_[i]);
+      else
+        client[i][j] = make_shared<TCPClient>(ips_[i], ports_[i]);
+
+      client[i][j]->setcid(party_cids_[party_][j]);
+      client[i][j]->setsid(i);
+      client[i][j]->setsslid(party_);
+      if (!client[i][j]->connect()) {
+        init_client_ok = false;
+        return false;
+      }
+    }
+    return true;
+  };
+
+  for (int i = 0; i < parties_; i++) {
+    for (int j = 0; j < thread_nums_; j++) {
+      client_threads[i * thread_nums_ + j] = thread(conn_f, i, j);
+    }
+  }
+
+  for (int i = 0; i < parties_; i++) {
+    for (int j = 0; j < thread_nums_; j++) {
+      client_threads[i * thread_nums_ + j].join();
+    }
+  }
+
+  if (!init_client_ok)
+    return false;
+  /////////////////////////////////////////////////////
+
   if (verbose_ > 1)
     cout << "init clients end" << endl;
 
@@ -155,8 +187,8 @@ void BasicIO::sync_with(const msg_id_t& msg_id) {
     for (int j = 0; j < thread_nums_; j++) {
       if (party_ != i) {
         if (verbose_ > 1) {
-          cout << "sync parties:" << parties_ << ", party:" << party_ << ", i:" << i << ", j:" << j
-               << " with msg id:" << msg_id << "," << is_parallel_io_ << endl;
+          log_info << "sync parties:" << parties_ << ", party:" << party_ << ", i:" << i
+                   << ", j:" << j << " with msg id:" << msg_id << "," << is_parallel_io_ << endl;
         }
         if (is_parallel_io_) {
           send(i, msg.data(), 1, msg_id);
@@ -171,13 +203,17 @@ void BasicIO::sync_with(const msg_id_t& msg_id) {
     for (int j = 0; j < thread_nums_; j++) {
       if (party_ != i) {
         if (verbose_ > 1) {
-          cout << "sync parties:" << parties_ << ", party:" << party_ << ", i:" << i << ", j:" << j
-               << " with msg id:" << msg_id << "," << is_parallel_io_ << endl;
+          log_info << "sync recv beg parties:" << parties_ << ", party:" << party_ << ", i:" << i
+                   << ", j:" << j << " with msg id:" << msg_id << "," << is_parallel_io_ << endl;
         }
         if (is_parallel_io_) {
           recv(i, buf, 1, msg_id);
         } else {
           recv(i, buf, 1, j);
+        }
+        if (verbose_ > 1) {
+          log_info << "sync recv end parties:" << parties_ << ", party:" << party_ << ", i:" << i
+                   << ", j:" << j << " with msg id:" << msg_id << "," << is_parallel_io_ << endl;
         }
       }
     }
@@ -197,15 +233,20 @@ void BasicIO::clear_statistics() { net_stat_st_.reset(); }
 void BasicIO::statistics(string str) {
   auto stat = net_stat();
   log_debug << setw(15) << str << " communications P(" << party_ << "/" << parties_ << ") " << stat
-       << endl;
+            << endl;
 }
 
 /*
 ** thread version
 */
 
-int BasicIO::recv(int party, char* data, size_t len, int tid) {
-  int ret = server->recv(party_cids_[party][tid], data, len);
+ssize_t BasicIO::recv(int party, char* data, size_t len, int tid) {
+  if (server->stoped())
+    throw socket_recv_exp("t server->stoped().");
+  ssize_t ret = server->recv(party_cids_[party][tid], data, len);
+  if (ret != len)
+    throw socket_recv_exp("netio recv failed. Please see log for more details.");
+
   {
     net_stat_st_.message_received++;
     net_stat_st_.bytes_received += len;
@@ -213,8 +254,13 @@ int BasicIO::recv(int party, char* data, size_t len, int tid) {
   return ret;
 }
 
-int BasicIO::send(int party, const char* data, size_t len, int tid) {
-  int ret = client[party][tid]->send(data, len);
+ssize_t BasicIO::send(int party, const char* data, size_t len, int tid) {
+  if (client[party][tid]->closed())
+    throw socket_send_exp("t client[party][tid]->closed()");
+  ssize_t ret = client[party][tid]->send(data, len);
+  if (ret != len)
+    throw socket_send_exp("netio send failed. Please see log for more details.");
+
   {
     net_stat_st_.message_sent++;
     net_stat_st_.bytes_sent += len;
@@ -222,7 +268,7 @@ int BasicIO::send(int party, const char* data, size_t len, int tid) {
   return ret;
 }
 
-int BasicIO::broadcast(const char* data, size_t len, int tid) {
+ssize_t BasicIO::broadcast(const char* data, size_t len, int tid) {
   // send to other parties (by thread)
   for (int i = 0; i < parties_; i++) {
     if (party_ != i)
@@ -234,8 +280,14 @@ int BasicIO::broadcast(const char* data, size_t len, int tid) {
 /*
 ** mesasge key version
 */
-int BasicIO::recv(int party, char* data, size_t len, const msg_id_t& msg_id) {
-  int ret = server->recv(party_cids_[party][0], msg_id, data, len);
+ssize_t BasicIO::recv(int party, char* data, size_t len, const msg_id_t& msg_id) {
+  if (server->stoped())
+    throw socket_exp("m server->stoped()");
+  int tid = (*((uint8_t*)msg_id.data()) & 0xF) % thread_nums_;
+  ssize_t ret = server->recv(party_cids_[party][tid], msg_id, data, len);
+  if (ret != len)
+    throw socket_recv_exp("netio recv failed. Please see log for more details.");
+
   {
     net_stat_st_.message_received++;
     net_stat_st_.bytes_received += sizeof(int32_t);
@@ -245,13 +297,14 @@ int BasicIO::recv(int party, char* data, size_t len, const msg_id_t& msg_id) {
   return ret;
 }
 
-int BasicIO::send(int party, const char* data, size_t len, const msg_id_t& msg_id) {
+ssize_t BasicIO::send(int party, const char* data, size_t len, const msg_id_t& msg_id) {
   simple_buffer buffer(msg_id, data, len);
-  int ret = send(party, buffer.data(), buffer.len(), 0);
+  int tid = (*((uint8_t*)msg_id.data()) & 0xF) % thread_nums_;
+  ssize_t ret = send(party, buffer.data(), buffer.len(), tid);
   return ret;
 }
 
-int BasicIO::broadcast(const char* data, size_t len, const msg_id_t& msg_id) {
+ssize_t BasicIO::broadcast(const char* data, size_t len, const msg_id_t& msg_id) {
   for (int i = 0; i < parties_; i++) {
     if (party_ != i)
       send(i, data, len, msg_id);

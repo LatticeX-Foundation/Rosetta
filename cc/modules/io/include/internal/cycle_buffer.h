@@ -40,53 +40,30 @@ struct cycle_buffer {
   /// a timer for rm empty <msgid -> buffer>
   SimpleTimer timer_;
 
-  int32_t size() {
-    return n_ - remain_space_;
-  }
-  int32_t remain_space() const {
-    return remain_space_;
-  }
+  int32_t size() { return n_ - remain_space_; }
+  int32_t remain_space() const { return remain_space_; }
 
  public:
-  ~cycle_buffer() {
-    delete[] buffer_;
-    buffer_ = nullptr;
-  }
-  cycle_buffer(int32_t n) : n_(n), remain_space_(n) {
-    buffer_ = new char[n_];
-  }
-  void empty() {
-    is_full_ = false;
-    is_empty_ = true;
-    r_pos_ = 0;
-    w_pos_ = 0;
-    remain_space_ = n_;
-  }
+  ~cycle_buffer();
+  cycle_buffer(int32_t n) : n_(n), remain_space_(n) { buffer_ = new char[n_]; }
+  void reset();
 
  public:
   // if i can read length size buffer
-  bool can_read(int32_t length) {
-    std::unique_lock<std::mutex> lck(mtx_);
-    return (n_ - remain_space_ >= length);
-  }
-  bool can_remove(double t) {
-    if (
-      (timer_.elapse() > t) // no visits in t seconds
-      && (remain_space_ == n_) // no datas
-    ) {
-      return true;
-    }
-    return false;
-  }
+  bool can_read(int32_t length);
+  bool can_remove(double t);
 
   /**
    * The real data will not be deleted. \n
    * The caller must make sure that can read length size bytes data
    */
-  int peek(char* data, int32_t length);
-  int read(char* data, int32_t length);
+  int32_t peek(char* data, int32_t length);
+
+  /**
+   */
+  int32_t read(char* data, int32_t length);
   void realloc(int32_t length);
-  int write(const char* data, int32_t length);
+  int32_t write(const char* data, int32_t length);
 };
 } // namespace io
 } // namespace rosetta

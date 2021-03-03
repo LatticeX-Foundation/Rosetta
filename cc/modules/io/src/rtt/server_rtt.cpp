@@ -16,9 +16,11 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #include "cc/modules/io/include/internal/server.h"
-
+#include "cc/modules/common/include/utils/perf_stats.h"
+#include <chrono>
 #include <iostream>
 using namespace std;
+using namespace std::chrono;
 
 #if !USE_LIBEVENT_AS_BACKEND
 namespace rosetta {
@@ -36,7 +38,7 @@ void epoll_add(int efd, Connection* conn) {
   ev.data.ptr = conn;
   int r = epoll_ctl(efd, EPOLL_CTL_ADD, conn->fd_, &ev);
   if (r != 0) {
-    cerr << "epoll_ctl add failed. errno:" << errno << " " << strerror(errno) << endl;
+    log_error << "epoll_ctl add failed. errno:" << errno << " " << strerror(errno) << endl;
   }
 }
 
@@ -47,7 +49,7 @@ void epoll_mod(int efd, Connection* conn) {
   ev.data.ptr = conn;
   int r = epoll_ctl(efd, EPOLL_CTL_MOD, conn->fd_, &ev);
   if (r != 0) {
-    cerr << "epoll_ctl mod failed. errno:" << errno << " " << strerror(errno) << endl;
+    log_error << "epoll_ctl mod failed. errno:" << errno << " " << strerror(errno) << endl;
   }
 }
 
@@ -58,7 +60,7 @@ void epoll_del(int efd, Connection* conn) {
   ev.data.ptr = conn;
   int r = epoll_ctl(efd, EPOLL_CTL_DEL, conn->fd_, &ev);
   if (r != 0) {
-    cerr << "epoll_ctl del failed. errno:" << errno << " " << strerror(errno) << endl;
+    log_error << "epoll_ctl del failed. errno:" << errno << " " << strerror(errno) << endl;
   }
 }
 } // namespace
@@ -66,6 +68,11 @@ void epoll_del(int efd, Connection* conn) {
 int TCPServer::create_server(int port) {
   int ret = -1;
   int fd = socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC, 0);
+  if (fd < 0) {
+    log_error << "create socket failed. errno:" << errno << " " << strerror(errno) << endl;
+    return -1;
+  }
+
   set_nonblocking(fd, 1);
 
   struct sockaddr_in addr;
@@ -86,15 +93,16 @@ int TCPServer::create_server(int port) {
 
   ret = ::bind(fd, (struct sockaddr*)&addr, sizeof(struct sockaddr));
   if (ret != 0) {
-    cerr << "bind to 0.0.0.0:" << port << " failed. errno:" << errno << " " << strerror(errno)
-         << endl;
+    log_error << "bind to 0.0.0.0:" << port << " failed. errno:" << errno << " " << strerror(errno)
+              << endl;
+    return -1;
   }
 
   ret = ::listen(fd, 20);
   if (ret != 0) {
-    cerr << "listen failed. errno:" << errno << " " << strerror(errno) << endl;
+    log_error << "listen failed. errno:" << errno << " " << strerror(errno) << endl;
+    return -1;
   }
-  log_debug << "fd " << fd << " listening at " << port << endl;
 
   return fd;
 }
@@ -108,10 +116,27 @@ void TCPServer::handle_accept(Connection* conn) {
   socklen_t clientlen = sizeof(clt_addr);
   int cfd = accept(listenfd_, (struct sockaddr*)&clt_addr, &clientlen);
   if (cfd == -1) {
-    perror("accept failed!");
-    return;
+    log_error << "accept failed. errno:" << errno << " " << strerror(errno) << endl;
+    throw socket_exp("accept failed");
   }
   //cout << "accept cfd: " << cfd << endl;
+
+  int tmpcid = -9999;
+  // recv client id from client
+  ssize_t ret = ::read(cfd, (char*)&tmpcid, 4);
+  int cid = tmpcid ^ 0x1234;
+  if (cid != 0 && cid != 1 && cid != 2) {
+    log_warn << "not really client. cid:" << cid << endl;
+    close(cfd);
+    return;
+  }
+
+  if (ret != 4) {
+    log_error << "recv cid[" << cid << "] tmpcid[" << tmpcid << "] from client failed. ret:" << ret
+              << " errno:" << errno << " " << strerror(errno) << endl;
+    throw socket_exp("server recv cid error");
+  }
+  log_info << "server receive from client cid:" << cid << " tmpcid:" << tmpcid << endl;
 
   set_sendbuf(cfd, default_buffer_size());
   set_recvbuf(cfd, default_buffer_size());
@@ -125,20 +150,9 @@ void TCPServer::handle_accept(Connection* conn) {
 
   tc->ctx_ = ctx_;
 
-  // recv client id from client
-  int cid = 0;
-  //int ret = tc->tcpreadn(cfd, (char*)&cid, 4);
-  int ret = ::read(cfd, (char*)&cid, 4);
-  if (ret != 4) {
-    cerr << "error conn_->tcpwriten(fd_, (const char*)&cid_, 4);" << endl;
-    exit(0);
-  }
-  //cout << "receive from client cid:" << cid << endl;
-
   set_nonblocking(cfd, true);
   {
     unique_lock<mutex> lck(connections_mtx_);
-    //cout << "ssid:" << tc->ssid_ << " register " << cid << endl;
     connections_[cid] = tc;
   }
   epoll_add(epollfd_, tc);
@@ -146,15 +160,15 @@ void TCPServer::handle_accept(Connection* conn) {
 }
 
 void TCPServer::handle_error(Connection* conn) {
-  if (verbose_ > 1)
-    cout << __FUNCTION__ << " errno:" << errno << endl;
+  log_info << __FUNCTION__ << " fd:" << conn->fd_ << " errno:" << errno << " " << strerror(errno)
+           << endl;
   {
     //! double check
     struct tcp_info info;
     int len = sizeof(info);
     getsockopt(conn->fd_, IPPROTO_TCP, TCP_INFO, &info, (socklen_t*)&len);
-    if (verbose_ > 1)
-      cout << "fd:" << conn->fd_ << " tcp_info.tcpi_state: " << to_string(info.tcpi_state) << endl;
+    log_info << __FUNCTION__ << " fd:" << conn->fd_
+             << " tcp_info.tcpi_state: " << to_string(info.tcpi_state) << endl;
     if (info.tcpi_state == TCP_CLOSE) {
       ssize_t len = conn->readImpl(conn->fd_, main_buffer_, 8192);
       if (len > 0) { // Normal
@@ -183,7 +197,10 @@ void TCPServer::handle_read(Connection* conn) {
   }
 
   // handle data read
-  conn->handshake();
+  if (!conn->handshake()) {
+    log_error << "server hadshake error" << endl;
+    return;
+  }
 
   while (true) {
     ssize_t len = conn->readImpl(conn->fd_, main_buffer_, 8192);
@@ -200,7 +217,7 @@ void TCPServer::handle_read(Connection* conn) {
       epoll_del(epollfd_, conn);
       conn->close();
       return;
-    } else { // Error or Interrupt
+    } else { // <0, Error or Interrupt
       if (errno == EINTR) {
         continue;
       }
@@ -226,7 +243,7 @@ void TCPServer::loop_once(int efd, int waitms) {
       cout << "epoll timeout" << endl;
     return;
   } else if (nfds < 0) {
-    perror("epoll error!");
+    log_error << "epoll error!" << endl;
     return;
   }
 
@@ -242,27 +259,73 @@ void TCPServer::loop_once(int efd, int waitms) {
     } else if (events & EPOLLOUT) {
       handle_write(conn);
     } else {
-      cerr << "unknown events " << events << endl;
+      log_error << "unknown events " << events << endl;
     }
   }
 }
 void TCPServer::loop_main() {
   running_ = true;
-  while (!stop_) {
+  int64_t timeout = -1;
+  if (timeout < 0)
+    timeout = 1000 * 1000000;
+  timeout += wait_timeout_;
+  int64_t elapsed = 0;
+  auto beg = system_clock::now();
+
+  /**
+   * check if all clients have connected to this server
+   * if timeout, break
+   * if all has connected, break
+   */
+  bool all_has_connected_to_server = true;
+  while (!stop_ && (elapsed <= timeout)) {
+    all_has_connected_to_server = true;
     loop_once(epollfd_, 1000);
+    {
+      unique_lock<mutex> lck(connections_mtx_);
+      for (int i = 0; i < expected_cids_.size(); i++) {
+        auto iter = connections_.find(expected_cids_[i]);
+        if (iter == connections_.end()) {
+          all_has_connected_to_server = false;
+          break;
+        }
+      }
+    }
+    if (all_has_connected_to_server)
+      break;
+    auto end = system_clock::now();
+    elapsed = duration_cast<duration<int64_t, std::milli>>(end - beg).count();
+    all_has_connected_to_server = false;
+    log_debug << "server .... timeout:" << timeout << " elapsed:" << elapsed << endl;
+  }
+
+  ::close(listenfd_); // close listen fd
+
+  if (all_has_connected_to_server) {
+    while (!stop_) {
+      loop_once(epollfd_, 1000);
+    }
+  } else {
+    log_info << "client(s) connect to this server timeout, wait for closing..." << endl;
   }
 
   bool all_closed = false;
-  while (!all_closed) {
+  int retries = 10;
+  while (!all_closed && (--retries > 0)) {
+    log_info << "the server will stop soon ... " << retries << endl;
     all_closed = true;
     for (auto& c : connections_) {
       if (c.second != nullptr) {
+        log_debug << "the server will stop soon ... " << retries << ", c.first:" << c.first
+                  << ",c.second->state_:" << c.second->state_ << endl;
         if (c.second->state_ != Connection::State::Closed) {
           all_closed = false;
           break;
         }
       }
     }
+    if (retries <= 0)
+      all_closed = true;
     if (!all_closed) {
       loop_once(epollfd_, 1000);
     }
@@ -273,13 +336,18 @@ void TCPServer::loop_main() {
 
 bool TCPServer::init() {
   // 0
-  signal(SIGINT, handleInterrupt);
+  //signal(SIGINT, handleInterrupt);
 
   // 1
-  epollfd_ = epoll_create1(EPOLL_CLOEXEC);
+  if ((epollfd_ = epoll_create1(EPOLL_CLOEXEC)) < 0) {
+    log_error << "epoll_create1 failed. errno:" << errno << " " << strerror(errno) << endl;
+    return false;
+  }
 
   // 2
-  listenfd_ = create_server(port_);
+  if ((listenfd_ = create_server(port_)) < 0) {
+    return false;
+  }
 
   // 3
   if (is_ssl_socket_)
@@ -298,8 +366,13 @@ bool TCPServer::init() {
 
 bool TCPServer::start(int port, int64_t timeout) {
   port_ = port;
-  init_ssl();
-  init();
+  if (!init_ssl())
+    return false;
+
+  if (!init())
+    return false;
+
+  stoped_ = false;
   return true;
 }
 void TCPServer::as_server() {
@@ -320,12 +393,14 @@ bool TCPServer::stop() {
   for (auto& c : connections_) {
     if (c.second != nullptr) {
       if (c.second->state_ != Connection::State::Closed) {
-        cout << "in fact, never enter here!" << endl;
+        c.second->close();
+        //cout << "in fact, never enter here!" << endl;
       }
       delete c.second;
       c.second = nullptr;
     }
   }
+  connections_.clear();
 
   // 6
   delete listen_conn_;

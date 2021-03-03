@@ -17,31 +17,31 @@
 // ==============================================================================
 
 template <typename T>
-int BasicIO::recv(int party, vector<T>& data, size_t n, int tid) {
+ssize_t BasicIO::recv(int party, vector<T>& data, size_t n, int tid) {
   return recv(party, (char*)data.data(), n * sizeof(T), tid);
 }
 
 template <typename T>
-int BasicIO::send(int party, const vector<T>& data, size_t n, int tid) {
+ssize_t BasicIO::send(int party, const vector<T>& data, size_t n, int tid) {
   return send(party, (const char*)data.data(), n * sizeof(T), tid);
 }
 
 template <typename T>
-int BasicIO::broadcast(const vector<T>& data, size_t n, int tid) {
+ssize_t BasicIO::broadcast(const vector<T>& data, size_t n, int tid) {
   return broadcast((const char*)data.data(), n * sizeof(T), tid);
 }
 
 template <typename T>
-int BasicIO::recv(int party, vector<T>& data, size_t n, const msg_id_t& msg_id) {
+ssize_t BasicIO::recv(int party, vector<T>& data, size_t n, const msg_id_t& msg_id) {
   return recv(party, (char*)data.data(), n * sizeof(T), msg_id);
 }
 
 template <typename T>
-int BasicIO::send(int party, const vector<T>& data, size_t n, const msg_id_t& msg_id) {
+ssize_t BasicIO::send(int party, const vector<T>& data, size_t n, const msg_id_t& msg_id) {
   return send(party, (const char*)data.data(), n * sizeof(T), msg_id);
 }
 
 template <typename T>
-int BasicIO::broadcast(const vector<T>& data, size_t n, const msg_id_t& msg_id) {
+ssize_t BasicIO::broadcast(const vector<T>& data, size_t n, const msg_id_t& msg_id) {
   return broadcast((const char*)data.data(), n * sizeof(T), msg_id);
 }

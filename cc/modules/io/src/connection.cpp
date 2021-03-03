@@ -18,6 +18,8 @@
 #include "cc/modules/io/include/internal/connection.h"
 
 #include <thread>
+#include <chrono>
+using namespace std::chrono;
 
 namespace rosetta {
 namespace io {
@@ -39,13 +41,17 @@ void Connection::close() {
 
 SSLConnection::~SSLConnection() { close(); }
 
-size_t Connection::send(const char* data, size_t len, int64_t timeout) {
+ssize_t Connection::send(const char* data, size_t len, int64_t timeout) {
   if (is_server()) {
-    cerr << "not supports server's send at present!" << endl;
-    throw;
+    log_error << "not supports server's send at present!" << endl;
+    return -1;
   }
 
-  int n = 0;
+  if (len > 1024 * 1024 * 100) {
+    log_warn << "client will send " << len << " B, >100M!" << endl;
+  }
+
+  ssize_t n = 0;
 #if USE_LIBEVENT_AS_BACKEND
   struct evbuffer* output = bufferevent_get_output(bev_);
   n = evbuffer_add(output, data, len);
@@ -57,8 +63,8 @@ size_t Connection::send(const char* data, size_t len, int64_t timeout) {
   return n;
 }
 
-size_t Connection::recv(char* data, size_t len, int64_t timeout) {
-  int n = 0;
+ssize_t Connection::recv(char* data, size_t len, int64_t timeout) {
+  ssize_t n = 0;
   if (is_server()) {
     n = buffer_->read(data, len);
   } else {
@@ -74,15 +80,30 @@ size_t Connection::recv(char* data, size_t len, int64_t timeout) {
   return n;
 }
 
-size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t timeout) {
+ssize_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t timeout) {
   if (!is_server()) {
-    cerr << "not supports client's recv at present!" << endl;
-    throw;
+    log_error << "not supports client's recv at present!" << endl;
+    return -1;
+  }
+  if (len > 1024 * 1024 * 100) {
+    log_warn << "msg_id:" << msg_id.str() << " will recv " << len << " B, >100M!" << endl;
   }
 
-  int ret = 0;
+  int64_t elapsed = 0;
+  auto beg = system_clock::now();
+  ssize_t ret = 0;
   bool retry = false;
+  State tmpstate = state_;
   do {
+    auto end = system_clock::now();
+    elapsed = duration_cast<duration<int64_t, std::milli>>(end - beg).count();
+    if ((tmpstate == State::Connected) && (state_ != State::Connected)) {
+      return E_UNCONNECTED; // un connected
+    }
+    if (elapsed > timeout) {
+      return E_TIMEOUT; // timeout
+    }
+
     if (retry)
       std::this_thread::yield();
 
@@ -113,9 +134,10 @@ size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t 
     if (false) {
       // remove `one` empty <msg_id, buffer>
       for (auto iter = mapbuffer_.begin(); iter != mapbuffer_.end(); ++iter) {
-        if (iter->second->can_remove(20.0)) {
+        if (iter->second->can_remove(50.0)) {
           if (verbose_ > 0) {
-            cout << "remove [" << iter->first << "] from mapbuffer, because it's empty" << endl;
+            log_info << "remove [" << iter->first << "] from mapbuffer, because it's empty."
+                     << endl;
           }
           mapbuffer_.erase(iter);
           break;
@@ -146,18 +168,19 @@ size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t 
 
     buffer_->read((char*)&alen, len1); // the length of the total msg
 
-    msg_id_t tmp;
-    buffer_->read(tmp.data(), msg_id_t::Size()); // msg id
+    char tmp_id[msg_id_t::Size() + 1] = {0};
+    buffer_->read(tmp_id, msg_id_t::Size()); // msg id
+    msg_id_t tmp(tmp_id, msg_id_t::Size());
     if (mapbuffer_.find(tmp) == mapbuffer_.end()) {
       if (verbose_ > 1) {
         cout << "server recv fd:" << fd_ << " enter msgid:" << tmp << endl;
       }
-      mapbuffer_[tmp] = make_shared<cycle_buffer>(1024 * 1024 * 10);
+      mapbuffer_[tmp] = make_shared<cycle_buffer>(1024 * 8);
     }
 
     size_t data_len = alen - len1 - msg_id_t::Size();
     if ((tmp == msg_id) && (len == data_len) && (mapbuffer_[msg_id]->size() == 0)) {
-      int ret = buffer_->read(data, len);
+      ssize_t ret = buffer_->read(data, len);
       return ret;
     }
 
@@ -175,23 +198,23 @@ size_t Connection::recv(const msg_id_t& msg_id, char* data, size_t len, int64_t 
     }
   } while (true);
 
-  cerr << "in fact, never enter here" << endl;
-  return 0;
+  log_error << "in fact, never enter here" << endl;
+  return E_ERROR;
 }
 
 ssize_t Connection::peek(int sockfd, void* buf, size_t len) {
   cout << __FUNCTION__ << " len:" << len << endl;
   while (1) {
-    int ret = ::recv(sockfd, buf, len, MSG_PEEK);
+    ssize_t ret = ::recv(sockfd, buf, len, MSG_PEEK);
     if (ret == -1 && errno == EINTR)
       continue;
     return ret;
   }
 }
 
-int Connection::readn(int connfd, char* vptr, int n) {
-  int nleft;
-  int nread;
+ssize_t Connection::readn(int connfd, char* vptr, size_t n) {
+  ssize_t nleft;
+  ssize_t nread;
   char* ptr;
 
   ptr = vptr;
@@ -208,10 +231,13 @@ int Connection::readn(int connfd, char* vptr, int n) {
           //usleep(200);
           continue;
         }
-        cout << __FUNCTION__ << " errno:" << errno << endl;
+        log_error << __FUNCTION__ << " errno:" << errno << " " << strerror(errno) << endl;
         return -1;
       }
     } else if (nread == 0) {
+      if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
+        continue;
+      }
       break;
     }
     nleft -= nread;
@@ -220,8 +246,8 @@ int Connection::readn(int connfd, char* vptr, int n) {
   return n - nleft;
 }
 
-int Connection::writen(int connfd, const char* vptr, size_t n) {
-  int nleft, nwritten;
+ssize_t Connection::writen(int connfd, const char* vptr, size_t n) {
+  ssize_t nleft, nwritten;
   const char* ptr;
 
   std::unique_lock<mutex> lck(mtx_send_);
@@ -232,21 +258,19 @@ int Connection::writen(int connfd, const char* vptr, size_t n) {
   while (nleft > 0) {
     if (verbose_ > 2)
       cout << __FUNCTION__ << " nleft:" << nleft << endl;
-    if ((nwritten = writeImpl(connfd, ptr, nleft)) <= 0) {
-      if (nwritten < 0) {
-        if (errno == EINTR) {
-          nwritten = 0;
-        } else if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
-          //usleep(200);
-          continue;
-        }
+    if ((nwritten = writeImpl(connfd, ptr, nleft)) < 0) {
+      if (errno == EINTR) {
         nwritten = 0;
-        usleep(100000);
-        cout << __FUNCTION__ << " errno:" << errno << endl;
-        return -1;
-      } else {
-        return -1;
+      } else if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
+        continue;
       }
+      log_error << __FUNCTION__ << " errno:" << errno << " " << strerror(errno) << endl;
+      return -1;
+    } else if (nwritten == 0) {
+      if ((errno == EAGAIN) || (errno == EWOULDBLOCK)) {
+        continue;
+      }
+      break;
     }
     nleft -= nwritten;
     ptr += nwritten;

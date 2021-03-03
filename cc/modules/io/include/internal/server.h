@@ -17,9 +17,10 @@
 // ==============================================================================
 #pragma once
 #include "cc/modules/io/include/internal/comm.h"
+#include "cc/modules/common/include/utils/msg_id.h"
 #include "cc/modules/io/include/internal/connection.h"
 #include "cc/modules/io/include/internal/socket.h"
-#include "cc/modules/io/include/internal/msg_id.h"
+#include "cc/modules/io/include/internal/ssl_socket.h"
 
 #include <thread>
 
@@ -38,13 +39,19 @@ class TCPServer : public Socket {
   bool start(int port, int64_t timeout = -1L);
   void as_server();
   bool stop();
+  bool stoped() { return stoped_; }
 
  public:
-  size_t send(int cid, const char* data, size_t len, int64_t timeout = -1L);
-  size_t recv(int cid, char* data, size_t len, int64_t timeout = -1L);
+  ssize_t send(int cid, const char* data, size_t len, int64_t timeout = -1L);
+  ssize_t recv(int cid, char* data, size_t len, int64_t timeout = -1L);
 
-  size_t send(int cid, const msg_id_t& msg_id, const char* data, size_t len, int64_t timeout = -1L);
-  size_t recv(int cid, const msg_id_t& msg_id, char* data, size_t len, int64_t timeout = -1L);
+  ssize_t send(
+    int cid,
+    const msg_id_t& msg_id,
+    const char* data,
+    size_t len,
+    int64_t timeout = -1L);
+  ssize_t recv(int cid, const msg_id_t& msg_id, char* data, size_t len, int64_t timeout = -1L);
 
   /**
    * about certifications
@@ -55,6 +62,9 @@ class TCPServer : public Socket {
     server_prikey_ = server_prikey;
     server_prikey_password_ = password;
   }
+  void setsid(int sid) { sid_ = sid; }
+  void set_expected_cids(const vector<int>& expected_cids) { expected_cids_ = expected_cids; }
+  void setwtimo(int64_t wait_timeout) { wait_timeout_ = wait_timeout; }
 
  protected:
   Connection* find_connection(int cid);
@@ -86,7 +96,7 @@ class TCPServer : public Socket {
   char* main_buffer_ = nullptr;
   int port_ = 0;
   int stop_ = 0;
-  bool stoped_ = false;
+  bool stoped_ = true;
 
   string server_cert_;
   string server_prikey_;
@@ -94,6 +104,10 @@ class TCPServer : public Socket {
 
   std::condition_variable init_cv_;
   std::mutex init_mtx_;
+
+  int sid_ = 0; // server id
+  vector<int> expected_cids_;
+  int64_t wait_timeout_ = 0;
 
 #if USE_LIBEVENT_AS_BACKEND
   ////////////////// event

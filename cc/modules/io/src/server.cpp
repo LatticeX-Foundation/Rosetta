@@ -20,10 +20,6 @@
 namespace rosetta {
 namespace io {
 Connection* TCPServer::find_connection(int cid, int64_t& timeout) {
-  if (timeout < 0) {
-    timeout = 999999999999L;
-  }
-
   using namespace std::chrono;
   auto time_beg = system_clock::now();
   Connection* conn = nullptr;
@@ -41,14 +37,15 @@ Connection* TCPServer::find_connection(int cid, int64_t& timeout) {
     elapsed = duration_cast<duration<int64_t, std::milli>>(time_end - time_beg).count();
 
     if ((icounter % 100 == 0) || (verbose_ > 1)) {
-      std::cout << "receive data from cid[" << cid << "] counter:" << icounter << std::endl;
+      log_info << "receive of find_connection cid[" << cid << "] counter:" << icounter << std::endl;
     }
   } while (elapsed < timeout);
   if (verbose_ > 2) {
-    std::cout << "receive timeout:" << timeout << ", elapsed:" << elapsed << std::endl;
+    log_info << "receive of find_connection timeout:" << timeout << ", elapsed:" << elapsed
+             << std::endl;
   }
   if (conn == nullptr) {
-    std::cerr << "receive cannot find connection id" << std::endl;
+    log_warn << "receive cannot find connection id" << std::endl;
   }
 
   timeout = timeout - elapsed;
@@ -70,37 +67,40 @@ Connection* TCPServer::find_connection(int cid) {
 /**
  * @todo not completed supports server's send at present
  */
-size_t TCPServer::send(int cid, const char* data, size_t len, int64_t timeout) {
+ssize_t TCPServer::send(int cid, const char* data, size_t len, int64_t timeout) {
   if (verbose_ > 3)
     cout << "cid:" << cid << " send 1" << endl;
 
   auto conn = find_connection(cid, timeout);
-  if (conn == nullptr)
-    return 0;
+  if (conn == nullptr) {
+    log_error << "TCPServer send cannot find connection!" << endl;
+    return -1;
+  }
 
   if (verbose_ > 3)
     cout << "cid:" << cid << " send 2" << endl;
 
-  int ret = conn->send(data, len);
+  ssize_t ret = conn->send(data, len);
   return ret;
 }
 
-size_t TCPServer::recv(int cid, char* data, size_t len, int64_t timeout) {
-  if (timeout < 0) {
-    timeout = 999999999999L;
-  }
+ssize_t TCPServer::recv(int cid, char* data, size_t len, int64_t timeout) {
+  if (timeout < 0)
+    timeout = 1000 * 1000000;
 
   if (verbose_ > 3)
     cout << "cid:" << cid << " recv 1" << endl;
 
   auto conn = find_connection(cid, timeout);
-  if (conn == nullptr)
-    return 0;
+  if (conn == nullptr) {
+    log_error << "TCPServer recv cannot find connection!" << endl;
+    return -1;
+  }
 
   if (verbose_ > 3)
     cout << "cid:" << cid << " recv 2" << endl;
 
-  int ret = conn->recv(data, len, timeout);
+  ssize_t ret = conn->recv(data, len, timeout);
   if (ret != len) {
     cerr << "cid:" << cid << " ret != len " << ret << " != " << len << endl;
     throw;
@@ -113,39 +113,60 @@ size_t TCPServer::recv(int cid, char* data, size_t len, int64_t timeout) {
 /**
  * @todo not completed supports server's send at present
  */
-size_t TCPServer::send(
-  int cid, const msg_id_t& msg_id, const char* data, size_t len, int64_t timeout) {
+ssize_t TCPServer::send(
+  int cid,
+  const msg_id_t& msg_id,
+  const char* data,
+  size_t len,
+  int64_t timeout) {
   auto conn = find_connection(cid, timeout);
-  if (conn == nullptr)
-    return 0;
+  if (conn == nullptr) {
+    log_error << "TCPServer send cannot find connection!" << endl;
+    return -1;
+  }
 
   //! @todo: add a mutex here
   conn->send(msg_id.data(), msg_id_t::Size());
-  int ret = conn->send(data, len);
+  ssize_t ret = conn->send(data, len);
+
   return ret;
 }
-size_t TCPServer::recv(int cid, const msg_id_t& msg_id, char* data, size_t len, int64_t timeout) {
-  if (timeout < 0) {
-    timeout = 999999999999L;
-  }
+ssize_t TCPServer::recv(int cid, const msg_id_t& msg_id, char* data, size_t len, int64_t timeout) {
+  if (timeout < 0)
+    timeout = 1000 * 1000000;
 
   if (verbose_ > 3)
     cout << "msgid: " << msg_id << " cid:" << cid << " recv 1" << endl;
 
   auto conn = find_connection(cid, timeout);
-  if (conn == nullptr)
-    return 0;
+  if (conn == nullptr) {
+    log_error << "TCPServer recv2 cannot find connection!" << endl;
+    return -1;
+  }
 
   if (verbose_ > 3)
     cout << "msgid " << msg_id << " cid:" << cid << " recv 2" << endl;
 
-  int ret = conn->recv(msg_id, data, len, timeout);
+  ssize_t ret = conn->recv(msg_id, data, len, timeout);
   if (ret != len) {
-    cerr << "msgid " << msg_id << " cid:" << cid << " ret != len " << ret << " != " << len << endl;
-    throw;
+    // if (stop_)
+    //   return len;
+    string errmsg = "TCPServer connection recv error. msgid: " + msg_id.str() +
+      " cid:" + to_string(cid) + " expected:" + to_string(len) + " but got:" + to_string(ret);
+    if (ret == E_TIMEOUT) {
+      errmsg =
+        "TCPServer connection recv timeout. msgid: " + msg_id.str() + " cid:" + to_string(cid);
+    } else if (ret == E_UNCONNECTED) {
+      errmsg = "TCPServer connection have not connected. msgid: " + msg_id.str() +
+        " cid:" + to_string(cid);
+    }
+    log_error << errmsg << endl;
+    return -1;
   }
+
   if (verbose_ > 3)
     cout << "msgid " << msg_id << " cid:" << cid << " recv 3" << endl;
+
   return ret;
 }
 } // namespace io

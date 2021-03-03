@@ -15,46 +15,10 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#pragma once
+#include "cc/modules/io/include/internal/netutil.h"
 
-#include "cc/modules/io/include/internal/comm.h"
-#include "cc/modules/common/include/utils/msg_id.h"
-
-namespace rosetta {
-namespace io {
-
-/**
- * This class for packing msg_id and real_data, with a total len
- */
-class simple_buffer {
- public:
-  simple_buffer(const msg_id_t& msg_id, const char* data, size_t data_len) {
-    len_ = sizeof(int32_t) + msg_id_t::Size() + data_len;
-    buf_ = new char[len_];
-    memset(buf_, 0, len_);
-    memcpy(buf_, (const char*)&len_, sizeof(int32_t));
-    memcpy(buf_ + sizeof(int32_t), msg_id.data(), msg_id_t::Size());
-    memcpy(buf_ + sizeof(int32_t) + msg_id_t::Size(), data, data_len);
-  }
-  ~simple_buffer() {
-    delete[] buf_;
-  }
-
- public:
-  char* data() {
-    return buf_;
-  }
-  const char* data() const {
-    return buf_;
-  }
-  int32_t len() {
-    return len_;
-  }
-
- private:
-  int32_t len_ = 0;
-  char* buf_ = nullptr;
-};
-
-} // namespace io
-} // namespace rosetta
+namespace netutil {
+bool enable_ssl_socket_ = false;
+void enable_ssl_socket(bool _enable) { enable_ssl_socket_ = _enable; }
+bool is_enable_ssl_socket(){return enable_ssl_socket_;}
+} // namespace netutil
