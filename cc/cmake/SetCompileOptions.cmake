@@ -54,6 +54,12 @@ else()
 
   # below warnings will be solved later
   set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-error=restrict")
+  set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-error")
+  set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-ignored-attributes")
+  #set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-class-memaccess")
+  # set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-return-type")
+  set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-attributes")
+  #set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-stringop-overflow")
   #set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-error=pessimizing-move")
   set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-error=array-bounds")
   set(NO_WARN_FLAGS "${NO_WARN_FLAGS} -Wno-error=format-overflow=")
