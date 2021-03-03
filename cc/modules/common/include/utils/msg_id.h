@@ -17,46 +17,52 @@
 // ==============================================================================
 #pragma once
 #include <cstdlib>
-#include <stdio.h>
-#include <string.h>
+#include <cstring>
+#include <ostream>
 #include <memory>
+#include <string>
 
-#define MID_LEN 2
+#define USE_SHA256_ID 1 // Hash version. Use OpenSSL::SHA256.
 
-namespace rosetta {
+#if USE_SHA256_ID
+// 8, 12, 16
+#define BIN_SIZE 8
+#else
+#define BIN_SIZE 2
+#endif
 
-class MsgId {
+using id_type = uint16_t;
+
+class msg_id_t {
  public:
-  explicit MsgId() {}
-  explicit MsgId(const MsgId& mid) {
-    _strsrc = mid._strsrc;
-    memcpy(_bydest, mid._bydest, MID_LEN);
-  }
+  explicit msg_id_t();
+  explicit msg_id_t(const msg_id_t& id);
+  msg_id_t& operator=(const msg_id_t& id);
 
-  explicit MsgId(const std::string& strnum) {
-    _strsrc = strnum;
-    unsigned int nid = strtoul(strnum.c_str(), nullptr, 10);
-    memcpy(_bydest, (unsigned char*)&nid, MID_LEN);
-  }
-
-  explicit MsgId(unsigned int id) {
-    _strsrc = std::to_string(id);
-    memcpy(_bydest, &id, MID_LEN);
-  }
-
-  MsgId& operator=(const MsgId& id) {
-    _strsrc = id._strsrc;
-    memcpy(_bydest, id._bydest, MID_LEN);
-    return *this;
-  }
+  explicit msg_id_t(const char* bin, int len);
+  explicit msg_id_t(id_type id, const std::string& src_msgid);
+  explicit msg_id_t(const std::string& src_msgid);
 
  public:
-  size_t sizes() { return MID_LEN; }
-  const std::string& str() const { return _strsrc; }
-  const char* data() const { return (const char*)_bydest; }
+  friend std::ostream& operator<<(std::ostream& os, const msg_id_t& id);
+  bool operator<(const msg_id_t& id) const;
+  bool operator==(const msg_id_t& id) const;
+  static constexpr size_t Size() { return BIN_SIZE; }
+  const std::string& str() const { return str_; }
+  const char* data() const { return (const char*)bin_; }
 
  private:
-  char _bydest[MID_LEN] = {0};
-  std::string _strsrc = "";
+#if USE_SHA256_ID
+  void hash();
+#endif
+
+ private:
+  char bin_[BIN_SIZE]; //! the binary digest, use the first BIN_SIZE bytes of sha256
+  std::string str_ = ""; //! the hash hex-string (unique for each src_)
+  std::string src_ = ""; //! source string
 };
-} // namespace rosetta
+
+/**
+ * Get the message id
+ */
+const msg_id_t& get_msgid(const std::string& str_msgid);
