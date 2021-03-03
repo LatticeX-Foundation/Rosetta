@@ -65,10 +65,12 @@ template <typename T>
 inline string get_hex_str(T t) {
   char buf[8] = {0};
   char* p = (char*)&t;
-  string s;
+  string s(sizeof(T)*2, 0);
   for (int i = 0; i < sizeof(T); i++) {
     sprintf(buf, "%02x", p[i] & 0xFF);
-    s.append(buf);
+    // s.append(buf);
+    s[2*i] = buf[0];
+    s[2*i+1] = buf[1];
   }
   return s;
 };
@@ -94,6 +96,17 @@ inline T from_hex_str(string s) {
     }
   }
   return t;
+}
+
+inline string get_hex_buffer(const void* buf, size_t size) {
+  char tmp[8] = {0};
+  char* p = (char*)buf;
+  string s;
+  for (size_t i = 0; i < size; i++) {
+    sprintf(tmp, "%02x", p[i] & 0xFF);
+    s.append(tmp);
+  }
+  return s;
 }
 
 //////////////////////////

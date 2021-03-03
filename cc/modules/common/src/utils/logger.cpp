@@ -18,6 +18,7 @@
 #include "cc/modules/common/include/utils/logger.h"
 
 #include <stdarg.h>
+#include <iostream>
 using namespace std;
 
 #ifdef _WIN32
@@ -94,7 +95,8 @@ void Logger::set_filename(const std::string& filename) {
   filename_ = filename;
   to_file_ = true;
   char buf[256] = {0};
-  snprintf(buf, 256, "%s.%d", filename_.data(), pid_);
+  //snprintf(buf, 256, "%s.%d", filename_.data(), pid_);
+  snprintf(buf, 256, "%s", filename_.data());
   auto logger = spdlog::basic_logger_mt("Rosetta", buf); //it will auto register
 }
 

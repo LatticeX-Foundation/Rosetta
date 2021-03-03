@@ -17,6 +17,7 @@
 // ==============================================================================
 #include "cc/modules/common/include/utils/generate_key.h"
 #include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/rtt_exceptions.h"
 
 #include <libgen.h>
 #include <sys/stat.h>
@@ -55,12 +56,12 @@ string gen_key_str(uint32_t seed) {
 }
 
 void gen_key_file(const string& filename, uint32_t seed) {
-  mkdir("key", 0777);
+  mkdir("key", 0755);
 
   ofstream ofile(filename, ios::out);
   if (!ofile.is_open()) {
     log_error << "open [" << filename << "] failed!\n";
-    exit(1);
+    throw openfile_exp("open [" + filename + "] failed!");
   }
   string s = gen_key_str(seed);
 

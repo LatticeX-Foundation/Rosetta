@@ -55,7 +55,7 @@ inline void tofile(
   }
   stringstream sss;
   if (is_same<T, double>::value) {
-    int prec = std::numeric_limits<double>::digits10;
+    int prec = std::numeric_limits<double>::max_digits10;
     sss.precision(prec);
   }
   for (int i = 0; i < v.size(); i++) {

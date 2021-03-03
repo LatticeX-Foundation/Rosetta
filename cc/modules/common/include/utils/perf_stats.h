@@ -26,7 +26,7 @@
 #include <vector>
 #include <iomanip>
 
-#define DO_ELAPSED_STATISTIC 0
+#define DO_ELAPSED_STATISTIC 1
 namespace rosetta {
 /**
  * Usage:

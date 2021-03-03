@@ -22,6 +22,18 @@ configure_file(
 SET(ADD_LINK_LIB_FLAGS "-Wl,--rpath=$ORIGIN../:$ORIGIN")
 SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${ADD_LINK_LIB_FLAGS}")
 
+IF(USE_GMTASSL)
+    # GMSSL
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd/gmssl/include)
+    link_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rd/gmssl/lib)
+    link_libraries(tacrypto tassl)
+ELSE()
+    # OpenSSL
+    find_package(OpenSSL REQUIRED)
+    include_directories(${OPENSSL_INCLUDE_DIR})
+    link_libraries(${OPENSSL_LIBRARIES})
+ENDIF()
+
 # Library
 file(GLOB_RECURSE LIB_HEADER_FILES "include/*.h")
 file(GLOB_RECURSE LIB_SOURCE_FILES "src/*.cpp")

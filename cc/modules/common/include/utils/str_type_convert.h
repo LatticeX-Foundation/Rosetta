@@ -35,18 +35,18 @@ namespace rosetta {
 namespace convert {
 
 template <typename T>
-void to_hex_str(const T& t, string& s) {
+void to_binary_str(const T& t, string& s) {
   s.resize(sizeof(t));
   memcpy((void*)s.data(), &t, sizeof(t));
 };
 
-static void to_binary_str(const void* ptr, int size, string& s) {
+static inline void to_binary_str(const void* ptr, int size, string& s) {
   s.resize(size);
   memcpy((void*)s.data(), ptr, size);
 };
 
 template <typename T>
-void to_hex_str(const vector<T>& ss, vector<string>& ts) {
+void to_binary_str(const vector<T>& ss, vector<string>& ts) {
   ts.resize(ss.size());
   for (int i = 0; i < ss.size(); ++i) {
     ts[i].resize(sizeof(T));
@@ -57,28 +57,28 @@ void to_hex_str(const vector<T>& ss, vector<string>& ts) {
 // convert from value encoded with hex-formatted string to specify T type
 // T should be POD type
 template <typename T>
-T from_hex_str(const string& s) {
+T from_binary_str(const string& s) {
   T t;
   memcpy((void*)&t, s.data(), sizeof(t)); //cns.size());
   return t;
 }
 
 template <typename T>
-void from_hex_str(const string& s, T& t) {
+void from_binary_str(const string& s, T& t) {
   memcpy((void*)&t, s.data(), sizeof(t));
 }
 
 template <typename T>
-void from_hex_str(const vector<string>& s, vector<T>& t) {
+void from_binary_str(const vector<string>& s, vector<T>& t) {
   t.resize(s.size());
   for (auto i = 0; i < s.size(); ++i)
-    from_hex_str(s[i], t[i]);
+    from_binary_str(s[i], t[i]);
 }
 
 template <typename T>
-vector<T> from_hex_str(const vector<string>& s) {
+vector<T> from_binary_str(const vector<string>& s) {
   vector<T> t(s.size());
-  from_hex_str(s, t);
+  from_binary_str(s, t);
   return t;
 }
 
