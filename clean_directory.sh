@@ -18,6 +18,7 @@ rm -rf build build128 dist tmp
 
 rm -rf cc/tf/dpass/test_cases/ckp
 rm -rf python/latticex.egg-info
+rm -rf python/latticex/*.so*
 
 rm python/latticex_rosetta.egg-info -rf
 rm dist -rf
