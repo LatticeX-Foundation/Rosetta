@@ -84,8 +84,10 @@ TensorFlow安装参考: [TensorFlow安装][tensorFlow-install]。
 ```bash
 # clone rosetta git repository
 git clone https://github.com/LatticeX-Foundation/Rosetta.git --recursive
+# go to Rosetta directory and use auto completion
+cd Rosetta && source rtt_completion.sh
 # compile, install and run test cases
-cd Rosetta && bash compile_and_test_all.sh
+./rosetta.sh compile --enable-all --enable-tests;./rosetta.sh install
 ```
 
 ## 部署测试
@@ -99,7 +101,6 @@ cd Rosetta && bash compile_and_test_all.sh
 直接使用`Rosetta`源码仓库的[百万富翁问题范例][millionaire-example]。
 
 > 注意: [Rosetta开发教程][tutorials]有多个隐私机器学习开发实例可以参考，详情参考[Tutorials](./TUTORIALS.md)。
-> 注意: 单机部署可以直接在Rosetta仓库`example/millionaire`目录下，直接运行`run.sh`进行验证。
 
 ### 准备
 
@@ -159,9 +160,7 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
       "PORT": 13169
     },
     "SAVER_MODE": 7,
-    "SERVER_CERT": "certs/server-nopass.cert",
-    "SERVER_PRIKEY": "certs/server-prikey",
-    "SERVER_PRIKEY_PASSWORD": ""
+    "RESTORE_MODE": 0
   }
 }
 ```
@@ -175,10 +174,8 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 - `NAME`: `MPC` player名字标识
 - `HOST`: 主机地址
 - `PORT`: 通信端口
-- `SERVER_CERT`: 服务端签名证书
-- `SERVER_PRIKEY`: 服务端私钥
-- `SERVER_PRIKEY_PASSWORD`: 服务端私钥密码口令（没有设置则为空字符串）
-- `SAVER_MODE`: 模型保存配置值，可以通过此值的配置设定保存的模型中的参数值是否为明文值，或者在具体哪一参与方中保存为明文，具体请参考[算子API文档](API_DOC_CN.md)。
+- `SAVER_MODE`: 模型保存配置值，可以通过此值的配置设定保存的模型中的参数值是否为明文值，或者在具体哪一参与方中保存为明文，具体请参考[算子API文档](API_DOC_CN.md)
+- `RESTORE_MODE`: 模型加载方式，按照位设定模型位明文或密文，0：表示的密文，1：标示明文，如取值0：所有参与方都为密文方式，1：除P0外所有参与方都是密文方式，2：除P1外所有参与方都是密文方式
 
 ### 运行测试
 

@@ -81,8 +81,10 @@ Since we have wrapped all the steps in a script, so just get the source code and
 ```bash
 # clone rosetta git repository
 git clone https://github.com/LatticeX-Foundation/Rosetta.git --recursive
+# go to Rosetta directory and use auto completion
+cd Rosetta && source rtt_completion.sh
 # compile, install and run test cases
-cd Rosetta && bash compile_and_test_all.sh
+./rosetta.sh compile --enable-all --enable-tests;./rosetta.sh install
 ```
 
 ## Deployment testing
@@ -95,7 +97,7 @@ After Installing Rosetta, we can test whether it works or not. We can do this by
 
 Here we use the famous [demo of millionaire's problem][millionaire-example] as our example.
 
-> We can simulate the stand-alone deployment scenario of this example by running `run.sh` script in that directory.
+> Note: There are several privacy machine learning development examples available, for details refer to [Tutorials](./TUTORIALS.md)。
 
 ## Preparation
 
@@ -156,9 +158,7 @@ Write a configuration file `CONFIG.json` with the following template:
       "PORT": 13169
     },
     "SAVER_MODE": 7,
-    "SERVER_CERT": "certs/server-nopass.cert",
-    "SERVER_PRIKEY": "certs/server-prikey",
-    "SERVER_PRIKEY_PASSWORD": "123456"
+    "RESTORE_MODE": 0
   }
 }
 ```
@@ -176,6 +176,7 @@ Field Description:
 - `SERVER_PRIKEY`: server private key
 - `SERVER_PRIKEY_PASSWORD`: server private key password (empty string if not set)
 - `SAVER_MODE`: this indicates how the output checkpoint files are saved. Please refer to `MpcSaveV2` in our [API document](./API_DOC.md) for details.
+- `RESTORE_MODE`: way of model loading, set the model bit plaintext or ciphertext according to the bit, 0: ciphertext, 1: plaintext, such as the value of 0: all participants are ciphertext model, 1: all participants except P0 are ciphertext model, 2: all participants except P1 are ciphertext model
 
 ## Run the test
 
