@@ -37,14 +37,13 @@ using np_str_t = std::array<char, 33>; // at most 33 bytes
  * Not thread-safe
  */
 class Input {
-  std::string pri_input_msg_id = "cc/Player This msg id for global PrivateInput.";
+ protected:
+  virtual int _input_op(int party_id, const vector<double>& in_x, vector<std::string>& out_x) = 0;
 
  public:
   Input() {}
 
-  void public_input() { throw; }
-
-  py::array_t<np_str_t> private_input(int party_id, const py::array_t<double>& input) {
+  py::array_t<np_str_t> input(int party_id, const py::array_t<double>& input) {
     py::buffer_info buf = input.request();
     ssize_t ndim = buf.ndim;
     ssize_t size = buf.size;
@@ -54,8 +53,6 @@ class Input {
     memset((char*)pout, 0, size * sizeof(np_str_t));
     result.resize(buf.shape);
 
-    auto ops = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(pri_input_msg_id);
-
     vector<double> vd(size, 0);
     vector<std::string> vs(size);
     if (ndim == 1) {
@@ -64,7 +61,7 @@ class Input {
         vd[i] = pbuf[i];
       }
 
-      ops->PrivateInput(party_id, vd, vs);
+      _input_op(party_id, vd, vs);
 
       for (int i = 0; i < input.shape()[0]; i++) {
         std::memcpy((char*)pout->data(), vs[i].data(), vs[i].size());
@@ -80,7 +77,7 @@ class Input {
         }
       }
 
-      ops->PrivateInput(party_id, vd, vs);
+      _input_op(party_id, vd, vs);
 
       for (int i = 0; i < input.shape()[0]; i++) {
         for (int j = 0; j < input.shape()[1]; j++) {
@@ -101,7 +98,7 @@ class Input {
         }
       }
 
-      ops->PrivateInput(party_id, vd, vs);
+      _input_op(party_id, vd, vs);
 
       for (int i = 0; i < input.shape()[0]; i++) {
         for (int j = 0; j < input.shape()[1]; j++) {
@@ -111,9 +108,58 @@ class Input {
           }
         }
       }
+    } else if (ndim == 4) {
+      auto inp = input.unchecked<4>();
+      auto res = result.mutable_unchecked<4>();
+      int J = input.shape()[1];
+      int K = input.shape()[2];
+      int L = input.shape()[3];
+      for (int i = 0; i < input.shape()[0]; i++) {
+        for (int j = 0; j < input.shape()[1]; j++) {
+          for (int k = 0; k < input.shape()[2]; k++) {
+            for (int l = 0; l < input.shape()[3]; l++) {
+              vd[i * J * K * L + j * K * L + k * L + l] = inp(i, j, k, l);
+            }
+          }
+        }
+      }
+
+      _input_op(party_id, vd, vs);
+
+      for (int i = 0; i < input.shape()[0]; i++) {
+        for (int j = 0; j < input.shape()[1]; j++) {
+          for (int k = 0; k < input.shape()[2]; k++) {
+            for (int l = 0; l < input.shape()[3]; l++) {
+              int idx = i * J * K * L + j * K * L + k * L + l;
+              std::memcpy((char*)res(i, j, k, l).data(), vs[idx].data(), vs[idx].size());
+            }
+          }
+        }
+      }
     } else {
       // not cope now
+      cerr << "not supported [ndim == " << ndim << "] now" << endl;
     }
     return result;
+  }
+};
+
+class PublicInput : public Input {
+ public:
+  int _input_op(int party_id, const vector<double>& vd, vector<std::string>& vs) {
+    msg_id_t msg__input_msg_id("cc This msg id for global PublicInput.");
+    auto ops = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(msg__input_msg_id);
+    ops->PublicInput(party_id, vd, vs);
+    return 0;
+  }
+};
+
+class PrivateInput : public Input {
+ public:
+  int _input_op(int party_id, const vector<double>& vd, vector<std::string>& vs) {
+    msg_id_t msg__input_msg_id("cc This msg id for global PrivateInput.");
+    auto ops = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(msg__input_msg_id);
+    ops->PrivateInput(party_id, vd, vs);
+    return 0;
   }
 };
