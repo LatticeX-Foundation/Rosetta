@@ -33,10 +33,10 @@ And then build and install Rosetta with our all-in-one script as follows.
 
 ```bash
 # clone rosetta git repository
-git clone https://github.com/LatticeX-Foundation/Rosetta.git
+git clone --recurse https://github.com/LatticeX-Foundation/Rosetta.git
 cd Rosetta
-# compile, install and run test cases
-bash compile_and_test_all.sh
+# compile, install
+./rosetta.sh compile --enable-protocol-mpc-securenn; ./rosetta.sh install
 ```
 
 Before running your program, you should configure with your network topology so that a distributed network can be established for parties to communicate with each other.
