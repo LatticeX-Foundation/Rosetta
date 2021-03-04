@@ -15,12 +15,16 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 # =============================================================================="
+from typing import List
+from latticex.rosetta.controller.controller_base_ import _rtt
+vecstrs = List[str]
 
-# for py_protocol_handler
-from latticex.rosetta.controller.backend_handler import *
-# for APIs
-from latticex.rosetta.controller.protocol_api import *
-from latticex.rosetta.controller.input_api import *
-from latticex.rosetta.controller.random_api import *
-from latticex.rosetta.controller.dataset_api import *
-from latticex.rosetta.controller.netutil_api import *
+
+class Netutil(object):
+    @staticmethod
+    def enable_ssl_socket(v: bool):
+        _rtt.netutil.enable_ssl_socket(v)
+
+    @staticmethod
+    def is_enable_ssl_socket(v: bool):
+        _rtt.netutil.is_enable_ssl_socket(v)

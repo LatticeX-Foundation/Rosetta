@@ -42,19 +42,7 @@ def __check():
         raise Exception(errmsg)
 
 
-def private_input(party_id: int, inp):
-    """
-    One party set its private input value to be shared among multi-parties.
-
-    Args:
-        party_id: the input of which party_id will be shared.
-        inp: the input values. ONLY the inputs of the party that
-        has the same role as the `party_id` will be processed.
-
-    Return: 
-        the local shared piece of the real value. 
-        Note that each party will has different cipher value that returned.
-    """
+def __input(is_private_input: bool, party_id: int, inp):
     __check()
     is_single = False
     if isinstance(inp, float) or isinstance(inp, int):
@@ -66,26 +54,15 @@ def private_input(party_id: int, inp):
         inp = np.array(inp)
     else:
         raise Exception("unsupported type~")
-    ret = _rtt.input.Input().private_input(party_id, inp)
+
+    if is_private_input:
+        ret = _rtt.input.PrivateInput().input(party_id, inp)
+    else:
+        ret = _rtt.input.PublicInput().input(party_id, inp)
     return ret
 
 
-def private_console_input(party_id: int, shape: tuple = None):
-    """
-    Just the same as private_input while the values will be fetched from console.
-
-    Args:
-        party_id: which party provide the private data
-        shape: only supports None, (m,), (m,n), which m, n is integer and greater 0. row first.
-
-    Usage:
-        >> rtt.private_console_input(0)
-        >> 1.2
-        will return 1.2
-        >> rtt.private_console_input(0, (2, 3))
-        >> 1e2 2 .3   4 5    6.6
-        will return [[100.0, 2.0, 0.3], [4.0, 5.0, 6.6]]
-    """
+def __console_input(is_private_input: bool, party_id: int, shape: tuple = None):
     __check()
     partyid = py_protocol_handler.get_party_id()
 
@@ -138,11 +115,54 @@ def private_console_input(party_id: int, shape: tuple = None):
     else:
         inp = [0] * total_inputs
 
-    arr = private_input(party_id, inp)
+    arr = __input(is_private_input, party_id, inp)
     lst = arr.reshape(shape)
-    #if org_shape is None:
+    # if org_shape is None:
     #    return lst[0]
     return lst
+
+
+def private_input(party_id: int, inp):
+    """
+    One party set its private input value to be shared among multi-parties.
+
+    Args:
+        party_id: the input of which party_id will be shared.
+        inp: the input values. ONLY the inputs of the party that
+        has the same role as the `party_id` will be processed.
+
+    Return: 
+        the local shared piece of the real value. 
+        Note that each party will has different cipher value that returned.
+    """
+    return __input(True, party_id, inp)
+
+
+def private_console_input(party_id: int, shape: tuple = None):
+    """
+    Just the same as private_input while the values will be fetched from console.
+
+    Args:
+        party_id: which party provide the private data
+        shape: only supports None, (m,), (m,n), which m, n is integer and greater 0. row first.
+
+    Usage:
+        >> rtt.private_console_input(0)
+        >> 1.2
+        will return 1.2
+        >> rtt.private_console_input(0, (2, 3))
+        >> 1e2 2 .3   4 5    6.6
+        will return [[100.0, 2.0, 0.3], [4.0, 5.0, 6.6]]
+    """
+    return __console_input(True, party_id, shape)
+
+
+def public_input(party_id: int, inp):
+    return __input(False, party_id, inp)
+
+
+def public_console_input(party_id: int, shape: tuple = None):
+    return __console_input(False, party_id, shape)
 
 
 if __name__ == "__main__":
@@ -152,3 +172,10 @@ if __name__ == "__main__":
     print(private_console_input(0, (2,)))
     print(private_console_input(0, (1, 2)))
     print(private_console_input(0, (2, 3)))
+
+    print(public_console_input(0))
+    print(public_console_input(0, None))
+    print(public_console_input(0, (1,)))
+    print(public_console_input(0, (2,)))
+    print(public_console_input(0, (1, 2)))
+    print(public_console_input(0, (2, 3)))
