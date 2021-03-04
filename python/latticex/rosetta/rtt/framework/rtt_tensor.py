@@ -78,6 +78,14 @@ class RttTensor(object):
         self._raw = value
         # print(self._raw.dtype)
 
+    def set_shape(self, shape):
+        """Updates the shape of this tensor."""
+        self._raw.set_shape(shape)
+
+    def get_shape(self):
+        """Alias of Tensor.shape."""
+        return self._raw.shape
+
     @property
     def shape(self):
         return self._raw.shape
@@ -322,9 +330,6 @@ tf_utils.register_symbolic_tensor_type(RttTensor)
 
 def _convert_numpy_tensor(tensor):
     """ convert numpy tensor to rtt tensor """
-
-    if len(tensor.shape) > 2:
-        raise ValueError("Only matrices are supported for now.")
 
     if (
         np.issubdtype(tensor.dtype, np.int16)
