@@ -25,6 +25,7 @@ function print_compile_options() {
     echo "                       phase: ${rtt_phase}"
     echo "                  build_type: ${rtt_build_type}"
     echo "enable_protocol_mpc_securenn: ${rtt_enable_protocol_mpc_securenn}"
+    echo "   enable_protocol_mpc_helix: ${rtt_enable_protocol_mpc_helix}"
     echo "               enable_128bit: ${rtt_enable_128bit}"
     echo "                enable_tests: ${rtt_enable_tests}"
     echo "--------------------------------------"
@@ -36,6 +37,7 @@ function save_compile_options() {
     echo "${rtt_phase}" >>${compile_options_file}
     echo "${rtt_build_type}" >>${compile_options_file}
     echo "${rtt_enable_protocol_mpc_securenn}" >>${compile_options_file}
+    echo "${rtt_enable_protocol_mpc_helix}" >>${compile_options_file}
     echo "${rtt_enable_128bit}" >>${compile_options_file}
     echo "${rtt_enable_tests}" >>${compile_options_file}
 }
@@ -49,8 +51,9 @@ function load_compile_options() {
     export rtt_phase=${x[1]}
     export rtt_build_type=${x[2]}
     export rtt_enable_protocol_mpc_securenn=${x[3]}
-    export rtt_enable_128bit=${x[4]}
-    export rtt_enable_tests=${x[5]}
+    export rtt_enable_protocol_mpc_helix=${x[4]}
+    export rtt_enable_128bit=${x[5]}
+    export rtt_enable_tests=${x[6]}
 }
 
 #
@@ -59,8 +62,12 @@ function load_compile_options() {
 
 # install emp-toolkit
 function install_emptoolkit() {
+    # install emp-tool
+    #if [ ! -e ${builddir}/include/emp-tool ]; then
+    #echo "emp-tool not exist"
     echo "to install emp-tool..."
 
+    #if [ ! -e ${third_builddir}/include/emp-tool ]; then mkdir -p ${third_builddir}/emp-tool; fi
     mkdir -p ${third_builddir}/emp-tool
     cd ${third_builddir}/emp-tool
     cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare" \
@@ -69,6 +76,22 @@ function install_emptoolkit() {
         -DENABLE_FLOAT=ON
     make -j && make install
     echo "install emp-tool ok."
+    #fi
+
+    # install emp-ot
+    #if [ ! -e ${builddir}/include/emp-otl ]; then
+    #echo "emp-ot not exist"
+    echo "to install emp-ot..."
+
+    #if [ ! -e ${third_builddir}/emp-ot ]; then mkdir -p ${third_builddir}/emp-ot; fi
+    mkdir -p ${third_builddir}/emp-ot
+    cd ${third_builddir}/emp-ot
+    cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare" \
+        ${third_code_dir}/emp-toolkit/emp-ot -DCMAKE_INSTALL_PREFIX=${builddir} -DCMAKE_PREFIX_PATH=${builddir} \
+        -DCMAKE_BUILD_TYPE=${rtt_build_type}
+    make -j && make install
+    echo "install emp-ot ok."
+    #fi
 }
 
 # compile c++
@@ -87,6 +110,7 @@ function compile_cpp() {
         -DROSETTA_MPC_128=${rtt_enable_128bit} \
         -DROSETTA_COMPILE_TESTS=${rtt_enable_tests} \
         -DROSETTA_ENABLES_PROTOCOL_MPC_SECURENN=${rtt_enable_protocol_mpc_securenn} \
+        -DROSETTA_ENABLES_PROTOCOL_MPC_HELIX=${rtt_enable_protocol_mpc_helix} \
         -DCMAKE_PREFIX_PATH=${builddir}
     make -j4
     make install
@@ -138,6 +162,16 @@ function run_protocol_mpc_snn_tests() {
 
     echo "run run protocol mpc snn tests end."
 }
+function run_protocol_mpc_helix_tests() {
+    echo "run run protocol mpc helix tests beg."
+
+    # check
+    run_protocol_mpc_test protocol_mpc_tests_helix_check
+
+    # sepcs here
+
+    echo "run run protocol mpc helix tests end."
+}
 
 function run_all_modules_tests() {
     if [ $rtt_test_cpp_common -eq 1 ]; then
@@ -154,6 +188,10 @@ function run_all_modules_tests() {
         cd ${bindir}
         run_protocol_mpc_snn_tests
     fi
+    if [ $rtt_test_cpp_mpc_helix -eq 1 ]; then
+        cd ${bindir}
+        run_protocol_mpc_helix_tests
+    fi
 
 }
 
@@ -167,10 +205,21 @@ function run_protocol_mpc_snn_perfs() {
     echo "run run protocol mpc snn performance end."
 }
 
+function run_protocol_mpc_helix_perfs() {
+    echo "run run protocol mpc helix performance beg."
+    run_protocol_mpc_test protocol_mpc_tests_helix_perf
+
+    echo "run run protocol mpc helix performance end."
+}
+
 function run_all_modules_perfs() {
     if [ $rtt_perf_cpp_mpc_securenn -eq 1 ]; then
         cd ${bindir}
         run_protocol_mpc_snn_perfs
+    fi
+    if [ $rtt_perf_cpp_mpc_helix -eq 1 ]; then
+        cd ${bindir}
+        run_protocol_mpc_helix_perfs
     fi
 }
 
