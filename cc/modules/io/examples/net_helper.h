@@ -19,3 +19,5 @@ static inline void rand_vec(vector<T>& vec, int length) {
     vec[i] = dis(gen);
   }
 }
+
+#include "cc/modules/io/include/ex_only_for_test.h"
