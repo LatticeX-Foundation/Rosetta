@@ -18,6 +18,7 @@
 import tensorflow as tf
 from latticex.rosetta.rtt.framework import rtt_tensor as rtt_ts
 from tensorflow.python.ops import gen_state_ops
+from tensorflow.python.ops import state_ops
 
 
 def _get_rtt_var(refVar):
@@ -47,5 +48,20 @@ def RttAssign(ref, value, validate_shape=None, use_locking=None, name=None):
     return ref.assign(value._raw, name=name)
 
 
-# override tensorflow constant functions for RTT constant
+
+def RttAssignSub(ref, value, use_locking=None, name=None):
+    """Update `ref` by subtracting `value` from it."""
+    value = rtt_ts.convert_to_rtttensor(value)
+    ref = _get_rtt_var(ref)
+
+    if ref.dtype._is_ref_dtype:
+        return rtt_ts.rtt_ops.rtt_assign_sub(ref, value, use_locking=use_locking, name=name)
+    return ref.assign_sub(value)
+
+
+# override tensorflow Assign functions for RTT Assign
 tf.assign = RttAssign
+tf.assign_sub = RttAssignSub
+state_ops.assign = RttAssign
+state_ops.assign_sub = RttAssignSub
+

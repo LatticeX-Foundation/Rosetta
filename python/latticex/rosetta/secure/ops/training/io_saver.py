@@ -26,11 +26,37 @@ from tensorflow.python.ops import variables
 import time
 
 import tensorflow as tf
-from latticex.rosetta.secure import SecureSaveV2
+from latticex.rosetta.secure import SecureSaveV2, SecureRestoreV2
 from latticex.rosetta.rtt.framework import rtt_tensor as rtt_ts
 from latticex.rosetta.controller.common_util import rtt_get_logger
 
+
 class SecureBaseSaverBuilder(saver.BaseSaverBuilder):
+    # pylint: disable=unused-argument
+    def restore_op(self, filename_tensor, saveable, preferred_shard):
+        """Create ops to restore 'saveable'.
+
+        This is intended to be overridden by subclasses that want to generate
+        different Ops.
+
+        Args:
+        filename_tensor: String Tensor.
+        saveable: A BaseSaverBuilder.SaveableObject object.
+        preferred_shard: Int.  Shard to open first when loading a sharded file.
+
+        Returns:
+        A list of Tensors resulting from reading 'saveable' from
+            'filename'.
+        """
+        # pylint: disable=protected-access
+        tensors = []
+        for spec in saveable.specs:
+            tensors.append(
+                SecureRestoreV2(filename_tensor, [spec.name], [spec.slice_spec],
+                                [spec.dtype])[0])
+
+        return tensors
+
     # override the base class to replace the save_v2 to SecureSaveV2
     def save_op(self, filename_tensor, saveables):
         rtt_get_logger().debug("DEBUG: save_op")
@@ -71,14 +97,18 @@ class SecureBaseSaverBuilder(saver.BaseSaverBuilder):
             return SecureSaveV2(filename_tensor, tensor_names, tensor_slices,
                                 tensors)
         else:
-            raise RuntimeError("Unexpected write_version: " + self._write_version)
+            raise RuntimeError(
+                "Unexpected write_version: " + self._write_version)
 
 # we have to also redefine the 'Secure'-version for BulkSaverBuilder.
 #   since this inherits from BaseSaverBuilder directly.
+
+
 class SecureBulkSaverBuilder(SecureBaseSaverBuilder):
     """SaverBuilder with support for bulk restoring multiple saveables."""
+
     def bulk_restore(self, filename_tensor, saveables, preferred_shard,
-                   restore_sequentially):
+                     restore_sequentially):
         # Ignored: bulk restore is internally sequential.
         del restore_sequentially
         restore_specs = []
@@ -89,14 +119,13 @@ class SecureBulkSaverBuilder(SecureBaseSaverBuilder):
         names, slices, dtypes = zip(*restore_specs)
         # Load all tensors onto CPU 0 for compatibility with existing code.
         with ops.device("cpu:0"):
-            return io_ops.restore_v2(filename_tensor, names, slices, dtypes)
-
+            return SecureRestoreV2(filename_tensor, names, slices, dtypes)
 
 
 class SecureSaver(saver.Saver):
     def _get_rtt_var_list(self, var_list):
         """get rtt variable lists from rtt tensor"""
-        rtt_var_op_def_name  = ("VariableV2", )
+        rtt_var_op_def_name = ("VariableV2", )
 
         if (isinstance(var_list, (list,))):
             new_var_list = []
@@ -104,12 +133,13 @@ class SecureSaver(saver.Saver):
                 if (isinstance(tensor, rtt_ts.RttTensor)):
                     dest_tensor = tensor._raw
                     while (dest_tensor.op.op_def.name not in rtt_var_op_def_name):
-                        assert len(dest_tensor.op.inputs) > 0, "input parameters 'var_list' is incorrect!"
+                        assert len(
+                            dest_tensor.op.inputs) > 0, "input parameters 'var_list' is incorrect!"
                         dest_tensor = dest_tensor.op.inputs[0]
                     new_var_list.append(dest_tensor)
                 else:
-                    new_var_list.append(tensor) 
-            return  new_var_list
+                    new_var_list.append(tensor)
+            return new_var_list
 
         elif (isinstance(var_list, (dict,))):
             new_var_dict = {}
@@ -117,7 +147,8 @@ class SecureSaver(saver.Saver):
                 if (isinstance(tensor, rtt_ts.RttTensor)):
                     dest_tensor = tensor._raw
                     while (dest_tensor.op.op_def.name not in rtt_var_op_def_name):
-                        assert len(dest_tensor.op.inputs) > 0, "input parameters 'var_list' is incorrect!"
+                        assert len(
+                            dest_tensor.op.inputs) > 0, "input parameters 'var_list' is incorrect!"
                         dest_tensor = dest_tensor.op.inputs[0]
                     new_var_dict[name] = dest_tensor
                 else:
@@ -125,30 +156,27 @@ class SecureSaver(saver.Saver):
 
             return new_var_dict
 
-
-
     def __init__(self,
-               var_list=None,
-               reshape=False,
-               sharded=False,
-               max_to_keep=5,
-               keep_checkpoint_every_n_hours=10000.0,
-               name=None,
-               restore_sequentially=False,
-               saver_def=None,
-               builder=None,
-               defer_build=False,
-               allow_empty=False,
-               write_version=saver_pb2.SaverDef.V2,
-               pad_step_number=False,
-               save_relative_paths=False,
-               filename=None):
+                 var_list=None,
+                 reshape=False,
+                 sharded=False,
+                 max_to_keep=5,
+                 keep_checkpoint_every_n_hours=10000.0,
+                 name=None,
+                 restore_sequentially=False,
+                 saver_def=None,
+                 builder=None,
+                 defer_build=False,
+                 allow_empty=False,
+                 write_version=saver_pb2.SaverDef.V2,
+                 pad_step_number=False,
+                 save_relative_paths=False,
+                 filename=None):
         """Creates a `SecureSaver`."""
         var_list = self._get_rtt_var_list(var_list)
         super().__init__(var_list, reshape, sharded, max_to_keep, keep_checkpoint_every_n_hours,
-                    name, restore_sequentially, saver_def, builder, defer_build, allow_empty,
-                    write_version, pad_step_number, save_relative_paths, filename)
-
+                         name, restore_sequentially, saver_def, builder, defer_build, allow_empty,
+                         write_version, pad_step_number, save_relative_paths, filename)
 
     def _build(self, checkpoint_path, build_save, build_restore):
         """Builds saver_def."""
@@ -159,7 +187,7 @@ class SecureSaver(saver.Saver):
 
         if not self.saver_def or context.executing_eagerly():
             if self._builder is None:
-                ###Attention: this is our target!!
+                # Attention: this is our target!!
                 self._builder = SecureBulkSaverBuilder(self._write_version)
 
             if self._var_list is None:
@@ -174,26 +202,26 @@ class SecureSaver(saver.Saver):
             self._is_empty = False
 
             self.saver_def = self._builder._build_internal(  # pylint: disable=protected-access
-                    self._var_list,
-                    reshape=self._reshape,
-                    sharded=self._sharded,
-                    max_to_keep=self._max_to_keep,
-                    keep_checkpoint_every_n_hours=self._keep_checkpoint_every_n_hours,
-                    name=self._name,
-                    restore_sequentially=self._restore_sequentially,
-                    filename=checkpoint_path,
-                    build_save=build_save,
-                    build_restore=build_restore)
+                self._var_list,
+                reshape=self._reshape,
+                sharded=self._sharded,
+                max_to_keep=self._max_to_keep,
+                keep_checkpoint_every_n_hours=self._keep_checkpoint_every_n_hours,
+                name=self._name,
+                restore_sequentially=self._restore_sequentially,
+                filename=checkpoint_path,
+                build_save=build_save,
+                build_restore=build_restore)
         elif self.saver_def and self._name:
             # Since self._name is used as a name_scope by builder(), we are
             # overloading the use of this field to represent the "import_scope" as
             # well.
             self.saver_def.filename_tensor_name = ops.prepend_name_scope(
-                    self.saver_def.filename_tensor_name, self._name)
+                self.saver_def.filename_tensor_name, self._name)
             self.saver_def.save_tensor_name = ops.prepend_name_scope(
-                    self.saver_def.save_tensor_name, self._name)
+                self.saver_def.save_tensor_name, self._name)
             self.saver_def.restore_op_name = ops.prepend_name_scope(
-                    self.saver_def.restore_op_name, self._name)
+                self.saver_def.restore_op_name, self._name)
 
         self._check_saver_def()
         if not context.executing_eagerly():
@@ -205,4 +233,3 @@ class SecureSaver(saver.Saver):
 
 tf.train.Saver = SecureSaver
 tf.compat.v1.train.Saver = SecureSaver
-

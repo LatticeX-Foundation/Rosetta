@@ -26,24 +26,27 @@ from latticex.rosetta.rtt.framework import rtt_tensor as rtt_ts
 
 
 def convert_init_value_to_string(initial_value, dtype):
-    if callable(initial_value):
-        initial_value = initial_value()
-        
-    if isinstance(initial_value, ops.Tensor):
-        dtype = initial_value.dtype
+    with tf.control_dependencies(None):
+        if callable(initial_value):
+            initial_value = initial_value()
+            
+        if isinstance(initial_value, ops.Tensor):
+            dtype = initial_value.dtype
+        elif isinstance(initial_value, rtt_ts.RttTensor):
+            dtype = initial_value._raw.dtype
 
-    if (dtype != tf.string and dtype != None):
-        initial_value = tf.as_string(initial_value)
-    elif isinstance(initial_value, np.ndarray):
-        if initial_value.dtype.type != np.str and initial_value.dtype.type != np.object_ and initial_value.dtype.type != np.bytes_:
+        if (dtype != tf.string and dtype != None):
             initial_value = tf.as_string(initial_value)
-    elif isinstance(initial_value, (list, tuple)):
-        if (type("") != type(initial_value[0])):
+        elif isinstance(initial_value, np.ndarray):
+            if initial_value.dtype.type != np.str and initial_value.dtype.type != np.object_ and initial_value.dtype.type != np.bytes_:
+                initial_value = tf.as_string(initial_value)
+        elif isinstance(initial_value, (list, tuple)):
+            if (type("") != type(initial_value[0])):
+                initial_value = tf.as_string(initial_value)
+        elif isinstance(initial_value, (float, int)):
             initial_value = tf.as_string(initial_value)
-    elif isinstance(initial_value, (float, int)):
-        initial_value = tf.as_string(initial_value)
-    
-    return initial_value
+        
+        return initial_value
 
 
 def Rtt_default_variable_creator(next_creator=None, **kwargs):
@@ -72,6 +75,9 @@ def Rtt_default_variable_creator(next_creator=None, **kwargs):
     if use_resource is None:
         use_resource = variable_scope._DEFAULT_USE_RESOURCE
     use_resource = use_resource or context.executing_eagerly()
+
+    use_resource = False    # Force to used RefVariable, don't support ResourceVariable now
+
     if use_resource:
         distribute_strategy = kwargs.get("distribute_strategy", None)
         return rtt_ts.convert_to_rtttensor(resource_variable_ops.ResourceVariable(

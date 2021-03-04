@@ -19,6 +19,8 @@ import tensorflow as tf
 from tensorflow.python.ops import math_ops
 from tensorflow.python.framework import dtypes
 from latticex.rosetta.rtt.framework import rtt_tensor as rtt_ts
+from tensorflow.python.ops import gen_math_ops
+from tensorflow.python.util import deprecation
 import os
 
 
@@ -202,21 +204,6 @@ def rtt_log1p(x, name=None):
     return rtt_ts.RttTensor(_result)
 
 
-def rtt_sigmoid(x, name=None):
-    """Computes sigmoid of `x` element-wise.
-    Specifically, `y = 1 / (1 + exp(-x))`."""
-    x = rtt_ts.convert_to_rtttensor(x)
-    _result = rtt_ts.rtt_ops.rtt_sigmoid(x._raw, name=name)
-    return rtt_ts.RttTensor(_result)
-
-
-def rtt_relu(x, name=None):
-    """Computes rectified linear: `max(features, 0)`."""
-    x = rtt_ts.convert_to_rtttensor(x)
-    _result = rtt_ts.rtt_ops.rtt_relu(x._raw, name=name)
-    return rtt_ts.RttTensor(_result)
-
-
 def rtt_abs(x, name=None):
     """Computes the absolute value of a tensor."""
     x = rtt_ts.convert_to_rtttensor(x)
@@ -234,6 +221,8 @@ def rtt_max(
 ):
     """Computes the maximum of elements across dimensions of a tensor."""
 
+    keepdims = deprecation.deprecated_argument_lookup("keepdims", keepdims,
+                                                      "keep_dims", keep_dims)
     keepdims = False if keepdims is None else keepdims
     axis = math_ops._ReductionDims(input_tensor, axis)
     input_tensor = rtt_ts.convert_to_rtttensor(input_tensor)
@@ -253,6 +242,8 @@ def rtt_min(
 ):
     """Computes the minimum of elements across dimensions of a tensor."""
 
+    keepdims = deprecation.deprecated_argument_lookup("keepdims", keepdims,
+                                                      "keep_dims", keep_dims)
     keepdims = False if keepdims is None else keepdims
     axis = math_ops._ReductionDims(input_tensor, axis)
     input_tensor = rtt_ts.convert_to_rtttensor(input_tensor)
@@ -272,6 +263,8 @@ def rtt_sum(
 ):
     """Computes the sum of elements across dimensions of a tensor."""
 
+    keepdims = deprecation.deprecated_argument_lookup("keepdims", keepdims,
+                                                      "keep_dims", keep_dims)
     keepdims = False if keepdims is None else keepdims
     axis = math_ops._ReductionDims(input_tensor, axis)
     input_tensor = rtt_ts.convert_to_rtttensor(input_tensor)
@@ -290,6 +283,9 @@ def rtt_mean(
     keep_dims=None,
 ):
     """Computes the mean of elements across dimensions of a tensor."""
+
+    keepdims = deprecation.deprecated_argument_lookup("keepdims", keepdims,
+                                                      "keep_dims", keep_dims)
     keepdims = False if keepdims is None else keepdims
     axis = math_ops._ReductionDims(input_tensor, axis)
     input_tensor = rtt_ts.convert_to_rtttensor(input_tensor)
@@ -297,6 +293,15 @@ def rtt_mean(
         input_tensor, reduction_indices=axis, name=name, keep_dims=keepdims
     )
     return rtt_ts.RttTensor(_result)
+
+
+def rtt_arg_max(input, dimension=None, name=None, output_type=dtypes.string):
+    if dimension is None:
+        dimension = 0
+    input = rtt_ts.convert_to_rtttensor(input)
+    _result = rtt_ts.rtt_ops.rtt_arg_max(input, dimension=dimension, name=name, output_type=output_type)
+    return rtt_ts.RttTensor(_result)
+
 
 
 def rtt_cast(x, dtype, name=None):
@@ -324,6 +329,8 @@ def rtt_cast(x, dtype, name=None):
       return x
 
 
+
+#---------------------------------------------------------
 # Static override tensorflow math ops to rosetta native ops
 def static_override_tf_ops_to_rtt_ops():
     tf.negative = rtt_neg
@@ -349,17 +356,18 @@ def static_override_tf_ops_to_rtt_ops():
     tf.pow = rtt_pow
     tf.log = rtt_log
     tf.log1p = rtt_log1p
-    tf.sigmoid = rtt_sigmoid
-    tf.nn.sigmoid = rtt_sigmoid
-    tf.nn.relu = rtt_relu
     tf.abs = rtt_abs
     tf.reduce_max = rtt_max
     tf.reduce_min = rtt_min
     tf.reduce_mean = rtt_mean
     tf.reduce_sum = rtt_sum
     tf.cast = rtt_cast
-    
+    tf.argmax = rtt_arg_max
 
+    #-------------------------------
+    gen_math_ops.mat_mul = rtt_matmul
+
+    
 
 # run static override
 static_override_tf_ops_to_rtt_ops()

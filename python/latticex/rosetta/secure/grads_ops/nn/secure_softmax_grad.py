@@ -15,15 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 # =============================================================================="
-# import secure ops
-from latticex.rosetta.secure.decorator.secure_arithmetic_ops_ import *
-from latticex.rosetta.secure.decorator.secure_logical_ops_ import *
-from latticex.rosetta.secure.decorator.secure_compare_ops_ import *
-from latticex.rosetta.secure.decorator.secure_matrix_ops_ import *
-from latticex.rosetta.secure.decorator.secure_reduce_ops_ import *
-from latticex.rosetta.secure.decorator.secure_ml_ops_  import *
-from latticex.rosetta.secure.decorator.secure_io_ops_ import *
-from latticex.rosetta.secure.decorator.secure_state_ops_ import *
+from tensorflow.python.framework import ops
 
 
+
+@ops.RegisterGradient("SecureSoftmax")
+def SecureSoftmaxGrad(op, grad):
+    """ The gradient for the Secure Softmax """
+    # not implement now
+    return None
 

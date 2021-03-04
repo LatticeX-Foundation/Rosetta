@@ -15,8 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 # =============================================================================="
-import tensorflow as tf
-import os
+from tensorflow.python.framework import ops
 
-# secure logical operations are not currently supported.
+
+
+@ops.RegisterGradient("SecureFusedBatchNorm")
+def SecureFusedBatchNormGrad(op, grad):
+    """ The gradient for the Secure FusedBatchNorm """
+    # not implement now
+    return (None, None, None, None, None)
 

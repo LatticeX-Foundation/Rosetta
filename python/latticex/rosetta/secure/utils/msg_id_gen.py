@@ -78,7 +78,7 @@ class MsgIdGenerator():
         # generate the message id
         idx = 0
         current_msg_id = ""
-        for rtt_op in tf.get_default_graph().get_operations():
+        for rtt_op in tf.compat.v1.get_default_graph().get_operations():
             if (self._is_privacy_op_name(rtt_op.name)):
                 current_msg_id += "{0}\t{1}\n".format(rtt_op.name, idx)
                 idx += 1

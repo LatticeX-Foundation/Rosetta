@@ -140,8 +140,44 @@ def SecureReluPrime(x, name=None):
 
 
 SecureSaveV2 = _secure_ops.secure_save_v2
-# SecureRestoreV2 = _secure_ops.secure_restore_v2
+SecureRestoreV2 = _secure_ops.secure_restore_v2
 SecureApplyGradientDescent = _secure_ops.secure_apply_gradient_descent
 SecureSigmoidCrossEntropy = _secure_ops.secure_sigmoid_cross_entropy
 SecureReveal = _secure_ops.secure_reveal
-SecureAssign = _secure_ops.secure_assign
+
+
+def SecureConv2D(input, filter, strides=None, padding=None, use_cudnn_on_gpu=False, 
+            explicit_paddings=[], data_format="NHWC", dilations=[1, 1, 1, 1], name=None):
+    return _secure_ops.secure_conv2d(input, filter, strides=strides, padding=padding,
+                        use_cudnn_on_gpu=use_cudnn_on_gpu, explicit_paddings=explicit_paddings,
+                        data_format=data_format, dilations=dilations, name=name)
+
+
+def SecureBiasAdd(x, y, name=None, lh_is_const=False, rh_is_const=False):
+    return _secure_ops.secure_bias_add(x, y, name=name)
+
+
+def SecureL2Loss(x, name=None):
+    return _secure_ops.secure_l2_loss(x, name=name)
+
+
+def SecureFusedBatchNorm(x, scale, offset, mean, variance, epsilon=0.0001, data_format="NHWC", is_training=True, name=None):
+    y, _, _, _, _ = _secure_ops.secure_fused_batch_norm(x, scale, offset, mean, variance, epsilon=epsilon,
+                                            data_format=data_format, is_training=is_training, name=name)
+    return y
+
+
+def SecureAvgPool(value, ksize, strides, padding, data_format="NHWC", name=None):
+    return _secure_ops.secure_avg_pool(value, ksize=ksize, strides=strides, padding=padding, 
+                                        data_format=data_format, name=name)
+
+
+def SecureMaxPool(value, ksize, strides, padding, data_format="NHWC", name=None):
+    return _secure_ops.secure_max_pool(value, ksize=ksize, strides=strides, padding=padding, 
+                                        data_format=data_format, name=name)
+
+
+def SecureSoftmax(value, name=None):
+    return _secure_ops.secure_softmax(value, name=name)
+
+
