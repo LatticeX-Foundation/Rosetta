@@ -16,7 +16,7 @@
 # along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 # =============================================================================="
 from tensorflow.python.ops import array_ops
-from tensorflow import dtypes, placeholder, zeros, ones, zeros_like, ones_like
+from tensorflow import dtypes, zeros, ones, zeros_like, ones_like
 from latticex.rosetta.rtt.utils.common import dtype_check_and_set
 from latticex.rosetta.rtt.framework import rtt_tensor as rtt_ts
 from tensorflow.python.framework import constant_op
