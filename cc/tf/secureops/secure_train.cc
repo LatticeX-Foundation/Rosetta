@@ -24,7 +24,7 @@ class SecureApplyGradientDescentOp : public SecureOpKernel {
     OP_REQUIRES_OK(ctx, ctx->GetAttr("use_locking", &use_exclusive_lock_));
   }
 
-  void Compute(OpKernelContext* ctx) override {
+  void ComputeImpl(OpKernelContext* ctx) {
     log_debug << "begin debuging SecureApplyGradientDescentOp!" << endl;
     // Step 1: check the lock level and validity of inputs the same as the native one.
     //  Note: For now, we do NOT support the exclusive_lock feature.
@@ -78,16 +78,21 @@ class SecureApplyGradientDescentOp : public SecureOpKernel {
     attrs_["lh_is_const"] = "1";
     attrs_["rh_is_const"] = "0";
 
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mul);
     ProtocolManager::Instance()
       ->GetProtocol()
-      ->GetOps(msg_id().str())
+      ->GetOps(msg_id())
       ->Mul(input_alpha, input_delta, out_var, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mul);
+    
     attrs_["lh_is_const"] = "0";
     attrs_["rh_is_const"] = "0";
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Sub);
     ProtocolManager::Instance()
       ->GetProtocol()
-      ->GetOps(msg_id().str())
+      ->GetOps(msg_id())
       ->Sub(input_var, out_var, out_var, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Sub);
 
     // TODO[GeorgeShi]: why we cannot and need not use this?? due to string?
     //new_var.setZero();
@@ -118,35 +123,3 @@ REGISTER_KERNEL_BUILDER(
 //   Name("RttApplyGradientDescent").Device(DEVICE_CPU).HostMemory("var").TypeConstraint<float>("T"), cls<Eigen::ThreadPoolDevice, type>);
 } // namespace tensorflow
 
-namespace tensorflow {
-
-class SecureAssignOp : public SecureOpKernel {
- public:
-  explicit SecureAssignOp(OpKernelConstruction* ctx) : SecureOpKernel(ctx) {
-    OP_REQUIRES_OK(ctx, ctx->GetAttr("use_locking", &use_locking_));
-  }
-
-  void Compute(OpKernelContext* ctx) override {
-    //cout << "begin debuging SecureAssignOp!" << endl;
-    Tensor var = ctx->mutable_input(0, use_locking_);
-    const Tensor& value = ctx->input(1);
-    auto var_flat = var.flat<string>();
-    auto value_flat = value.flat<string>();
-
-    auto ele_nums = value.NumElements();
-    for (int i = 0; i < ele_nums; ++i) {
-      var_flat(i) = value_flat(i);
-    }
-
-    if (ctx->input_dtype(0) != DT_RESOURCE) {
-      ctx->forward_ref_input_to_ref_output(0, 0);
-    }
-  }
-
- private:
-  bool use_locking_ = true;
-};
-
-REGISTER_STR_CPU_KERNEL(SecureAssign, SecureAssignOp);
-
-} // namespace tensorflow

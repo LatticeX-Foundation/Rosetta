@@ -2,21 +2,20 @@
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/shape_inference.h"
 
-
-#define REGISTER_SECURE_BINARY_OP(name)                       \
-  REGISTER_OP(#name)                                          \
-    .Input("x: string")                                       \
-    .Input("y: string")                                       \
-    .Output("z: string")                                      \
-    .Attr("lh_is_const: bool = false")                        \
+#define REGISTER_SECURE_BINARY_OP(name) \
+  REGISTER_OP(#name)                    \
+    .Input("x: string")                 \
+    .Input("y: string")                 \
+    .Output("z: string")                \
+    .Attr("lh_is_const: bool = false")  \
     .Attr("rh_is_const: bool = false") // .SetShapeFn(shape_inference::BroadcastBinaryOpShapeFn)
 
-#define REGISTER_SECURE_BINARY_CONST_OP(name)                       \
-  REGISTER_OP(#name)                                          \
-    .Input("x: string")                                       \
-    .Input("y: string")                                       \
-    .Output("z: string")                                      \
-    .Attr("lh_is_const: bool = false")                        \
+#define REGISTER_SECURE_BINARY_CONST_OP(name) \
+  REGISTER_OP(#name)                          \
+    .Input("x: string")                       \
+    .Input("y: string")                       \
+    .Output("z: string")                      \
+    .Attr("lh_is_const: bool = false")        \
     .Attr("rh_is_const: bool = true") // .SetShapeFn(shape_inference::BroadcastBinaryOpShapeFn)
 
 REGISTER_SECURE_BINARY_CONST_OP(SecurePow).Doc(R"doc(
@@ -84,40 +83,19 @@ REGISTER_SECURE_BINARY_OP(SecureLogicalOr).Doc(R"doc(
 REGISTER_SECURE_BINARY_OP(SecureLogicalXor).Doc(R"doc(
     SecureLogicalXor
 )doc");
-REGISTER_OP("SecureLogicalNot")
-  .Input("x: string")
-  .Output("y: string")
-  .SetIsStateful();
+REGISTER_OP("SecureLogicalNot").Input("x: string").Output("y: string").SetIsStateful();
 
-REGISTER_OP("SecureNegative")
-  .Input("x: string")
-  .Output("res: string")
-  .SetIsStateful();
+REGISTER_OP("SecureNegative").Input("x: string").Output("res: string").SetIsStateful();
 
-REGISTER_OP("SecureAbs")
-  .Input("x: string")
-  .Output("res: string")
-  .SetIsStateful();
+REGISTER_OP("SecureAbs").Input("x: string").Output("res: string").SetIsStateful();
 
-REGISTER_OP("SecureAbsPrime")
-  .Input("x: string")
-  .Output("res: string")
-  .SetIsStateful();
+REGISTER_OP("SecureAbsPrime").Input("x: string").Output("res: string").SetIsStateful();
 
-REGISTER_OP("SecureLog")
-  .Input("x: string")
-  .Output("res: string")
-  .SetIsStateful();
+REGISTER_OP("SecureLog").Input("x: string").Output("res: string").SetIsStateful();
 
-REGISTER_OP("SecureHLog")
-  .Input("x: string")
-  .Output("res: string")
-  .SetIsStateful();
+REGISTER_OP("SecureHLog").Input("x: string").Output("res: string").SetIsStateful();
 
-REGISTER_OP("SecureLog1p")
-  .Input("x: string")
-  .Output("res: string")
-  .SetIsStateful();
+REGISTER_OP("SecureLog1p").Input("x: string").Output("res: string").SetIsStateful();
 
 REGISTER_OP("SecureReveal")
   .Input("x: string")
@@ -126,12 +104,12 @@ REGISTER_OP("SecureReveal")
   .SetIsStateful();
 
 REGISTER_OP("SecureAddN")
-    .Input("inputs: N * T")
-    .Output("sum: T")
-    .Attr("N: int >= 1")
-    .Attr("T: {string}")
-    .SetIsCommutative()
-    .SetIsAggregate();
+  .Input("inputs: N * T")
+  .Output("sum: T")
+  .Attr("N: int >= 1")
+  .Attr("T: {string}")
+  .SetIsCommutative()
+  .SetIsAggregate();
 
 REGISTER_OP("SecureMatmul")
   .Input("x: string")
@@ -139,35 +117,45 @@ REGISTER_OP("SecureMatmul")
   .Output("res: string")
   .Attr("transpose_a: bool = false")
   .Attr("transpose_b: bool = false")
-  .SetIsStateful();
+  .SetShapeFn(::tensorflow::shape_inference::MatMulShape);
 
 REGISTER_OP("SecureSquare").Input("x: string").Output("res: string").SetIsStateful();
-
 
 REGISTER_OP("SecureReduceMean")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("SecureReduceSum")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("SecureReduceMin")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("SecureReduceMax")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+
+REGISTER_OP("SecureArgMax")
+  .Input("input: string")
+  .Input("dimension: Tidx")
+  .Output("output: output_type")
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+  .Attr("output_type: {string,} = DT_STRING");

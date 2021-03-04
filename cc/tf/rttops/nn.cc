@@ -47,7 +47,7 @@ class RttSigmoidOp : public OpKernel {
   void Compute(OpKernelContext* context) {
     //TODO
   }
-}; // namespace tensorflow
+}; 
 
 template <typename Device>
 class RttReluOp : public OpKernel {
@@ -56,12 +56,83 @@ class RttReluOp : public OpKernel {
   void Compute(OpKernelContext* context) {
     //TODO
   }
-}; // namespace tensorflow
+}; 
+
+template <typename Device>
+class RttConv2DOp : public OpKernel {
+ public:
+  explicit RttConv2DOp(OpKernelConstruction* context) : OpKernel(context) {}
+  void Compute(OpKernelContext* context) {
+    //TODO
+  }
+};
+
+template <typename Device>
+class RttBiasAddOp : public OpKernel {
+ public:
+  explicit RttBiasAddOp(OpKernelConstruction* context) : OpKernel(context) {}
+  void Compute(OpKernelContext* context) {
+    //TODO
+  }
+};
+
+template <typename Device>
+class RttL2LossOp : public OpKernel {
+ public:
+  explicit RttL2LossOp(OpKernelConstruction* context) : OpKernel(context) {}
+  void Compute(OpKernelContext* context) {
+    //TODO
+  }
+};
+
+template <typename Device>
+class RttFusedBatchNormOp : public OpKernel {
+ public:
+  explicit RttFusedBatchNormOp(OpKernelConstruction* context) : OpKernel(context) {}
+  void Compute(OpKernelContext* context) {
+    //TODO
+  }
+};
+
+template <typename Device>
+class RttAvgPoolOp : public OpKernel {
+ public:
+  explicit RttAvgPoolOp(OpKernelConstruction* context) : OpKernel(context) {}
+  void Compute(OpKernelContext* context) {
+    //TODO
+  }
+};
+
+template <typename Device>
+class RttMaxPoolOp : public OpKernel {
+ public:
+  explicit RttMaxPoolOp(OpKernelConstruction* context) : OpKernel(context) {}
+  void Compute(OpKernelContext* context) {
+    //TODO
+  }
+};
+
+template <typename Device>
+class RttSoftmaxOp : public OpKernel {
+ public:
+  explicit RttSoftmaxOp(OpKernelConstruction* context) : OpKernel(context) {}
+  void Compute(OpKernelContext* context) {
+    //TODO
+  }
+};
+
+
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 
 REGISTER_KERNEL_BUILDER(Name("RttSigmoidCrossEntropy").Device(DEVICE_CPU), RttSigmoidCrossEntropyOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttSigmoid").Device(DEVICE_CPU), RttSigmoidOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttRelu").Device(DEVICE_CPU), RttReluOp<CPUDevice>);
-
+REGISTER_KERNEL_BUILDER(Name("RttConv2D").Device(DEVICE_CPU), RttConv2DOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttBiasAdd").Device(DEVICE_CPU), RttBiasAddOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttL2Loss").Device(DEVICE_CPU), RttL2LossOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttFusedBatchNorm").Device(DEVICE_CPU), RttFusedBatchNormOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttAvgPool").Device(DEVICE_CPU), RttAvgPoolOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttMaxPool").Device(DEVICE_CPU), RttMaxPoolOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttSoftmax").Device(DEVICE_CPU), RttSoftmaxOp<CPUDevice>);
 } // namespace tensorflow

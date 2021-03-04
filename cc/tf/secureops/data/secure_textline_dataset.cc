@@ -45,8 +45,8 @@ namespace {
 constexpr char kPrivateTextLineDatasetName[] = "PrivateTextLine";
 
 // PrivateTextLineDatasetOp is mostly copy from tensorflow.data.TextLineDatasetOp with subtle
-// change for reading line and setting up file stream 
-// the main perpose is to support secure cvs file reading
+// change for reading line and setting up file stream
+// the main purpose is to support secure cvs file reading
 class PrivateTextLineDatasetOp : public DatasetOpKernel {
  public:
   using DatasetOpKernel::DatasetOpKernel;
@@ -361,6 +361,7 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
         std::stringstream msg_key;
         msg_key << "/SecureTextDataset/" << current_file_index_ << "/" << dataset()->unique_op_name_;
         log_debug << "SecureTextDataset op msg key:" << msg_key.str() << endl;
+        msg_id_t msg__msg_key(msg_key.str());
 
         // assemble data file info
         string result, msg;
@@ -378,7 +379,7 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
         }
 
         // dataowner send file info to peers and non-dataowner recv file info to peers
-        if (0 != ProtocolManager::Instance()->GetProtocol()->GetOps(msg_key.str())->Broadcast(data_owner_, msg, result))
+        if (0 != ProtocolManager::Instance()->GetProtocol()->GetOps(msg__msg_key)->Broadcast(data_owner_, msg, result))
         {
           log_error << "call Broadcast failed, party:  " << party_id;
           return -1;
@@ -390,7 +391,12 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
         else
           memcpy(&data_file_info_, result.data(), sizeof(data_file_info_));
 
-        log_info << "data file info: " << "lines: "<< data_file_info_.lines << ", fields: " << data_file_info_.fields << ", !!! we only support textline for CSV !!! ";
+
+        int partyid = ProtocolManager::Instance()->GetProtocol()->GetPartyId();
+        log_info << "party:" << partyid << ", owner?:" << IsDataOwner() 
+        << ", msgid:" << msg__msg_key << " " << " Succeed in reading data from CSV file." << " Total lines: "
+        << data_file_info_.lines << ", Total fields: " << data_file_info_.fields << "."
+        << ", msgid:" << msg__msg_key;
         return 0;
       }
 

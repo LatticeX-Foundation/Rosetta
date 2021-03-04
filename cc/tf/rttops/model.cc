@@ -176,4 +176,13 @@ class RttSaveV2Op : public OpKernel{
   }
 };
 
+class RttRestoreV2Op : public OpKernel{ 
+ public:
+  explicit RttRestoreV2Op(OpKernelConstruction* context) : OpKernel(context) {}
+
+  void Compute(OpKernelContext* context) override {
+  }
+};
+
 REGISTER_KERNEL_BUILDER(Name("RttSaveV2").Device(DEVICE_CPU), RttSaveV2Op);
+REGISTER_KERNEL_BUILDER(Name("RttRestoreV2").Device(DEVICE_CPU), RttRestoreV2Op);

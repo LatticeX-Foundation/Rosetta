@@ -755,6 +755,17 @@ class RttPowOp : public OpKernel {
   }
 };
 
+template <typename Device>
+class RttArgMaxOp : public OpKernel {
+ public:
+  explicit RttArgMaxOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+  void Compute(OpKernelContext* context) {
+    PRINT_BEG("RttArgMaxOp");
+    throw;
+  }
+};
+
 ////////////////   register kernels (with string type only)   ////////////////
 using CPUDevice=Eigen::ThreadPoolDevice;
 
@@ -763,6 +774,7 @@ REGISTER_KERNEL_BUILDER(Name("RttReduceMean").Device(DEVICE_CPU), RttReduceOp<CP
 REGISTER_KERNEL_BUILDER(Name("RttReduceSum").Device(DEVICE_CPU), RttReduceOp<CPUDevice, RttSumFunctor>);
 REGISTER_KERNEL_BUILDER(Name("RttReduceMin").Device(DEVICE_CPU), RttReduceOp<CPUDevice, RttMaxFunctor>);
 REGISTER_KERNEL_BUILDER(Name("RttReduceMax").Device(DEVICE_CPU), RttReduceOp<CPUDevice, RttMaxFunctor>);
+REGISTER_KERNEL_BUILDER(Name("RttArgMax").Device(DEVICE_CPU), RttArgMaxOp<CPUDevice>);
 
 // register kernel builder of basic math ops
 REGISTER_KERNEL_BUILDER(Name("RttNegative").Device(DEVICE_CPU), RttNegOp<CPUDevice>);

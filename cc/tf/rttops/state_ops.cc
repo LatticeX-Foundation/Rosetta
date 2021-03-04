@@ -15,26 +15,24 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-//#include "tensorflow/core/framework/common_shape_fns.h"
+
+#include "tensorflow/core/framework/common_shape_fns.h"
 #include "tensorflow/core/framework/op.h"
-//#include "tensorflow/core/framework/shape_inference.h"
+#include "tensorflow/core/framework/shape_inference.h"
 
-REGISTER_OP("RttSaveV2")
-    .Input("prefix: string")
-    .Input("tensor_names: string")
-    .Input("shape_and_slices: string")
-    .Input("tensors: dtypes")
-    .Attr("dtypes: list(type)")
-    .Doc(R"doc(
-RttSaveV2Op
-)doc");
 
-REGISTER_OP("RttRestoreV2")
-    .Input("prefix: string")
-    .Input("tensor_names: string")
-    .Input("shape_and_slices: string")
-    .Output("tensors: dtypes")
-    .Attr("dtypes: list(type)")
-    .Doc(R"doc(
-RttRestoreV2Op
-)doc");
+REGISTER_OP("RttAssign")
+  .Input("refv: Ref(string)")
+  .Input("value: string")
+  .Output("out: Ref(string)")
+  .Attr("validate_shape: bool = false")
+  .Attr("use_locking: bool = true");
+
+
+REGISTER_OP("RttAssignSub")
+    .Input("ref: Ref(string)")
+    .Input("value: string")
+    .Output("output_ref: Ref(string)")
+    .Attr("use_locking: bool = false")
+    .SetShapeFn(::tensorflow::shape_inference::MergeBothInputsShapeFn);
+

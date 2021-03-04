@@ -16,20 +16,21 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 
-//#include "tensorflow/core/framework/common_shape_fns.h"
+#include "tensorflow/core/framework/common_shape_fns.h"
 #include "tensorflow/core/framework/op.h"
-//#include "tensorflow/core/framework/shape_inference.h"
+#include "tensorflow/core/framework/shape_inference.h"
 
 /// Note[georgeshi]: for now, please only use INT32 or INT64!
 REGISTER_OP("TfToRtt")
   .Attr("dtype: {int32, int64, float, double, string}")
   .Input("input: dtype")
-  .Output("output: string");
+  .Output("output: string")
+  .SetShapeFn(::tensorflow::shape_inference::UnchangedShape);
 
 /// Note[georgeshi]: we can NOT use string in native TF op
 REGISTER_OP("RttToTf")
   .Input("val: string")
   .Output("out: dtype")
-  .Attr("dtype: {float, double, int32, int64, string}");
-  //.SetShapeFn(::tensorflow::shape_inference::UnchangedShape);
+  .Attr("dtype: {float, double, int32, int64, string}")
+  .SetShapeFn(::tensorflow::shape_inference::UnchangedShape);
 

@@ -16,9 +16,24 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 
-//#include "tensorflow/core/framework/common_shape_fns.h"
+#include "tensorflow/core/framework/common_shape_fns.h"
 #include "tensorflow/core/framework/op.h"
-//#include "tensorflow/core/framework/shape_inference.h"
+#include "tensorflow/core/framework/shape_inference.h"
+
+
+std::string GetPaddingAttrString() { return "padding: {'SAME', 'VALID'}"; }
+
+std::string GetPaddingAttrStringWithExplicit() {
+  return "padding: {'SAME', 'VALID', 'EXPLICIT'}";
+}
+
+std::string GetExplicitPaddingsAttrString() {
+  return "explicit_paddings: list(int) = []";
+}
+
+std::string GetConvnetDataFormatAttrString() {
+  return "data_format: { 'NHWC', 'NCHW' } = 'NHWC' ";
+}
 
 
 REGISTER_OP("RttSigmoidCrossEntropy")
@@ -39,8 +54,79 @@ RttSigmoidOp
 REGISTER_OP("RttRelu")
   .Input("x: string")
   .Output("y: string")
+  .SetShapeFn(::tensorflow::shape_inference::UnchangedShape)
   .Doc(R"doc(
 RttReluOp
 )doc");
 
 
+REGISTER_OP("RttConv2D")
+    .Input("input: string")
+    .Input("filter: string")
+    .Output("output: string")
+    .Attr("strides: list(int)")
+    .Attr("use_cudnn_on_gpu: bool = true")
+    .Attr(GetPaddingAttrStringWithExplicit())
+    .Attr(GetExplicitPaddingsAttrString())
+    .Attr(GetConvnetDataFormatAttrString())
+    .Attr("dilations: list(int) = [1, 1, 1, 1]")
+    .SetShapeFn(::tensorflow::shape_inference::Conv2DShapeWithExplicitPadding);
+
+
+REGISTER_OP("RttBiasAdd")
+    .Input("value: string")
+    .Input("bias: string")
+    .Attr(GetConvnetDataFormatAttrString())
+    .Output("output: string")
+    .SetShapeFn(::tensorflow::shape_inference::BiasAddShape);
+
+
+REGISTER_OP("RttL2Loss")
+    .Input("t: string")
+    .Output("output: string")
+    .SetShapeFn(::tensorflow::shape_inference::ScalarShape);
+
+
+REGISTER_OP("RttFusedBatchNorm")
+    .Input("x: string")
+    .Input("scale: string")
+    .Input("offset: string")
+    .Input("mean: string")
+    .Input("variance: string")
+    .Output("y: string")
+    .Output("batch_mean: string")
+    .Output("batch_variance: string")
+    .Output("reserve_space_1: string")
+    .Output("reserve_space_2: string")
+    .Attr("epsilon: float = 0.0001")
+    .Attr(GetConvnetDataFormatAttrString())
+    .Attr("is_training: bool = true")
+    .SetShapeFn(::tensorflow::shape_inference::FusedBatchNormShape);
+
+
+REGISTER_OP("RttAvgPool")
+    .Input("value: string")
+    .Output("output: string")
+    .Attr("ksize: list(int) >= 4")
+    .Attr("strides: list(int) >= 4")
+    .Attr(GetPaddingAttrString())
+    .Attr(GetConvnetDataFormatAttrString())
+    .SetShapeFn(::tensorflow::shape_inference::AvgPoolShape);
+
+
+REGISTER_OP("RttMaxPool")
+    .Input("input: string")
+    .Output("output: string")
+    .Attr("ksize: list(int) >= 4")
+    .Attr("strides: list(int) >= 4")
+    .Attr(GetPaddingAttrString())
+    .Attr("data_format: {'NHWC', 'NCHW', 'NCHW_VECT_C'} = 'NHWC'")
+    .SetShapeFn(::tensorflow::shape_inference::MaxPoolShape);
+
+
+REGISTER_OP("RttSoftmax")
+    .Input("logits: string")
+    .Output("softmax: string")
+    .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+      return ::tensorflow::shape_inference::UnchangedShapeWithRankAtLeast(c, 1);
+    });
