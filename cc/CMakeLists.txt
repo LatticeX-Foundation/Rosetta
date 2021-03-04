@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 project(rosetta)
 
+if(CMAKE_BUILD_TOOL MATCHES "(msdev|devenv|nmake)")
+    add_definitions(/W2)
+endif()
+
 set(CMAKE_THREAD_LIBS_INIT "-lpthread")
 set(CMAKE_HAVE_THREADS_LIBRARY 1)
 set(CMAKE_USE_WIN32_THREADS_INIT 0)
@@ -27,7 +31,16 @@ else()
     message(STATUS "ROSETTA_MPC_128: ${ROSETTA_MPC_128}, use 64-bits MPC")
 endif()
 
+# ON OFF
+# if COMPILE tests
 option(ROSETTA_COMPILE_TESTS "" OFF)
+
+# ON OFF
+# if ENABLES protocol mpc/...
+option(ROSETTA_ENABLES_PROTOCOL_MPC_SECURENN "" OFF) 
+IF(ROSETTA_ENABLES_PROTOCOL_MPC_SECURENN)
+    add_definitions(-DROSETTA_ENABLES_PROTOCOL_MPC_SECURENN=1)
+ENDIF()
 
 # modules
 add_subdirectory(modules)
