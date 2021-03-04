@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "cc/modules/protocol/mpc/comm/include/mpc_util.h"
+#include "cc/modules/protocol/utility/include/util.h"
 #include "cc/modules/protocol/mpc/comm/include/mpc_helper.h"
 
 #include <cassert>
@@ -28,30 +28,6 @@
 #include <chrono>
 #include <random>
 using namespace std;
-
-namespace rosetta {
-static std::streambuf* cout_buf = nullptr;
-static std::ofstream of;
-static bool redirect_io = false;
-
-// redirect stdout to external specified log file
-void redirect_stdout(const std::string& logfile) {
-  cout_buf = cout.rdbuf();
-  of.open(logfile);
-  streambuf* fileBuf = of.rdbuf();
-  cout.rdbuf(fileBuf);
-  redirect_io = true;
-}
-
-void restore_stdout() {
-  if (!redirect_io)
-    return;
-  return;
-  of.flush();
-  of.close();
-  cout.rdbuf(cout_buf);
-}
-} // namespace rosetta
 
 void convert_mpctype_to_double(const vector<mpc_t>& a, vector<double>& b) {
   b.resize(a.size());

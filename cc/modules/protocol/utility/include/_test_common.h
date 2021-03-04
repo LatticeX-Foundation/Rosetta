@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <signal.h>
 #include <string>
 #include <time.h>
 #include <condition_variable>
@@ -34,7 +35,7 @@
 using namespace std;
 
 #include "cc/modules/common/include/utils/random_util.h"
-#include "cc/modules/protocol/mpc/comm/include/_test_check_func.h"
+#include "cc/modules/protocol/utility/include/_test_check_func.h"
 
 #define PERFORMANCE_TEST 0
 typedef void (*_mpc_run_func)(int);
@@ -72,6 +73,30 @@ static inline int _mpc_main(int argc, char* argv[], _mpc_run_func run) {
   return ret;
 }
 
+static inline int _zk_main(int argc, char* argv[], _mpc_run_func run) {
+  signal(SIGCHLD,SIG_IGN);
+  int ret = 0;
+  int status0 = -1;
+  int status1 = -1;
+
+  pid_t p0 = fork();
+  if (p0 < 0) {
+    cerr << "error in fork p0!" << endl;
+    exit(1);
+  }
+  if (p0 == 0) {
+    run(0); // P0
+  } else {
+    run(1); // P1
+
+    waitpid(p0, &status0, 0);
+    printf("status0 = %d\n", WEXITSTATUS(status0));
+  }
+
+  return ret;
+}
+
+
 #define print_result 0
 #if print_result
 #define if_print_vec print_vec
@@ -82,3 +107,6 @@ inline void if_print_vec(const vector<T>& a, int length = -1, string msg = "") {
 
 #define RUN_MPC_TEST(func) \
   int main(int argc, char* argv[]) { return _mpc_main(argc, argv, func); }
+
+#define RUN_ZK_TEST(func) \
+  int main(int argc, char* argv[]) { return _zk_main(argc, argv, func); }

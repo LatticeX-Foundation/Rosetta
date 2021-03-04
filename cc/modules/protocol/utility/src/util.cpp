@@ -15,56 +15,40 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#pragma once
+#include "cc/modules/protocol/utility/include/util.h"
+#include "cc/modules/protocol/mpc/comm/include/mpc_helper.h"
 
-#include <immintrin.h>
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+#include <vector>
+#include <sstream>
 #include <iostream>
-#include <memory>
-#include <string>
+#include <fstream>
+#include <chrono>
 #include <random>
 using namespace std;
 
-namespace emp {
-class PRG;
-using block = __m128i;
-} // namespace emp
-using emp::block;
-
 namespace rosetta {
+static std::streambuf* cout_buf = nullptr;
+static std::ofstream of;
+static bool redirect_io = false;
 
-class MpcPRG {
-#define BLOCK_COUNT 4096
-  uint64_t counter_ = 0;
-  block data_[BLOCK_COUNT];
+// redirect stdout to external specified log file
+void redirect_stdout(const std::string& logfile) {
+  cout_buf = cout.rdbuf();
+  of.open(logfile);
+  streambuf* fileBuf = of.rdbuf();
+  cout.rdbuf(fileBuf);
+  redirect_io = true;
+}
 
-  int index64 = 0;
-  int index08 = 0;
-  int index01 = 0;
-  block block64{0};
-  block block08{0};
-  block block01{0};
-
-  shared_ptr<emp::PRG> prg_ = nullptr;
-  std::string kdefault =
-    std::string("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
-
- public:
-  MpcPRG();
-  MpcPRG(const std::string& key);
-
- private:
-  block newRandomBlocks();
-
- public:
-  /**
-   * \param key, 16 bytes
-   */
-  void reseed(const void* key, uint64_t id = 0);
-  void reseed(const std::string& key);
-  void randomDatas(void* data, int nbytes);
-  uint64_t get64Bits();
-  uint8_t get8Bits();
-  uint8_t getBit();
-};
-
+void restore_stdout() {
+  if (!redirect_io)
+    return;
+  return;
+  of.flush();
+  of.close();
+  cout.rdbuf(cout_buf);
+}
 } // namespace rosetta

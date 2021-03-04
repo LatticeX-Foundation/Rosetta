@@ -17,7 +17,7 @@
 // ==============================================================================
 #pragma once
 #include "cc/modules/protocol/public/include/protocol_base.h"
-#include "cc/modules/protocol/mpc/comm/include/mpc_prg.h"
+#include "cc/modules/protocol/utility/include/prg.h"
 #include "cc/modules/common/include/utils/perf_stats.h"
 
 #include <memory>
@@ -40,14 +40,13 @@ class MpcProtocol : public ProtocolBase {
   virtual int Uninit();
 
   //! @attention! internal use, for cpp test cases
-  virtual int Init(int partyid, std::string config_json_str = "");
   virtual int Init(int partyid, std::string config_json_str, std::string logfile);
 
   virtual PerfStats GetPerfStats();
   virtual void StartPerfStats();
 
  public:
-  virtual shared_ptr<ProtocolOps> GetOps(const string& op_token = "") = 0;
+  virtual shared_ptr<ProtocolOps> GetOps(const msg_id_t& msgid) = 0;
   virtual shared_ptr<NET_IO> GetNetHandler() { return _net_io; }
 
  protected:
@@ -60,7 +59,7 @@ class MpcProtocol : public ProtocolBase {
   virtual void _initialize_mpc_environment() {}
 
  protected:
-  std::shared_ptr<MpcPRG> gseed = nullptr; // for global random seed
+  std::shared_ptr<RttPRG> gseed = nullptr; // for global random seed
   std::string seed_msg_id = "[MPC] This msg id for global RandomSeed.";
   std::string pri_input_msg_id = "[MPC] This msg id for global PrivateInput.";
   shared_ptr<RosettaConfig> config = nullptr;

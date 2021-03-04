@@ -17,7 +17,7 @@
 // ==============================================================================
 #pragma once
 #include "cc/modules/protocol/mpc/comm/include/mpc_defines.h"
-#include "cc/modules/io/include/ex.h"
+#include "cc/modules/io/include/net_io.h"
 #include "cc/modules/common/include/utils/simple_timer.h"
 #include "cc/modules/common/include/utils/helper.h"
 

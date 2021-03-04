@@ -15,31 +15,31 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "cc/modules/protocol/mpc/comm/include/mpc_prg.h"
+#include "cc/modules/protocol/utility/include/prg.h"
 
 #include "emp-tool/emp-tool.h"
 using namespace emp;
 
 namespace rosetta {
 
-MpcPRG::MpcPRG() {
+RttPRG::RttPRG() {
   prg_ = make_shared<emp::PRG>();
   reseed(kdefault);
 }
-MpcPRG::MpcPRG(const std::string& key) {
+RttPRG::RttPRG(const std::string& key) {
   prg_ = make_shared<emp::PRG>();
   reseed(key);
 }
 
-block MpcPRG::newRandomBlocks() {
+block RttPRG::newRandomBlocks() {
   if (counter_++ % BLOCK_COUNT == 0) {
     randomDatas((char*)data_, BLOCK_COUNT * sizeof(block));
   }
   return data_[counter_ % BLOCK_COUNT];
 }
 
-void MpcPRG::randomDatas(void* data, int nbytes) { prg_->random_data(data, nbytes); }
-uint64_t MpcPRG::get64Bits() {
+void RttPRG::randomDatas(void* data, int nbytes) { prg_->random_data(data, nbytes); }
+uint64_t RttPRG::get64Bits() {
   uint64_t ret = 0;
   if (index64 == 0)
     block64 = newRandomBlocks();
@@ -53,7 +53,7 @@ uint64_t MpcPRG::get64Bits() {
 
   return ret;
 }
-uint8_t MpcPRG::get8Bits() {
+uint8_t RttPRG::get8Bits() {
   uint8_t ret;
 
   if (index08 == 0)
@@ -68,7 +68,7 @@ uint8_t MpcPRG::get8Bits() {
 
   return ret;
 }
-uint8_t MpcPRG::getBit() {
+uint8_t RttPRG::getBit() {
   uint8_t ret;
 
   if (index01 == 0)
@@ -85,7 +85,7 @@ uint8_t MpcPRG::getBit() {
   return ret;
 }
 
-void MpcPRG::reseed(const void* key, uint64_t id) { prg_->reseed(key, id); }
-void MpcPRG::reseed(const std::string& key) { reseed((const void*)key.data()); }
+void RttPRG::reseed(const void* key, uint64_t id) { prg_->reseed((const block*)key, id); }
+void RttPRG::reseed(const std::string& key) { reseed((const void*)key.data()); }
 
 } // namespace rosetta
