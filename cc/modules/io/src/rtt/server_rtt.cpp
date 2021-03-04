@@ -160,15 +160,15 @@ void TCPServer::handle_accept(Connection* conn) {
 }
 
 void TCPServer::handle_error(Connection* conn) {
-  log_info << __FUNCTION__ << " fd:" << conn->fd_ << " errno:" << errno << " " << strerror(errno)
-           << endl;
+  log_debug << __FUNCTION__ << " fd:" << conn->fd_ << " errno:" << errno << " " << strerror(errno)
+            << endl;
   {
     //! double check
     struct tcp_info info;
     int len = sizeof(info);
     getsockopt(conn->fd_, IPPROTO_TCP, TCP_INFO, &info, (socklen_t*)&len);
-    log_info << __FUNCTION__ << " fd:" << conn->fd_
-             << " tcp_info.tcpi_state: " << to_string(info.tcpi_state) << endl;
+    log_debug << __FUNCTION__ << " fd:" << conn->fd_
+              << " tcp_info.tcpi_state: " << to_string(info.tcpi_state) << endl;
     if (info.tcpi_state == TCP_CLOSE) {
       ssize_t len = conn->readImpl(conn->fd_, main_buffer_, 8192);
       if (len > 0) { // Normal
@@ -312,7 +312,7 @@ void TCPServer::loop_main() {
   bool all_closed = false;
   int retries = 10;
   while (!all_closed && (--retries > 0)) {
-    log_info << "the server will stop soon ... " << retries << endl;
+    log_debug << "the server will stop soon ... " << retries << endl;
     all_closed = true;
     for (auto& c : connections_) {
       if (c.second != nullptr) {
