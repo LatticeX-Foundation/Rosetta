@@ -52,64 +52,6 @@ class _3PCConfig : public _Config {
   Node P[THREE_PARTIES];
 };
 
-class PSIConfig : public _2PCConfig {
-  /**
-   * Examples:
-   * "PSI": {
-   *   "P0": {
-   *     "DESC": "P0/ALICE, as Server-side.",
-   *     "NAME": "PartyA(P0)",
-   *     "HOST": "127.0.0.1",
-   *     "PORT": 15225 // listen port on P0
-   *   },
-   *   "P1": {
-   *     "DESC": "P1/BOB, as Client-side.",
-   *     "NAME": "PartyB(P1)",
-   *     "HOST": "127.0.0.1", // P0's HOST
-   *     "PORT": 15225 // P0's listen PORT
-   *   },
-   *   "RECV_PARTY": 2
-   * },
-   */
- public:
-  std::string to_string();
-
- public:
-  int RECV_PARTY = 2; // which party receive the result. 0-ALICE; 1-BOB; 2-BOTH
-};
-
-class ZKConfig : public _2PCConfig {
-  /**
-   * "ZK": {
-   *   "P0": {
-   *     "DESC": "P0/ALICE/Prover, internal PARTY_ID = 1, as Server-side.",
-   *     "NAME": "PartyA(P0)",
-   *     "HOST": "127.0.0.1",
-   *     "PORT": 16256 // listen port on P0
-   *   },
-   *   "P1": {
-   *     "DESC": "P1/BOB/Verifier, internal PARTY_ID = 2, as Client-side.",
-   *     "NAME": "PartyB(P1)",
-   *     "HOST": "127.0.0.1", // P0's HOST
-   *     "PORT": 16256 // P0's listen PORT
-   *   },
-   *   "RESTORE_MODE": 1
-   * },
-   */
- public:
-  std::string to_string();
-
- public:
-  /**
-   * general descriptions @see MPCConfig, but the restrictions in ZK are:
-   *  b01, plain model, only P0(b01) owns the plain model, load as private;
-   *  b11(-1), plain model, all parties have the plain model, load as public-constant;
-   *  others, not supported
-   * you can set RESTORE_MODE to 1 or -1.
-   */
-  int RESTORE_MODE = 0;
-};
-
 class MPCConfig : public _3PCConfig {
  public:
   MPCConfig();
@@ -151,26 +93,19 @@ class RosettaConfig {
   RosettaConfig(int argc, char* argv[]);
   RosettaConfig(int party, const string& config_json);
   RosettaConfig(const string& config_json); // use PARTY_ID in config_json
-  RosettaConfig(const PSIConfig& psiconfig) : psi(psiconfig) {}
   RosettaConfig(const MPCConfig& mpcconfig) : mpc(mpcconfig) {}
 
  private:
   bool load(int party, const string& config_file);
   bool parse(Document& doc);
-  bool parse_psi(Document& doc);
-  bool parse_zk(Document& doc);
   bool parse_mpc(Document& doc);
 
  public:
-  PSIConfig& getPsiConfig() { return psi; }
-  ZKConfig& getZkConfig() { return zk; }
   MPCConfig& getMpcConfig() { return mpc; }
   void fmt_print();
 
  public:
   int PARTY = -1; // NOT USE AT PRESENT
-  PSIConfig psi;
-  ZKConfig zk;
   MPCConfig mpc;
 };
 

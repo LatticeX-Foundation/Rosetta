@@ -91,16 +91,6 @@ bool GetBool(
 }
 } // namespace
 
-std::string PSIConfig::to_string() {
-  std::stringstream sss;
-  // clang-format off
-  sss << "\n     PSI Config: --------------------------------"
-      << "\n     RECV PARTY: " << RECV_PARTY
-      << "\n";
-  // clang-format on
-  return sss.str();
-}
-
 MPCConfig::MPCConfig() {
   // default values
   for (int i = 0; i < THREE_PARTIES; i++) {
@@ -211,56 +201,6 @@ bool RosettaConfig::load(int party, const string& config_file) {
   return true;
 }
 
-bool RosettaConfig::parse_psi(Document& doc) {
-  // PSIConfig
-  if (doc.HasMember("PSI") && doc["PSI"].IsObject()) {
-    auto& cfg = psi;
-    Value& PSI = doc["PSI"];
-
-    // nodes
-    for (int i = 0; i < TWO_PARTIES; i++) {
-      string Pi("P" + to_string(i));
-      if (PSI.HasMember(Pi.c_str()) && PSI[Pi.c_str()].IsObject()) {
-        Value& p = PSI[Pi.c_str()];
-        cfg.P[i].NAME = GetString(p, "NAME", Pi.c_str(), false);
-        cfg.P[i].HOST = GetString(p, "HOST", "127.0.0.1", false);
-        cfg.P[i].PORT = GetInt(p, "PORT", 9999, true);
-      }
-    }
-
-    cfg.RECV_PARTY = GetInt(PSI, "RECV_PARTY", 2, false);
-    if ((cfg.RECV_PARTY < 0) || (cfg.RECV_PARTY > 2)) {
-      log_error << "error RECV_PARTY: " << cfg.RECV_PARTY << ", expected 0~2." << endl;
-      return false;
-    }
-  }
-  return true;
-}
-bool RosettaConfig::parse_zk(Document& doc) {
-  // ZKConfig
-  if (doc.HasMember("ZK") && doc["ZK"].IsObject()) {
-    auto& cfg = zk;
-    Value& ZK = doc["ZK"];
-
-    // nodes
-    for (int i = 0; i < TWO_PARTIES; i++) {
-      string Pi("P" + to_string(i));
-      if (ZK.HasMember(Pi.c_str()) && ZK[Pi.c_str()].IsObject()) {
-        Value& p = ZK[Pi.c_str()];
-        cfg.P[i].NAME = GetString(p, "NAME", Pi.c_str(), false);
-        cfg.P[i].HOST = GetString(p, "HOST", "127.0.0.1", false);
-        cfg.P[i].PORT = GetInt(p, "PORT", 9999, true);
-      }
-    }
-
-    cfg.RESTORE_MODE = GetInt(ZK, "RESTORE_MODE", 1, false);
-    if ((cfg.RESTORE_MODE != 1) && ((cfg.RESTORE_MODE & 3) != 3)) {
-      log_error << "error RESTORE_MODE: " << cfg.RESTORE_MODE << ", expected 1/3/-1." << endl;
-      return false;
-    }
-  }
-  return true;
-}
 bool RosettaConfig::parse_mpc(Document& doc) {
   // MPCConfig
   if (doc.HasMember("MPC") && doc["MPC"].IsObject()) {
@@ -315,12 +255,6 @@ bool RosettaConfig::parse(Document& doc) {
   //! @todo the PARTY_ID field in CONFIG.json have not yet used
   PARTY = GetInt(doc, "PARTY_ID", -1, false);
 
-  if (!parse_psi(doc)) {
-    return false;
-  }
-  if (!parse_zk(doc)) {
-    return false;
-  }
   if (!parse_mpc(doc)) {
     return false;
   }
@@ -332,7 +266,6 @@ bool RosettaConfig::parse(Document& doc) {
 void RosettaConfig::fmt_print() {
   log_debug << "=======================================" << endl;
   log_debug << "          PARTY: " << PARTY << endl;
-  log_debug << psi.to_string();
   log_debug << mpc.to_string();
   log_debug << "=======================================" << endl;
 }
