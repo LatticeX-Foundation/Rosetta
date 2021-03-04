@@ -18,6 +18,7 @@
 #pragma once
 
 #include "cc/modules/common/include/utils/perf_stats.h"
+#include "cc/modules/common/include/utils/msg_id.h"
 #include "cc/modules/protocol/public/include/protocol_ops.h"
 
 #include <memory>
@@ -67,13 +68,11 @@ class ProtocolBase {
   /**
    * @desc: after initialization, get the actual operation interface of this protocol
    * @param:
-   *     op_token: an optional string to differentiate each other
+   *     msgid: the message id passed by caller
    * @return:
    *     the Operations interface, the Ops whithin have the same token
    */
-  virtual shared_ptr<ProtocolOps> GetOps(const string& op_token = "") {
-    THROW_NOT_IMPL_FN(__func__);
-  }
+  virtual shared_ptr<ProtocolOps> GetOps(const msg_id_t& msgid) { THROW_NOT_IMPL_FN(__func__); }
 
   /**
    * @desc: after initialization, get the network channel for this protocol
@@ -90,6 +89,7 @@ class ProtocolBase {
    * return party id
    */
   int GetPartyId() const { return my_party_id; }
+  int GetParties() const { return parties; }
 
   /**
    * get current performance statistic info
@@ -104,7 +104,10 @@ class ProtocolBase {
   virtual PerfStats GetPerfStats() { return PerfStats(); }
   virtual void StartPerfStats() {}
 
+  const unordered_map<string, string>& GetConfigMap() const { return config_map; }
+
  protected:
+  int parties = 3;
   int my_party_id = -1;
   bool _is_inited = false;
   string _protocol_name = "";
