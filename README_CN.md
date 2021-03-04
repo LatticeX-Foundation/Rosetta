@@ -31,10 +31,10 @@ pip3 install tensorflow==1.14.0
 
 ```bash
 # clone rosetta git repository
-git clone https://github.com/LatticeX-Foundation/Rosetta.git
+git clone --recurse https://github.com/LatticeX-Foundation/Rosetta.git
 cd Rosetta
-# compile, install and run test cases
-bash compile_and_test_all.sh
+# compile, install
+./rosetta.sh compile --enable-protocol-mpc-securenn; ./rosetta.sh install
 ```
 
 安装完成后，你可以基于下面我们会介绍的一些例子去验证下是否安装成功。在实际的使用中，在运行之前还需要进行多方之间网络拓扑关系等信息的配置，以使得分布式执行时多方之间可以正常的通讯。
