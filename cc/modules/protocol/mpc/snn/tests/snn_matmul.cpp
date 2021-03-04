@@ -10,7 +10,7 @@ void run(int partyid) {
   random_vector(Y, 42 * 1, -1.0, 1.0);
   size_t size = X.size();
 
-  string msgid("Matmul (share,share)");
+  msg_id_t msgid("Matmul (share,share)");
   cout << __FUNCTION__ << " " << msgid << endl;
 
   vector<string> strX(X.size()), strY(X.size()), strZ(X.size());

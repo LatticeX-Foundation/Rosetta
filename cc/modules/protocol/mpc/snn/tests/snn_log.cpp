@@ -10,7 +10,7 @@ void run(int partyid) {
   size_t size = X.size();
   print_vec(X, 10, "X");
 
-  string msgid("All basic Binary OP(s) (share,share)");
+  msg_id_t msgid("All basic Binary OP(s) (share,share)");
   cout << __FUNCTION__ << " " << msgid << endl;
     vector<string> strX, strZ;
   vector<string> zZ(strZ.size());
@@ -57,6 +57,7 @@ void run(int partyid) {
   print_vec(labels, 10, "labels:");
   attr_type attr;
   
+  // case 1: Log
   snn0.StartPerfStats();
   snn0.GetOps(msgid)->SigmoidCrossEntropy(input_str1, input_str2, out_str, &attr);
   cout << "SCE PERF:" << snn0.GetPerfStats().to_json(true) << endl;

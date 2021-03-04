@@ -26,7 +26,7 @@ void run(int partyid) {
   PROTOCOL_MPC_TEST_INIT(partyid);
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
-  string msgid(protocol_name + " performance test");
+  msg_id_t msgid(protocol_name + " performance test");
   cout << __FUNCTION__ << " " << msgid << endl;
   Logger::Get().log_to_stdout(true);
 

@@ -17,7 +17,7 @@ void run(int partyid) {
   size_t size = X.size();
   print_vec(X, 10, "Input X");
 
-  string msgid("Max_and_Min");
+  msg_id_t msgid("Max_and_Min");
   cout << __FUNCTION__ << " " << msgid << endl;
   
   vector<string> strX(X.size()), strZ(X.size());

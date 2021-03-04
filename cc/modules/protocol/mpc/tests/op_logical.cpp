@@ -40,7 +40,7 @@ void run(int partyid) {
   //////////// NOTx : {0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0}
   // clang-format on
 
-  string msgid("Logical ops");
+  msg_id_t msgid("Logical ops");
   cout << __FUNCTION__ << " " << msgid << endl;
 
   vector<string> strX1, strY1, strX2, strY2, strZ1, strZ2;

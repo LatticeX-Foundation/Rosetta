@@ -18,7 +18,7 @@ void run(int partyid) {
   // Logger::Get().log_to_stdout(true);
   // Logger::Get().set_filename("SNN_Equal_" + to_string(partyid) + ".log");
   // Logger::Get().set_level(1);
-  string msgid("All basic Binary OP(s) (share,share)");
+  msg_id_t msgid("All basic Binary OP(s) (share,share)");
   cout << __FUNCTION__ << " " << msgid << endl;
   
   vector<string> strX(X.size()), strY(X.size()), strZ(X.size());

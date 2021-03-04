@@ -16,7 +16,7 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #pragma once
-#include "cc/modules/protocol/mpc/comm/include/_test_common.h"
+#include "cc/modules/protocol/utility/include/_test_common.h"
 
 #if PROTOCOL_MPC_TEST_SNN
 #include "cc/modules/protocol/mpc/snn/src/snn_protocol.h"
@@ -42,8 +42,10 @@ using namespace rosetta;
 #define PROTOCOL_MPC_TEST_INIT(partyid)                                                           \
   GET_PROTOCOL(mpc_proto);                                                                        \
   string logfile = "log/protocol_mpc_tests_" + protocol_name + "_" + string(__FILENAME__) + "-" + \
-    to_string(partyid) + ".log";                                                                  \
-  mpc_proto->Init(partyid, "CONFIG.json", logfile);                                               \
+    to_string(partyid);                                                                           \
+  Logger::Get().log_to_stdout(false);                                                             \
+  Logger::Get().set_filename(logfile + "-backend.log");                                           \
+  mpc_proto->Init(partyid, "CONFIG.json", logfile + "-console.log");                              \
   cout << "partyid:" << partyid << " ppid:" << getppid() << " pid:" << getpid() << " beg" << endl
 
 #define PROTOCOL_MPC_TEST_UNINIT(partyid)                                                          \

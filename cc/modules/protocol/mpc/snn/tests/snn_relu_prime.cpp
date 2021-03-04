@@ -27,7 +27,7 @@ void run(int partyid) {
   size_t size = X.size();
   print_vec(X, size, "X");
 
-  string msgid("relu-prime OP(s) (share,share)");
+  msg_id_t msgid("relu-prime OP(s) (share,share)");
   cout << __FUNCTION__ << " " << msgid << endl;
 
   vector<string> strX, strZ, plainX(X.size());

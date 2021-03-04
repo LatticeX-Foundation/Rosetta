@@ -12,7 +12,17 @@ function(compile_mpc_protocol_test proto proj)
   target_link_libraries(${projname} mpc-${proto})
 endfunction()
 
-compile_mpc_protocol_test(snn check)
-compile_mpc_protocol_test(snn perf)
+
+IF(ROSETTA_ENABLES_PROTOCOL_MPC_SECURENN)
+  compile_mpc_protocol_test(snn check)
+  compile_mpc_protocol_test(snn perf)
+  compile_mpc_protocol_test(snn op_logical)
+ENDIF()
+
+IF(ROSETTA_ENABLES_PROTOCOL_MPC_HELIX)
+  compile_mpc_protocol_test(helix check)
+  compile_mpc_protocol_test(helix perf)
+  compile_mpc_protocol_test(helix op_logical)
+ENDIF()
 
 ENDIF()

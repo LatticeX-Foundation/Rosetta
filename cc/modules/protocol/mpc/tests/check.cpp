@@ -27,7 +27,7 @@ void run(int partyid) {
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
   {
-    string msgid("All basic Binary OP(s) (VV/VC/CV)");
+    msg_id_t msgid("All basic Binary OP(s) (VV/VC/CV)");
     cout << __FUNCTION__ << " " << msgid << endl;
 
 #define helix_binary_f(lh, rh, op, strX, strY, check_func, X, Y)                  \
@@ -170,7 +170,7 @@ void run(int partyid) {
   }
 
   {
-    string msgid("All basic Unary OP(s) (share)");
+    msg_id_t msgid("All basic Unary OP(s) (share)");
     cout << __FUNCTION__ << " " << msgid << endl;
 
 #define helix_unary_f(op, strX, check_func, X)       \
@@ -216,7 +216,7 @@ void run(int partyid) {
   }
 
   {
-    string msgid("All basic Reduce OP(s) (share)");
+    msg_id_t msgid("All basic Reduce OP(s) (share)");
     cout << __FUNCTION__ << " " << msgid << endl;
 
 #define helix_reduce_f(op, strX, r, c, check_func, X) \
@@ -259,7 +259,7 @@ void run(int partyid) {
   }
 
   {
-    string msgid("MatMul(share,share)");
+    msg_id_t msgid("MatMul(share,share)");
     cout << __FUNCTION__ << " " << msgid << endl;
 
 #define helix_matmul_f(op, strX, strY, m, K, n, check_func, X, Y) \
@@ -308,7 +308,7 @@ void run(int partyid) {
   }
 
   {
-    string msgid("Other OPs added here");
+    msg_id_t msgid("Other OPs added here");
     cout << __FUNCTION__ << " " << msgid << endl;
   }
   //////////////////////////////////////////////////////////////////

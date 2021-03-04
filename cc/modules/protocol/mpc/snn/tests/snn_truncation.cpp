@@ -15,7 +15,7 @@ void run(int partyid) {
   print_vec(X, 10, "X");
   print_vec(Y, 10, "Y");
 
-  string msgid("Mul OP(s) (share,share)");
+  msg_id_t msgid("Mul OP(s) (share,share)");
   cout << __FUNCTION__ << " " << msgid << endl;
   
   vector<string> strX, strY, strZ;
