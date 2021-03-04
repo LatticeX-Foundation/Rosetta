@@ -17,7 +17,12 @@
 // ==============================================================================
 #include "cc/modules/common/include/utils/logger.h"
 #include "cc/modules/protocol/public/protocol_manager.h"
+#if ROSETTA_ENABLES_PROTOCOL_MPC_HELIX
+#include "cc/modules/protocol/mpc/helix/include/helix_impl.h"
+#endif
+#if ROSETTA_ENABLES_PROTOCOL_MPC_SECURENN
 #include "cc/modules/protocol/mpc/snn/src/snn_protocol.h"
+#endif
 #include "cc/modules/protocol/mpc/naive/include/naive_impl.h"
 
 #include <iostream>
@@ -145,7 +150,12 @@ struct ProtocolRegistrar {
 #define REGISTER_SECURE_PROTOCOL(Prot, Name) \
   static ProtocolRegistrar<Prot> _protocol_registrar_##Prot(Name)
 
+#if ROSETTA_ENABLES_PROTOCOL_MPC_HELIX
+REGISTER_SECURE_PROTOCOL(HelixImpl, "Helix");
+#endif
+#if ROSETTA_ENABLES_PROTOCOL_MPC_SECURENN
 REGISTER_SECURE_PROTOCOL(SnnProtocol, "SecureNN");
+#endif
 REGISTER_SECURE_PROTOCOL(NaiveProtocol, "Naive");
 
 } // namespace rosetta

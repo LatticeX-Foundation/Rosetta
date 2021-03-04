@@ -5,6 +5,9 @@ project(protocol_api)
 list(APPEND LINKLIBS common)
 list(APPEND LINKLIBS mpc-io)
 
+# settings
+include(SetCommon)
+
 # Source files
 file(GLOB_RECURSE PUBLIC_SOURCES_FILES "src/*.cpp")
 
@@ -22,8 +25,14 @@ set_target_properties(protocol-base PROPERTIES FOLDER "protocol/base"
 install_libraries(protocol-base)
 
 list(APPEND LINKLIBS protocol-base)
+IF(ROSETTA_ENABLES_PROTOCOL_MPC_SECURENN)
 list(APPEND LINKLIBS mpc-snn)
+ENDIF()
+IF(ROSETTA_ENABLES_PROTOCOL_MPC_HELIX)
+list(APPEND LINKLIBS mpc-helix)
+ENDIF()
 list(APPEND LINKLIBS mpc-naive)
+
 
 # Library protocol-api
 add_library(protocol-api SHARED "${CMAKE_CURRENT_SOURCE_DIR}/protocol_manager.cpp")
