@@ -19,7 +19,7 @@
 
 #include "cc/modules/protocol/mpc/comm/include/mpc_helper.h"
 #include "cc/modules/protocol/mpc/snn/include/opsets_local.h"
-#include "cc/modules/protocol/mpc/comm/include/mpc_util.h"
+#include "cc/modules/protocol/utility/include/util.h"
 #include "cc/modules/common/include/utils/str_type_convert.h"
 
 #include <cmath>
@@ -163,14 +163,9 @@ namespace snn {
 class OpBase : public OpBase_ {
  public:
   explicit OpBase(const msg_id_t& key) : msg_id_(key) { init(); }
-  explicit OpBase(const std::string& key) : msg_id_(key) { init(); }
   explicit OpBase(const std::shared_ptr<OpBase>& op) : msg_id_(op->msg_id()) { init(); }
 
   explicit OpBase(const msg_id_t& key, shared_ptr<NET_IO> io__) : msg_id_(key) {
-    io = io__;
-    init();
-  }
-  explicit OpBase(const std::string& key, shared_ptr<NET_IO> io__) : msg_id_(key) {
     io = io__;
     init();
   }
@@ -186,7 +181,7 @@ class OpBase : public OpBase_ {
   virtual const msg_id_t& msg_id() const { return msg_id_; }
 
  protected:
-  msg_id_t msg_id_;
+  const msg_id_t& msg_id_;
 };
 
 /*
@@ -326,9 +321,13 @@ class Broadcast : public OpBase {
   int Run(int party, const string& msg, string& result) {
     MPCOP_RETURN(funcBroadcast(party, msg, result));
   }
+  int Run(int party, const char* msg, char* result, size_t size) {
+    MPCOP_RETURN(funcBroadcast(party, msg, result, size));
+  }
 
  private:
   int funcBroadcast(int party, const string& msg, string& result);
+  int funcBroadcast(int party, const char* msg, char* result, size_t size);
 };
 
 /*
@@ -392,12 +391,12 @@ class MatMul : public OpBase {
     size_t transpose_a,
     size_t transpose_b) {
     vector<mpc_t> a, b, c;
-    rosetta::convert::from_hex_str(as, a);
-    rosetta::convert::from_hex_str(bs, b);
+    rosetta::convert::from_binary_str(as, a);
+    rosetta::convert::from_binary_str(bs, b);
 
     MPCOP_RETURN(funcMatMulMPC(a, b, c, rows, common_dim, columns, transpose_a, transpose_b));
 
-    rosetta::convert::to_hex_str<mpc_t>(c, cs);
+    rosetta::convert::to_binary_str<mpc_t>(c, cs);
     return 0;
   }
 };
@@ -446,11 +445,11 @@ class Relu : public OpBase {
 
   int funcRELUMPC(const vector<string>& as, vector<string>& bs, size_t size) {
     vector<mpc_t> a, b;
-    rosetta::convert::from_hex_str(as, a);
+    rosetta::convert::from_binary_str(as, a);
 
     MPCOP_RETURN(funcRELUMPC(a, b, size));
 
-    rosetta::convert::to_hex_str<mpc_t>(b, bs);
+    rosetta::convert::to_binary_str<mpc_t>(b, bs);
     return 0;
   }
 };

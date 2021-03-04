@@ -26,7 +26,7 @@
 namespace rosetta {
 class NaiveOpsImpl : public ProtocolOps {
 public:
-  NaiveOpsImpl(const string& msg_id) : ProtocolOps(msg_id) {}
+  NaiveOpsImpl(const msg_id_t& msg_id) : ProtocolOps(msg_id) {}
   ~NaiveOpsImpl() = default;
 
   virtual int PrivateInput(int party_id,

@@ -26,10 +26,10 @@ using namespace std;
 
 namespace rosetta {
 
-shared_ptr<ProtocolOps> NaiveProtocol::GetOps(const string& op_token) {
-  auto naive_ops_ptr = make_shared<NaiveOpsImpl>(op_token);
+shared_ptr<ProtocolOps> NaiveProtocol::GetOps(const msg_id_t& msgid) {
+  auto naive_ops_ptr = make_shared<NaiveOpsImpl>(msgid);
   // In this insecure naive protocol, we pass the party role ID to inner NaiveOpsImpl directly
-  // in this inelegant way. For production protocol, please refer to SecureNN implementation. 
+  // in this inelegant way. For production protocol, please refer to SecureNN implementation.
   naive_ops_ptr->op_config_map["PID"] = "P" + to_string(my_party_id);
   naive_ops_ptr->io = GetNetHandler();
   return std::dynamic_pointer_cast<ProtocolOps>(naive_ops_ptr);

@@ -40,6 +40,16 @@ int Broadcast::funcBroadcast(int from_party, const string& msg, string& result) 
   log_debug << "snn public input msg ok.";
   return 0;
 }
+int Broadcast::funcBroadcast(int from_party, const char* msg, char* result, size_t size) {
+  vector<int> peers = get_mpc_peers(from_party);
+  if (from_party == partyNum) {
+    for (size_t i = 0; i < peers.size(); ++i)
+      sendBuf(peers[i], msg, size, 0);
+  } else {
+    receiveBuf(from_party, (char*)result, size, 0);
+  }
+  return 0;
+}
 
 } // namespace snn
 } // namespace rosetta

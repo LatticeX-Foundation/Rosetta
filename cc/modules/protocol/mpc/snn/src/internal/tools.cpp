@@ -24,12 +24,14 @@
  *
  */
 
-#include "cc/modules/protocol/mpc/snn/src/internal/tools.h"
-#include "cc/modules/protocol/mpc/snn/src/internal/snn_helper.h"
 #include "cc/modules/common/include/utils/logger.h"
 #include "cc/modules/common/include/utils/helper.h"
+#include "cc/modules/common/include/utils/rtt_exceptions.h"
+#include "cc/modules/protocol/mpc/snn/src/internal/tools.h"
+#include "cc/modules/protocol/mpc/snn/src/internal/snn_helper.h"
 #include <bitset>
 #include <mutex>
+#include <cassert>
 #include <stdint.h>
 using namespace std;
 #define NANOSECONDS_PER_SEC 1E9
@@ -213,7 +215,7 @@ string sha256hash(char* input, int length) {
 
 void printError(string error) {
   log_error << error << endl;
-  exit(-1);
+  throw other_exp("printError error:" + error);
 }
 
 string __m128i_toHex(__m128i var) {
@@ -344,13 +346,13 @@ void print_usage(const char* bin) {
   cout << "TESTING_LABELS		\tTesting labels file\n";
   cout << endl;
   cout << "Report bugs to swagh@princeton.edu" << endl;
-  exit(-1);
+  throw other_exp("print_usage!");
 }
 
 void start_time() {
   if (alreadyMeasuringTime) {
     log_error << "Nested timing measurements" << endl;
-    exit(-1);
+    throw other_exp("Nested timing measurements!");
   }
 
   tStart = clock();
@@ -361,7 +363,7 @@ void start_time() {
 void end_time(string str) {
   if (!alreadyMeasuringTime) {
     log_error << "start_time() never called" << endl;
-    exit(-1);
+    throw other_exp("start_time() never called!");
   }
 
   clock_gettime(CLOCK_REALTIME, &requestEnd);
@@ -376,7 +378,7 @@ void end_time(string str) {
 void start_rounds() {
   if (alreadyMeasuringRounds) {
     log_error << "Nested round measurements" << endl;
-    exit(-1);
+    throw other_exp("Nested round measurements!");
   }
 
   roundComplexitySend = 0;
@@ -387,7 +389,7 @@ void start_rounds() {
 void end_rounds(string str) {
   if (!alreadyMeasuringTime) {
     log_error << "start_rounds() never called" << endl;
-    exit(-1);
+    throw other_exp("start_rounds() never called!");
   }
 
   log_info << "------------------------------------" << endl;
@@ -460,11 +462,10 @@ void checkOverflow(
           // if (__builtin_smulll_overflow(temp_a, temp_b, &temp_c))
           // {
           // 	assert(0 && "Multiplication overflow!!!");
-          // 	exit(-1);
           // }
         } else if (__builtin_umul_overflow(temp_a, temp_b, (unsigned long long*)&temp_c)) {
           assert(0 && "Multiplication overflow!!!");
-          exit(-1);
+          throw other_exp("Multiplication overflow!!!");
         }
 
         bool c_sign = temp_c >> (8 * sizeof(mpc_t) - 1);
@@ -473,11 +474,10 @@ void checkOverflow(
           // if (__builtin_saddll_overflow(sumVal, temp_c, &sumVal))
           // {
           // 	// assert(0 && "Addition overflow!!!");
-          // 	// exit(-1);
           // }
         } else if (__builtin_uadd_overflow(sumVal, temp_c, (unsigned long long*)&sumVal)) {
           assert(0 && "Addition overflow!!!");
-          exit(-1);
+          throw other_exp("Addition overflow!!!");
         }
       }
     }
@@ -541,7 +541,7 @@ size_t partner(size_t party) {
       break;
     default:
       // error
-      exit(0);
+      throw other_exp("wrong partner: " + to_string(party));
   }
   return ret;
 }
@@ -564,7 +564,7 @@ size_t adversary(size_t party) {
       break;
     default:
       // error
-      exit(0);
+      throw other_exp("wrong adversary: " + to_string(party));
   }
   return ret;
 }
@@ -658,12 +658,11 @@ void log_print(string str) {
 
 void error(string str) {
   log_error << "Error: " << str << endl;
-  exit(-1);
+  throw other_exp("error Error: " + str);
 }
 
 void notYet() {
-  assert("rosetta mpc don't support four sides now!");
-  exit(-1);
+  throw other_exp("rosetta mpc don't support four sides now!");
 }
 
 void convolutionReshape(

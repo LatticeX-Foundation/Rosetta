@@ -28,9 +28,9 @@
 using namespace std;
 
 namespace rosetta {
-shared_ptr<ProtocolOps> SnnProtocol::GetOps(const string& op_token) {
+shared_ptr<ProtocolOps> SnnProtocol::GetOps(const msg_id_t& msgid) {
   //! @todo optimized
-  auto snn_ops_ptr = make_shared<SnnProtocolOps>(op_token);
+  auto snn_ops_ptr = make_shared<SnnProtocolOps>(msgid);
   snn_ops_ptr->net_io_ = GetNetHandler();
   snn_ops_ptr->op_config_map = config_map;
   auto o = std::dynamic_pointer_cast<ProtocolOps>(snn_ops_ptr);
@@ -64,7 +64,7 @@ int SnnProtocol::_init_aeskeys() {
     kac = gen_key_str();
     kbc = gen_key_str();
 
-    string msgkey("l---------=+++");
+    msg_id_t msgkey("snn_sync_aes_key");
     auto sync_aes_key = std::make_shared<rosetta::snn::SyncAesKey>(msgkey, GetNetHandler());
 
     sync_aes_key->Run(PARTY_A, PARTY_B, kab, kab);

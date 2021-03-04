@@ -105,7 +105,7 @@ static inline int decode_input_to_snn(const StrVec& a, MpcVec& sa) {
   return 0;
 }
 
-SnnProtocolOps::SnnProtocolOps(const string& msgid) : ProtocolOps(msgid) { _op_msg_id = msgid; }
+SnnProtocolOps::SnnProtocolOps(const msg_id_t& msgid) : ProtocolOps(msgid) {}
 
 int SnnProtocolOps::TfToSecure(
   const vector<string>& in,
@@ -149,13 +149,13 @@ int SnnProtocolOps::SecureToTf(
   // to mpc_t values
   vector<mpc_t> mpcvalues(in.size());
   vector<double> dvalues(in.size());
-  rosetta::convert::from_hex_str<mpc_t>(out, mpcvalues);
+  rosetta::convert::from_binary_str<mpc_t>(out, mpcvalues);
 
   // to double values
   convert_mpctype_to_double(mpcvalues, dvalues);
 
   // to hex string
-  rosetta::convert::to_hex_str<double>(dvalues, out);
+  rosetta::convert::to_binary_str<double>(dvalues, out);
   return 0;
 }
 
@@ -165,7 +165,7 @@ int SnnProtocolOps::RandSeed(std::string op_seed, string& out_str) {
   // GetSnnOpWithKey(RandomSeed, _op_msg_id)->Run(out);
   std::make_shared<rosetta::snn::RandomSeed>(_op_msg_id, net_io_)->Run(out);
 
-  rosetta::convert::to_hex_str(out, out_str);
+  rosetta::convert::to_binary_str(out, out_str);
   return 0;
 }
 
@@ -198,11 +198,16 @@ int SnnProtocolOps::Broadcast(int from_party, const string& msg, string& result)
   // snn_encode(out_vec, out_str_vec);
   return 0;
 }
+int SnnProtocolOps::Broadcast(int from_party, const char* msg, char* result, size_t size) {
+  vector<mpc_t> out_vec;
+  std::make_shared<rosetta::snn::Broadcast>(_op_msg_id, net_io_)->Run(from_party, msg, result, size);
+  return 0;
+}
 
 template <typename OpFunctor>
 int snn_protocol_binary_ops_call(
   const char* name,
-  const string& msg_id,
+  const msg_id_t& msg_id,
   shared_ptr<NET_IO> net_io,
   const StrVec& a,
   const StrVec& b,
@@ -318,7 +323,7 @@ int SnnProtocolOps::Matmul(
 template <typename OpFunctor>
 int snn_protocol_unary_ops_call(
   const char* name,
-  const string& msg_id,
+  const msg_id_t& msg_id,
   shared_ptr<NET_IO> net_io,
   const StrVec& a,
   StrVec& c,
@@ -439,7 +444,7 @@ int SnnProtocolOps::Log1p(
 template <typename OpFunctor>
 int snn_protocol_reduce_ops_call(
   const char* name,
-  const string& msg_id,
+  const msg_id_t& msg_id,
   shared_ptr<NET_IO> net_io,
   const StrVec& a,
   StrVec& c,

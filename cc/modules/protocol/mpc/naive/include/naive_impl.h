@@ -24,7 +24,7 @@ class NaiveProtocol : public MpcProtocol {
  public:
   NaiveProtocol() : MpcProtocol("Naive") {}
 
-  shared_ptr<ProtocolOps> GetOps(const string& op_token = "");
+  shared_ptr<ProtocolOps> GetOps(const msg_id_t& msgid);
 };
 
 } // namespace rosetta

@@ -24,9 +24,9 @@
 
 #include "cc/modules/protocol/mpc/naive/include/naive_ops_impl.h"
 #include "cc/modules/common/include/utils/logger.h"
-#include "cc/modules/protocol/mpc/comm/include/mpc_util.h"
-#include "cc/modules/protocol/mpc/comm/include/config.h"
-#include "cc/modules/io/include/ex.h"
+#include "cc/modules/protocol/utility/include/util.h"
+#include "cc/modules/protocol/utility/include/config.h"
+#include "cc/modules/io/include/net_io.h"
 
 using namespace std;
 

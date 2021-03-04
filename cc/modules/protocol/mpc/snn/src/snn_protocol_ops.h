@@ -31,7 +31,7 @@ namespace rosetta {
 // This is the interface that each specific cryptographic protocol should implement!
 class SnnProtocolOps : public ProtocolOps {
  public:
-  SnnProtocolOps(const string& msgid = "");
+  SnnProtocolOps(const msg_id_t& msgid);
 
   //RttIO* GetNetIO();
   //void SetNetIO(RttIO* io);
@@ -54,6 +54,7 @@ class SnnProtocolOps : public ProtocolOps {
   int PrivateInput(int party_id, const vector<double>& in_vec, vector<string>& out_str_vec);
 
   int Broadcast(int from_party, const string& msg, string& result);
+  int Broadcast(int from_party, const char* msg, char* result, size_t size);
 
   //////////////////////////////////    math ops   //////////////////////////////////
   int Add(
