@@ -30,9 +30,10 @@ namespace py = pybind11;
 #include <fstream>
 using namespace std;
 
+#include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/io/include/net_io.h"
 #include "cc/modules/protocol/public/protocol_manager.h"
-#include "cc/modules/protocol/mpc/comm/include/mpc_util.h"
-#include "cc/modules/protocol/mpc/snn/include/snn_opsets.h"
+#include "cc/modules/protocol/utility/include/util.h"
 using np_str_t = std::array<char, 33>; // at most 33 bytes
 
 class DataSet {
@@ -129,7 +130,8 @@ class DataSet {
       local_check_ok = 0;
     }
 
-    auto ops = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps("__check_args");
+    msg_id_t msg__check_args("__check_args");
+    auto ops = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(msg__check_args);
     auto netio = rosetta::ProtocolManager::Instance()->GetProtocol()->GetNetHandler();
     {
       // 1. check "locally check" is ok
@@ -154,7 +156,6 @@ class DataSet {
       int a, b, c;
       a = b = c = data_owner_.size();
       sync_d(netio, a, b, c);
-
       if (!((a == b) && (b == c))) { // at least one of Pi is not equal to other(s) (if not ok)
         errmsg = errmsg + " invalid data owner size: a(" + std::to_string(a) + ") b(" +
           std::to_string(b) + ") c(" + std::to_string(c) + ").";
@@ -197,8 +198,9 @@ class DataSet {
   // csv inputs(X)
   py::array_t<np_str_t> private_dataset_input_2d_X(const py::array_t<double>& input) {
     log_debug << "DataSet, private_dataset_input_2d_X." << endl;
+    msg_id_t msg__private_dataset_input_2d_X("private_dataset_input_2d_X");
     auto ops =
-      rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps("private_dataset_input_2d_X");
+      rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(msg__private_dataset_input_2d_X);
     auto netio = rosetta::ProtocolManager::Instance()->GetProtocol()->GetNetHandler();
 
     ////////////////////////////////
@@ -343,7 +345,8 @@ class DataSet {
         }
       }
 
-      netio->sync_with(msg_id_t("private_dataset_input_2d_X"));
+      msg_id_t msg_sync_with("private_dataset_input_2d_X");
+      netio->sync_with(msg_sync_with);
       return result;
     }
 
@@ -459,7 +462,8 @@ class DataSet {
         }
       }
 
-      netio->sync_with(msg_id_t("private_dataset_input_2d_X"));
+      msg_id_t msg_sync_with("private_dataset_input_2d_X");
+      netio->sync_with(msg_sync_with);
       return result;
     }
 
@@ -469,8 +473,9 @@ class DataSet {
   // csv inputs(Y)
   py::array_t<np_str_t> private_dataset_input_2d_Y(const py::array_t<double>& input) {
     log_debug << "DataSet, private_dataset_input_2d_Y." << endl;
+    msg_id_t msg__private_dataset_input_2d_Y("private_dataset_input_2d_Y");
     auto ops =
-      rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps("private_dataset_input_2d_Y");
+      rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(msg__private_dataset_input_2d_Y);
     auto netio = rosetta::ProtocolManager::Instance()->GetProtocol()->GetNetHandler();
     ////////////////////////////////////
     py::buffer_info buf = input.request();
@@ -563,7 +568,8 @@ class DataSet {
         }
       }
 
-      netio->sync_with(msg_id_t("private_dataset_input_2d_Y"));
+      msg_id_t msg_sync_with("private_dataset_input_2d_Y");
+      netio->sync_with(msg_sync_with);
       return result;
     }
 
@@ -686,7 +692,8 @@ class DataSet {
         }
       }
 
-      netio->sync_with(msg_id_t("private_dataset_input_2d_Y"));
+      msg_id_t msg_sync_with("private_dataset_input_2d_Y");
+      netio->sync_with(msg_sync_with);
       return result;
     }
 

@@ -80,7 +80,8 @@ class ProtocolHandler {
       throw;
     }
 
-    auto randop = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(seed_msg_id);
+    msg_id_t msg__seed_msg_id(seed_msg_id);
+    auto randop = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(msg__seed_msg_id);
     uint64_t seed = (uint64_t)randop->RandSeed();
     return seed;
   }
