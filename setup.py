@@ -35,6 +35,9 @@ from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 import sys
 import setuptools
+# REFINE UserWarning: Distutils was imported before Setuptools.
+# This usage is discouraged and may exhibit undesirable behaviors or errors.
+from distutils import sysconfig
 
 # must install tensorflow first
 import tensorflow as tf
@@ -211,7 +214,7 @@ ext_modules = [
         ['cc/python_export/_rosetta.cc'],
         # cc_files,
         include_dirs=include_dirs,
-        libraries=['tf-dpass', 'mpc-io', 'mpc-comm',
+        libraries=['tf-dpass', 'mpc-io', 'protocol-utility',
                    'common', 'protocol-base', 'protocol-api'],
         library_dirs=library_dirs,
         extra_compile_args=extra_cflags,
@@ -236,6 +239,13 @@ if os.path.isdir("build128/lib"):
     for file_name in so_lib128s:
         shutil.copy(file_name, "python/latticex/lib128/")
 
+# disable debug
+if sys.platform == 'linux' or sys.platform == "darwin":  # remove -g flags
+    for k in sysconfig._config_vars.keys():
+        if isinstance(sysconfig._config_vars[k], str):
+            sysconfig._config_vars[k] = sysconfig._config_vars[k].replace(
+                '-g ', ' ')
+
 setup(
     name='latticex-rosetta',
     version=__version__,
@@ -251,7 +261,7 @@ setup(
     ext_modules=ext_modules,
     # Add in any packaged data.
     include_package_data=True,
-    install_requires=['numpy', 'pandas'],
+    install_requires=['numpy', 'pandas', 'sklearn'],
     setup_requires=['pybind11>=2.4'],
     zip_safe=False,
     # PyPI package information.
