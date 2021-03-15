@@ -191,13 +191,12 @@ def set_backend_loglevel(loglevel: int):
 
     Args:
         loglevel should be as follows ('info' by default),
-        0: all;
-        1: Trace;
-        2: Debug;
-        3: Info;
-        4: Warn; 
-        5: Error;
-        6: Fatal
+        0: Trace;
+        1: Debug;
+        2: Info;
+        3: Warn; 
+        4: Error;
+        5: Fatal
     """
     py_protocol_handler.set_loglevel(loglevel)
 
@@ -211,17 +210,23 @@ def get_perf_stats(pretty: bool = False):
     return the communications and elapsed between .activate()/.start_perf_stats() and this call.
     Return json string, eg:
     {
-      "name": "default",
+      "name": "SecureNN P0",
       "elapsed(s)": {
-        "clock": 0.0,
-        "cpu": 0.0,
-        ""elapse": 1.785008878
+        "cpu": 53.292554802,
+        "elapse": 24.195319822
       },
       "communication(B)": {
-        "bytes-sent": 968974,
-        "bytes-recv": 245330,
-        "msg-sent": 595,
-        "msg-recv": 432
+        "bytes-sent": 199446560,
+        "bytes-recv": 247450828,
+        "msg-sent": 4964,
+        "msg-recv": 5417
+      },
+      "memory(kB)": {
+        "max-rss": 812468
+      },
+      "cpu": {
+        "cores": 8,
+        "max-usage(%)": 267.0
       }
     }
     """
