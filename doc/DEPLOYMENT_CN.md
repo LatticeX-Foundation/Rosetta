@@ -85,7 +85,7 @@ TensorFlow安装参考: [TensorFlow安装][tensorFlow-install]。
 # clone rosetta git repository
 git clone https://github.com/LatticeX-Foundation/Rosetta.git --recursive
 # go to Rosetta directory and use auto completion
-cd Rosetta && source rtt_completion.sh
+cd Rosetta && source rtt_completion
 # compile, install and run test cases
 ./rosetta.sh compile --enable-all --enable-tests;./rosetta.sh install
 ```
