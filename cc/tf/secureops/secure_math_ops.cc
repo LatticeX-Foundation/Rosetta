@@ -116,8 +116,8 @@ REGISTER_OP("SecureMatmul")
   .Input("y: string")
   .Output("res: string")
   .Attr("transpose_a: bool = false")
-  .Attr("transpose_b: bool = false")
-  .SetShapeFn(::tensorflow::shape_inference::MatMulShape);
+  .Attr("transpose_b: bool = false");
+  // .SetShapeFn(::tensorflow::shape_inference::MatMulShape);
 
 REGISTER_OP("SecureSquare").Input("x: string").Output("res: string").SetIsStateful();
 
@@ -126,32 +126,32 @@ REGISTER_OP("SecureReduceMean")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32")
-  .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+  .Attr("Tidx: {int32, int64} = DT_INT32");
+  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("SecureReduceSum")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32")
-  .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+  .Attr("Tidx: {int32, int64} = DT_INT32");
+  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("SecureReduceMin")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32")
-  .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+  .Attr("Tidx: {int32, int64} = DT_INT32");
+  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("SecureReduceMax")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32")
-  .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+  .Attr("Tidx: {int32, int64} = DT_INT32");
+  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("SecureArgMax")
   .Input("input: string")

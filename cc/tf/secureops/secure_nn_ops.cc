@@ -60,7 +60,7 @@ REGISTER_OP("SecureConv2D")
     .Attr(GetExplicitPaddingsAttrString())
     .Attr(GetConvnetDataFormatAttrString())
     .Attr("dilations: list(int) = [1, 1, 1, 1]")
-    .SetShapeFn(::tensorflow::shape_inference::Conv2DShapeWithExplicitPadding)
+    // .SetShapeFn(::tensorflow::shape_inference::Conv2DShapeWithExplicitPadding)
     .Doc(R"doc(
 SecureConv2DOp
 )doc");

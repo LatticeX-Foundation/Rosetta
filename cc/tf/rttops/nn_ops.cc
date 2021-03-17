@@ -54,7 +54,7 @@ RttSigmoidOp
 REGISTER_OP("RttRelu")
   .Input("x: string")
   .Output("y: string")
-  .SetShapeFn(::tensorflow::shape_inference::UnchangedShape)
+  // .SetShapeFn(::tensorflow::shape_inference::UnchangedShape)
   .Doc(R"doc(
 RttReluOp
 )doc");
@@ -69,22 +69,22 @@ REGISTER_OP("RttConv2D")
     .Attr(GetPaddingAttrStringWithExplicit())
     .Attr(GetExplicitPaddingsAttrString())
     .Attr(GetConvnetDataFormatAttrString())
-    .Attr("dilations: list(int) = [1, 1, 1, 1]")
-    .SetShapeFn(::tensorflow::shape_inference::Conv2DShapeWithExplicitPadding);
+    .Attr("dilations: list(int) = [1, 1, 1, 1]");
+    // .SetShapeFn(::tensorflow::shape_inference::Conv2DShapeWithExplicitPadding);
 
 
 REGISTER_OP("RttBiasAdd")
     .Input("value: string")
     .Input("bias: string")
     .Attr(GetConvnetDataFormatAttrString())
-    .Output("output: string")
-    .SetShapeFn(::tensorflow::shape_inference::BiasAddShape);
+    .Output("output: string");
+    // .SetShapeFn(::tensorflow::shape_inference::BiasAddShape);
 
 
 REGISTER_OP("RttL2Loss")
     .Input("t: string")
-    .Output("output: string")
-    .SetShapeFn(::tensorflow::shape_inference::ScalarShape);
+    .Output("output: string");
+    // .SetShapeFn(::tensorflow::shape_inference::ScalarShape);
 
 
 REGISTER_OP("RttFusedBatchNorm")
@@ -100,8 +100,8 @@ REGISTER_OP("RttFusedBatchNorm")
     .Output("reserve_space_2: string")
     .Attr("epsilon: float = 0.0001")
     .Attr(GetConvnetDataFormatAttrString())
-    .Attr("is_training: bool = true")
-    .SetShapeFn(::tensorflow::shape_inference::FusedBatchNormShape);
+    .Attr("is_training: bool = true");
+    // .SetShapeFn(::tensorflow::shape_inference::FusedBatchNormShape);
 
 
 REGISTER_OP("RttAvgPool")
@@ -110,8 +110,8 @@ REGISTER_OP("RttAvgPool")
     .Attr("ksize: list(int) >= 4")
     .Attr("strides: list(int) >= 4")
     .Attr(GetPaddingAttrString())
-    .Attr(GetConvnetDataFormatAttrString())
-    .SetShapeFn(::tensorflow::shape_inference::AvgPoolShape);
+    .Attr(GetConvnetDataFormatAttrString());
+    // .SetShapeFn(::tensorflow::shape_inference::AvgPoolShape);
 
 
 REGISTER_OP("RttMaxPool")
@@ -120,13 +120,13 @@ REGISTER_OP("RttMaxPool")
     .Attr("ksize: list(int) >= 4")
     .Attr("strides: list(int) >= 4")
     .Attr(GetPaddingAttrString())
-    .Attr("data_format: {'NHWC', 'NCHW', 'NCHW_VECT_C'} = 'NHWC'")
-    .SetShapeFn(::tensorflow::shape_inference::MaxPoolShape);
+    .Attr("data_format: {'NHWC', 'NCHW', 'NCHW_VECT_C'} = 'NHWC'");
+    // .SetShapeFn(::tensorflow::shape_inference::MaxPoolShape);
 
 
 REGISTER_OP("RttSoftmax")
     .Input("logits: string")
-    .Output("softmax: string")
-    .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
-      return ::tensorflow::shape_inference::UnchangedShapeWithRankAtLeast(c, 1);
-    });
+    .Output("softmax: string");
+    // .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    //   return ::tensorflow::shape_inference::UnchangedShapeWithRankAtLeast(c, 1);
+    // });
