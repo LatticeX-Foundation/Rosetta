@@ -14,7 +14,7 @@ Rosetta is a privacy-preserving framework based on [TensorFlow](https://www.tens
 import latticex.rosetta
 ```
 
-The current version integrates the secure multi-party computation protocols for 3 parties. The underlying protocol is [SecureNN](https://eprint.iacr.org/2018/442.pdf). It is secure in the semi-honest model with honest majority.
+The current version integrates the secure multi-party computation protocols for 3 parties. The underlying protocol is [SecureNN](https://eprint.iacr.org/2018/442.pdf). It is secure in the semi-honest model with honest majority. And we are integrating more MPC protocols continuously.
 
 ## Installation
 
