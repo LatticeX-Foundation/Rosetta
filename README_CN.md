@@ -165,6 +165,9 @@ Rosetta 是一个由[Lattice基金会]((https://latticex.foundation/))维护的�
 * [Rosetta 术语表](doc/GLOSSARY_CN.md)
 
 * [Rosetta 版本说明](RELEASE.md)
+  
+* [FAQ](https://github.com/LatticeX-Foundation/Rosetta/wiki/FAQ)
+
 
 ## 联系方式
 

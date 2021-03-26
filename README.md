@@ -167,6 +167,8 @@ Rosetta is an open source project developed under the LPGLv3 license and maintai
 * [Rosetta Glossary](doc/GLOSSARY.md)
 
 * [Rosetta Release Notes](RELEASE.md)
+  
+* [FAQ](https://github.com/LatticeX-Foundation/Rosetta/wiki/FAQ)
 
 ## Contact
 
