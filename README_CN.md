@@ -12,7 +12,7 @@ Rosetta 是基于[TensorFlow](https://www.tensorflow.org)开发的一个隐私�
 import latticex.rosetta
 ```
 
-当前版本集成了3方参与的安全多方计算（MPC）协议。当前使用的默认底层协议是 [SecureNN](https://eprint.iacr.org/2018/442.pdf)。这一协议可以在诚实者占多数的半诚实安全模型假设下保障数据安全。
+当前版本集成了3方参与的安全多方计算（MPC）协议。当前使用的默认底层协议是 [SecureNN](https://eprint.iacr.org/2018/442.pdf)。这一协议可以在诚实者占多数的半诚实安全模型假设下保障数据安全。我们将持续集成更多新的高效安全协议进来，我们也欢迎开发者参照[协议集成示例](https://github.com/LatticeX-Foundation/Rosetta/pull/38)自行集成协议。
 
 ## 安装
 
@@ -33,7 +33,7 @@ pip3 install tensorflow==1.14.0
 # clone rosetta git repository
 git clone --recurse https://github.com/LatticeX-Foundation/Rosetta.git
 cd Rosetta
-# compile, install
+# compile, install. You may check more compilation options by checking `./rosetta.sh --help`
 ./rosetta.sh compile --enable-protocol-mpc-securenn; ./rosetta.sh install
 ```
 
