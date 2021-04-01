@@ -119,6 +119,11 @@ REGISTER_OP("SecureMatmul")
   .Attr("transpose_b: bool = false");
   // .SetShapeFn(::tensorflow::shape_inference::MatMulShape);
 
+REGISTER_OP("SecureMatMulAdd")
+  .Input("x: string")
+  .Input("y: string")
+  .Output("res: string");
+
 REGISTER_OP("SecureSquare").Input("x: string").Output("res: string").SetIsStateful();
 
 REGISTER_OP("SecureReduceMean")

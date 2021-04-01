@@ -143,6 +143,12 @@ class SnnProtocolOps : public ProtocolOps {
     vector<string>& output,
     const attr_type* attr_info = nullptr);
 
+  int MatMulAdd(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr);
+
   int Square(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 
   int Negative(

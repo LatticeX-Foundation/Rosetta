@@ -401,6 +401,48 @@ class MatMul : public OpBase {
   }
 };
 
+class MatMulAdd : public OpBase {
+  using OpBase::OpBase;
+
+ public:
+  int Run(
+    const vector<mpc_t>& a,
+    const vector<mpc_t>& b,
+    vector<mpc_t>& c,
+    size_t rows) {
+    MPCOP_RETURN(funcMatMulAddMPC(a, b, c, rows));
+  }
+
+  int Run(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& c,
+    size_t rows) {
+    MPCOP_RETURN(funcMatMulAddMPC(a, b, c, rows));
+  }
+
+ private:
+  int funcMatMulAddMPC(
+    const vector<mpc_t>& a,
+    const vector<mpc_t>& b,
+    vector<mpc_t>& c,
+    size_t rows);
+  int funcMatMulAddMPC(
+    const vector<string>& as,
+    const vector<string>& bs,
+    vector<string>& cs,
+    size_t rows) {
+    vector<mpc_t> a, b, c;
+    rosetta::convert::from_binary_str(as, a);
+    rosetta::convert::from_binary_str(bs, b);
+
+    MPCOP_RETURN(funcMatMulAddMPC(a, b, c, rows));
+
+    rosetta::convert::to_binary_str<mpc_t>(c, cs);
+    return 0;
+  }
+};
+
 class Negative : public OpBase {
   using OpBase::OpBase;
 

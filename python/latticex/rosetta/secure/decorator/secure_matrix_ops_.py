@@ -35,6 +35,11 @@ def SecureMatMul(a,
               name=None):
     return _secure_ops.secure_matmul(a, b, transpose_a=transpose_a, transpose_b=transpose_b, name=name)
 
+def SecureMatMulAdd(a,
+              b,
+              name=None):
+    return _secure_ops.secure_mat_mul_add(a, b, name=name)
+
 
 
 

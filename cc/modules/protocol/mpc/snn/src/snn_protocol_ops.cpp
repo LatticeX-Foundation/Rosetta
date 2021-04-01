@@ -320,6 +320,35 @@ int SnnProtocolOps::Matmul(
   return 0;
 }
 
+int SnnProtocolOps::MatMulAdd(
+  const vector<string>& a,
+  const vector<string>& b,
+  vector<string>& output,
+  const attr_type* attr_info) {
+  log_debug << "----> "
+            << "SnnMatMulAdd";
+  int m = 0;
+  if (attr_info->count("m") > 0) {
+    m = std::stoi(attr_info->at("m"));
+  } else {
+    log_error << "please fill m for SnnMatMulAdd(x, y, m) ";
+    return -1;
+  }
+
+  vector<mpc_t> out_vec(m * m);
+  vector<mpc_t> private_a, private_b;
+  snn_decode(a, private_a);
+  snn_decode(b, private_b);
+
+  std::make_shared<rosetta::snn::MatMulAdd>(_op_msg_id, net_io_)
+    ->Run(private_a, private_b, out_vec, m);
+
+  snn_encode(out_vec, output);
+  log_debug << "SnnMatMulAdd ok. <----";
+
+  return 0;
+}
+
 template <typename OpFunctor>
 int snn_protocol_unary_ops_call(
   const char* name,

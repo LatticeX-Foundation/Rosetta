@@ -93,6 +93,7 @@ class StaticReplacePass():
                     "rttfloordiv":    ["SecureFloorDiv", self._create_secure_binary_op,  secure_ops.SecureFloorDiv, 2,  True],
                     "rttpow" :        ["SecurePow",      self._create_secure_binary_op,  secure_ops.SecurePow,      2,  True],
                     "rttmatmul" :     ["SecureMatMul",   self._create_secure_binary_op,  secure_ops.SecureMatMul,   2,  False],
+                    "rttmatmuladd" :     ["SecureMatMulAdd",   self._create_secure_binary_op,  secure_ops.SecureMatMulAdd,   2,  False],
 
                     # arithmetic unary operation
                     "rttnegative" :   ["SecureNegative", self._create_secure_unary_op,   secure_ops.SecureNeg,      1,  False],

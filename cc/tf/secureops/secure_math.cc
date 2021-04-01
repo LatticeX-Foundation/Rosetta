@@ -420,6 +420,93 @@ class SecureMatmulOp : public SecureOpKernel {
   bool rh_is_const_ = false;
 };
 
+class SecureMatMulAddOp : public SecureOpKernel {
+ private:
+  /* data */
+ public:
+  SecureMatMulAddOp(OpKernelConstruction* context) : SecureOpKernel(context) {
+  }
+  ~SecureMatMulAddOp() {}
+
+  void ComputeImpl(OpKernelContext* context) {
+    log_debug << "--> MatMulAdd OpKernel compute.";
+    const Tensor& x = context->input(0);
+    const Tensor& y = context->input(1);
+
+    // Check that the dimensions of the two matrices are valid.
+    OP_REQUIRES(
+      context, TensorShapeUtils::IsMatrix(x.shape()),
+      errors::InvalidArgument(
+        "In[0] is not a matrix. Instead it has shape ", x.shape().DebugString()));
+    OP_REQUIRES(
+      context, TensorShapeUtils::IsMatrix(y.shape()),
+      errors::InvalidArgument(
+        "In[1] is not a matrix. Instead it has shape ", y.shape().DebugString()));
+
+    OP_REQUIRES(
+      context, x.dim_size(1) == y.dim_size(0) && x.dim_size(0) == y.dim_size(0) && x.dim_size(1) == y.dim_size(1),
+      errors::InvalidArgument(
+        "Matrix size-incompatible: In[0]: ", x.shape().DebugString(),
+        ", In[1]: ", y.shape().DebugString()));
+
+    int m = x.dim_size(0);
+
+    if (x.NumElements() == 0 && y.NumElements() == 0) {
+      // If x has shape [x, 0] and y has shape [0, y], the
+      // output shape is [x, y] where x and y are non-zero, so we fill
+      // the output with zeros.
+      return;
+    }
+
+    auto in_flatx = x.flat<string>();
+    auto in_flaty = y.flat<string>();
+
+    vector<string> in1(m * m);
+    vector<string> in2(m * m);
+    for (int i = 0; i <= m - 1; i++)
+    {
+      for (int j = 0; j <= m - 1; j++)
+      {
+        int idx = i * m + j;
+        in1[idx] = in_flatx(idx);
+        in2[idx] = in_flaty(idx);
+      }
+    }
+
+    // m attributes set
+    attrs_["m"] = std::to_string(m);
+
+    log_debug << "**MatMulAdd m: " << endl;
+
+    // call protocol ops
+    vector<string> outstr(m * m);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(MatMulAdd);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->MatMulAdd(in1, in2, outstr, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(MatMulAdd);
+
+    // set output
+    TensorShape output_shape({m, m});
+    Tensor* output = nullptr;
+    OP_REQUIRES_OK(context, context->allocate_output(0, output_shape, &output));
+
+    auto flat_out = output->flat<string>();
+    for (int i = 0; i < outstr.size(); ++i) {
+      flat_out(i) = outstr[i];
+    }
+#if PRINT_REVEAL
+    debug_print_reveal(outstr, string(" mpc out").c_str());
+#endif
+    log_debug << "MatMulAdd OpKernel compute ok. <--";
+    return;
+  }
+
+ private:
+  bool rh_is_const_ = false;
+};
+
 class SecureSquareOp : public SecureUnaryOp {
  private:
   /* data */
@@ -805,6 +892,7 @@ REGISTER_STR_CPU_KERNEL(SecureLessEqual, SecureLessEqualOp);
 REGISTER_STR_CPU_KERNEL(SecurePow, SecurePowOp);
 
 REGISTER_STR_CPU_KERNEL(SecureMatmul, SecureMatmulOp);
+REGISTER_STR_CPU_KERNEL(SecureMatMulAdd, SecureMatMulAddOp);
 REGISTER_STR_CPU_KERNEL(SecureNegative, SecureNegativeOp);
 REGISTER_STR_CPU_KERNEL(SecureSquare, SecureSquareOp);
 REGISTER_STR_CPU_KERNEL(SecureReduceMean, SecureReduceMeanOp);

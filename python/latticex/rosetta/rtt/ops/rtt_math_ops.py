@@ -174,6 +174,11 @@ def rtt_matmul(x, y, transpose_a=False, transpose_b=False, name=None):
     _result = rtt_ts.rtt_ops.rtt_matmul(x._raw, y._raw, transpose_a=transpose_a, transpose_b=transpose_b, name=name)
     return rtt_ts.RttTensor(_result)
 
+def mat_mul_add(x, y, name=None):
+    x = rtt_ts.convert_to_rtttensor(x)
+    y = rtt_ts.convert_to_rtttensor(y)
+    _result = rtt_ts.rtt_ops.rtt_mat_mul_add(x._raw, y._raw, name=name)
+    return rtt_ts.RttTensor(_result)
 
 def rtt_square(x, name=None):
     """Computes square of x element-wise."""

@@ -215,6 +215,11 @@ REGISTER_OP("RttMatmul")
   .Attr("transpose_b: bool = false");
   // .SetShapeFn(::tensorflow::shape_inference::MatMulShape);
 
+REGISTER_OP("RttMatMulAdd")
+  .Input("x: string")
+  .Input("y: string")
+  .Output("res: string");
+
 REGISTER_OP("RttSquare").Input("x: string").Output("res: string");
 
 

@@ -485,6 +485,54 @@ class RttMatMulOp : public OpKernel {
 };
 
 template <typename Device>
+class RttMatMulAddOp : public OpKernel {
+ public:
+  explicit RttMatMulAddOp(OpKernelConstruction* context) : OpKernel(context) {
+  }
+
+  void Compute(OpKernelContext* context) override {
+    PRINT_BEG("RttMatMulAdd");
+
+    // Check if the dimensions of the two matrices are valid
+    const Tensor& x = context->input(0);
+    const Tensor& y = context->input(1);
+
+    cout << "input1: (" << x.dim_size(0) << "," << x.dim_size(1) << ")"
+         << ", dims: " << x.dims() << endl;
+    cout << "input2: (" << y.dim_size(0) << "," << y.dim_size(1) << ")"
+         << ", dims: " << y.dims() << endl;
+    OP_REQUIRES(
+      context, TensorShapeUtils::IsMatrix(x.shape()),
+      errors::InvalidArgument(
+        "In[0] is not a matrix. Instead it has shape ", x.shape().DebugString()));
+    OP_REQUIRES(
+      context, TensorShapeUtils::IsMatrix(y.shape()),
+      errors::InvalidArgument(
+        "In[1] is not a matrix. Instead it has shape ", y.shape().DebugString()));
+
+    OP_REQUIRES(
+      context, x.dim_size(1) == y.dim_size(0) && x.dim_size(0) == y.dim_size(0) && x.dim_size(1) == y.dim_size(1),
+      errors::InvalidArgument(
+        "Matrix size-incompatible: In[0]: ", x.shape().DebugString(),
+        ", In[1]: ", y.shape().DebugString()));
+
+    // get u64 matrix
+    std::shared_ptr<MatrixRtt> matrix0 = GetDoubleMatrix(context, 0);
+    std::shared_ptr<MatrixRtt> matrix1 = GetDoubleMatrix(context, 1);
+
+    auto res = (*matrix0) * (*matrix1) + (*matrix0 + *matrix1);
+
+    Tensor* output;
+    TensorShape shape({matrix0->rows(), matrix1->cols()});
+    OP_REQUIRES_OK(context, context->allocate_output(0, shape, &output));
+
+    MatrixToRtt(res, *output);
+
+    PRINT_END("RttMatMulAdd");
+  }
+};
+
+template <typename Device>
 class RttLessOp : public RttBinaryOp<Device> {
  public:
   explicit RttLessOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttLessOp") { }
@@ -787,6 +835,7 @@ REGISTER_KERNEL_BUILDER(Name("RttRealdiv").Device(DEVICE_CPU), RttDivOp<CPUDevic
 REGISTER_KERNEL_BUILDER(Name("RttTruediv").Device(DEVICE_CPU), RttDivOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttFloordiv").Device(DEVICE_CPU), RttFloordivOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttMatmul").Device(DEVICE_CPU), RttMatMulOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttMatMulAdd").Device(DEVICE_CPU), RttMatMulAddOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttLess").Device(DEVICE_CPU), RttLessOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttLessEqual").Device(DEVICE_CPU), RttLessEqualOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttEqual").Device(DEVICE_CPU), RttEqualOp<CPUDevice>);
