@@ -93,6 +93,10 @@ class RttTensor(object):
     @property
     def name(self):
         return self._raw.name
+    
+    @property
+    def device(self):
+        return self._raw.device
 
     @property
     def dtype(self):
