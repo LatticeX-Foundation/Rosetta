@@ -86,6 +86,12 @@ namespace {
     }
 } // namespace
 
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+#define RTT_OP_SET_SHAPE_FN(ShapeFn) \
+    .SetShapeFn(ShapeFn)
+#else
+#define RTT_OP_SET_SHAPE_FN(ShapeFn) 
+#endif
 
 #define REGISTER_RTT_BINARY_OP(name)                       \
   REGISTER_OP(#name)                                          \
@@ -93,7 +99,8 @@ namespace {
     .Input("y: string")                                       \
     .Output("z: string")                                      \
     .Attr("lh_is_const: bool = false")                        \
-    .Attr("rh_is_const: bool = false") // .SetShapeFn(shape_inference::BroadcastBinaryOpShapeFn)
+    .Attr("rh_is_const: bool = false")                       \
+    RTT_OP_SET_SHAPE_FN(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn)
 
 #define REGISTER_RTT_BINARY_CONST_OP(name)                       \
   REGISTER_OP(#name)                                          \
@@ -101,7 +108,8 @@ namespace {
     .Input("y: string")                                       \
     .Output("z: string")                                      \
     .Attr("lh_is_const: bool = false")                        \
-    .Attr("rh_is_const: bool = true") // .SetShapeFn(shape_inference::BroadcastBinaryOpShapeFn)
+    .Attr("rh_is_const: bool = true")                        \
+    RTT_OP_SET_SHAPE_FN(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn)
 
 REGISTER_RTT_BINARY_CONST_OP(RttPow).Doc(R"doc(
     RttPow
@@ -110,7 +118,6 @@ REGISTER_RTT_BINARY_CONST_OP(RttPow).Doc(R"doc(
 REGISTER_RTT_BINARY_OP(RttAdd).Doc(R"doc(
     RttAdd
 )doc");
-// .SetShapeFn(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn);
 
 REGISTER_RTT_BINARY_OP(RttSub).Doc(R"doc(
     RttSub
@@ -208,53 +215,64 @@ REGISTER_OP("RttAddN")
     .SetIsAggregate();
 
 REGISTER_OP("RttMatmul")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::MatMulShape)
+#endif
   .Input("x: string")
   .Input("y: string")
   .Output("res: string")
   .Attr("transpose_a: bool = false")
   .Attr("transpose_b: bool = false");
-  // .SetShapeFn(::tensorflow::shape_inference::MatMulShape);
 
 REGISTER_OP("RttSquare").Input("x: string").Output("res: string");
 
-
 REGISTER_OP("RttReduceMean")
+#ifdef ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
   .Attr("Tidx: {int32, int64} = DT_INT32");
-  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("RttReduceSum")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
   .Attr("Tidx: {int32, int64} = DT_INT32");
-  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("RttReduceMin")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
   .Attr("Tidx: {int32, int64} = DT_INT32");
-  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("RttReduceMax")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
   .Attr("Tidx: {int32, int64} = DT_INT32");
-  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("RttArgMax")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+    .SetShapeFn(ArgOpShape)
+#endif
     .Input("input: string")
     .Input("dimension: Tidx")
     .Output("output: output_type")
     .Attr("Tidx: {int32, int64} = DT_INT32")
     .Attr("output_type: {string,} = DT_STRING");
-    // .SetShapeFn(ArgOpShape);
 

@@ -18,7 +18,9 @@ REGISTER_OP("SecureAssignSub")
     .Input("value: string")
     .Output("output_ref: Ref(string)")
     .Attr("use_locking: bool = false")
-    // .SetShapeFn(::tensorflow::shape_inference::MergeBothInputsShapeFn)
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+    .SetShapeFn(::tensorflow::shape_inference::MergeBothInputsShapeFn)
+#endif
     .Doc(R"doc(
 SecureAssignSubOp
 )doc");
