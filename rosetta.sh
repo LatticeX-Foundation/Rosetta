@@ -156,6 +156,14 @@ if [ "${cmd}" = "compile" ]; then
     enable_shape_inference=OFF
     enable_tests=OFF
 
+    # if the version of python is greater than 3.6, shape inference is enabled by default
+    python_version=$(python3 -c 'import sys;ver=sys.version_info;print(str(ver[0])+"."+str(ver[1]))')
+    python_major_version=$(echo ${python_version} | cut -d. -f1)
+    python_minor_version=$(echo ${python_version} | cut -d. -f2)
+    if [ "${python_major_version}" -eq 3 ] && [ "${python_minor_version}" -gt 6 ]; then
+        enable_shape_inference=ON
+    fi
+
     ARGS=$(getopt -o "h" -l "help,phase:,build-type:,enable-all,enable-protocol-mpc-securenn,enable-protocol-mpc-helix,enable-128bit,enable-shape-inference,enable-tests" -n "$0" -- "$@")
     eval set -- "${ARGS}"
     while true; do
