@@ -32,8 +32,10 @@ REGISTER_OP("SecureToTf")
   .Input("input: string")
   .Output("output: dtype")
   .Attr("dtype: {float, double, int32, int64, string}")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::UnchangedShape)
+#endif
   .SetIsStateful();
-  //.SetShapeFn(::tensorflow::shape_inference::UnchangedShape);
 
 REGISTER_OP("PrivateInput")
   .Attr("dtype: {int32, int64, float, double, string}")

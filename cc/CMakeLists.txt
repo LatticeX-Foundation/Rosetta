@@ -31,6 +31,12 @@ else()
     message(STATUS "ROSETTA_MPC_128: ${ROSETTA_MPC_128}, use 64-bits MPC")
 endif()
 
+# config shape inference
+option(ROSETTA_ENABLES_SHAPE_INFERENCE "" OFF)
+IF(ROSETTA_ENABLES_SHAPE_INFERENCE)
+    add_definitions(-DROSETTA_ENABLES_SHAPE_INFERENCE=1)
+ENDIF()
+
 # ON OFF
 # if COMPILE tests
 option(ROSETTA_COMPILE_TESTS "" OFF)

@@ -24,13 +24,19 @@
 REGISTER_OP("TfToRtt")
   .Attr("dtype: {int32, int64, float, double, string}")
   .Input("input: dtype")
-  .Output("output: string");
-  // .SetShapeFn(::tensorflow::shape_inference::UnchangedShape);
+  .Output("output: string")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::UnchangedShape)
+#endif
+;
 
 /// Note[georgeshi]: we can NOT use string in native TF op
 REGISTER_OP("RttToTf")
   .Input("val: string")
   .Output("out: dtype")
-  .Attr("dtype: {float, double, int32, int64, string}");
-  // .SetShapeFn(::tensorflow::shape_inference::UnchangedShape);
+  .Attr("dtype: {float, double, int32, int64, string}")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::UnchangedShape)
+#endif
+;
 

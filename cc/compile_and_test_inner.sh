@@ -27,6 +27,7 @@ function print_compile_options() {
     echo "enable_protocol_mpc_securenn: ${rtt_enable_protocol_mpc_securenn}"
     echo "   enable_protocol_mpc_helix: ${rtt_enable_protocol_mpc_helix}"
     echo "               enable_128bit: ${rtt_enable_128bit}"
+    echo "      enable_shape_inference: ${rtt_enable_shape_inference}"
     echo "                enable_tests: ${rtt_enable_tests}"
     echo "--------------------------------------"
 }
@@ -39,6 +40,7 @@ function save_compile_options() {
     echo "${rtt_enable_protocol_mpc_securenn}" >>${compile_options_file}
     echo "${rtt_enable_protocol_mpc_helix}" >>${compile_options_file}
     echo "${rtt_enable_128bit}" >>${compile_options_file}
+    echo "${rtt_enable_shape_inference}" >>${compile_options_file}
     echo "${rtt_enable_tests}" >>${compile_options_file}
 }
 function load_compile_options() {
@@ -53,7 +55,8 @@ function load_compile_options() {
     export rtt_enable_protocol_mpc_securenn=${x[3]}
     export rtt_enable_protocol_mpc_helix=${x[4]}
     export rtt_enable_128bit=${x[5]}
-    export rtt_enable_tests=${x[6]}
+    export rtt_enable_shape_inference=${x[6]}
+    export rtt_enable_tests=${x[7]}
 }
 
 #
@@ -89,6 +92,7 @@ function compile_cpp() {
     cmake ../cc ${TF_CFLGS} -DUSE_OMP=1 -DCMAKE_INSTALL_PREFIX=.install -Wno-dev \
         -DCMAKE_BUILD_TYPE=${rtt_build_type} \
         -DROSETTA_MPC_128=${rtt_enable_128bit} \
+        -DROSETTA_ENABLES_SHAPE_INFERENCE=${rtt_enable_shape_inference} \
         -DROSETTA_COMPILE_TESTS=${rtt_enable_tests} \
         -DROSETTA_ENABLES_PROTOCOL_MPC_SECURENN=${rtt_enable_protocol_mpc_securenn} \
         -DROSETTA_ENABLES_PROTOCOL_MPC_HELIX=${rtt_enable_protocol_mpc_helix} \

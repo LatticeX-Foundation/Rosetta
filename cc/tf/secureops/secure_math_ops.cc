@@ -2,13 +2,21 @@
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/shape_inference.h"
 
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+#define SECURE_OP_SET_SHAPE_FN(ShapeFn) \
+    .SetShapeFn(ShapeFn)
+#else
+#define SECURE_OP_SET_SHAPE_FN(ShapeFn) 
+#endif
+
 #define REGISTER_SECURE_BINARY_OP(name) \
   REGISTER_OP(#name)                    \
     .Input("x: string")                 \
     .Input("y: string")                 \
     .Output("z: string")                \
     .Attr("lh_is_const: bool = false")  \
-    .Attr("rh_is_const: bool = false") // .SetShapeFn(shape_inference::BroadcastBinaryOpShapeFn)
+    .Attr("rh_is_const: bool = false")  \
+    SECURE_OP_SET_SHAPE_FN(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn)
 
 #define REGISTER_SECURE_BINARY_CONST_OP(name) \
   REGISTER_OP(#name)                          \
@@ -16,7 +24,8 @@
     .Input("y: string")                       \
     .Output("z: string")                      \
     .Attr("lh_is_const: bool = false")        \
-    .Attr("rh_is_const: bool = true") // .SetShapeFn(shape_inference::BroadcastBinaryOpShapeFn)
+    .Attr("rh_is_const: bool = true")        \
+    SECURE_OP_SET_SHAPE_FN(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn)
 
 REGISTER_SECURE_BINARY_CONST_OP(SecurePow).Doc(R"doc(
     SecurePow
@@ -116,8 +125,11 @@ REGISTER_OP("SecureMatmul")
   .Input("y: string")
   .Output("res: string")
   .Attr("transpose_a: bool = false")
-  .Attr("transpose_b: bool = false");
-  // .SetShapeFn(::tensorflow::shape_inference::MatMulShape);
+  .Attr("transpose_b: bool = false")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::MatMulShape)
+#endif
+;
 
 REGISTER_OP("SecureSquare").Input("x: string").Output("res: string").SetIsStateful();
 
@@ -126,32 +138,44 @@ REGISTER_OP("SecureReduceMean")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
-  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+;
 
 REGISTER_OP("SecureReduceSum")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
-  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+;
 
 REGISTER_OP("SecureReduceMin")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
-  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+;
 
 REGISTER_OP("SecureReduceMax")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
-  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+;
 
 REGISTER_OP("SecureArgMax")
   .Input("input: string")
