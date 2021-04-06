@@ -121,15 +121,14 @@ REGISTER_OP("SecureAddN")
   .SetIsAggregate();
 
 REGISTER_OP("SecureMatmul")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::MatMulShape)
+#endif
   .Input("x: string")
   .Input("y: string")
   .Output("res: string")
   .Attr("transpose_a: bool = false")
-  .Attr("transpose_b: bool = false")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-  .SetShapeFn(::tensorflow::shape_inference::MatMulShape)
-#endif
-  ;
+  .Attr("transpose_b: bool = false");
 
 REGISTER_OP("SecureSquare").Input("x: string").Output("res: string").SetIsStateful();
 

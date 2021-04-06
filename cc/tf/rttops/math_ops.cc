@@ -227,7 +227,7 @@ REGISTER_OP("RttMatmul")
 REGISTER_OP("RttSquare").Input("x: string").Output("res: string");
 
 REGISTER_OP("RttReduceMean")
-#ifdef ROSETTA_ENABLES_SHAPE_INFERENCE
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
   .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
 #endif
   .Input("input: string")
