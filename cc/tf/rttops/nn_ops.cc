@@ -63,9 +63,6 @@ RttReluOp
 
 
 REGISTER_OP("RttConv2D")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-    .SetShapeFn(::tensorflow::shape_inference::Conv2DShapeWithExplicitPadding)
-#endif
     .Input("input: string")
     .Input("filter: string")
     .Output("output: string")
@@ -74,28 +71,31 @@ REGISTER_OP("RttConv2D")
     .Attr(GetPaddingAttrStringWithExplicit())
     .Attr(GetExplicitPaddingsAttrString())
     .Attr(GetConvnetDataFormatAttrString())
-    .Attr("dilations: list(int) = [1, 1, 1, 1]");
+    .Attr("dilations: list(int) = [1, 1, 1, 1]")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+    .SetShapeFn(::tensorflow::shape_inference::Conv2DShapeWithExplicitPadding)
+#endif
+;
 
 REGISTER_OP("RttBiasAdd")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-    .SetShapeFn(::tensorflow::shape_inference::BiasAddShape)
-#endif
     .Input("value: string")
     .Input("bias: string")
     .Attr(GetConvnetDataFormatAttrString())
-    .Output("output: string");
+    .Output("output: string")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+    .SetShapeFn(::tensorflow::shape_inference::BiasAddShape)
+#endif
+;
 
 REGISTER_OP("RttL2Loss")
+    .Input("t: string")
+    .Output("output: string")
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
     .SetShapeFn(::tensorflow::shape_inference::ScalarShape)
 #endif
-    .Input("t: string")
-    .Output("output: string");
+;
 
 REGISTER_OP("RttFusedBatchNorm")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-    .SetShapeFn(::tensorflow::shape_inference::FusedBatchNormShape)
-#endif
     .Input("x: string")
     .Input("scale: string")
     .Input("offset: string")
@@ -108,35 +108,42 @@ REGISTER_OP("RttFusedBatchNorm")
     .Output("reserve_space_2: string")
     .Attr("epsilon: float = 0.0001")
     .Attr(GetConvnetDataFormatAttrString())
-    .Attr("is_training: bool = true");
+    .Attr("is_training: bool = true")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+    .SetShapeFn(::tensorflow::shape_inference::FusedBatchNormShape)
+#endif
+;
 
 REGISTER_OP("RttAvgPool")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-    .SetShapeFn(::tensorflow::shape_inference::AvgPoolShape)
-#endif
     .Input("value: string")
     .Output("output: string")
     .Attr("ksize: list(int) >= 4")
     .Attr("strides: list(int) >= 4")
     .Attr(GetPaddingAttrString())
-    .Attr(GetConvnetDataFormatAttrString());
+    .Attr(GetConvnetDataFormatAttrString())
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+    .SetShapeFn(::tensorflow::shape_inference::AvgPoolShape)
+#endif
+;
 
 REGISTER_OP("RttMaxPool")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-    .SetShapeFn(::tensorflow::shape_inference::MaxPoolShape)
-#endif
     .Input("input: string")
     .Output("output: string")
     .Attr("ksize: list(int) >= 4")
     .Attr("strides: list(int) >= 4")
     .Attr(GetPaddingAttrString())
-    .Attr("data_format: {'NHWC', 'NCHW', 'NCHW_VECT_C'} = 'NHWC'");
+    .Attr("data_format: {'NHWC', 'NCHW', 'NCHW_VECT_C'} = 'NHWC'")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+    .SetShapeFn(::tensorflow::shape_inference::MaxPoolShape)
+#endif
+;
 
 REGISTER_OP("RttSoftmax")
+    .Input("logits: string")
+    .Output("softmax: string")
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
     .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
       return ::tensorflow::shape_inference::UnchangedShapeWithRankAtLeast(c, 1);
     })
 #endif
-    .Input("logits: string")
-    .Output("softmax: string");
+;

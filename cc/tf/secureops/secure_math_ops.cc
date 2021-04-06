@@ -121,56 +121,61 @@ REGISTER_OP("SecureAddN")
   .SetIsAggregate();
 
 REGISTER_OP("SecureMatmul")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-  .SetShapeFn(::tensorflow::shape_inference::MatMulShape)
-#endif
   .Input("x: string")
   .Input("y: string")
   .Output("res: string")
   .Attr("transpose_a: bool = false")
-  .Attr("transpose_b: bool = false");
+  .Attr("transpose_b: bool = false")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::MatMulShape)
+#endif
+;
 
 REGISTER_OP("SecureSquare").Input("x: string").Output("res: string").SetIsStateful();
 
 REGISTER_OP("SecureReduceMean")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
-#endif
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+;
 
 REGISTER_OP("SecureReduceSum")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
-#endif
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+;
 
 REGISTER_OP("SecureReduceMin")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
-#endif
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+;
 
 REGISTER_OP("SecureReduceMax")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
-#endif
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+;
 
 REGISTER_OP("SecureArgMax")
   .Input("input: string")

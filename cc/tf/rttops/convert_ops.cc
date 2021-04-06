@@ -22,19 +22,21 @@
 
 /// Note[georgeshi]: for now, please only use INT32 or INT64!
 REGISTER_OP("TfToRtt")
+  .Attr("dtype: {int32, int64, float, double, string}")
+  .Input("input: dtype")
+  .Output("output: string")
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
   .SetShapeFn(::tensorflow::shape_inference::UnchangedShape)
 #endif
-  .Attr("dtype: {int32, int64, float, double, string}")
-  .Input("input: dtype")
-  .Output("output: string");
+;
 
 /// Note[georgeshi]: we can NOT use string in native TF op
 REGISTER_OP("RttToTf")
+  .Input("val: string")
+  .Output("out: dtype")
+  .Attr("dtype: {float, double, int32, int64, string}")
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
   .SetShapeFn(::tensorflow::shape_inference::UnchangedShape)
 #endif
-  .Input("val: string")
-  .Output("out: dtype")
-  .Attr("dtype: {float, double, int32, int64, string}");
+;
 

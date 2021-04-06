@@ -30,11 +30,12 @@ REGISTER_OP("RttAssign")
 
 
 REGISTER_OP("RttAssignSub")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-    .SetShapeFn(::tensorflow::shape_inference::MergeBothInputsShapeFn)
-#endif
     .Input("ref: Ref(string)")
     .Input("value: string")
     .Output("output_ref: Ref(string)")
-    .Attr("use_locking: bool = false");
+    .Attr("use_locking: bool = false")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+    .SetShapeFn(::tensorflow::shape_inference::MergeBothInputsShapeFn)
+#endif
+;
 
