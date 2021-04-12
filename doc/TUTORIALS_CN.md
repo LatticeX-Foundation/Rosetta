@@ -58,17 +58,17 @@ import latticex.rosetta as rtt
 
 ```sh
 # node 0
-python3 quickstart.py --party_id=0
+python3 rtt-quickstart.py --party_id=0
 ```
 
 ```sh
 # node 1
-python3 quickstart.py --party_id=1
+python3 rtt-quickstart.py --party_id=1
 ```
 
 ```sh
 # node 2
-python3 quickstart.py --party_id=2
+python3 rtt-quickstart.py --party_id=2
 ```
 
 如果输出了 `DONE!`，那么表示 OK 了。
