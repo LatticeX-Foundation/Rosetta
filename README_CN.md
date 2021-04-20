@@ -83,13 +83,13 @@ cd Rosetta && source rtt_completion
 ./rosetta.sh compile --enable-protocol-mpc-securenn; ./rosetta.sh install
 ```
 
-安装完成后，检测安装是否成功也不再是难题。在任何你需要使用 `rosetta` 的地方（`Python` 脚本文件中），导入我们的 `rosetta` 包即可：
+安装完成后，检测安装是否成功也不再是难题。在任何你需要使用Rosetta的地方（`Python` 脚本文件中），导入Rosetta包即可：
 
 ```python3
 import latticex.rosetta as rtt
 ```
 
-如果没有报错，恭喜你，`rosetta`安装成功了哟！下面我们来看看应用示例吧。
+如果没有报错，恭喜你，Rosetta安装成功了哟！下面我们来看看应用示例吧。
 
  
 <img src='doc/_static/figs/deployment.png'  width = "667" height = "400" align="middle"/>
