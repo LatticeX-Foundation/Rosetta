@@ -14,121 +14,140 @@ import latticex.rosetta
 
 当前版本集成了3方参与的安全多方计算（MPC）协议。当前使用的默认底层协议是 [SecureNN](https://eprint.iacr.org/2018/442.pdf)。这一协议可以在诚实者占多数的半诚实安全模型假设下保障数据安全。我们将持续集成更多新的高效安全协议进来，我们也欢迎开发者参照[协议集成示例](https://github.com/LatticeX-Foundation/Rosetta/pull/38)自行集成协议。
 
+## 系统要求
+
+目前，Rosetta 可以运行在 Ubuntu 18.04 操作系统下，并且基于 TensorFlow 1.14 CPU 版本开发。后续测试充分后，将支持更多版本系统。
+
+- Ubuntu (18.04=)
+- Python3 (3.6+)
+- Pip3 (19.0+)
+- Openssl (1.1.1+)
+- Tensorflow (1.14.0=, cpu-only)
+- CMake（3.10+）
+- Rosetta (latest)
+
+如果您本地系统的基础环境已经符合如上要求，可跳过下述`系统组件`检查步骤，直接安装Rosetta包。
+
 ## 安装
 
-目前，Rosetta 可以运行在 Ubuntu 18.04 操作系统下（其他环境有待测试验证），并且基于 TensorFlow 1.14 CPU 版本开发。你可以按如下方式完成安装。
+### 系统组件
 
-首先，请确认您本地系统的基础环境已经符合[要求](doc/DEPLOYMENT_CN.md#rosetta-deployment-guide)。
+- **Ubuntu**:
+  检查版本:
 
-然后使用如下命令行安装原生 TensorFlow 库。你也可以通过编译 TensorFlow 源码加以安装，具体方法请参考[这里](doc/TENSORFLOW_INSTALL_CN.md).
+  ```bash
+  lsb_release -r      # e.g. Release: 18.04 如版本号小于此，请升级操作系统，再执行后续步骤
+  ```
+
+- **Python3 & Pip3 & Openssl & CMake**
+  检查版本:
+
+  ```bash
+  python3 --version   # e.g. Python 3.6.9
+  pip3 --version      # e.g. pip 20.0.2
+  apt show libssl-dev # e.g. Version: 1.1.1-1ubuntu2.1~18.04.5
+  cmake --version     # e.g. cmake version 3.15.2
+  ```
+
+  如果不符合系统要求，则执行以下步骤:
+
+  ```bash
+  # install python3, pip3, openssl
+  sudo apt update
+  sudo apt install python3-dev python3-pip libssl-dev cmake
+  # upgrade pip3 to latest 
+  sudo pip3 install --upgrade pip
+  ```
+
+  请确保安装环境符合要求。
+
+
+### TensorFlow
+
+使用如下命令行安装原生 TensorFlow 库。
 
 ```bash
 # install tensorflow
 pip3 install tensorflow==1.14.0
 ```
 
-接下来就是使用我们提供的一键安装脚本来编译与安装 Rosetta 包了,命令如下：
+### Rosetta
+
+当前仅支持源码方式安装`Rosetta`，二进制方式即将推出。请用如下命令一键安装脚本来编译与安装 Rosetta 包：
 
 ```bash
 # clone rosetta git repository
 git clone --recurse https://github.com/LatticeX-Foundation/Rosetta.git
-cd Rosetta
+cd Rosetta && source rtt_completion
 # compile, install. You may check more compilation options by checking `./rosetta.sh --help`
 ./rosetta.sh compile --enable-protocol-mpc-securenn; ./rosetta.sh install
 ```
 
-安装完成后，你可以基于下面我们会介绍的一些例子去验证下是否安装成功。在实际的使用中，在运行之前还需要进行多方之间网络拓扑关系等信息的配置，以使得分布式执行时多方之间可以正常的通讯。
+安装完成后，检测安装是否成功也不再是难题。在任何你需要使用 `rosetta` 的地方（`Python` 脚本文件中），导入我们的 `rosetta` 包即可：
+
+```python3
+import latticex.rosetta as rtt
+```
+
+如果没有报错，恭喜你，`rosetta`安装成功了哟！下面我们来看看应用示例吧。
+
+ 
+ > ***在生产环境中，数据是分布式存储的，所以在运行之前还需进行多方之间网络拓扑关系等信息的配置，以使得分布式执行时多方之间可以正常的通讯。***
+ > 
+ > ***实际运用场景的安装、配置和部署的步骤请参考[部署指南](doc/DEPLOYMENT_CN.md)。***
 
 <img src='doc/_static/figs/deployment.png'  width = "667" height = "400" align="middle"/>
 
-更多完整具体的安装、配置和部署的步骤请参考[部署指南](doc/DEPLOYMENT_CN.md)。
 
 ## 使用示例
 
-这里我们用一个简单的多方联合执行 AI 中常见的矩阵乘法操作的 [demo 示例](example/tutorials/code/rosetta_demo.py) 来演示下 Rosetta 的基本用法。
+这里我们用多方执行矩阵乘法的例子来演示Rosetta的基本用法。此处默认不同用户/机构间已配置好网络拓扑等信息。
 
-在这个例子中，我们假设三个个体各自持有一个私有的矩阵数据，他们想在不泄露自己数据明文的前提下共同的计算出这三个矩阵的乘积。为了简便，我们称这三方分别为 P0，P1 和 P2。
+矩阵乘法是AI中常见的操作。基于Rosetta，我们可以实现：在每方机构持有各自私有数据，且不想泄露自己明文数据的前提下，进行联合计算并让有限方得到矩阵乘积的可能性。
 
-基于 Rosetta，每一方可以直接运行下面的代码即可完成这个任务。如果你熟悉 TensorFlow 的话，你可以看出只需要改动简单的几行代码就可以完全的复用 TensorFlow 中的 API 接口了。
+这里我们用三个bash来模拟独立的三方，P0、P1和P2。可以是本地的三个bash（本机模拟三方）也可以是三个不同的机构/节点（实际应用场景）。每方需按照同一套执行方案来计算，比如：[demo 示例](example/tutorials/code/rosetta_demo.py)，且需要三方共同启动执行来完成:
 
-```python
-#!/usr/bin/env python3
+第一个bash模拟P0，即party_id=0：
 
-# Import rosetta package
-import latticex.rosetta as rtt
-import tensorflow as tf
-
-# You can activate a backend protocol, here we use SecureNN
-rtt.activate("SecureNN")
-
-# Get private data from every party
-matrix_a = tf.Variable(rtt.private_console_input(0, shape=(3, 2)))
-matrix_b = tf.Variable(rtt.private_console_input(1, shape=(2, 1)))
-matrix_c = tf.Variable(rtt.private_console_input(2, shape=(1, 4)))
-
-# Just use the native tf.matmul operation.
-cipher_result = tf.matmul(tf.matmul(matrix_a, matrix_b), matrix_c)
-
-# Start execution
-with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
-    # Take a glance at the ciphertext
-    cipher_result = sess.run(cipher_result)
-    print('local ciphertext result:', cipher_result)
-    # Set only party a and c can get plain result
-    a_and_c_can_get_plain = 0b101 
-    # Get the result of Rosetta matmul
-    print('plaintext matmul result:', sess.run(rtt.SecureReveal(cipher_result, a_and_c_can_get_plain)))
+```1：bash
+python3 rosetta_demo.py --party_id=0
 ```
 
-运行这个隐私计算程序需要三方的协同，在配置好网络拓扑等信息后，三方可以各自执行下面的命令行即可启动执行:
+第二个bash模拟P1，即party_id=1：
 
-```bash
-python rosetta_demo.py --party_id=0
+```2：bash
+python3 rosetta_demo.py --party_id=1
 ```
 
-,
+第三个bash模拟P2，即party_id=2：
 
-```bash
-python rosetta_demo.py --party_id=1
+```3：bash
+python3 rosetta_demo.py --party_id=2
 ```
 
-以及
-
-```bash
-python rosetta_demo.py --party_id=2
-```
-
-运行时各方会被提示输入自己的隐私数据（注意，这里是为了便于演示采用了这种输入方式，在实际中请采用 Rosetta 中的数据预处理接口），比如 P0 可以在提示下如下输入自己的私有数据：
+当三方均准备就绪后，每方可以privately输入己方数据，如下P0的输入：
 
 > [2020-07-29 20:10:49.070] [info] Rosetta: Protocol [SecureNN] backend initialization succeeded!
 >
 > please input the private data (float or integer, 6 items, separated by space): 2 3 1 7 6 2
 
-在程序的最后，如我们在程序中特意指定的那样，只有 P0 和 P2 可以得到最后的明文结果：
+如我们在程序中特意指定的那样，
 
-> plaintext matmul result: [[b'8.000000' b'14.000000' b'18.000000' b'4.000000']
-> [b'4.000000' b'7.000000' b'9.000000' b'2.000000']
-> [b'24.000000' b'42.000000' b'54.000000' b'12.000000']]
->
-> [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
+```python3
+# Set only party a and c can get plain result
+a_and_c_can_get_plain = 0b101
+```
 
-而 P1 方则不会拿到有意义的明文结果:
-> plaintext matmul result: [[b'0.000000' b'0.000000' b'0.000000' b'0.000000']
-> [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
-> [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
->
-> [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
+只有 P0 和 P2 可以得到最后的明文结果，而P1不会拿到任何有意义的结果。当然，也可以只让一方知道结果，或者所有方均得到明文结果。（自己跑跑看吧！:)）
 
-就是这样，你可以看出 Rosetta 是很方便易用的。
-
-想要体验更多的例子，可以参考[示例目录](./example).
+如此，还想了解更多？去看看[示例目录](./example)吧。
 
 > 提示: 当前 Rosetta 版本已经可以支持128-bit的大整数数据类型，这意味着底层的密码协议可以有更高的精度选择空间，你可以通过在环境变量中设置`export ROSETTA_MPC_128=ON`来开启这一服务。
 
+
 ## 快速上手
 
-为了进一步帮助你快速的上手 Rosetta，实际的实现自己的程序。我们在[教程文档](doc/TUTORIALS_CN.md)中一步步的介绍了 Rosetta 使用的基本内容。在这个教程中，我们会首先介绍关于 Rosetta 的一些基本概念，然后通过一系列简单易懂的例子协助您在真实数据集上构建一个完整可运行的实际隐私保护的机器学习模型。
+为了进一步帮助你快速的上手 Rosetta，实现自己的程序。我们在[教程文档](doc/TUTORIALS_CN.md)中进一步介绍了 Rosetta 的使用。在这个教程中，我们会首先介绍关于 Rosetta 的一些基本概念，然后通过一系列简单易懂的例子协助您在真实数据集上构建一个完整可运行的实际隐私保护的机器学习模型。
 
 ## Rosetta 整体架构
 
