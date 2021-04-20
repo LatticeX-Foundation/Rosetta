@@ -73,7 +73,7 @@ pip3 install tensorflow==1.14.0
 
 ### Rosetta
 
-当前仅支持源码方式安装`Rosetta`，二进制方式即将推出。请用如下命令一键安装脚本来编译与安装 Rosetta 包：
+当前仅支持源码方式安装Rosetta，二进制方式即将推出。请用如下命令一键安装脚本来编译与安装 Rosetta 包：
 
 ```bash
 # clone rosetta git repository
@@ -92,11 +92,13 @@ import latticex.rosetta as rtt
 如果没有报错，恭喜你，`rosetta`安装成功了哟！下面我们来看看应用示例吧。
 
  
+<img src='doc/_static/figs/deployment.png'  width = "667" height = "400" align="middle"/>
+
+
  > ***在生产环境中，数据是分布式存储的，所以在运行之前还需进行多方之间网络拓扑关系等信息的配置，以使得分布式执行时多方之间可以正常的通讯。***
  > 
  > ***实际运用场景的安装、配置和部署的步骤请参考[部署指南](doc/DEPLOYMENT_CN.md)。***
 
-<img src='doc/_static/figs/deployment.png'  width = "667" height = "400" align="middle"/>
 
 
 ## 使用示例
@@ -105,7 +107,9 @@ import latticex.rosetta as rtt
 
 矩阵乘法是AI中常见的操作。基于Rosetta，我们可以实现：在每方机构持有各自私有数据，且不想泄露自己明文数据的前提下，进行联合计算并让有限方得到矩阵乘积的可能性。
 
-这里我们用三个bash来模拟独立的三方，P0、P1和P2。可以是本地的三个bash（本机模拟三方）也可以是三个不同的机构/节点（实际应用场景）。每方需按照同一套执行方案来计算，比如：[demo 示例](example/tutorials/code/rosetta_demo.py)，且需要三方共同启动执行来完成:
+这里我们用三个bash来模拟独立的三方，P0、P1和P2。可以是本地的三个bash（本机模拟三方）也可以是三个不同的机构/节点（实际应用场景）。每方需按照同一套执行方案来计算，且需要三方共同启动执行来完成。
+
+示例执行方案详见：[demo 示例](example/tutorials/code/rosetta_demo.py)，路径：`example/tutorials/code/`，执行命令如下：
 
 第一个bash模拟P0，即party_id=0：
 
