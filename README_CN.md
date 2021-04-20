@@ -91,9 +91,6 @@ import latticex.rosetta as rtt
 
 如果没有报错，恭喜你，Rosetta安装成功了哟！下面我们来看看应用示例吧。
 
- 
-<img src='doc/_static/figs/deployment.png'  width = "667" height = "400" align="middle"/>
-
 
  > ***在生产环境中，数据是分布式存储的，所以在运行之前还需进行多方之间网络拓扑关系等信息的配置，以使得分布式执行时多方之间可以正常的通讯。***
  > 
@@ -108,6 +105,8 @@ import latticex.rosetta as rtt
 矩阵乘法是AI中常见的操作。基于Rosetta，我们可以实现：在每方机构持有各自私有数据，且不想泄露自己明文数据的前提下，进行联合计算并让有限方得到矩阵乘积的可能性。
 
 这里我们用三个bash来模拟独立的三方，P0、P1和P2。可以是本地的三个bash（本机模拟三方）也可以是三个不同的机构/节点（实际应用场景）。每方需按照同一套执行方案来计算，且需要三方共同启动执行来完成。
+
+<img src='doc/_static/figs/deployment.png'  width = "667" height = "400" align="middle"/>
 
 示例执行方案详见：[demo 示例](example/tutorials/code/rosetta_demo.py)，路径：`example/tutorials/code/`，执行命令如下：
 
@@ -142,7 +141,9 @@ python3 rosetta_demo.py --party_id=2
 a_and_c_can_get_plain = 0b101
 ```
 
-只有 P0 和 P2 可以得到最后的明文结果，而P1不会拿到任何有意义的结果。当然，也可以只让一方知道结果，或者所有方均得到明文结果。（自己跑跑看吧！:)）
+只有 P0 和 P2 可以得到最后的明文结果，而P1不会拿到任何有意义的结果。当然，也可以只让一方知道结果，或者所有方均得到明文结果。
+
+想看输出结果？自己跑跑看吧！你一定能行的哟！:)
 
 如此，还想了解更多？去看看[示例目录](./example)吧。
 
