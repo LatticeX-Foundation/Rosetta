@@ -31,9 +31,8 @@
 - Openssl (1.1.1+)
 - Tensorflow (1.14.0=, cpu-only)
 - CMake（3.10+）
-- Rosetta (latest)
 
-如果您本地系统的基础环境已经符合如上要求，可跳过下述`系统组件`检查步骤，直接安装Rosetta包。
+如果您本地系统的基础环境已经符合上述要求，可跳过如下`系统组件`检查和`Tensorflow`安装步骤，直接安装Rosetta。
 
 ### 系统组件
 
