@@ -66,7 +66,6 @@ function show_compile_usage() {
     echo "       --enable-protocol-mpc-securenn     [OFF] Secure Multi-party Computation (base on SecureNN)"
     echo "       --enable-protocol-mpc-helix        [OFF] Secure Multi-party Computation (base on Helix)"
     echo "       --enable-128bit                    [OFF] 128-bit data type"
-    echo "       --enable-shape-inference           [OFF] Enable Shape Inference"
     echo "       --enable-tests                     [OFF] Compile all the test cases"
     echo ""
     echo "  The default options: --phase all --build-type Release"
@@ -164,7 +163,7 @@ if [ "${cmd}" = "compile" ]; then
         enable_shape_inference=ON
     fi
 
-    ARGS=$(getopt -o "h" -l "help,phase:,build-type:,enable-all,enable-protocol-mpc-securenn,enable-protocol-mpc-helix,enable-128bit,enable-shape-inference,enable-tests" -n "$0" -- "$@")
+    ARGS=$(getopt -o "h" -l "help,phase:,build-type:,enable-all,enable-protocol-mpc-securenn,enable-protocol-mpc-helix,enable-128bit,enable-tests" -n "$0" -- "$@")
     eval set -- "${ARGS}"
     while true; do
         case "${1}" in
@@ -197,10 +196,6 @@ if [ "${cmd}" = "compile" ]; then
             enable_128bit=ON
             shift
             ;;
-        --enable-shape-inference)
-            enable_shape_inference=ON
-            shift
-            ;;
         --enable-tests)
             enable_tests=ON
             shift
@@ -219,7 +214,6 @@ if [ "${cmd}" = "compile" ]; then
         enable_protocol_mpc_securenn=ON
         enable_protocol_mpc_helix=ON
         enable_128bit=ON
-        enable_shape_inference=ON
         enable_tests=ON
     fi
     # valid check [todo]
