@@ -1,4 +1,4 @@
-# Rosetta部署指南
+# Rosetta安装及部署指南
 
 - [Rosetta部署指南](#rosetta%e9%83%a8%e7%bd%b2%e6%8c%87%e5%8d%97)
   - [文档说明](#%e6%96%87%e6%a1%a3%e8%af%b4%e6%98%8e)
@@ -7,7 +7,7 @@
     - [TensorFlow](#tensorflow)
   - [安装](#%e5%ae%89%e8%a3%85)
     - [Rosett源码安装](#rosetta)
-  - [部署测试](#%e9%83%a8%e7%bd%b2%e6%b5%8b%e8%af%95)
+  - [部署](#%e9%83%a8%e7%bd%b2%e6%b5%8b%e8%af%95)
     - [范例](#%e8%8c%83%e4%be%8b)
     - [准备](#%e5%87%86%e5%a4%87)
     - [配置](#%e9%85%8d%e7%bd%ae)
@@ -19,11 +19,11 @@
 
 ## 文档说明
 
-本文将说明如何安装Rosetta开发环境，部署和测试隐私机器学习应用。
+本文档将带你看到更详细的Rosetta安装，环境和部署配置的细节。无论是本地还是多方部署，这篇文档都会用具体的示例来展示。
 
 ## 系统要求
 
-> 目前，Rosetta 可以运行在 Ubuntu 18.04 操作系统下，并且基于 TensorFlow 1.14 CPU 版本开发。后续测试充分后，将支持更多版本系统。
+> 本地系统的环境要求如下：
 
 - Ubuntu (18.04=)
 - Python3 (3.6+)
@@ -32,7 +32,7 @@
 - Tensorflow (1.14.0=, cpu-only)
 - CMake（3.10+）
 
-如果您本地系统的基础环境已经符合上述要求，可跳过如下`系统组件`检查和`Tensorflow`安装步骤，直接安装Rosetta。
+如果已符合上述要求，可跳过如下`系统组件`检查和`Tensorflow`安装步骤，直接安装Rosetta。
 
 ### 系统组件
 
@@ -43,7 +43,7 @@
   lsb_release -r      # e.g. Release: 18.04
   ```
 
-  > ***注意：如果输出发布版本好比`18.04`小，则需要升级操作系统，然后执行后续步骤。***
+  > ***注意：如果输出发布版本号比`18.04`小，则需要升级操作系统，然后执行后续步骤。***
 
 - **Python3 & Pip3 & Openssl & CMake**
   检查版本:
@@ -69,7 +69,7 @@
 
 ### TensorFlow
 
-  使用如下命令行安装原生 TensorFlow 库。
+  使用如下命令安装原生 TensorFlow 库。
 
   ```bash
   # install tensorflow
@@ -93,21 +93,25 @@ cd Rosetta && source rtt_completion
 ./rosetta.sh compile --enable-all --enable-tests;./rosetta.sh install
 ```
 
-## 部署测试
+如此，Rosetta的开发环境就已经安装好了。
 
-安装好`Rosetta`开发环境，接下对[百万富翁问题][millionaire-problem]构建范例测试`Rosetta`可用性。`Rosetta`使用的是三方`MPC`模型，需要部署三个计算节点，可以单机器或多机器部署。
+## 部署
 
-> Rosetta基于TensorFlow实现，当前只支持TensorFlow的本地部署。
+Rosetta使用的是三方MPC模型（3-server model）。为了实现协议的安全及可执行性，需要部署三个计算节点（不限单机器或多机器），三个节点同时在线即可跑联合任务。
 
-### 范例
+我们将用密码学中经典的[百万富翁问题][millionaire-problem]来测试Rosetta的可用性。
 
-直接使用`Rosetta`源码仓库的[百万富翁问题范例][millionaire-example]。
+> Rosetta虽是基于TensorFlow实现的，但Rosetta本身是由多个节点组成的多方安全计算，所以当前只支持TensorFlow的本地部署。
 
-> 注意: [Rosetta开发教程][tutorials]有多个隐私机器学习开发实例可以参考，详情参考[Tutorials](./TUTORIALS.md)。
+### 示例
+
+我们将使用Rosetta源码仓库中的[百万富翁问题代码][millionaire-example]。
+
+> 注意: [Rosetta开发教程][tutorials]中有多个隐私机器学习开发实例可以参考，详情参考[Tutorials](./TUTORIALS.md)。
 
 ### 准备
 
-为三个计算节点`P0`、`P1`、`P2`分别创建工作目录，比如: `millionaire0`、`millionaire1`、`millionaire2`
+首先，我们为三个计算节点P0、P1、P2分别创建工作目录，比如: millionaire0、millionaire1、millionaire2
 
 ```bash
 mkdir millionaire0 millionaire1 millionaire2
