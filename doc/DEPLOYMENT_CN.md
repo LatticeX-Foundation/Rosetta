@@ -101,13 +101,13 @@ Rosetta使用的是三方MPC模型（3-server model）。为了实现协议的�
 
 我们将用密码学中经典的[百万富翁问题][millionaire-problem]来测试Rosetta的可用性。
 
-> Rosetta虽是基于TensorFlow实现的，但Rosetta本身是由多个节点组成的多方安全计算，所以当前只支持TensorFlow的本地部署。
+> Tips：当前仅支持Tensorflow本地部署。因为Rosetta是基于Tensorflow实现的，其本身还是由多个节点组成的安全多方计算。
 
 ### 示例
 
 我们将使用Rosetta源码仓库中的[百万富翁问题代码][millionaire-example]。
 
-> 注意: [Rosetta开发教程][tutorials]中有多个隐私机器学习开发实例可以参考，详情参考[Tutorials](./TUTORIALS.md)。
+> Tips: [Rosetta开发教程][tutorials]中有多个隐私机器学习开发实例可以参考，详情参考[Tutorials](./TUTORIALS.md)。
 
 ### 准备
 
