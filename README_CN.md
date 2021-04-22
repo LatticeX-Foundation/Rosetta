@@ -70,12 +70,12 @@ cd Rosetta && source rtt_completion
 import latticex.rosetta as rtt
 ```
 
-如果没有报错，恭喜你，Rosetta安装成功了哟！下面我们来看看应用示例吧。
+如果没有报错，恭喜你，Rosetta已安装成功！下面我们来看看应用示例吧。
 
 
  > ***在生产环境中，数据是分布式存储的，所以在运行之前还需进行多方之间网络拓扑关系等信息的配置，以使得分布式执行时多方之间可以正常的通讯。***
  > 
- > ***实际运用场景的安装、配置和部署的步骤请参考[部署指南](doc/DEPLOYMENT_CN.md)。***
+ > ***实际运用场景的安装、配置和部署的步骤请参考[部署指南](doc/DEPLOYMENT_CN.md#部署)。***
 
 
 ## 使用示例
@@ -90,40 +90,40 @@ import latticex.rosetta as rtt
 
 示例执行方案详见：[demo 示例](example/tutorials/code/rosetta_demo.py)，路径：`example/tutorials/code/`，执行命令如下：
 
-第一个bash模拟P0，即party_id=0：
+第一个bash模拟P0方，即party_id=0：
 
 ```1：bash
 python3 rosetta_demo.py --party_id=0
 ```
 
-第二个bash模拟P1，即party_id=1：
+第二个bash模拟P1方，即party_id=1：
 
 ```2：bash
 python3 rosetta_demo.py --party_id=1
 ```
 
-第三个bash模拟P2，即party_id=2：
+第三个bash模拟P2方，即party_id=2：
 
 ```3：bash
 python3 rosetta_demo.py --party_id=2
 ```
 
-当三方均准备就绪后，每方可以privately输入己方数据，如下P0的输入：
+当三方均准备就绪后，每方可以privately输入己方数据，如下P0方的输入为`2 3 1 7 6 2`：
 
 > [2020-07-29 20:10:49.070] [info] Rosetta: Protocol [SecureNN] backend initialization succeeded!
 >
 > please input the private data (float or integer, 6 items, separated by space): 2 3 1 7 6 2
 
-如我们在程序中特意指定的那样，
+如我们在程序中指定的那样，
 
 ```python3
 # Set only party a and c can get plain result
 a_and_c_can_get_plain = 0b101
 ```
 
-只有 P0 和 P2 可以得到最后的明文结果，而P1不会拿到任何有意义的结果。当然，也可以只让一方知道结果，或者所有方均得到明文结果。
+只有 P0 和 P2 可以得到最终的明文结果，而P1不会拿到任何有意义的结果。当然，也可以只让一方知道结果，或者所有方均得到明文结果。
 
-想看输出结果？自己跑跑看吧！你一定能行的哟！:)
+想看输出结果？自己跑跑看吧！相信你一定能行！:)
 
 如此，还想了解更多？去看看[示例目录](./example)吧。
 
