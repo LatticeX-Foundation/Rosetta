@@ -7,7 +7,7 @@
 
 ## 概述
 
-Rosetta 是基于[TensorFlow](https://www.tensorflow.org)开发的一个隐私计算框架，旨在为人工智能(AI)提供快速、安全、可以保护隐私的技术解决方案，而不需要用户（AI开发者）掌握任何密码学（cryptology）、联邦学习（FL）和硬件安全执行环境（TEE）领域的专业知识。Rosetta 在用户接口层复用了 TensorFlow 的对外 API，从而使得用户可以以最低的改造成本将隐私保护功能集成到现有的 TensorFlow 程序中。比如在简单场景下，通过`import`即可完成这样的转换：
+Rosetta 是基于[TensorFlow](https://www.tensorflow.org)开发的一个隐私计算框架，旨在为人工智能(AI)提供快速、安全、可以保护隐私的技术解决方案，而不需要用户（AI开发者）掌握任何密码学（cryptography）、联邦学习（FL）和硬件安全执行环境（TEE）领域的专业知识。Rosetta 在用户接口层复用了 TensorFlow 的对外 API，从而使得用户可以以最低的改造成本将隐私保护功能集成到现有的 TensorFlow 程序中。比如在简单场景下，通过`import`即可完成这样的转换：
 
 ```python3
 import latticex.rosetta
