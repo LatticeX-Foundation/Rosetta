@@ -168,6 +168,21 @@ Rosetta 是一个由[Lattice基金会]((https://latticex.foundation/))维护的�
   
 * [FAQ](https://github.com/LatticeX-Foundation/Rosetta/wiki/FAQ)
 
+## 引用方式
+
+如果需要引用我们的项目，可以使用如下的格式:
+```latex 
+    @misc{Rosetta,
+      author = {Yuanfeng Chen, Gaofeng Huang, Junjie Shi, Xiang Xie, and Yilin Yan},
+      title = {{Rosetta: A Privacy-Preserving Framework Based on TensorFlow}},
+      howpublished = {\url{https://github.com/LatticeX-Foundation/Rosetta}},
+      year={2020}
+    }
+```
+
+## 参考文献
+
+可以查看 [wiki 页面](https://github.com/LatticeX-Foundation/Rosetta/wiki/Reference) 了解我们参考的学术论文和相关软件.
 
 ## 联系方式
 

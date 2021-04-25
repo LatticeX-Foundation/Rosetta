@@ -170,6 +170,23 @@ Rosetta is an open source project developed under the LPGLv3 license and maintai
   
 * [FAQ](https://github.com/LatticeX-Foundation/Rosetta/wiki/FAQ)
 
+
+## Citation
+
+You can cite our work as folllows:
+```latex 
+    @misc{Rosetta,
+      author = {Yuanfeng Chen, Gaofeng Huang, Junjie Shi, Xiang Xie, and Yilin Yan},
+      title = {{Rosetta: A Privacy-Preserving Framework Based on TensorFlow}},
+      howpublished = {\url{https://github.com/LatticeX-Foundation/Rosetta}},
+      year={2020}
+    }
+```
+
+## Reference
+
+Check thid [wiki page](https://github.com/LatticeX-Foundation/Rosetta/wiki/Reference) for the reference.
+
 ## Contact
 
 You could reach us by [email](mailto:rosetta@latticex.foundation). **And you are welcome to join Rosetta community on [Slack](https://join.slack.com/t/latticexrosetta/shared_invite/zt-dum6j65d-MTxp~Bxq5OwouJW8zUKB1Q) to ask any questions and discuss on any interesting topics with other developers**.
