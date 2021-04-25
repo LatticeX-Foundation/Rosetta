@@ -185,7 +185,7 @@ You can cite our work as folllows:
 
 ## Reference
 
-Check thid [wiki page](https://github.com/LatticeX-Foundation/Rosetta/wiki/Reference) for the reference.
+Check this [wiki page](https://github.com/LatticeX-Foundation/Rosetta/wiki/Reference) for the reference.
 
 ## Contact
 
