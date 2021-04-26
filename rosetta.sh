@@ -12,6 +12,7 @@
 #
 # Important! If you want to run tests/perf under 128bit(only mpc), please export ROSETTA_MPC_128=ON first.
 #
+set -e
 
 . ./rosetta_.sh
 
@@ -305,6 +306,11 @@ elif [ "${cmd}" = "test" ]; then
         test_py_dpass=1
         test_py_other=1
     fi
+    if [ $test_cpp_mpc -eq 1 ]; then
+        test_cpp_mpc=1
+        test_cpp_mpc_securenn=1
+        test_cpp_mpc_helix=1
+    fi
 
     export rtt_command=test
     export rtt_test_cpp_common=${test_cpp_common}
@@ -369,6 +375,11 @@ elif [ "${cmd}" = "perf" ]; then
         esac
     done
     if [ $test_all -eq 1 ]; then
+        perf_cpp_mpc=1
+        perf_cpp_mpc_securenn=1
+        perf_cpp_mpc_helix=1
+    fi
+    if [ $perf_cpp_mpc -eq 1 ]; then
         perf_cpp_mpc=1
         perf_cpp_mpc_securenn=1
         perf_cpp_mpc_helix=1

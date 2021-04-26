@@ -2,6 +2,7 @@
 #
 # Note, this script is called by ../rosetta.sh
 #
+set -e
 
 curdir=$(pwd)
 ccdir=${curdir}
@@ -119,7 +120,7 @@ function run_io_tests() {
     #./mpc-io-tests-test_net_io | grep -E "passed|failed"
     #./mpc-io-tests-test_parallel_net_io | grep -E "passed|failed"
 
-    ./mpc-io-examples-netio_ex
+    #./mpc-io-tests-test_net_io
     echo "run io-tests ok."
     sleep 1
 }
@@ -169,11 +170,11 @@ function run_all_modules_tests() {
         run_io_tests
     fi
 
-    if [ $rtt_test_cpp_mpc_securenn -eq 1 ]; then
+    if [ "$rtt_enable_protocol_mpc_securenn" == "ON" ] && [ $rtt_test_cpp_mpc_securenn -eq 1 ]; then
         cd ${bindir}
         run_protocol_mpc_snn_tests
     fi
-    if [ $rtt_test_cpp_mpc_helix -eq 1 ]; then
+    if [ "$rtt_enable_protocol_mpc_helix" == "ON" ] && [ $rtt_test_cpp_mpc_helix -eq 1 ]; then
         cd ${bindir}
         run_protocol_mpc_helix_tests
     fi
@@ -198,11 +199,11 @@ function run_protocol_mpc_helix_perfs() {
 }
 
 function run_all_modules_perfs() {
-    if [ $rtt_perf_cpp_mpc_securenn -eq 1 ]; then
+    if [ "$rtt_enable_protocol_mpc_securenn" == "ON" ] && [ $rtt_perf_cpp_mpc_securenn -eq 1 ]; then
         cd ${bindir}
         run_protocol_mpc_snn_perfs
     fi
-    if [ $rtt_perf_cpp_mpc_helix -eq 1 ]; then
+    if [ "$rtt_enable_protocol_mpc_helix" == "ON" ] && [ $rtt_perf_cpp_mpc_helix -eq 1 ]; then
         cd ${bindir}
         run_protocol_mpc_helix_perfs
     fi
@@ -217,6 +218,7 @@ if [ "${rtt_command}" = "compile" ]; then
     compile_cpp
     save_compile_options
 elif [ "${rtt_command}" = "test" ] || [ "${rtt_command}" = "perf" ]; then
+    _rtt_command=${rtt_command}
     load_compile_options
     #print_compile_options
     if [ "${rtt_enable_tests}" != "ON" ]; then
@@ -230,7 +232,7 @@ elif [ "${rtt_command}" = "test" ] || [ "${rtt_command}" = "perf" ]; then
     mkdir -p log out key data
     cd ${curdir}
 
-    if [ "${rtt_command}" = "test" ]; then
+    if [ "${_rtt_command}" == "test" ]; then
         run_all_modules_tests
     else
         run_all_modules_perfs
