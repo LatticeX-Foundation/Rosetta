@@ -129,7 +129,7 @@ function run_io_tests() {
 function run_protocol_mpc_test() {
     name=$1
     echo "run $name"
-    killall -q $name
+    # killall -q $name
     if [ -f "./$name" ]; then
         ./$name >log/console-$name.log 2>&1
         sleep 0.5
