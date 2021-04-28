@@ -2,9 +2,9 @@
 
 [![github license](https://img.shields.io/badge/license-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.en.html)
 
-[![Build-and-Test](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/build-and-test.yml/badge.svg?branch=master)](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/build-and-test.yml)
+[![Build-and-Test](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/build-and-test.yml) [![Performance Test](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/performance-test.yml/badge.svg)](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/performance-test.yml)
 
---------------------------------------------------------------------------------
+------
 
 [中文版](./README_CN.md)
 
