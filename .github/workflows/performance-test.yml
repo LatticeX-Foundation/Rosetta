@@ -1,36 +1,30 @@
-name: Build-and-Test
+name: Performance Test
 
 on:
-  push:
-    # branches: [test-actions]
-    paths-ignore: ["**.md", "doc/**"]
-  pull_request:
-    # branches: [test-actions]
-    paths-ignore: ["**.md", "doc/**"]
-
-  # Manual trigger
-  # workflow_dispatch:
-
-defaults:
-  run:
-    working-directory: ./
+  release:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Descriptions"
+        required: false
+        default: "Default Performance Test"
 
 jobs:
-  build-and-test:
+  performance-test:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         # jobs = os * pyversion * env
-        os: [ubuntu-18.04, ubuntu-20.04] # [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
-        python-version: [3.6, 3.7]
+        os: [ubuntu-18.04] # [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
+        python-version: [3.7] # [3.6, 3.7]
         env:
           # - rosetta_compile_options: "--enable-protocol-mpc-securenn"
           # - rosetta_compile_options: "--enable-protocol-mpc-securenn --enable-128bit"
           # - rosetta_compile_options: "--enable-protocol-mpc-helix"
           # - rosetta_compile_options: "--enable-protocol-mpc-helix --enable-128bit"
           - rosetta_compile_options: "--enable-protocol-mpc-securenn --enable-protocol-mpc-helix"
-          - rosetta_compile_options: "--enable-protocol-mpc-securenn --enable-protocol-mpc-helix --enable-128bit"
+          # - rosetta_compile_options: "--enable-protocol-mpc-securenn --enable-protocol-mpc-helix --enable-128bit"
     steps:
       - name: Git clone repository
         uses: actions/checkout@v2
@@ -62,8 +56,11 @@ jobs:
       - name: Install
         run: ./rosetta.sh install
 
-      - name: Run tests & examples
-        run: ./rosetta.sh test all
+      - name: Print system info
+        run: ./print_system_info.sh
 
-      - name: Run tutorials
-        run: cd ./example/tutorials/code && bash ./tutorials.sh all
+      - name: Run perf tests (c++ protocol level)
+        run: |
+          ./rosetta.sh perf all
+          # cat P0
+          cat ./build/bin/log/protocol_mpc_tests_*_perf.cpp-0-console.log
