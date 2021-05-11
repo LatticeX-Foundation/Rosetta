@@ -1650,6 +1650,37 @@ class XorBit : public OpBase {
 		the precision of the fractional part is FLOAT_PRECISION_M.
   @author: SJJ
 */
+class ReciprocalDiv : public DivBase {
+  using DivBase::DivBase;
+
+ public:
+  int funcBinaryOp(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
+    c.resize(size);
+    return ReciprocalDivfor2(a, b, c, size);//这里的函数应该可以放在division里面
+    /*
+  @note:
+	
+  @author: LJF
+  */
+  }
+
+ private:
+  /**
+  * @param: 
+  *   @common_vec_size: vector size which all party known
+  *   @common_all_less: indicate whether all element (numerator < denominator) to speed up.      
+  * 
+  */
+  int ReciprocalDivfor2(
+    const vector<mpc_t>& shared_numerator_vec,//分子
+    const vector<mpc_t>& shared_denominator_vec,//分母
+    vector<mpc_t>& shared_quotient_vec,
+    size_t common_vec_size,
+    bool common_all_less = false);
+};
+	
+	
+	
 class DivisionV2 : public DivBase {
   using DivBase::DivBase;
 
