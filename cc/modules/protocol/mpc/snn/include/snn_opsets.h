@@ -404,6 +404,67 @@ class MatMul : public OpBase {
     return 0;
   }
 };
+class Rsqrt : public OpBase{
+  using OpBase::OpBase;
+
+ public :
+  int Run(const vector<mpc_t>& a,  vector<mpc_t>& b,size_t size){
+    MPCOP_RETURN(funcRsqrt(a,b,size));
+  }
+  int Run(const vector<string>& a, vector<string>& b,size_t size){
+    MPCOP_RETURN(funcRsqrt(a,b,size));
+  }
+  private:
+    int funcRsqrt(const vector<mpc_t>& a,  vector<mpc_t>& b, size_t size);
+    int funcRsqrt(const vector<string>& as,  vector<string>& bs,size_t size){
+      vector<mpc_t>  a , b ;
+      rosetta::convert::from_hex_str(as,a);
+      MPCOP_RETURN(funcRsqrt(a,b,size));
+      rosetta::convert::to_hex_str(b,bs);
+      return 0;
+    };
+};
+class Exp : public OpBase{
+  using OpBase::OpBase;
+
+ public :
+  int Run(const vector<mpc_t>& a,  vector<mpc_t>& b,size_t size){
+    MPCOP_RETURN(funcExp(a,b,size));
+  }
+  int Run(const vector<string>& a, vector<string>& b,size_t size){
+    MPCOP_RETURN(funcExp(a,b,size));
+  }
+  private:
+    int funcExp(const vector<mpc_t>& a,  vector<mpc_t>& b, size_t size);
+    int funcExp(const vector<string>& as,  vector<string>& bs,size_t size){
+      vector<mpc_t>  a , b ;
+      rosetta::convert::from_hex_str(as,a);
+      MPCOP_RETURN(funcExp(a,b,size));
+      rosetta::convert::to_hex_str(b,bs);
+      return 0;
+    };
+};
+
+class Sqrt : public OpBase{
+  using OpBase::OpBase;
+
+ public :
+  int Run(const vector<mpc_t>& a,  vector<mpc_t>& b,size_t size){
+    MPCOP_RETURN(funcSqrt(a,b,size));
+  }
+  int Run(const vector<string>& a, vector<string>& b,size_t size){
+    MPCOP_RETURN(funcSqrt(a,b,size));
+  }
+  private:
+    int funcSqrt(const vector<mpc_t>& a,  vector<mpc_t>& b, size_t size);
+    int funcSqrt(const vector<string>& as,  vector<string>& bs,size_t size){
+      vector<mpc_t>  a , b ;
+      rosetta::convert::from_hex_str(as,a);
+      MPCOP_RETURN(funcSqrt(a,b,size));
+      rosetta::convert::to_hex_str(b,bs);
+      return 0;
+    };
+};
 
 class Negative : public OpBase {
   using OpBase::OpBase;

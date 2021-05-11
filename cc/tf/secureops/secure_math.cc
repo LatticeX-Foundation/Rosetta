@@ -470,6 +470,54 @@ class SecureAbsOp : public StrUnaryOp {
   }
 };
 
+/*——————————————————————————————————————*/
+class SecureRsqrtOp : public StrUnaryOp {
+ private:
+  /* data */
+ public:
+  SecureRsqrtOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  ~SecureRsqrtOp() {}
+
+  int UnaryCompute(const vector<string>& input, vector<string>& output) {
+    log_debug << "--> Rsqrt OpKernel compute.";
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Rsqrt(input, output, &attrs_);
+    log_debug << "Rsqrt OpKernel compute ok. <--";
+    return 0;
+  }
+};
+
+
+class SecureSqrtOp : public StrUnaryOp {
+ private:
+  /* data */
+ public:
+  SecureSqrtOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  ~SecureSqrtOp() {}
+
+  int UnaryCompute(const vector<string>& input, vector<string>& output) {
+    log_debug << "--> Sqrt OpKernel compute.";
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Sqrt(input, output, &attrs_);
+    log_debug << "Sqrt OpKernel compute ok. <--";
+    return 0;
+  }
+};
+
+class SecureExpOp : public StrUnaryOp {
+ private:
+  /* data */
+ public:
+  SecureExpOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  ~SecureExpOp() {}
+
+  int UnaryCompute(const vector<string>& input, vector<string>& output) {
+    log_debug << "--> Exp OpKernel compute.";
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Exp(input, output, &attrs_);
+    log_debug << "Exp OpKernel compute ok. <--";
+    return 0;
+  }
+};
+
+/*——————————————————————————————————————*/
 class SecureAbsPrimeOp : public StrUnaryOp {
  private:
   /* data */
@@ -621,6 +669,9 @@ REGISTER_STR_CPU_KERNEL(SecureNotEqual, SecureNotEqualOp);
 REGISTER_STR_CPU_KERNEL(SecureGreaterEqual, SecureGreaterEqualOp);
 REGISTER_STR_CPU_KERNEL(SecureLessEqual, SecureLessEqualOp);
 REGISTER_STR_CPU_KERNEL(SecurePow, SecurePowOp);
+REGISTER_STR_CPU_KERNEL(SecureRsqrt, SecureRsqrtOp);
+REGISTER_STR_CPU_KERNEL(SecureSqrt, SecureSqrtOp);
+REGISTER_STR_CPU_KERNEL(SecureExp, SecureExpOp);
 
 REGISTER_STR_CPU_KERNEL(SecureMatmul, SecureMatmulOp);
 REGISTER_STR_CPU_KERNEL(SecureNegative, SecureNegativeOp);

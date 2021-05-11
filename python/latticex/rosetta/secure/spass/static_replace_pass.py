@@ -92,6 +92,9 @@ class StaticReplacePass():
                             # arithmetic unary operation
                             "rttnegative" :   ["SecureNegative", self._create_secure_unary_op,   secure_ops.SecureNeg,    False],
                             "rttsquare" :     ["SecureSquare",   self._create_secure_unary_op,   secure_ops.SecureSquare, False],
+                            "rttrsqrt" :     ["SecureRsqrt",   self._create_secure_unary_op,   secure_ops.SecureRsqrt, False],
+                            "rttsqrt" :     ["SecureSqrt",   self._create_secure_unary_op,   secure_ops.SecureSqrt, False],
+                            "rttexp" :     ["SecureExp",   self._create_secure_unary_op,   secure_ops.SecureExp, False],
                             "rttlog" :        ["SecureLog",      self._create_secure_unary_op,   secure_ops.SecureLog,    False],
                             "rttlog1p" :      ["SecureLog1p",    self._create_secure_unary_op,   secure_ops.SecureLog1p,  False],
                             "rttsigmoid" :    ["SecureSigmoid",  self._create_secure_unary_op,   secure_ops.SecureSigmoid,False],

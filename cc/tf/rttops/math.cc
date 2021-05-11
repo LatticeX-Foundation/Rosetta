@@ -483,7 +483,43 @@ class RttMatMulOp : public OpKernel {
   bool transpose_a_;
   bool transpose_b_;
 };
+//————————————————————————————————————————
 
+template <typename Device>
+class RttRsqrtOp : public OpKernel {
+ public:
+  explicit RttRsqrtOp(OpKernelConstruction* context) : OpKernel(context) {
+  }
+
+  void Compute(OpKernelContext* context) override {
+    print("RttRsqrt")
+  }
+};
+
+template <typename Device>
+class RttSqrtOp : public OpKernel {
+ public:
+  explicit RttSqrtOp(OpKernelConstruction* context) : OpKernel(context) {
+  }
+
+  void Compute(OpKernelContext* context) override {
+    print("RttSqrt")
+  }
+};
+
+
+template <typename Device>
+class RttExpOp : public OpKernel {
+ public:
+  explicit RttExpOp(OpKernelConstruction* context) : OpKernel(context) {
+  }
+
+  void Compute(OpKernelContext* context) override {
+    print("RttExp")
+  }
+};
+
+//————————————————————————————————————————————
 template <typename Device>
 class RttLessOp : public RttBinaryOp<Device> {
  public:
@@ -730,6 +766,9 @@ REGISTER_KERNEL_BUILDER(Name("RttNegative").Device(DEVICE_CPU), RttNegOp<CPUDevi
 REGISTER_KERNEL_BUILDER(Name("RttAdd").Device(DEVICE_CPU), RttAddOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttSub").Device(DEVICE_CPU), RttSubOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttMul").Device(DEVICE_CPU), RttMulOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttRsqrt").Device(DEVICE_CPU), RttRsqrtOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttSqrt").Device(DEVICE_CPU), RttSqrtOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttExp").Device(DEVICE_CPU), RttExpOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttSquare").Device(DEVICE_CPU), RttSquareOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttDiv").Device(DEVICE_CPU), RttDivOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttRealdiv").Device(DEVICE_CPU), RttDivOp<CPUDevice>);

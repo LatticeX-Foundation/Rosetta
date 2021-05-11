@@ -144,6 +144,21 @@ REGISTER_OP("RttMatmul")
 
 REGISTER_OP("RttSquare").Input("x: string").Output("res: string").SetIsStateful();
 
+REGISTER_OP("RttRsqrt")
+  .Input("x: string")
+  .Output("res: string");
+
+
+REGISTER_OP("RttSqrt")
+  .Input("x: string")
+  .Output("res: string");
+
+
+REGISTER_OP("RttExp")
+  .Input("x: string")
+  .Output("res: string");
+
+
 
 REGISTER_OP("RttReduceMean")
   .Input("input: string")

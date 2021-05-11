@@ -217,6 +217,27 @@ class ProtocolOps {
     const attr_type* attr_info = nullptr) {
     THROW_NOT_IMPL;
   }
+  virtual int Rsqrt(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+  
+  virtual int Sqrt(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
+  virtual int Exp(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
 
   virtual int Square(
     const vector<string>& a,

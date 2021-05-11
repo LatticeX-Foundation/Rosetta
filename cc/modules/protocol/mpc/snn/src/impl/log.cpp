@@ -42,7 +42,7 @@ int Log::mpc_log_hd(const vector<mpc_t>& shared_X,
 		mpc_t LEN = 8 * sizeof(mpc_t);
 		vector<mpc_t> SHARED_LN_2(vec_size, 0);
 		if(partyNum == PARTY_A) {
-			// math.log(2) = 0.693147181
+			// math.ln(2) = 0.693147181
 			SHARED_LN_2 = vector<mpc_t>(vec_size, FloatToMpcType(0.693147181));
 		}
 		vector<mpc_t> SHARED_HALF(vec_size, 0);
@@ -159,7 +159,7 @@ void Log::mpc_log_v1(const mpc_t& shared_X,
 	shared_Y = CoffDown(shared_Y);
 }
 
-void Log::mpc_log_v2(const vector<mpc_t>& shared_X, 
+void Log::mpc_log_v2(const vector<mpc_t>& shared_X, //
 					vector<mpc_t>& shared_Y) {
 	int vec_size = shared_X.size();
 	shared_Y.resize(vec_size);		
