@@ -252,7 +252,8 @@ int snn_protocol_binary_ops_call(
 SNN_PROTOCOL_BINARY_OPS_CALL(Add, rosetta::snn::Add)
 SNN_PROTOCOL_BINARY_OPS_CALL(Sub, rosetta::snn::Sub)
 SNN_PROTOCOL_BINARY_OPS_CALL(Mul, rosetta::snn::Mul)
-SNN_PROTOCOL_BINARY_OPS_CALL(Div, rosetta::snn::DivisionV2)
+//SNN_PROTOCOL_BINARY_OPS_CALL(Div, rosetta::snn::DivisionV2)
+SNN_PROTOCOL_BINARY_OPS_CALL(Div, rosetta::snn::ReciprocalDiv)
 SNN_PROTOCOL_BINARY_OPS_CALL(Truediv, rosetta::snn::Truediv)
 SNN_PROTOCOL_BINARY_OPS_CALL(Floordiv, rosetta::snn::FloorDivision)
 
