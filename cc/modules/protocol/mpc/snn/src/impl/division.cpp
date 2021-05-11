@@ -336,8 +336,9 @@ int ReciprocalDiv::ReciprocalDivfor2(
       if (partyNum == PARTY_B) {
         initial_exp[i] = 1-initial_temp[i];
       }
-      
-    }//1-2*DEN
+      initial_exp[i]=MpcTypeToFloat(initial_exp[i])
+      initial_exp[i]=FloatToMpcType(exp(initial_exp[i]))//这个实现方式就很离谱。估计是错的
+    }//exp(1-2*DEN)
     for (int i = 0; i < size; ++i) {
       initial_temp[i] = initial_exp[i];
       initial_exp[i] = initial_exp[i] << 1;
