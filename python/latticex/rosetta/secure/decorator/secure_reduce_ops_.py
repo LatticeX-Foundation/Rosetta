@@ -17,11 +17,9 @@
 # =============================================================================="
 import tensorflow as tf
 from tensorflow.python.ops import math_ops
-import os
-
-
-_secureop_lib = os.path.dirname(__file__) + '/../../../libsecure-ops.so'
-_secure_ops = tf.load_op_library(_secureop_lib)
+from latticex.rosetta.secure.decorator.secure_base_ import _secure_ops
+from tensorflow.python.framework import dtypes
+from tensorflow.python.util import deprecation
 
 
 # -----------------------------
@@ -33,6 +31,9 @@ def SecureMax(input_tensor,
            name=None,
            reduction_indices=None,
            keep_dims=None):
+    keepdims = deprecation.deprecated_argument_lookup("keepdims", keepdims,
+                                                      "keep_dims", keep_dims)
+
     keepdims = False if keepdims is None else keepdims
     axis = math_ops._ReductionDims(input_tensor, axis)
 
@@ -45,6 +46,9 @@ def SecureMin(input_tensor,
            name=None,
            reduction_indices=None,
            keep_dims=None):
+    keepdims = deprecation.deprecated_argument_lookup("keepdims", keepdims,
+                                                      "keep_dims", keep_dims)
+
     keepdims = False if keepdims is None else keepdims
     axis = math_ops._ReductionDims(input_tensor, axis)
 
@@ -57,6 +61,9 @@ def SecureMean(input_tensor,
             name=None,
             reduction_indices=None,
             keep_dims=None):
+    keepdims = deprecation.deprecated_argument_lookup("keepdims", keepdims,
+                                                      "keep_dims", keep_dims)
+
     keepdims = False if keepdims is None else keepdims
     axis = math_ops._ReductionDims(input_tensor, axis)
 
@@ -69,8 +76,15 @@ def SecureSum(input_tensor,
             name=None,
             reduction_indices=None,
             keep_dims=None):
+    keepdims = deprecation.deprecated_argument_lookup("keepdims", keepdims,
+                                                      "keep_dims", keep_dims)
+
     keepdims = False if keepdims is None else keepdims
     axis = math_ops._ReductionDims(input_tensor, axis)
 
     return _secure_ops.secure_reduce_sum(input_tensor, reduction_indices=axis, name=name, keep_dims=keepdims)
+
+
+def SecureArgMax(input_tensor, dimension=None, output_type=dtypes.string, name=None):
+    return _secure_ops.secure_arg_max(input_tensor, dimension=dimension, output_type=output_type, name=name)
 

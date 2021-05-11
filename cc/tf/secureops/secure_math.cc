@@ -25,224 +25,274 @@ using rosetta::ProtocolManager;
 // Binary OP: Add/Sub/Mul/Div/...
 namespace tensorflow {
 
-class SecureAddOp : public SecureBinaryOp {
+class SecureAddOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureAddOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureAddOp() {}
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     log_debug << "--> Add OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Add(in1, in2, output, &attrs_);
-    //cout << "DEBUG ADD END with output[0]: " << output[0] << endl;
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Add);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Add(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Add);
     log_debug << "Add OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureSubOp : public SecureBinaryOp {
+class SecureSubOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureSubOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureSubOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
-    log_debug << "--> Sub OpKernel compute." << endl;;
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Sub(in1, in2, output, &attrs_);
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+    log_debug << "--> Sub OpKernel compute." << endl;
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Sub);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Sub(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Sub);
     log_debug << "Sub OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureMulOp : public SecureBinaryOp {
+class SecureMulOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureMulOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureMulOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     log_debug << "--> Mul OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Mul(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mul);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Mul(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mul);
     log_debug << "Mul OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureLessOp : public SecureBinaryOp {
+class SecureLessOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureLessOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureLessOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     log_debug << "--> Less OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Less(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Less);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Less(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Less);
     log_debug << "Less OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureLessEqualOp : public SecureBinaryOp {
+class SecureLessEqualOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureLessEqualOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureLessEqualOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     log_debug << "--> LessEqual OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->LessEqual(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(LessEqual);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->LessEqual(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(LessEqual);
     log_debug << "LessEqual OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureEqualOp : public SecureBinaryOp {
+class SecureEqualOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureEqualOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureEqualOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     log_debug << "--> Equal OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Equal(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Equal);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Equal(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Equal);
     log_debug << "Equal OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureNotEqualOp : public SecureBinaryOp {
+class SecureNotEqualOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureNotEqualOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureNotEqualOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     log_debug << "--> NotEqual OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->NotEqual(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(NotEqual);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->NotEqual(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(NotEqual);
     log_debug << "NotEqual OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureGreaterOp : public SecureBinaryOp {
+class SecureGreaterOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureGreaterOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureGreaterOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     log_debug << "--> Greater OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Greater(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Greater);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Greater(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Greater);
     log_debug << "Greater OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureGreaterEqualOp : public SecureBinaryOp {
+class SecureGreaterEqualOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureGreaterEqualOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureGreaterEqualOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     log_debug << "--> GreaterEqual OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->GreaterEqual(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(GreaterEqual);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->GreaterEqual(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(GreaterEqual);
     log_debug << "GreaterEqual OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureDivOp : public SecureBinaryOp {
+class SecureDivOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureDivOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureDivOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     log_debug << "--> Div OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Div(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Div);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Div(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Div);
     log_debug << "Div OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureTruedivOp : public SecureBinaryOp {
+class SecureTruedivOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureTruedivOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureTruedivOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     log_debug << "--> Truediv OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Truediv(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Truediv);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Truediv(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Truediv);
     log_debug << "Truediv OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureFloordivOp : public SecureBinaryOp {
+class SecureFloordivOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureFloordivOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureFloordivOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     log_debug << "--> Floordiv OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Floordiv(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Floordiv);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Floordiv(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Floordiv);
     log_debug << "Floordiv OpKernel compute ok. <--";
     return 0;
   }
 };
 
 // equivelent to SecureDivOp
-class SecureRealdivOp : public SecureBinaryOp {
+class SecureRealdivOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecureRealdivOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureRealdivOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     log_debug << "--> Realdiv OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Div(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Div);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Div(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Div);
     log_debug << "Realdiv OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecurePowOp : public SecureBinaryOp {
+class SecurePowOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
  public:
   SecurePowOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecurePowOp() {}
 
-  int BinaryCompute(
-    const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
     // lh_is_const, rh_is_const SHOULD set to False, True
     // if ((!lh_is_const_) && rh_is_const_)
     // {
@@ -251,7 +301,12 @@ class SecurePowOp : public SecureBinaryOp {
     // }
 
     log_debug << "--> Pow OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Pow(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Pow);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Pow(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Pow);
     log_debug << "Pow OpKernel compute ok. <--";
     return 0;
   }
@@ -264,6 +319,7 @@ class SecureMatmulOp : public SecureOpKernel {
   SecureMatmulOp(OpKernelConstruction* context) : SecureOpKernel(context) {
     OP_REQUIRES_OK(context, context->GetAttr("transpose_a", &transpose_a_));
     OP_REQUIRES_OK(context, context->GetAttr("transpose_b", &transpose_b_));
+    // OP_REQUIRES_OK(context, context->GetAttr("rh_is_const", &rh_is_const_));
   }
   ~SecureMatmulOp() {}
 
@@ -328,13 +384,20 @@ class SecureMatmulOp : public SecureOpKernel {
     attrs_["n"] = std::to_string(n);
     attrs_["transpose_a"] = transpose_a_ ? "1" : "0";
     attrs_["transpose_b"] = transpose_b_ ? "1" : "0";
+    // attrs_["rh_is_const"] = rh_is_const_ ? "1" : "0";
 
-    log_debug << "**Matmul m: " << m << ", K: " << K  << ", n: " << n << ", transpose_a: " << transpose_a_ << ", transpose_b: " << transpose_b_ << endl;
-    
+    log_debug << "**Matmul m: " << m << ", K: " << K << ", n: " << n
+              << ", transpose_a: " << transpose_a_ << ", transpose_b: " << transpose_b_ << endl;
+
     // call protocol ops
-    vector<string> outstr(m*n);
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Matmul(in1, in2, outstr, &attrs_);
-    
+    vector<string> outstr(m * n);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Matmul);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Matmul(in1, in2, outstr, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Matmul);
+
     // set output
     TensorShape output_shape({m, n});
     Tensor* output = nullptr;
@@ -354,33 +417,44 @@ class SecureMatmulOp : public SecureOpKernel {
  private:
   bool transpose_a_ = false;
   bool transpose_b_ = false;
+  bool rh_is_const_ = false;
 };
 
-class SecureSquareOp : public StrUnaryOp {
+class SecureSquareOp : public SecureUnaryOp {
  private:
   /* data */
  public:
-  SecureSquareOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  SecureSquareOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureSquareOp() {}
 
   int UnaryCompute(const vector<string>& input, vector<string>& output) {
     log_debug << "--> Square OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Square(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Square);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Square(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Square);
     log_debug << "Square OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureNegativeOp : public StrUnaryOp {
+class SecureNegativeOp : public SecureUnaryOp {
  private:
   /* data */
  public:
-  SecureNegativeOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  SecureNegativeOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureNegativeOp() {}
 
   int UnaryCompute(const vector<string>& input, vector<string>& output) {
     log_debug << "--> Negative OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Negative(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Negative);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Negative(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Negative);
     log_debug << "Negative OpKernel compute ok. <--";
     return 0;
   }
@@ -392,12 +466,15 @@ class SecureReduceMeanOp : public SecureReduceOp {
  public:
   SecureReduceMeanOp(OpKernelConstruction* context) : SecureReduceOp(context) {}
   ~SecureReduceMeanOp() {}
-  string name() {
-    return string("SecureReduceMeanOp");
-  }
+  string name() { return string("SecureReduceMeanOp"); }
   int ReduceCompute(const vector<string>& input, vector<string>& output, int rows, int cols) {
     log_debug << "--> ReduceMean OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Mean(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mean);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Mean(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mean);
     log_debug << "ReduceMean OpKernel compute ok. <--";
     return 0;
   }
@@ -409,12 +486,12 @@ class SecureReduceSumOp : public SecureReduceOp {
  public:
   SecureReduceSumOp(OpKernelConstruction* context) : SecureReduceOp(context) {}
   ~SecureReduceSumOp() {}
-  string name() {
-    return string("SecureReduceSumOp");
-  }
+  string name() { return string("SecureReduceSumOp"); }
   int ReduceCompute(const vector<string>& input, vector<string>& output, int rows, int cols) {
     log_debug << "--> ReduceSum OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Sum(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Sum);
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Sum(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Sum);
     log_debug << "ReduceSum OpKernel compute ok. <--";
     return 0;
   }
@@ -426,12 +503,12 @@ class SecureReduceMinOp : public SecureReduceOp {
  public:
   SecureReduceMinOp(OpKernelConstruction* context) : SecureReduceOp(context) {}
   ~SecureReduceMinOp() {}
-  string name() {
-    return string("SecureReduceMinOp");
-  }
+  string name() { return string("SecureReduceMinOp"); }
   int ReduceCompute(const vector<string>& input, vector<string>& output, int rows, int cols) {
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Min);
     log_debug << "--> ReduceMin OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Min(input, output, &attrs_);
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Min(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Min);
     log_debug << "ReduceMin OpKernel compute ok. <--";
     return 0;
   }
@@ -444,32 +521,48 @@ class SecureReduceMaxOp : public SecureReduceOp {
   SecureReduceMaxOp(OpKernelConstruction* context) : SecureReduceOp(context) {}
   ~SecureReduceMaxOp() {}
 
-  string name() {
-    return string("SecureReduceMaxOp");
-  }
+  string name() { return string("SecureReduceMaxOp"); }
   int ReduceCompute(const vector<string>& input, vector<string>& output, int rows, int cols) {
     log_debug << "--> ReduceMax OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Max(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Max);
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Max(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Max);
     log_debug << "ReduceMax OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureAbsOp : public StrUnaryOp {
+class SecureArgMaxOp : public SecureOpKernel {
  private:
   /* data */
  public:
-  SecureAbsOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  SecureArgMaxOp(OpKernelConstruction* context) : SecureOpKernel(context) {}
+  ~SecureArgMaxOp() {}
+  string name() { return string("SecureArgMaxOp"); }
+  void ComputeImpl(OpKernelContext* context) {
+    log_debug << "--> SecureArgMaxOp OpKernel compute.";
+    log_debug << "SecureArgMaxOp OpKernel compute ok. <--";
+  }
+};
+
+class SecureAbsOp : public SecureUnaryOp {
+ private:
+  /* data */
+ public:
+  SecureAbsOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureAbsOp() {}
 
   int UnaryCompute(const vector<string>& input, vector<string>& output) {
     log_debug << "--> Abs OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Abs(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Abs);
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Abs(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Abs);
     log_debug << "Abs OpKernel compute ok. <--";
     return 0;
   }
 };
 
+<<<<<<< HEAD
 /*——————————————————————————————————————*/
 class SecureRsqrtOp : public StrUnaryOp {
  private:
@@ -519,60 +612,80 @@ class SecureExpOp : public StrUnaryOp {
 
 /*——————————————————————————————————————*/
 class SecureAbsPrimeOp : public StrUnaryOp {
+=======
+class SecureAbsPrimeOp : public SecureUnaryOp {
+>>>>>>> upstream/master
  private:
   /* data */
  public:
-  SecureAbsPrimeOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  SecureAbsPrimeOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureAbsPrimeOp() {}
 
   int UnaryCompute(const vector<string>& input, vector<string>& output) {
     log_debug << "--> AbsPrime OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->AbsPrime(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(AbsPrime);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->AbsPrime(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(AbsPrime);
     log_debug << "AbsPrime OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureLogOp : public StrUnaryOp {
+class SecureLogOp : public SecureUnaryOp {
  private:
   /* data */
  public:
-  SecureLogOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  SecureLogOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureLogOp() {}
 
   int UnaryCompute(const vector<string>& input, vector<string>& output) {
     log_debug << "--> Log OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Log(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Log);
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Log(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Log);
     log_debug << "Log OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureHLogOp : public StrUnaryOp {
+class SecureHLogOp : public SecureUnaryOp {
  private:
   /* data */
  public:
-  SecureHLogOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  SecureHLogOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureHLogOp() {}
 
   int UnaryCompute(const vector<string>& input, vector<string>& output) {
     log_debug << "--> HLog OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->HLog(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(HLog);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->HLog(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(HLog);
     log_debug << "HLog OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureLog1pOp : public StrUnaryOp {
+class SecureLog1pOp : public SecureUnaryOp {
  private:
   /* data */
  public:
-  SecureLog1pOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  SecureLog1pOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureLog1pOp() {}
 
   int UnaryCompute(const vector<string>& input, vector<string>& output) {
     log_debug << "--> Log1p OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Log1p(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Log1p);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Log1p(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Log1p);
     log_debug << "Log1p OpKernel compute ok. <--";
     return 0;
   }
@@ -580,26 +693,24 @@ class SecureLog1pOp : public StrUnaryOp {
 
 class SecureAddNOp : public SecureOpKernel {
  public:
-  SecureAddNOp(OpKernelConstruction* context) : SecureOpKernel(context) {
-  }
+  SecureAddNOp(OpKernelConstruction* context) : SecureOpKernel(context) {}
   ~SecureAddNOp() {}
 
   void ComputeImpl(OpKernelContext* context) {
-    cout << "--> AddN OpKernel compute...\n\n";
-    if (!context->ValidateInputsAreSameShape(this)) return;
+    if (!context->ValidateInputsAreSameShape(this))
+      return;
 
     const Tensor& input0 = context->input(0);
     const int num = context->num_inputs();
 
     if (num == 1) {
       context->set_output(0, input0);
-      cout << "=====  add_n input_nums: " << context->num_inputs() <<  "just copy and return ?????" << endl;
       return;
     }
 
-    log_debug << "=====  add_n input_nums: " << context->num_inputs();
-    log_debug << "          in0.dims():" << input0.dims();
-    log_debug << "    in0_num_elements:" << input0.NumElements();
+    // log_debug << "=====  add_n input_nums: " << context->num_inputs();
+    // log_debug << "          in0.dims():" << input0.dims();
+    // log_debug << "    in0_num_elements:" << input0.NumElements();
 
     Tensor* z = nullptr;
     OP_REQUIRES_OK(context, context->allocate_output(0, input0.shape(), &z));
@@ -620,11 +731,16 @@ class SecureAddNOp : public SecureOpKernel {
 
     // // compute with protocol
     vector<string> output(size);
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->AddN(inputs, output, &attrs_);
-    
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(AddN);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->AddN(inputs, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(AddN);
+
     auto out_flat = z->flat<string>();
     for (int i = 0; i < size; i++) {
-      out_flat(i) = output[i];
+      out_flat(i) = std::move(output[i]);
     }
 
 #if PRINT_REVEAL
@@ -635,12 +751,12 @@ class SecureAddNOp : public SecureOpKernel {
   }
 };
 
-
-class SecureRevealOp : public StrUnaryOp {
+class SecureRevealOp : public SecureUnaryOp {
  private:
   int receive_party_ = 0;
+
  public:
-  SecureRevealOp(OpKernelConstruction* context) : StrUnaryOp(context) {
+  SecureRevealOp(OpKernelConstruction* context) : SecureUnaryOp(context) {
     context->GetAttr("receive_party", &receive_party_);
   }
   ~SecureRevealOp() {}
@@ -648,8 +764,78 @@ class SecureRevealOp : public StrUnaryOp {
   int UnaryCompute(const vector<string>& input, vector<string>& output) {
     log_debug << "--> Reveal OpKernel compute.";
     attrs_["receive_party"] = std::to_string(receive_party_);
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Reveal(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Reveal);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Reveal(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Reveal);
     log_debug << "Reveal OpKernel compute ok. <--";
+    return 0;
+  }
+};
+
+/////////////////////// logical ops //////////////////////////
+class SecureLogicalAndOp : public SecureBinaryOp<BinaryOpState> {
+ public:
+  SecureLogicalAndOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
+  ~SecureLogicalAndOp() {}
+
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(AND);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->AND(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(AND);
+    return 0;
+  }
+};
+
+class SecureLogicalOrOp : public SecureBinaryOp<BinaryOpState> {
+ public:
+  SecureLogicalOrOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
+  ~SecureLogicalOrOp() {}
+
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(OR);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->OR(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(OR);
+    return 0;
+  }
+};
+
+class SecureLogicalXorOp : public SecureBinaryOp<BinaryOpState> {
+ public:
+  SecureLogicalXorOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
+  ~SecureLogicalXorOp() {}
+
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(XOR);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->XOR(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(XOR);
+    return 0;
+  }
+};
+
+class SecureLogicalNotOp : public SecureUnaryOp {
+ private:
+  int receive_party_ = 0;
+
+ public:
+  SecureLogicalNotOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
+  ~SecureLogicalNotOp() {}
+
+  int UnaryCompute(const vector<string>& input, vector<string>& output) {
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(NOT);
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->NOT(input, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(NOT);
     return 0;
   }
 };
@@ -686,9 +872,15 @@ REGISTER_STR_CPU_KERNEL(SecureLog, SecureLogOp);
 REGISTER_STR_CPU_KERNEL(SecureHLog, SecureHLogOp);
 REGISTER_STR_CPU_KERNEL(SecureLog1p, SecureLog1pOp);
 REGISTER_STR_CPU_KERNEL(SecureReveal, SecureRevealOp);
-//REGISTER_STR_CPU_KERNEL(SecureAddN, SecureAddNOp);
+REGISTER_STR_CPU_KERNEL(SecureArgMax, SecureArgMaxOp);
 
-REGISTER_KERNEL_BUILDER(Name("SecureAddN").Device(DEVICE_CPU).TypeConstraint<std::string>("T"), \
-                        SecureAddNOp);
+REGISTER_KERNEL_BUILDER(
+  Name("SecureAddN").Device(DEVICE_CPU).TypeConstraint<std::string>("T"),
+  SecureAddNOp);
 
+// logical ops
+REGISTER_STR_CPU_KERNEL(SecureLogicalAnd, SecureLogicalAndOp);
+REGISTER_STR_CPU_KERNEL(SecureLogicalOr, SecureLogicalOrOp);
+REGISTER_STR_CPU_KERNEL(SecureLogicalXor, SecureLogicalXorOp);
+REGISTER_STR_CPU_KERNEL(SecureLogicalNot, SecureLogicalNotOp);
 } // namespace tensorflow

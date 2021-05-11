@@ -28,3 +28,13 @@ REGISTER_OP("RttSaveV2")
     .Doc(R"doc(
 RttSaveV2Op
 )doc");
+
+REGISTER_OP("RttRestoreV2")
+    .Input("prefix: string")
+    .Input("tensor_names: string")
+    .Input("shape_and_slices: string")
+    .Output("tensors: dtypes")
+    .Attr("dtypes: list(type)")
+    .Doc(R"doc(
+RttRestoreV2Op
+)doc");

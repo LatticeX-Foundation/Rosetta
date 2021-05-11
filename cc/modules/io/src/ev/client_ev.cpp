@@ -170,7 +170,7 @@ bool TCPClient::connect(int64_t timeout) {
 
 void TCPClient::close() {
   if (connected_) {
-    cout << "client closing." << endl;
+    log_debug << "client closing." << endl;
     connected_ = false;
 
     pre_exit = true;
@@ -181,7 +181,7 @@ void TCPClient::close() {
       delete tps_;
       tps_ = nullptr;
     }
-    cout << "client closed." << endl;
+    log_debug << "client closed." << endl;
   }
 }
 

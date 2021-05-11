@@ -19,7 +19,7 @@
 
 #include "cc/modules/protocol/mpc/comm/include/mpc_helper.h"
 #include "cc/modules/protocol/mpc/snn/include/opsets_local.h"
-#include "cc/modules/protocol/mpc/comm/include/mpc_util.h"
+#include "cc/modules/protocol/utility/include/util.h"
 #include "cc/modules/common/include/utils/str_type_convert.h"
 
 #include <cmath>
@@ -162,25 +162,14 @@ namespace snn {
 
 class OpBase : public OpBase_ {
  public:
-  explicit OpBase(const msg_id_t& key) : msg_id_(key) {
-    init();
-  }
-  explicit OpBase(const std::string& key) : msg_id_(key) {
-    init();
-  }
-  explicit OpBase(const std::shared_ptr<OpBase>& op) : msg_id_(op->msg_id()) {
-    init();
-  }
+  explicit OpBase(const msg_id_t& key) : msg_id_(key) { init(); }
+  explicit OpBase(const std::shared_ptr<OpBase>& op) : msg_id_(op->msg_id()) { init(); }
 
-  explicit OpBase(const msg_id_t& key, shared_ptr<_SNN_IO> io__) : msg_id_(key) {
+  explicit OpBase(const msg_id_t& key, shared_ptr<NET_IO> io__) : msg_id_(key) {
     io = io__;
     init();
   }
-  explicit OpBase(const std::string& key, shared_ptr<_SNN_IO> io__) : msg_id_(key) {
-    io = io__;
-    init();
-  }
-  explicit OpBase(const std::shared_ptr<OpBase>& op, shared_ptr<_SNN_IO> io__)
+  explicit OpBase(const std::shared_ptr<OpBase>& op, shared_ptr<NET_IO> io__)
       : msg_id_(op->msg_id()) {
     io = io__;
     init();
@@ -189,12 +178,10 @@ class OpBase : public OpBase_ {
   virtual ~OpBase() = default;
 
  public:
-  virtual const msg_id_t& msg_id() const {
-    return msg_id_;
-  }
+  virtual const msg_id_t& msg_id() const { return msg_id_; }
 
  protected:
-  msg_id_t msg_id_;
+  const msg_id_t& msg_id_;
 };
 
 /*
@@ -210,9 +197,7 @@ class Synchronize : public OpBase {
   using OpBase::OpBase;
 
  public:
-  int Run() {
-    MPCOP_RETURN(funcSynchronize());
-  }
+  int Run() { MPCOP_RETURN(funcSynchronize()); }
 
  private:
   int funcSynchronize();
@@ -236,9 +221,7 @@ class RandomSeed : public OpBase {
   using OpBase::OpBase;
 
  public:
-  int Run(mpc_t& seed) {
-    MPCOP_RETURN(funcRandomSeed(seed));
-  }
+  int Run(mpc_t& seed) { MPCOP_RETURN(funcRandomSeed(seed)); }
 
  private:
   int funcRandomSeed(mpc_t& seed) {
@@ -260,12 +243,8 @@ class PRZS : public OpBase {
   int Run(int party0, int party1, vector<double>& shares) {
     MPCOP_RETURN(funPRZS(party0, party1, shares));
   }
-  int Run(int party0, int party1, mpc_t& shares) {
-    MPCOP_RETURN(funPRZS(party0, party1, shares));
-  }
-  int Run(int party0, int party1, double& shares) {
-    MPCOP_RETURN(funPRZS(party0, party1, shares));
-  }
+  int Run(int party0, int party1, mpc_t& shares) { MPCOP_RETURN(funPRZS(party0, party1, shares)); }
+  int Run(int party0, int party1, double& shares) { MPCOP_RETURN(funPRZS(party0, party1, shares)); }
 
  private:
   int funPRZS(int party0, int party1, vector<mpc_t>& shares);
@@ -304,12 +283,8 @@ class PrivateInput : public OpBase {
   int Run(int party, const vector<double>& v, vector<double>& shares) {
     MPCOP_RETURN(funPrivateInput(party, v, shares));
   }
-  int Run(int party, double v, mpc_t& shares) {
-    MPCOP_RETURN(funPrivateInput(party, v, shares));
-  }
-  int Run(int party, double v, double& shares) {
-    MPCOP_RETURN(funPrivateInput(party, v, shares));
-  }
+  int Run(int party, double v, mpc_t& shares) { MPCOP_RETURN(funPrivateInput(party, v, shares)); }
+  int Run(int party, double v, double& shares) { MPCOP_RETURN(funPrivateInput(party, v, shares)); }
 
  private:
   int funPrivateInput(int party, const vector<double>& v, vector<mpc_t>& shares);
@@ -332,6 +307,27 @@ class PrivateInput : public OpBase {
     shares = MpcTypeToFloat(ss);
     return 0;
   }
+};
+
+/**
+ * broadcast public values to peers
+ * now, only supports P0 or P1
+ * now, only supports double as input(s)
+ */
+class Broadcast : public OpBase {
+  using OpBase::OpBase;
+
+ public:
+  int Run(int party, const string& msg, string& result) {
+    MPCOP_RETURN(funcBroadcast(party, msg, result));
+  }
+  int Run(int party, const char* msg, char* result, size_t size) {
+    MPCOP_RETURN(funcBroadcast(party, msg, result, size));
+  }
+
+ private:
+  int funcBroadcast(int party, const string& msg, string& result);
+  int funcBroadcast(int party, const char* msg, char* result, size_t size);
 };
 
 /*
@@ -395,12 +391,12 @@ class MatMul : public OpBase {
     size_t transpose_a,
     size_t transpose_b) {
     vector<mpc_t> a, b, c;
-    rosetta::convert::from_hex_str(as, a);
-    rosetta::convert::from_hex_str(bs, b);
+    rosetta::convert::from_binary_str(as, a);
+    rosetta::convert::from_binary_str(bs, b);
 
     MPCOP_RETURN(funcMatMulMPC(a, b, c, rows, common_dim, columns, transpose_a, transpose_b));
 
-    rosetta::convert::to_hex_str<mpc_t>(c, cs);
+    rosetta::convert::to_binary_str<mpc_t>(c, cs);
     return 0;
   }
 };
@@ -510,11 +506,11 @@ class Relu : public OpBase {
 
   int funcRELUMPC(const vector<string>& as, vector<string>& bs, size_t size) {
     vector<mpc_t> a, b;
-    rosetta::convert::from_hex_str(as, a);
+    rosetta::convert::from_binary_str(as, a);
 
     MPCOP_RETURN(funcRELUMPC(a, b, size));
 
-    rosetta::convert::to_hex_str<mpc_t>(b, bs);
+    rosetta::convert::to_binary_str<mpc_t>(b, bs);
     return 0;
   }
 };
@@ -526,9 +522,7 @@ class ReluPrime : public OpBase {
   int Run3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
     MPCOP_RETURN(funcRELUPrime3PC(a, b, size));
   }
-  int Run(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
-    return Run3PC(a, b, size);
-  }
+  int Run(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) { return Run3PC(a, b, size); }
 
  private:
   int funcRELUPrime3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size);
@@ -541,7 +535,7 @@ class Min : public OpBase {
   int Run(const vector<mpc_t>& a, vector<mpc_t>& minv, size_t rows, size_t columns) {
     vector<mpc_t> minIndex(rows);
     minv.resize(rows);
-    MPCOP_RETURN(funcMinMPC(a, minv, minIndex, rows, columns));
+    MPCOP_RETURN(funcMinMPC(a, minv, minIndex, rows, columns, false));
   }
 
  private:
@@ -550,7 +544,8 @@ class Min : public OpBase {
     vector<mpc_t>& minv,
     vector<mpc_t>& minIndex,
     size_t rows,
-    size_t columns);
+    size_t columns,
+    bool need_index = true);
 };
 
 class MinIndex : public OpBase {
@@ -571,8 +566,11 @@ class Max : public OpBase {
  public:
   int Run(const vector<mpc_t>& a, vector<mpc_t>& maxv, size_t rows, size_t cols) {
     vector<mpc_t> maxIndex;
-    return Run(a, maxv, maxIndex, rows, cols);
+    maxv.resize(rows);
+    // no need to get maxIndex, 'maxIndex' is just a adapted placeholder.
+    MPCOP_RETURN(funcMaxMPC(a, maxv, maxIndex, rows, cols, false));
   }
+
 
   int Run(
     const vector<mpc_t>& a,
@@ -591,7 +589,8 @@ class Max : public OpBase {
     vector<mpc_t>& maxv,
     vector<mpc_t>& maxIndex,
     size_t rows,
-    size_t cols);
+    size_t cols,
+    bool need_index = true);
 };
 class MaxIndex : public OpBase {
   using OpBase::OpBase;
@@ -686,7 +685,7 @@ class Reconstruct2PC : public OpBase {
   }
 
   int RunV2(const vector<mpc_t>& a, size_t size, vector<mpc_t>& out, int recv_party = PARTY_A) {
-    MPCOP_RETURN(reconstrct_general(a, size, out, recv_party));
+    MPCOP_RETURN(reconstruct_general(a, size, out, recv_party));
   }
 
  private:
@@ -698,12 +697,16 @@ class Reconstruct2PC : public OpBase {
   }
   int funcReconstruct2PC(const vector<mpc_t>& a, size_t size, string str);
   int funcReconstruct2PC(const vector<mpc_t>& a, size_t size, vector<mpc_t>& out, int recv_party);
-  int funcReconstruct2PC_ex(const vector<mpc_t>& a, size_t size, vector<mpc_t>& out, int recv_party);
+  int funcReconstruct2PC_ex(
+    const vector<mpc_t>& a,
+    size_t size,
+    vector<mpc_t>& out,
+    int recv_party);
 
   /**
    * @brief: the shared_v will be 'revealed' to plaintext_v held by rev_party 
    **/
-  int reconstrct_general(
+  int reconstruct_general(
     const vector<mpc_t>& shared_v,
     size_t size,
     vector<mpc_t>& plaintext_v,
@@ -741,24 +744,13 @@ class Polynomial : public OpBase {
 		[in] common_k, power value.
 		[out] shared_Y, the resulting value.
 		[in] curr_cache, the auxiliary cache,
-			 containing some computed k --> Y, to acclerate.
+			 containing some computed k --> Y, to accelerate.
   */
-  void mpc_pow_const(
-    const mpc_t& shared_X,
-    mpc_t common_k,
-    mpc_t& shared_Y,
-    unordered_map<mpc_t, mpc_t>* curr_cache = NULL);
+  void mpc_pow_const(const mpc_t& shared_X, mpc_t common_k, mpc_t& shared_Y);
 
-  void mpc_pow_const(
-    const vector<mpc_t>& shared_X,
-		mpc_t common_k,
-		vector<mpc_t>& shared_Y,
-		unordered_map<mpc_t, vector<mpc_t>>* curr_cache = NULL);
+  void mpc_pow_const(const vector<mpc_t>& shared_X, mpc_t common_k, vector<mpc_t>& shared_Y);
 
-  void local_const_mul(
-    const vector<mpc_t>& shared_X,
-    mpc_t common_V,
-    vector<mpc_t>& shared_Y);
+  void local_const_mul(const vector<mpc_t>& shared_X, mpc_t common_V, vector<mpc_t>& shared_Y);
 
   /*
 	  @brief: secret-shared version for computing a univariate polynomial:
@@ -778,10 +770,11 @@ class Polynomial : public OpBase {
     const vector<mpc_t>& common_coff_list,
     mpc_t& shared_Y);
 
-  void mpc_uni_polynomial(const vector<mpc_t>& shared_X, 
-		const vector<mpc_t>& common_power_list,
-		const vector<mpc_t>& common_coff_list,
-		vector<mpc_t>& shared_Y);
+  void mpc_uni_polynomial(
+    const vector<mpc_t>& shared_X,
+    const vector<mpc_t>& common_power_list,
+    const vector<mpc_t>& common_coff_list,
+    vector<mpc_t>& shared_Y);
 };
 
 class PrivateCompare : public OpBase {
@@ -812,9 +805,7 @@ class ShareConvert : public OpBase {
   using OpBase::OpBase;
 
  public:
-  int Run(vector<mpc_t>& a, size_t size) {
-    MPCOP_RETURN(funcShareConvertMPC(a, size));
-  }
+  int Run(vector<mpc_t>& a, size_t size) { MPCOP_RETURN(funcShareConvertMPC(a, size)); }
 
  private:
   int funcShareConvertMPC(vector<mpc_t>& a, size_t size);
@@ -827,9 +818,7 @@ class ComputeMSB : public OpBase {
   int Run3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
     MPCOP_RETURN(funcComputeMSB3PC(a, b, size));
   }
-  int Run(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
-    return Run3PC(a, b, size);
-  }
+  int Run(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) { return Run3PC(a, b, size); }
 
  private:
   // only 3PC, not cope 4PC
@@ -869,11 +858,23 @@ class Sigmoid : public OpBase {
   int RunPieceWise(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
     MPCOP_RETURN(funcSigmoidPieceWiseMPC(a, b, size));
   }
+  int Run3PieceWise(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
+    MPCOP_RETURN(funcSigmoid3PieceWiseMPC(a, b, size));
+  }
   int RunAliPieceWise(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
     MPCOP_RETURN(funcSigmoidAliPieceWiseMPC(a, b, size));
   }
+  int RunChebyshevPoly(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
+    MPCOP_RETURN(funcSigmoidChebyshevPolyMPC(a, b, size));
+  }
+
   int Run(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
-#if USE_PIECE_WISE_SIGMOID
+#define USE_SIGMOID_VERSION 2
+#if USE_SIGMOID_VERSION == 0
+    return RunChebyshevPoly(a, b, size);
+#elif USE_SIGMOID_VERSION == 1
+    return Run3PieceWise(a, b, size); // 3-segments
+#elif USE_SIGMOID_VERSION == 2 // 6-segments
     return RunPieceWise(a, b, size);
 #else
     return RunG3(a, b, size);
@@ -888,7 +889,9 @@ class Sigmoid : public OpBase {
     bool use_fastPow3 = true);
   int funcSigmoidG3PrimeMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size);
   int funcSigmoidPieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size);
+  int funcSigmoid3PieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size);
   int funcSigmoidAliPieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size);
+  int funcSigmoidChebyshevPolyMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size);
 
  private:
   int funcPrivateCompareMPCEx(
@@ -919,9 +922,7 @@ class BinaryOp : public OpBase {
 
  public:
   virtual ~BinaryOp() = default;
-  int Run(const mpc_t& a, const mpc_t& b, mpc_t& c) {
-    MPCOP_RETURN(funcBinaryOp(a, b, c));
-  }
+  int Run(const mpc_t& a, const mpc_t& b, mpc_t& c) { MPCOP_RETURN(funcBinaryOp(a, b, c)); }
   int Run(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
     c.resize(size);
     MPCOP_RETURN(funcBinaryOp(a, b, c, size));
@@ -1096,6 +1097,14 @@ class DotProduct : public BinaryOp {
     return funcBinaryOp(b, a, c, size);
   }
 
+ public:
+  // this is actually the AND functionality for bit-share.
+  int BitMul(
+    const vector<small_mpc_t>& a,
+    const vector<small_mpc_t>& b,
+    vector<small_mpc_t>& c,
+    size_t size);
+
  private:
   int funcDotProduct(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size);
 };
@@ -1132,18 +1141,11 @@ class DivBase : public BinaryOp {
     vector<mpc_t>& c,
     size_t size) {
     c.resize(size);
-    // locally compute c = fa * (1/b)
-    {
-      vector<mpc_t> a(b.size(), FloatToMpcType(0.5));
-      funcBinaryOp(a, b, c, size);
-    }
     vector<mpc_t> a(fa.size(), 0);
-    convert_double_to_mpctype(fa, a);
-    for (size_t i = 0; i < size; i++) {
-      c[i] = a[i] * c[i];
+    if (partyNum == PARTY_A) {
+      convert_double_to_mpctype(fa, a);
     }
-    if (PRIMARY)
-      funcTruncate2PC(c, FLOAT_PRECISION_M, size, PARTY_A, PARTY_B);
+    funcBinaryOp(a, b, c, size);
     return 0;
   }
   //[kelvin] NOTE: string represents const
@@ -1153,22 +1155,13 @@ class DivBase : public BinaryOp {
     vector<mpc_t>& c,
     size_t size) {
     c.resize(size);
-    // locally compute c = sa * (1/b)
-    {
-      vector<mpc_t> a(b.size(), FloatToMpcType(0.5));
-      funcBinaryOp(a, b, c, size);
-    }
-
     vector<double> da(sa.size());
     vector<mpc_t> a(sa.size(), 0);
     rosetta::convert::from_double_str(sa, da);
-    convert_double_to_mpctype(da, a);
-
-    for (size_t i = 0; i < size; i++) {
-      c[i] = a[i] * c[i];
+    if (partyNum == PARTY_A) {
+      convert_double_to_mpctype(da, a);
     }
-    if (PRIMARY)
-      funcTruncate2PC(c, FLOAT_PRECISION_M, size, PARTY_A, PARTY_B);
+    funcBinaryOp(a, b, c, size);
     return 0;
   }
 
@@ -1180,38 +1173,26 @@ class DivBase : public BinaryOp {
     // std::cout << "debug stub DIV SC" << endl;
     // locally compute c = a * (1/fb)
     vector<double> tb(fb.size(), 0);
-    vector<int> tmp_shift(size, 0);
+    vector<size_t> power_list(size, FLOAT_PRECISION_M);
     for (size_t i = 0; i < size; i++) {
       tb[i] = 1.0 / fb[i];
       // This is for dealing with big constant denominator, part I:
-        //  scale it up by left-shifting
-        double abs_v = abs(fb[i]);
-        if(abs_v > 1) {
-            tmp_shift[i] = ceil(log2(abs_v));
-            tb[i] = tb[i] * (1 << tmp_shift[i]);
-        }
-        // std::cout << "SNN::Div " << fb[i] << " -> " << tb[i] << 
-        //        " [" << tmp_shift[i] << "]" << endl;       
-
+      //  scale it up by left-shifting
+      double abs_v = abs(fb[i]);
+      if (abs_v > 1) {
+        power_list[i] = ceil(log2(abs_v));
+        tb[i] = tb[i] * (1 << power_list[i]);
+        power_list[i] = power_list[i] + FLOAT_PRECISION_M;
+      }
     }
     vector<mpc_t> b(tb.size(), 0);
     convert_double_to_mpctype(tb, b);
-    c.resize(a.size());
-    for (size_t i = 0; i < size; i++) {
+    c.resize(size);
+    for (size_t i = 0; i < size; ++i) {
       c[i] = a[i] * b[i];
     }
-
-    if (PRIMARY)
-      funcTruncate2PC(c, FLOAT_PRECISION_M, size, PARTY_A, PARTY_B);
-    // TODO:vectorization
-    // This is for dealing with big constant denominator, part II:
-    //  trunc it back in the final result
-    vector<mpc_t> single_share(1);
-    for(auto i = 0; i < size; ++i) {
-        single_share[0] = c[i];
-        if (PRIMARY)
-          funcTruncate2PC(single_share, tmp_shift[i], 1, PARTY_A, PARTY_B);
-        c[i] = single_share[0];
+    if (PRIMARY) {
+      funcTruncate2PC_many(c, power_list, size, PARTY_A, PARTY_B);
     }
     return 0;
   }
@@ -1226,7 +1207,6 @@ class DivBase : public BinaryOp {
     // b to 1/b, div replace with mul
     vector<double> db(sb.size());
     rosetta::convert::from_double_str(sb, db);
-    vector<int> tmp_shift(size, 0);
     return funcBinaryOp(a, db, c, size);
   }
   //   for (size_t i = 0; i < size; i++) {
@@ -1320,23 +1300,21 @@ class Pow : public OpBase {
 
     // Added in V0.2.1 to support vectorization
     bool is_common_k = true;
-    for(int i = 1; i < size; ++i) {
-      if(n[i] != n[i-1]) {
+    for (int i = 1; i < size; ++i) {
+      if (n[i] != n[i - 1]) {
         is_common_k = false;
         break;
       }
     }
 
-    if(is_common_k) {
+    if (is_common_k) {
       // cout << "DEBUG; common k" << endl;
-      unordered_map<mpc_t, vector<mpc_t>> curr_cache;
-      poly->mpc_pow_const(x, n[0], y, &curr_cache);
+      poly->mpc_pow_const(x, n[0], y);
       return 0;
     }
 
     for (auto i = 0; i < size; i++) {
-      unordered_map<mpc_t, mpc_t> curr_cache;
-      poly->mpc_pow_const(x[i], n[i], y[i], &curr_cache);
+      poly->mpc_pow_const(x[i], n[i], y[i]);
     }
     return 0;
   }
@@ -1369,7 +1347,7 @@ class Log : public OpBase {
   }
 
   /*
-  	@brief: General high precision approximation(gurantee four decimal part)
+  	@brief: General high precision approximation(guarantee four decimal part)
   			for LOG in the domain
   */
   int mpc_log_hd(const vector<mpc_t>& shared_X, vector<mpc_t>& shared_Y, size_t vec_size);
@@ -1413,16 +1391,16 @@ class Log : public OpBase {
   }
   /*
     obsolete!
-	  @brief: secret-sahred version of logarithm with one-segment polynomial
+	  @brief: secret-shared version of logarithm with one-segment polynomial
 	  with domain x \in [0.3, 1.8)
   */
   void mpc_log_v1(const mpc_t& shared_X, mpc_t& shared_Y);
 
   /*
-  	@brief: secret-sahred version of logarithm with three-segment polynomial
+  	@brief: secret-shared version of logarithm with three-segment polynomial
   */
   void mpc_log_v2(const mpc_t& shared_X, mpc_t& shared_Y);
-  
+
   void mpc_log_v2(const vector<mpc_t>& shared_X, vector<mpc_t>& shared_Y);
 };
 
@@ -1434,9 +1412,7 @@ class CompareOp : public OpBase {
     c.resize(a.size());
     MPCOP_RETURN(RunCompareOp(a, b, c, size));
   }
-  int Run(const mpc_t& a, const mpc_t& b, mpc_t& c) {
-    MPCOP_RETURN(RunCompareOp(a, b, c));
-  }
+  int Run(const mpc_t& a, const mpc_t& b, mpc_t& c) { MPCOP_RETURN(RunCompareOp(a, b, c)); }
 
   // const OP, in P0, c = a (op) b; in P1, c = 0 (op) b
   int Run(const vector<double>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
@@ -1534,11 +1510,20 @@ class Equal : public CompareOp {
     const vector<mpc_t>& b,
     vector<mpc_t>& c,
     size_t size) {
-    return funcEqual(a, b, c, size);
+    return funcFastEqual(a, b, c, size);
   }
 
- private:
+  // temp make these as public funcs
+ public:
+  // retired! NOT use this any more.
   int funcEqual(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size);
+  // Optimized version, default one.
+  int funcFastEqual(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size);
+
+  // for each a_i in a, get a_i[0] AND a_i[1] AND a_i[2] ... AND a_i[n] as c[i]
+  int FanInBitAdd(const vector<vector<small_mpc_t>>& a, vector<small_mpc_t>& c, size_t size);
+  // convert binary bit-share to arithematic share of the same plain value.
+  int B2A(const vector<small_mpc_t>& bit_shares, vector<mpc_t>& arith_shares, size_t size);
 };
 
 class NotEqual : public CompareOp {
@@ -1550,11 +1535,18 @@ class NotEqual : public CompareOp {
     vector<mpc_t>& c,
     size_t size) {
     c.resize(size);
-    return funcNotEqual(a, b, c, size);
+    return funcFastNotEqual(a, b, c, size);
   }
 
  private:
+  // retired! NOT use this any more.
   int funcNotEqual(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size);
+  // Optimized version, default one.
+  int funcFastNotEqual(
+    const vector<mpc_t>& a,
+    const vector<mpc_t>& b,
+    vector<mpc_t>& c,
+    size_t size);
 };
 
 class Less : public CompareOp {
@@ -1709,12 +1701,12 @@ class XorBit : public OpBase {
 		[in] common_vec_size[plaintext]: the size of the input vectors.
 		[in] common_all_less[plaintext]:  
 				bool value to indicate whether all numerators are less than
-				its corresponding denomimators.
-				This is for efficency in this special case.
+				its corresponding denominators.
+				This is for efficiency in this special case.
 		[out] shared_quotient_vec: the resulting vector of quotients
 	@note:
 		This function supports both x>=y and x<y; 
-		and both positiveness negetiveness.
+		and both positiveness negativeness.
 		And if x is not divisable by y,
 		the precision of the fractional part is FLOAT_PRECISION_M.
   @author: SJJ
@@ -1798,7 +1790,7 @@ class FloorDivision : public OpBase {
     vector<mpc_t>& c,
     size_t size,
     bool all_positive = false) {
-    // not like the ture division, the local speedup may cause 0. So we use ordinary convention here.
+    // not like the true division, the local speedup may cause 0. So we use ordinary convention here.
     vector<double> da(sa.size());
     rosetta::convert::from_double_str(sa, da);
     // split it even in two parties so the sum (real value) is still the sa value.
@@ -1818,11 +1810,21 @@ class FloorDivision : public OpBase {
     vector<mpc_t>& c,
     size_t size,
     bool all_positive = false) {
-    // locally compute c = int(a * double(1/fb) )
     vector<double> db(sb.size());
     rosetta::convert::from_double_str(sb, db);
+    vector<size_t> power_list(size, FLOAT_PRECISION_M);
     for (size_t i = 0; i < size; ++i) {
+      // This is for dealing with big constant denominator, part I:
+      //  scale it up by left-shifting
+      double abs_v = abs(db[i]);
       db[i] = 1.0 / db[i];
+      
+      if(abs_v > 1) {
+          power_list[i] = ceil(log2(abs_v));
+          db[i] = db[i] * (1 << power_list[i]);
+          power_list[i] = power_list[i] + FLOAT_PRECISION_M;
+          // cout << "power_list: " << sb[i] << "->:" << db[i] << ", " << power_list[i] << endl;
+      }
     }
     vector<mpc_t> b(sb.size(), 0);
     convert_double_to_mpctype(db, b);
@@ -1832,7 +1834,7 @@ class FloorDivision : public OpBase {
       c[i] = a[i] * b[i];
     }
     if (PRIMARY) {
-      funcTruncate2PC(c, FLOAT_PRECISION_M, size, PARTY_A, PARTY_B);
+      funcTruncate2PC_many(c, power_list, size, PARTY_A, PARTY_B);
     }
     // set the float part as 0.
     if (PRIMARY) {
@@ -1871,6 +1873,123 @@ class FracDivision : public OpBase {
     vector<mpc_t>& shared_quotient_vec,
     size_t common_vec_size,
     bool all_positive = false);
+};
+
+/**
+ * Logical Operations, all the inputs/outputs have scaled, 
+ * the real value of all the inputs must be 1/0, or the result is unexpected!
+ * 
+ * @note we can derive from BinaryOp, but maybe some specials for logical ops in the future.
+ */
+class LogicalOp : public OpBase {
+  using OpBase::OpBase;
+
+ public:
+  virtual ~LogicalOp() = default;
+  int Run(const vector<mpc_t> a, const vector<mpc_t> b, vector<mpc_t>& c, size_t size) {
+    MPCOP_RETURN(funcLogicalOp(a, b, c, size));
+  }
+  int Run(const vector<mpc_t> a, const vector<string> b, vector<mpc_t>& c, size_t size) {
+    MPCOP_RETURN(funcLogicalOp(a, b, c, size));
+  }
+  int Run(const vector<string> a, const vector<mpc_t> b, vector<mpc_t>& c, size_t size) {
+    MPCOP_RETURN(funcLogicalOp(a, b, c, size));
+  }
+
+  int Run(const vector<vector<mpc_t>> shared_x, vector<mpc_t>& shared_result) {
+    MPCOP_RETURN(funcLogicalOp(shared_x, shared_result));
+  }
+
+ protected:
+  /**
+   * AND (x and y) = x*y
+   * OR  (x or y)  = x + y - x*y
+   * XOR (x xor y) = x + y - 2*x*y
+   * NOT (not x)   = 1 - x
+   * Z[i] = X[i] (OP) Y[i]
+   */
+  virtual int funcLogicalOp(
+    const vector<mpc_t> X,
+    const vector<mpc_t> Y,
+    vector<mpc_t>& Z,
+    size_t size) = 0;
+  virtual int funcLogicalOp(
+    const vector<mpc_t> X,
+    const vector<string> sY,
+    vector<mpc_t>& Z,
+    size_t size) {
+    Z.resize(size);
+    vector<double> dY(size, 0);
+    vector<mpc_t> Y(size, 0);
+    rosetta::convert::from_double_str(sY, dY);
+    convert_double_to_mpctype(dY, Y);
+
+    ///////////////////////////////////
+    for (size_t i = 0; i < size; i++) {
+      Z[i] = X[i] * Y[i];
+    }
+    if (PRIMARY)
+      funcTruncate2PC(Z, FLOAT_PRECISION_M, size, PARTY_A, PARTY_B);
+    ///////////////////////////////////
+    return 0;
+  }
+
+  virtual int funcLogicalOp(
+    const vector<string> X,
+    const vector<mpc_t> Y,
+    vector<mpc_t>& Z,
+    size_t size) {
+    return funcLogicalOp(Y, X, Z, size);
+  }
+  /**
+   * K-*, recursion version
+   * 
+   * XX is a 2-d vector
+   * if XX.size() == 0; return 0
+   * if XX.size() == 1; return XX[0]
+   * if XX.size() >= 1; return XX[0] (OP) XX[1] (OP)... XX[i]
+   */
+  int funcLogicalOp(const vector<vector<mpc_t>> XX, vector<mpc_t>& Z) {
+    return funcLogicalOp_(XX, Z);
+  };
+  int funcLogicalOp_(const vector<vector<mpc_t>> XX, vector<mpc_t>& Z);
+};
+
+class LogicalAND : public LogicalOp {
+  using LogicalOp::LogicalOp;
+
+ private:
+  int funcLogicalOp(const vector<mpc_t> X, const vector<mpc_t> Y, vector<mpc_t>& Z, size_t size);
+  int funcLogicalOp(const vector<mpc_t> X, const vector<string> sY, vector<mpc_t>& Z, size_t size);
+};
+
+class LogicalOR : public LogicalOp {
+  using LogicalOp::LogicalOp;
+
+ private:
+  int funcLogicalOp(const vector<mpc_t> X, const vector<mpc_t> Y, vector<mpc_t>& Z, size_t size);
+  int funcLogicalOp(const vector<mpc_t> X, const vector<string> sY, vector<mpc_t>& Z, size_t size);
+};
+
+class LogicalXOR : public LogicalOp {
+  using LogicalOp::LogicalOp;
+
+ private:
+  int funcLogicalOp(const vector<mpc_t> X, const vector<mpc_t> Y, vector<mpc_t>& Z, size_t size);
+  int funcLogicalOp(const vector<mpc_t> X, const vector<string> sY, vector<mpc_t>& Z, size_t size);
+};
+
+class LogicalNOT : public OpBase {
+  using OpBase::OpBase;
+
+ public:
+  int Run(const vector<mpc_t> X, vector<mpc_t>& Z, size_t size) {
+    Z.resize(size);
+    MPCOP_RETURN(funcLogicalOp(X, Z, size));
+  }
+
+ private:
+  int funcLogicalOp(const vector<mpc_t> X, vector<mpc_t>& Z, size_t size);
 };
 
 } // namespace snn

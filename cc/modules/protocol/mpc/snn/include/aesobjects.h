@@ -20,6 +20,7 @@
 #include "cc/modules/protocol/mpc/comm/include/mpc_helper.h"
 #include "cc/modules/protocol/mpc/snn/src/internal/AESObject.h"
 #include "cc/modules/protocol/mpc/snn/include/mpc_tools.h"
+#include <set>
 
 extern int partyNum;
 // it seems that this is not used in Helix?
@@ -49,11 +50,16 @@ class AESKeyStrings {
  * so, each different msg-id will use an unique aesobjects\n
  */
 class AESObjects {
+  static std::set<msg_id_t> msig_objs_;
   static std::mutex msgid_aesobjs_mtx_;
   static std::map<msg_id_t, std::shared_ptr<AESObjects>> msgid_aesobjs_;
 
  public:
   static std::shared_ptr<AESObjects> Get(const msg_id_t& msg_id) {
+    if (msig_objs_.count(msg_id) > 0) {
+      return msgid_aesobjs_[msg_id];
+    }
+
     std::unique_lock<std::mutex> lck(msgid_aesobjs_mtx_);
     auto iter = msgid_aesobjs_.find(msg_id);
     if (iter != msgid_aesobjs_.end()) {
@@ -63,6 +69,7 @@ class AESObjects {
     auto aesobjs = std::make_shared<AESObjects>();
     aesobjs->init_aes(partyNum, msg_id);
     msgid_aesobjs_[msg_id] = aesobjs;
+    msig_objs_.insert(msg_id);
     return msgid_aesobjs_[msg_id];
   }
 

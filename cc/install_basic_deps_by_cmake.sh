@@ -15,9 +15,9 @@ echo $thirddir
 #
 # all necessary dependencies
 #
-sudo apt install -y libssl-dev libexpat1-dev libgmp-dev libcurl4-openssl-dev uuid-dev
+sudo apt install -y libssl-dev libexpat1-dev libgmp-dev libcurl4-openssl-dev
 
 # python dependencies
-pip3 install pandas --user
+# pip3 install pandas --user
 
 

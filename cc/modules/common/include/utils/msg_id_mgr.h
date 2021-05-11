@@ -16,6 +16,7 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #pragma once
+
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -33,17 +34,14 @@ using std::unordered_map;
 
 class MsgIdMgr {
  private:
-  MsgIdMgr() : _MaxId(0){};
+  MsgIdMgr(){};
   MsgIdMgr(const MsgIdMgr&) = delete;
   MsgIdMgr(MsgIdMgr&&) = delete;
   MsgIdMgr& operator=(const MsgIdMgr&) = delete;
   MsgIdMgr& operator=(MsgIdMgr&&) = delete;
 
  public:
-  static MsgIdMgr* Instance() {
-    static MsgIdMgr _MsgIdMgrInst;
-    return &_MsgIdMgrInst;
-  }
+  static MsgIdMgr* Instance();
 
  public:
   /**
@@ -55,36 +53,7 @@ class MsgIdMgr {
    * @returns:
    * 	True if success, otherwise errcode.
    */
-  bool UpdateMsgIdInfo(const string& msg_infos) {
-    if (msg_infos.empty())
-      return false;
-
-    bool ret = true;
-    size_t start_pos = 0;
-    size_t len = msg_infos.find_first_of(_delim);
-    string unit_info;
-    while (len != string::npos) {
-      unit_info = msg_infos.substr(start_pos, (len - start_pos));
-      size_t pos = unit_info.find_first_of(_sub_delim);
-      if (pos != string::npos) {
-        string op_name = unit_info.substr(0, pos);
-        string uid = unit_info.substr(pos + 1);
-        unsigned nid = strtoul(uid.c_str(), nullptr, 10);
-        if (nid > _MaxId)
-          _MaxId = nid;
-        _msg_id_info[op_name] = MsgId(uid);
-      } else {
-        std::cout << "message id format incorret!(" << unit_info << ")" << std::endl;
-        ret = false;
-        break;
-      }
-
-      start_pos = len + 1;
-      len = msg_infos.find_first_of(_delim, start_pos);
-    }
-
-    return ret;
-  }
+  bool UpdateMsgIdInfo(const string& msg_infos);
 
   /**
    * @desc: Get the message id from the operation name
@@ -93,10 +62,7 @@ class MsgIdMgr {
    * @returns:
    * 	messsage id info
    */
-  MsgId& GetMsgIdFromOpName(const string& OpName) {
-    assert(!OpName.empty());
-    return _msg_id_info[OpName];
-  }
+  msg_id_t& GetMsgIdFromOpName(const string& OpName);
 
   /**
    * @desc: Get the unique message id(for rand_seed ...)
@@ -105,35 +71,21 @@ class MsgIdMgr {
    * @returns:
    * 	unique messsage id info
    */
-  MsgId& GetUniqueMsgId(const string& unique_name) {
-    auto iter = _msg_id_info.find(unique_name);
-    if (iter != _msg_id_info.end())
-      return _msg_id_info[unique_name];
-    else {
-      _MaxId++;
-      if (_MaxId > std::numeric_limits<unsigned short>::max()) {
-        std::cerr << "error:uid exceeds maximum value "
-                  << std::numeric_limits<unsigned short>::max() << std::endl;
-        throw;
-      }
-      _msg_id_info[unique_name] = MsgId(_MaxId);
-      return _msg_id_info[unique_name];
-    }
-  }
+  msg_id_t& GetUniqueMsgId(const string& unique_name);
 
   /**
    * @desc: Get current max message id numerical value
    * @param: None
    * @returns: max messsage id value
    */
-  unsigned short GetMaxMsgIdNum() { return _MaxId; }
+  id_type GetMaxMsgIdNum();
 
  private:
   // message id maping to message id info
-  unordered_map<string, MsgId> _msg_id_info;
+  unordered_map<string, msg_id_t> _msg_id_info;
 
   // default graph max id value
-  std::atomic<unsigned int> _MaxId;
+  std::atomic<id_type> _MaxId{0};
 
   // delimiter
   const char _delim = '\n';

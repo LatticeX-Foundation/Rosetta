@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import latticex.rosetta as rtt  # difference from tensorflow
 import math
 import os
@@ -24,8 +25,8 @@ mpc_player_id = rtt.py_protocol_handler.get_party_id()
 # ######################################## difference from tensorflow
 file_x = '../dsets/P' + str(mpc_player_id) + "/reg_train_x.csv"
 file_y = '../dsets/P' + str(mpc_player_id) + "/reg_train_y.csv"
-real_X, real_Y = rtt.SecureDataSet(
-    label_owner=1).load_XY(file_x, file_y, header=None)
+real_X, real_Y = rtt.PrivateDataset(data_owner=(
+    0, 1), label_owner=1).load_data(file_x, file_y, header=None)
 # ######################################## difference from tensorflow
 DIM_NUM = real_X.shape[1]
 
@@ -101,3 +102,6 @@ with tf.Session() as sess:
     if mpc_player_id == 0:
         print("Y_pred:", Y_pred)
         savecsv("{}-pred-{}.csv".format(csvprefix, "Y"), Y_pred.astype(float))
+
+print(rtt.get_perf_stats(True))
+rtt.deactivate()

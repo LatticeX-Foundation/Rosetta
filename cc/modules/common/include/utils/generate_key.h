@@ -17,56 +17,9 @@
 // ==============================================================================
 #pragma once
 
-#include <libgen.h>
-#include <sys/stat.h>
-
-#include <fstream>
-#include <iostream>
-#include <random>
-#include <sstream>
 #include <string>
+#include <cstdint>
 using namespace std;
 
-#define STORE_AS_BINARY 0
-#define PRF_KEY_BYTES 16
-
-#include "cc/modules/common/include/utils/logger.h"
-static inline string gen_key_str(uint32_t seed = 0) {
-  std::random_device rd;
-  std::mt19937 mt(rd());
-
-  if (seed != 0)
-    mt.seed(seed);
-
-  unsigned char key[PRF_KEY_BYTES] = {0};
-  for (size_t i = 0; i < PRF_KEY_BYTES; i++) {
-    key[i] = mt() & 0xFF;
-  }
-
-  char const hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                              '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
-  std::string s;
-  for (size_t i = 0; i < PRF_KEY_BYTES; i++) {
-    s += hex_chars[(key[i] & 0xF0) >> 4];
-    s += hex_chars[(key[i] & 0x0F) >> 0];
-  }
-
-  return s;
-}
-
-static inline void gen_key_file(const string& filename, uint32_t seed = 0) {
-  mkdir("key", 0777);
-
-  ofstream ofile(filename, ios::out);
-  if (!ofile.is_open()) {
-    log_error << "open [" << filename << "] failed!\n";
-    exit(1);
-  }
-  string s = gen_key_str(seed);
-
-  ofile.write((const char*)s.c_str(), PRF_KEY_BYTES * 2);
-  ofile.close();
-
-  log_debug << "Generate " << filename << " OK.\n\n";
-}
+string gen_key_str(uint32_t seed = 0);
+void gen_key_file(const string& filename, uint32_t seed = 0);

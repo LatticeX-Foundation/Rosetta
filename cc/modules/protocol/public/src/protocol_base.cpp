@@ -16,13 +16,10 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #include "cc/modules/protocol/public/include/protocol_base.h"
-#include "cc/modules/io/include/net_io.h"
 
 #include <stdexcept>
 #include <string>
-#include <vector>
 #include <iostream>
-
 using namespace std;
 
 namespace rosetta {

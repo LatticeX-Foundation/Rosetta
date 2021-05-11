@@ -22,8 +22,11 @@
 #include <sstream>
 #include <iostream>
 #include <atomic>
+#include <string>
+#include <vector>
+#include <iomanip>
 
-#define DO_ELAPSED_STATISTIC 1
+#define DO_ELAPSED_STATISTIC 0
 namespace rosetta {
 /**
  * Usage:
@@ -45,7 +48,7 @@ namespace rosetta {
   static std::atomic<int64_t> __reg_exit_counter{0}; \
   static void __elapsed_atexit_fn() {
 #define DEFINE_AT_EXIT_FUNCTION_BODY(timer) \
-  std::cout << "-> " #timer ": " << __##timer * 1.0 / 1e9 << std::endl;
+  std::cout << "-> " << std::setw(30) << #timer "(s): " << __##timer * 1.0 / 1e9 << std::endl;
 #define DEFINE_AT_EXIT_FUNCTION_END() }
 
 /**
@@ -61,11 +64,11 @@ namespace rosetta {
   rosetta::__##timer += __##timer##_start.ns_elapse()
 
 #else
-#define DEFINE_GLOBAL_TIMER_COUNTER(timer) (void)0;
+#define DEFINE_GLOBAL_TIMER_COUNTER(timer)
 
-#define DEFINE_AT_EXIT_FUNCTION_BEG() (void)0;
-#define DEFINE_AT_EXIT_FUNCTION_BODY(timer) (void)0;
-#define DEFINE_AT_EXIT_FUNCTION_END() (void)0;
+#define DEFINE_AT_EXIT_FUNCTION_BEG()
+#define DEFINE_AT_EXIT_FUNCTION_BODY(timer)
+#define DEFINE_AT_EXIT_FUNCTION_END()
 
 #define ELAPSED_STATISTIC_BEG(timer) (void)0
 #define ELAPSED_STATISTIC_END(timer) (void)0
@@ -78,43 +81,53 @@ namespace rosetta {
 namespace rosetta {
 class PerfStats {
  public:
-  std::string vmpeak = "";
+  SimpleTimer timer; // for s.elapse field
+
+ public:
+  // name,tag,...
+  std::string name = "default";
   struct __stat {
     // io
-    int64_t bytes_sent = 0;
-    int64_t bytes_recv = 0;
-    int64_t msg_sent = 0;
-    int64_t msg_recv = 0;
+    uint64_t bytes_sent = 0;
+    uint64_t bytes_recv = 0;
+    uint64_t msg_sent = 0;
+    uint64_t msg_recv = 0;
     double elapsed_sent = 0;
     double elapsed_recv = 0;
     // time
     double clock_seconds = 0;
     double cpu_seconds = 0;
-    clock_t start = 0;
-    struct timespec req_start, req_end;
-  } p, r, a; // prepare,run,all(p+r)
-  friend __stat operator+(const __stat& l, const __stat& r) {
-    __stat t;
-#define _add(v) t.v = l.v + r.v
-    _add(bytes_sent);
-    _add(bytes_recv);
-    _add(msg_sent);
-    _add(msg_recv);
-    _add(elapsed_sent);
-    _add(elapsed_recv);
+    double elapse = 0;
+    // mem
+    int64_t max_vmrss = 0; // kB
+    // cpu
+    double max_cpuusage = 0; // %CPU
+    double avg_cpuusage = 0; // %CPU
+  } s;
+  struct timespec process_cpu_time; // for s.cpu_seconds field
 
-    _add(clock_seconds);
-    _add(cpu_seconds);
-#undef _add
-    return t;
-  }
-  void reset() {
-    memset(&p, 0, sizeof(__stat));
-    memset(&r, 0, sizeof(__stat));
-    memset(&a, 0, sizeof(__stat));
-    vmpeak = "";
-  }
-  std::string stats(int party);
-  std::string stats2(int party);
+  bool do_memcpu_stats = false;
+  /**
+   * start timer/mem/cpu/...
+   * \param sampling whether to sample statistics for memory, etc.
+   */
+  void start_perf_stats(bool sampling = false);
+  //! \param stop when set to true, statistics will stop
+  __stat get_perf_stats(bool stop = false);
+
+  void reset();
+
+  std::string to_console();
+
+  //! return an object. eg: {...}
+  std::string to_json(bool pretty = false) const;
+
+  //! return an object-array. eg: {{...},{...},...}
+  static std::string to_json(const std::vector<PerfStats>& ps, bool pretty = false);
 };
+
+PerfStats operator+(const PerfStats& l, const PerfStats& r);
+PerfStats operator-(const PerfStats& l, const PerfStats& r);
+PerfStats operator/(const PerfStats& l, int r);
+
 } // namespace rosetta

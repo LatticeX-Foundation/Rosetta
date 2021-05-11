@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import latticex.rosetta as rtt  # difference from tensorflow
 import math
 import os
@@ -23,8 +24,8 @@ mpc_player_id = rtt.py_protocol_handler.get_party_id()
 # ######################################## difference from tensorflow
 file_x = '../dsets/P' + str(mpc_player_id) + "/reg_train_x.csv"
 file_y = '../dsets/P' + str(mpc_player_id) + "/reg_train_y.csv"
-real_X, real_Y = rtt.SecureDataSet(
-    label_owner=1).load_XY(file_x, file_y, header=None)
+real_X, real_Y = rtt.PrivateDataset(data_owner=(
+    0, 1), label_owner=1).load_data(file_x, file_y, header=None)
 # ######################################## difference from tensorflow
 DIM_NUM = real_X.shape[1]
 
@@ -59,6 +60,7 @@ os.makedirs("./log/ckpt"+str(mpc_player_id), exist_ok=True)
 # init
 init = tf.global_variables_initializer()
 print(init)
+reveal_Y = rtt.SecureReveal(pred_Y)
 
 with tf.Session() as sess:
     sess.run(init)
@@ -82,5 +84,11 @@ with tf.Session() as sess:
     saver.save(sess, './log/ckpt'+str(mpc_player_id)+'/model')
 
     # predict
-    Y_pred = sess.run(pred_Y, feed_dict={X: real_X, Y: real_Y})
+    Y_pred = sess.run(pred_Y, feed_dict={X: real_X})
     print("Y_pred:", Y_pred)
+
+    reveal_y = sess.run(reveal_Y, feed_dict={X: real_X})
+    print("reveal_Y:", reveal_y)
+
+print(rtt.get_perf_stats(True))
+rtt.deactivate()

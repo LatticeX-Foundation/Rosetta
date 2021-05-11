@@ -19,6 +19,10 @@
 
 #include "cc/modules/io/include/internal/comm.h"
 
+#include <sstream>
+#include <string>
+#include <atomic>
+
 namespace rosetta {
 namespace io {
 
@@ -26,17 +30,11 @@ struct NetStat_st {
   /**
    * statistics
    */
-  atomic<uint64_t> bytes_sent{0};
-  atomic<uint64_t> bytes_received{0};
-  atomic<uint64_t> message_sent{0};
-  atomic<uint64_t> message_received{0};
-
-  void reset() {
-    bytes_sent.store(0);
-    bytes_received.store(0);
-    message_sent.store(0);
-    message_received.store(0);
-  }
+  std::atomic<uint64_t> bytes_sent{0};
+  std::atomic<uint64_t> bytes_received{0};
+  std::atomic<uint64_t> message_sent{0};
+  std::atomic<uint64_t> message_received{0};
+  void reset();
 };
 
 /**
@@ -45,56 +43,25 @@ struct NetStat_st {
 class NetStat {
  public:
   NetStat() = default;
-  NetStat(const NetStat_st& ns_st) {
-    bytes_sent = ns_st.bytes_sent.load();
-    bytes_received = ns_st.bytes_received.load();
-    message_sent = ns_st.message_sent.load();
-    message_received = ns_st.message_received.load();
-  }
+  NetStat(const NetStat_st& ns_st);
 
-  friend NetStat operator-(const NetStat& ns1, const NetStat& ns2) {
-    NetStat ns;
-    // clang-format off
-    ns.bytes_sent       = ns1.bytes_sent        - ns2.bytes_sent;
-    ns.bytes_received   = ns1.bytes_received    - ns2.bytes_received;
-    ns.message_sent     = ns1.message_sent      - ns2.message_sent;
-    ns.message_received = ns1.message_received  - ns2.message_received;
-    // clang-format on
-    return ns;
-  }
+  friend NetStat operator-(const NetStat& ns1, const NetStat& ns2);
+  friend NetStat operator+(const NetStat& ns1, const NetStat& ns2);
+  friend std::ostream& operator<<(std::ostream& os, const NetStat& ns);
+  std::string fmt_string() const;
+  void print(std::string str = "") const;
 
-  friend NetStat operator+(const NetStat& ns1, const NetStat& ns2) {
-    NetStat ns;
-    // clang-format off
-    ns.bytes_sent       = ns1.bytes_sent        + ns2.bytes_sent;
-    ns.bytes_received   = ns1.bytes_received    + ns2.bytes_received;
-    ns.message_sent     = ns1.message_sent      + ns2.message_sent;
-    ns.message_received = ns1.message_received  + ns2.message_received;
-    // clang-format on
-    return ns;
-  }
-
-  friend ostream& operator<<(ostream& os, const NetStat& ns) {
-    os << ns.fmt_string();
-    return os;
-  }
-
-  string fmt_string() const {
-    stringstream sss;
-    sss << " bytes sent:" << setw(15) << bytes_sent;
-    sss << " bytes recv:" << setw(15) << bytes_received;
-    sss << " msges sent:" << setw(06) << message_sent;
-    sss << " msges recv:" << setw(06) << message_received;
-    return sss.str();
-  }
-
-  void print(string str = "") const { cout << str << fmt_string() << endl; }
+ public:
+  uint64_t bytes_sent() { return bytes_sent_; }
+  uint64_t bytes_received() { return bytes_received_; }
+  uint64_t message_sent() { return message_sent_; }
+  uint64_t message_received() { return message_received_; }
 
  private:
-  uint64_t bytes_sent = 0;
-  uint64_t bytes_received = 0;
-  uint64_t message_sent = 0;
-  uint64_t message_received = 0;
+  uint64_t bytes_sent_ = 0;
+  uint64_t bytes_received_ = 0;
+  uint64_t message_sent_ = 0;
+  uint64_t message_received_ = 0;
 };
 
 } // namespace io

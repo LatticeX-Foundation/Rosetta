@@ -35,6 +35,9 @@ from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 import sys
 import setuptools
+# REFINE UserWarning: Distutils was imported before Setuptools.
+# This usage is discouraged and may exhibit undesirable behaviors or errors.
+from distutils import sysconfig
 
 # must install tensorflow first
 import tensorflow as tf
@@ -136,8 +139,15 @@ class BuildExt(build_ext):
 From here.
 """
 
+build_ext_target = 'latticex/_rosetta'
+build_128_mpc = False
+if 'ROSETTA_MPC_128' in os.environ and os.environ['ROSETTA_MPC_128'] == 'ON':
+    build_ext_target = 'latticex/lib128/_rosetta'
+    build_128_mpc = True
+
+
 DOCLINES = __doc__.split('\n')
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 include_dirs = []
@@ -167,13 +177,18 @@ include_dirs.append(ccdir+"/third_party/spdlog-1.6.1/include")
 # libraries search path
 library_dirs = ['.']
 library_dirs.append(TF_LIBS)
-library_dirs.append('./lib')
-library_dirs.append("./build/lib")
+if build_128_mpc:
+    library_dirs.append("./build128/lib")
+else:
+    library_dirs.append("./build/lib")
 
 # compile flags and definitions
 extra_cflags = []
 extra_cflags += TF_CFLG
 extra_cflags.append('-DSML_USE_UINT64=1')  # mpc
+if build_128_mpc:
+    extra_cflags.append('-DROSETTA_MPC_128=1')  # mpc
+
 extra_cflags.append('-fPIC')  # general
 extra_cflags.append('-Wno-unused-function')  # general
 extra_cflags.append('-Wno-sign-compare')
@@ -184,7 +199,7 @@ extra_cflags.append('-std=c++11')  # temp c++11
 extra_lflags = []
 extra_lflags += TF_LFLG
 
-link_rpath = "$ORIGIN/..:$ORIGIN"
+link_rpath = "$ORIGIN"
 extra_lflags.append('-Wl,-rpath={}'.format(link_rpath))
 
 print('extra_lflags', extra_lflags)
@@ -192,14 +207,15 @@ print('extra_cflags', extra_cflags)
 print('library_dirs', library_dirs)
 print('include_dirs', include_dirs)
 
+
 ext_modules = [
     Extension(
-        'latticex/_rosetta',
+        build_ext_target,
         ['cc/python_export/_rosetta.cc'],
         # cc_files,
         include_dirs=include_dirs,
-        libraries=['tf-dpass', 'mpc-snn', 'mpc-io', 'mpc-comm',
-                   'protocol-base', 'protocol-api'],
+        libraries=['tf-dpass', 'mpc-io', 'protocol-utility',
+                   'common', 'protocol-base', 'protocol-api'],
         library_dirs=library_dirs,
         extra_compile_args=extra_cflags,
         extra_link_args=extra_lflags,
@@ -208,10 +224,27 @@ ext_modules = [
     # others here
 ]
 
-# copy libs to latticex
+# copy 64-bits libs to latticex
 so_libs = glob.glob('build/lib/lib*.so')
 for file_name in so_libs:
     shutil.copy(file_name, "python/latticex/")
+
+# copy 128-bits libs if exists
+if os.path.isdir("build128/lib"):
+    # check target lib128 directory
+    if not os.path.isdir("python/latticex/lib128"):
+        os.mkdir("python/latticex/lib128")
+    # copy 128 bits libs
+    so_lib128s = glob.glob('build128/lib/lib*.so')
+    for file_name in so_lib128s:
+        shutil.copy(file_name, "python/latticex/lib128/")
+
+# disable debug
+if sys.platform == 'linux' or sys.platform == "darwin":  # remove -g flags
+    for k in sysconfig._config_vars.keys():
+        if isinstance(sysconfig._config_vars[k], str):
+            sysconfig._config_vars[k] = sysconfig._config_vars[k].replace(
+                '-g ', ' ')
 
 setup(
     name='latticex-rosetta',
@@ -228,7 +261,7 @@ setup(
     ext_modules=ext_modules,
     # Add in any packaged data.
     include_package_data=True,
-    install_requires=['numpy', 'pandas'],
+    install_requires=['numpy', 'pandas', 'sklearn'],
     setup_requires=['pybind11>=2.4'],
     zip_safe=False,
     # PyPI package information.
@@ -253,8 +286,3 @@ setup(
     license='LGPLv3',
     keywords='privacy-preserving machine learning',
 )
-
-# after setup clean the libs
-so_libs = glob.glob('python/latticex/lib*.so')
-for file_name in so_libs:
-    os.remove(file_name)

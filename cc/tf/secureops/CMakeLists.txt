@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 2.8)
 project(secure-ops)
 
 # settings
@@ -29,23 +29,19 @@ message(STATUS "lib:  ${CMAKE_INSTALL_PREFIX}/lib")
 link_directories(${CMAKE_INSTALL_PREFIX}/lib)
 
 # External packages
-find_package(Threads REQUIRED)
 if(UNIX)
   find_package(LibDL)
   find_package(LibRT)
 endif()
 
 # Link libraries
-list(APPEND LINKLIBS Threads::Threads)
 if(UNIX)
   list(APPEND LINKLIBS ${LIBDL_LIBRARIES})
   list(APPEND LINKLIBS ${LIBRT_LIBRARIES})
   list(APPEND LINKLIBS ${TF_LD_FLAGS})
   list(APPEND LINKLIBS protocol-api)
   list(APPEND LINKLIBS mpc-io)
-  list(APPEND LINKLIBS mpc-snn)
   list(APPEND LINKLIBS protocol-base)
-  list(APPEND LINKLIBS ${TF_LD_FLAGS})
 endif()
 
 message(STATUS "TF_LD_FLAGS :  ${TF_LD_FLAGS}")

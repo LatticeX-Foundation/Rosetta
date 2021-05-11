@@ -1,4 +1,6 @@
+#!/usr/bin/env python3
 import os
+import math
 import csv
 import tensorflow as tf
 import numpy as np
@@ -49,18 +51,33 @@ print(loss)
 train = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
 print(train)
 
-# save
-saver = tf.train.Saver(var_list=None, max_to_keep=5, name='v2')
-os.makedirs("./log/ckpt0", exist_ok=True)
-
 init = tf.global_variables_initializer()
 print(init)
 
-# restore mpc's model and predict
+# save
+saver = tf.train.Saver(var_list=None, max_to_keep=5, name='v2')
+os.makedirs("./log/ckpt", exist_ok=True)
+
 with tf.Session() as sess:
     sess.run(init)
-    if os.path.exists("./log/ckpt0/checkpoint"):
-        saver.restore(sess, './log/ckpt0/model')
+    xW, xb = sess.run([W, b])
+    print("init weight:{} \nbias:{}".format(xW, xb))
+
+    # train
+    BATCHES = math.ceil(len(real_X) / BATCH_SIZE)
+    for e in range(EPOCHES):
+        for i in range(BATCHES):
+            bX = real_X[(i * BATCH_SIZE): (i + 1) * BATCH_SIZE]
+            bY = real_Y[(i * BATCH_SIZE): (i + 1) * BATCH_SIZE]
+            sess.run(train, feed_dict={X: bX, Y: bY})
+
+            j = e * BATCHES + i
+            if j % 50 == 0 or (j == EPOCHES * BATCHES - 1 and j % 50 != 0):
+                xW, xb = sess.run([W, b])
+                print("I,E,B:{:0>4d},{:0>4d},{:0>4d} weight:{} \nbias:{}".format(
+                    j, e, i, xW, xb))
+
+    saver.save(sess, './log/ckpt/model')
 
     # predict
     Y_pred = sess.run(pred_Y, feed_dict={X: real_X, Y: real_Y})

@@ -34,7 +34,7 @@ int MatMul::funcMatMulMPC(
     getVectorfromPrimary<mpc_t>(a_temp, rows * common_dim, "AS-IS", "NATURAL");
     getVectorfromPrimary<mpc_t>(b_temp, common_dim * columns, "AS-IS", "UNNATURAL");
 
-    matrixMultEigen(a_temp, b_temp, c, rows, common_dim, columns, transpose_a, transpose_b);
+    EigenMatMul(a_temp, b_temp, c, rows, common_dim, columns, transpose_a, transpose_b);
 
     if (NON_PRIMARY) {
       populateRandomVector<mpc_t>(temp, size, "COMMON", "NEGATIVE");
@@ -62,16 +62,22 @@ int MatMul::funcMatMulMPC(
 
       populateRandomVector<mpc_t>(A1, size_left, "a_1", "POSITIVE");
       populateRandomVector<mpc_t>(A2, size_left, "a_2", "POSITIVE");
-      populateRandomVector<mpc_t>(B1, size_right, "b_1", "POSITIVE");
-      populateRandomVector<mpc_t>(B2, size_right, "b_2", "POSITIVE");
-      populateRandomVector<mpc_t>(C1, size, "c_1", "POSITIVE");
+      populateRandomVector<mpc_t>(B1, size_right, "a_1", "POSITIVE");
+      populateRandomVector<mpc_t>(B2, size_right, "a_2", "POSITIVE");
+      populateRandomVector<mpc_t>(C1, size, "a_1", "POSITIVE");
 
       addVectors<mpc_t>(A1, A2, A, size_left);//算A
       addVectors<mpc_t>(B1, B2, B, size_right);//算B
 
+<<<<<<< HEAD
       matrixMultEigen(A, B, C, rows, common_dim, columns, transpose_a, transpose_b);//转置
       subtractVectors<mpc_t>(C, C1, C2, size);//算c2
       sendVector<mpc_t>(C2, PARTY_B, size);//把C2发给B
+=======
+      EigenMatMul(A, B, C, rows, common_dim, columns, transpose_a, transpose_b);
+      subtractVectors<mpc_t>(C, C1, C2, size);
+      sendVector<mpc_t>(C2, PARTY_B, size);
+>>>>>>> upstream/master
     }
 
     if (PRIMARY) {
@@ -81,13 +87,13 @@ int MatMul::funcMatMulMPC(
 
       if (partyNum == PARTY_A) {
         populateRandomVector<mpc_t>(A, size_left, "a_1", "POSITIVE");
-        populateRandomVector<mpc_t>(B, size_right, "b_1", "POSITIVE");
-        populateRandomVector<mpc_t>(C, size, "c_1", "POSITIVE");
+        populateRandomVector<mpc_t>(B, size_right, "a_1", "POSITIVE");
+        populateRandomVector<mpc_t>(C, size, "a_1", "POSITIVE");
       }
 
       if (partyNum == PARTY_B) {
         populateRandomVector<mpc_t>(A, size_left, "a_2", "POSITIVE");
-        populateRandomVector<mpc_t>(B, size_right, "b_2", "POSITIVE");
+        populateRandomVector<mpc_t>(B, size_right, "a_2", "POSITIVE");
         receiveVector<mpc_t>(C, PARTY_C, size);
       }
 
@@ -112,14 +118,14 @@ int MatMul::funcMatMulMPC(
       addVectors<mpc_t>(E, temp_E, E, size_left);
       addVectors<mpc_t>(F, temp_F, F, size_right);
 
-      matrixMultEigen(a, F, c, rows, common_dim, columns, transpose_a, transpose_b);
-      matrixMultEigen(E, b, temp_c, rows, common_dim, columns, transpose_a, transpose_b);
+      EigenMatMul(a, F, c, rows, common_dim, columns, transpose_a, transpose_b);
+      EigenMatMul(E, b, temp_c, rows, common_dim, columns, transpose_a, transpose_b);
 
       addVectors<mpc_t>(c, temp_c, c, size);
       addVectors<mpc_t>(c, C, c, size);
 
       if (partyNum == PARTY_A) {
-        matrixMultEigen(E, F, temp_c, rows, common_dim, columns, transpose_a, transpose_b);
+        EigenMatMul(E, F, temp_c, rows, common_dim, columns, transpose_a, transpose_b);
         subtractVectors<mpc_t>(c, temp_c, c, size);
       }
 
@@ -129,6 +135,7 @@ int MatMul::funcMatMulMPC(
   }
   return 0;
 }
+<<<<<<< HEAD
 
 //------------------------------------------------------------------------
 int Rsqrt::funcRsqrt(
@@ -221,4 +228,7 @@ int Rsqrt::funcRsqrt(
 
 //-------------------------------------------------------------------------------
 } // namespace mpc
+=======
+} // namespace snn
+>>>>>>> upstream/master
 } // namespace rosetta

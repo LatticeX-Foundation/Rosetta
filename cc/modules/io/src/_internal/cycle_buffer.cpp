@@ -16,11 +16,46 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #include "cc/modules/io/include/internal/cycle_buffer.h"
+#include "cc/modules/common/include/utils/logger.h"
+
+#include <cstring>
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <assert.h>
+using namespace std;
 
 namespace rosetta {
 namespace io {
 
-int cycle_buffer::peek(char* data, int32_t length) {
+cycle_buffer::~cycle_buffer() {
+  delete[] buffer_;
+  buffer_ = nullptr;
+}
+
+void cycle_buffer::reset() {
+  is_full_ = false;
+  is_empty_ = true;
+  r_pos_ = 0;
+  w_pos_ = 0;
+  remain_space_ = n_;
+}
+bool cycle_buffer::can_read(int32_t length) {
+  std::unique_lock<std::mutex> lck(mtx_);
+  return (n_ - remain_space_ >= length);
+}
+bool cycle_buffer::can_remove(double t) {
+  if (
+    (remain_space_ == n_) // no datas
+    && (timer_.elapse() > t) // no visits in t seconds
+  ) {
+    return true;
+  }
+  return false;
+}
+/////////////////////////////////////////
+int32_t cycle_buffer::peek(char* data, int32_t length) {
   timer_.start();
   {
     unique_lock<mutex> lck(mtx_);
@@ -47,9 +82,10 @@ int cycle_buffer::peek(char* data, int32_t length) {
     }
     cv_.notify_all();
   }
+  timer_.start();
   return length;
 }
-int cycle_buffer::read(char* data, int32_t length) {
+int32_t cycle_buffer::read(char* data, int32_t length) {
   timer_.start();
   {
     do {
@@ -85,14 +121,19 @@ int cycle_buffer::read(char* data, int32_t length) {
     remain_space_ += length;
     cv_.notify_all();
   }
+  timer_.start();
   return length;
 }
 void cycle_buffer::realloc(int32_t length) {
+  if (remain_space_ >= length) {
+    return;
+  }
+
   unique_lock<mutex> lck(mtx_);
   if (remain_space_ < length) {
     int32_t new_n = n_ * ((length / n_) + 2); // at least 2x
-    cout << "can not write. expected:" << length << ", actual:" << remain_space_
-         << ". will expand from " << n_ << " to " << new_n << endl;
+    log_debug << "buffer can not write. expected:" << length << ", actual:" << remain_space_
+              << ". will expand from " << n_ << " to " << new_n << endl;
 
     char* newbuffer_ = new char[new_n];
     int32_t havesize = size();
@@ -116,7 +157,7 @@ void cycle_buffer::realloc(int32_t length) {
 }
 
 // data --> buffer_
-int cycle_buffer::write(const char* data, int32_t length) {
+int32_t cycle_buffer::write(const char* data, int32_t length) {
   timer_.start();
   {
     realloc(length);
@@ -148,6 +189,7 @@ int cycle_buffer::write(const char* data, int32_t length) {
     remain_space_ -= length;
     cv_.notify_all();
   }
+  timer_.start();
   return length;
 }
 

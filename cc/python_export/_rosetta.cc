@@ -24,6 +24,7 @@ namespace py = pybind11;
 #include "cc/python_export/dataset.h"
 #include "cc/python_export/msg_id_handle.h"
 #include "cc/python_export/protocol_handler.h"
+#include "cc/modules/io/include/internal/netutil.h"
 
 PYBIND11_MODULE(_rosetta, m) {
   m.doc() = R"pbdoc(
@@ -44,23 +45,33 @@ PYBIND11_MODULE(_rosetta, m) {
     .def("log_to_stdout", &ProtocolHandler::log_to_stdout)
     .def("set_logfile", &ProtocolHandler::set_logfile)
     .def("set_loglevel", &ProtocolHandler::set_loglevel)
-    .def("rand_seed", &ProtocolHandler::rand_seed);
+    .def("rand_seed", &ProtocolHandler::rand_seed)
+    .def("start_perf_stats", &ProtocolHandler::start_perf_stats)
+    .def("get_perf_stats", &ProtocolHandler::get_perf_stats)
+    ;
 
   py::module m_dataset = m.def_submodule("dataset");
   py::class_<DataSet>(m_dataset, "DataSet")
-    .def(py::init<bool, int, int>())
+    .def(py::init<const vector<int>&, int, int>())
     .def("private_input_x", &DataSet::private_input_x)
     .def("private_input_y", &DataSet::private_input_y);
 
   py::module m_input = m.def_submodule("input");
-  py::class_<Input>(m_input, "Input")
+  py::class_<PrivateInput>(m_input, "PrivateInput")
     .def(py::init<>())
-    .def("private_input", (py::array_t<np_str_t>(Input::*)(int, const py::array_t<double>&)) & Input::private_input)
-    .def("private_input", (std::string(Input::*)(int, double)) & Input::private_input);
+    .def("input", (py::array_t<np_str_t>(Input::*)(int, const py::array_t<double>&)) & Input::input);
+
+  py::class_<PublicInput>(m_input, "PublicInput")
+    .def(py::init<>())
+    .def("input", (py::array_t<np_str_t>(Input::*)(int, const py::array_t<double>&)) & Input::input);
 
   py::module m_msgid_handle = m.def_submodule("msgid_handle");
   py::class_<MsgIdHandle>(m_msgid_handle, "MsgIdHandle")
     .def(py::init<>())
     .def("update_message_id_info", &MsgIdHandle::update_message_id_info);
+
+  py::module m_netutil = m.def_submodule("netutil");
+  m_netutil.def("enable_ssl_socket",    &netutil::enable_ssl_socket, "");
+  m_netutil.def("is_enable_ssl_socket",    &netutil::is_enable_ssl_socket, "");
   // clang-format on
 }

@@ -616,6 +616,45 @@ class RttGreaterEqualOp : public RttBinaryOp<Device> {
   }
 };
 
+// logical ops
+template <typename Device>
+class RttLogicalAndOp : public RttBinaryOp<Device> {
+ public:
+  explicit RttLogicalAndOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttLogicalAndOp") {}
+
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+    throw;
+  }
+};
+template <typename Device>
+class RttLogicalOrOp : public RttBinaryOp<Device> {
+ public:
+  explicit RttLogicalOrOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttLogicalOrOp") {}
+
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+    throw;
+  }
+};
+template <typename Device>
+class RttLogicalXorOp : public RttBinaryOp<Device> {
+ public:
+  explicit RttLogicalXorOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttLogicalXorOp") {}
+
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+    throw;
+  }
+};
+template <typename Device>
+class RttLogicalNotOp : public OpKernel {
+ public:
+  explicit RttLogicalNotOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+  void Compute(OpKernelContext* context) {
+    PRINT_BEG("RttLogicalNotOp");
+    throw;
+  }
+};
+
 struct RttMeanFunctor {
   RttMeanFunctor() {}
   ~RttMeanFunctor() {}
@@ -752,6 +791,17 @@ class RttPowOp : public OpKernel {
   }
 };
 
+template <typename Device>
+class RttArgMaxOp : public OpKernel {
+ public:
+  explicit RttArgMaxOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+  void Compute(OpKernelContext* context) {
+    PRINT_BEG("RttArgMaxOp");
+    throw;
+  }
+};
+
 ////////////////   register kernels (with string type only)   ////////////////
 using CPUDevice=Eigen::ThreadPoolDevice;
 
@@ -760,6 +810,7 @@ REGISTER_KERNEL_BUILDER(Name("RttReduceMean").Device(DEVICE_CPU), RttReduceOp<CP
 REGISTER_KERNEL_BUILDER(Name("RttReduceSum").Device(DEVICE_CPU), RttReduceOp<CPUDevice, RttSumFunctor>);
 REGISTER_KERNEL_BUILDER(Name("RttReduceMin").Device(DEVICE_CPU), RttReduceOp<CPUDevice, RttMaxFunctor>);
 REGISTER_KERNEL_BUILDER(Name("RttReduceMax").Device(DEVICE_CPU), RttReduceOp<CPUDevice, RttMaxFunctor>);
+REGISTER_KERNEL_BUILDER(Name("RttArgMax").Device(DEVICE_CPU), RttArgMaxOp<CPUDevice>);
 
 // register kernel builder of basic math ops
 REGISTER_KERNEL_BUILDER(Name("RttNegative").Device(DEVICE_CPU), RttNegOp<CPUDevice>);
@@ -785,5 +836,11 @@ REGISTER_KERNEL_BUILDER(Name("RttAbs").Device(DEVICE_CPU), RttAbsOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttLog").Device(DEVICE_CPU), RttLogOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttLog1p").Device(DEVICE_CPU), RttLog1pOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttPow").Device(DEVICE_CPU), RttPowOp<CPUDevice>);
+
+// logical ops
+REGISTER_KERNEL_BUILDER(Name("RttLogicalAnd").Device(DEVICE_CPU), RttLogicalAndOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttLogicalOr").Device(DEVICE_CPU), RttLogicalOrOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttLogicalXor").Device(DEVICE_CPU), RttLogicalXorOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttLogicalNot").Device(DEVICE_CPU), RttLogicalNotOp<CPUDevice>);
 
 } //namespace tensorflow

@@ -22,3 +22,5 @@ with tf.Session() as sess:
     # Get the result of Rosetta matmul
     # ret: [[b'14.000000' b'20.000000'] [b'20.000000' b'29.000000']]
     print('matmul:', sess.run(rtt.SecureReveal(res)))
+
+rtt.deactivate()

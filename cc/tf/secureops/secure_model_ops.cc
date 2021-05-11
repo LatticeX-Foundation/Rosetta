@@ -28,3 +28,13 @@ REGISTER_OP("SecureSaveV2")
     .Doc(R"doc(
 SecureSaveV2Op
 )doc");
+
+REGISTER_OP("SecureRestoreV2")
+    .Input("prefix: string")
+    .Input("tensor_names: string")
+    .Input("shape_and_slices: string")
+    .Output("tensors: dtypes")
+    .Attr("dtypes: list(type)")
+    .Doc(R"doc(
+SecureRestoreV2Op
+)doc");

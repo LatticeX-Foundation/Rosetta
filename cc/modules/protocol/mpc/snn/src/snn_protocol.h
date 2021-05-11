@@ -24,11 +24,11 @@ class SnnProtocol : public MpcProtocol {
   SnnProtocol() : MpcProtocol("SecureNN") {}
 
  public:
-  shared_ptr<ProtocolOps> GetOps(const string& op_token = "");
+  shared_ptr<ProtocolOps> GetOps(const msg_id_t& msgid);
 
  private:
   int _init_aeskeys();
-  void _initialize_mpc_enviroment();
+  void _initialize_mpc_environment();
 };
 
 } // namespace rosetta

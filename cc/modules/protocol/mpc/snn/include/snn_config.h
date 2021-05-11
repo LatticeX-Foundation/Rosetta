@@ -16,7 +16,7 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #pragma once
-#include "cc/modules/protocol/mpc/comm/include/config.h"
+#include "cc/modules/protocol/utility/include/config.h"
 namespace rosetta {
 using SnnConfig = RosettaConfig;
 } // namespace rosetta

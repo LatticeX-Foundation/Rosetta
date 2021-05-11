@@ -9,3 +9,4 @@ REGISTER_OP("RttApplyGradientDescent")
   .Output("out: Ref(string)")
   .Attr("T: numbertype")
   .Attr("use_locking: bool = false");
+

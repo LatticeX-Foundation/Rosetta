@@ -25,7 +25,6 @@
 #include "cc/modules/common/include/utils/secure_encoder.h"
 #include <string>
 
-using rosetta::convert::SecureText;
 using StrVec = std::vector<std::string>;
 using MpcVec = std::vector<mpc_t>;
 
@@ -44,35 +43,33 @@ DEFINE_AT_EXIT_FUNCTION_END()
 } // namespace rosetta
 
 namespace rosetta {
-static inline void convert_plain_double_to_mpctype(const vector<double>& a, vector<mpc_t>& b) {
+static inline void convert_plain_double_to_mpctype(const vector<double>& a, vector<mpc_t>& b, bool disable_sharing=false) {
   b.resize(a.size());
   for (int i = 0; i < a.size(); i++)
-    b[i] = FloatToMpcType(a[i] / 2);
+    b[i] = disable_sharing ? FloatToMpcType(a[i]) : FloatToMpcType(a[i] / 2);
 }
 
 static inline int snn_decode_(const StrVec& a, MpcVec& sa) {
   ELAPSED_STATISTIC_BEG(convert_string_to_share_timer);
 
-  StrVec content_a;
-  int str_type = rosetta::convert::encoder::decode(a, content_a);
-  if (0 > str_type) {
-    log_error << "rosetta::convert::encoder::decode failed!";
-    return -1;
+  if (rosetta::convert::is_secure_text(a[0])) {
+    sa.resize(a.size());
+    for (auto i = 0; i < a.size(); ++i)
+      memcpy((char*)&sa[i], a[i].data(), sizeof(mpc_t));
+
+    ELAPSED_STATISTIC_END(convert_string_to_share_timer);
+  } else {
+    ELAPSED_STATISTIC_END(convert_string_to_share_timer);
+    convert_plain_double_to_mpctype(rosetta::convert::from_double_str(a), sa);
   }
 
-  if (str_type == (int)rosetta::convert::encoder::SECURE_STR)
-    rosetta::convert::from_hex_str(content_a, sa);
-  else
-    convert_plain_double_to_mpctype(rosetta::convert::from_double_str(content_a), sa);
-
-  ELAPSED_STATISTIC_END(convert_string_to_share_timer);
   return 0;
 }
 
 static inline int snn_encode_(const MpcVec& sa, StrVec& a) {
   ELAPSED_STATISTIC_BEG(convert_share_to_string_timer);
-  if (0 != rosetta::convert::encoder::encode(sa, SecureText::SNN, a)) {
-    log_error << "rosetta::convert::encoder::encode failed!";
+  if (0 != rosetta::convert::encoder::encode_to_secure(sa, a)) {
+    log_error << "encode_to_secure failed!";
     return -1;
   }
   ELAPSED_STATISTIC_END(convert_share_to_string_timer);
@@ -82,12 +79,13 @@ static inline int snn_encode_(const MpcVec& sa, StrVec& a) {
 //! maybe more actions here
 #define snn_decode(a, sa)                                                                 \
   do {                                                                                    \
-    if (0 != snn_decode_(a, sa)) {                                                        \
+    if (0 != snn_decode_(a, sa)) {                                                  \
       log_error << "rosetta::convert::encoder::decode failed! In " << __FUNCTION__ << "#" \
                 << __LINE__ << endl;                                                      \
       return -1;                                                                          \
     }                                                                                     \
   } while (0)
+
 #define snn_encode(sa, a)                                                                 \
   do {                                                                                    \
     if (0 != snn_encode_(sa, a)) {                                                        \
@@ -107,7 +105,7 @@ static inline int decode_input_to_snn(const StrVec& a, MpcVec& sa) {
   return 0;
 }
 
-SnnProtocolOps::SnnProtocolOps(const string& msgid) : ProtocolOps(msgid) { _op_msg_id = msgid; }
+SnnProtocolOps::SnnProtocolOps(const msg_id_t& msgid) : ProtocolOps(msgid) {}
 
 int SnnProtocolOps::TfToSecure(
   const vector<string>& in,
@@ -137,14 +135,13 @@ int SnnProtocolOps::TfToSecure(
 }
 
 // decode the string in protocol-specific format to literal number
-// template <typename T>
 int SnnProtocolOps::SecureToTf(
   const vector<string>& in,
   vector<string>& out,
   const attr_type* attr_info /* = nullptr*/) {
   log_debug << "----> SecureToTf. from mpc_t to double hex string";
   vector<string> contents;
-  if (0 != rosetta::convert::encoder::decode(in, out)) {
+  if (0 != rosetta::convert::encoder::decode_secure(in, out)) {
     log_error << "decode error, input is valid !";
     return -1;
   }
@@ -152,13 +149,13 @@ int SnnProtocolOps::SecureToTf(
   // to mpc_t values
   vector<mpc_t> mpcvalues(in.size());
   vector<double> dvalues(in.size());
-  rosetta::convert::from_hex_str<mpc_t>(out, mpcvalues);
+  rosetta::convert::from_binary_str<mpc_t>(out, mpcvalues);
 
   // to double values
   convert_mpctype_to_double(mpcvalues, dvalues);
 
   // to hex string
-  rosetta::convert::to_hex_str<double>(dvalues, out);
+  rosetta::convert::to_binary_str<double>(dvalues, out);
   return 0;
 }
 
@@ -168,7 +165,7 @@ int SnnProtocolOps::RandSeed(std::string op_seed, string& out_str) {
   // GetSnnOpWithKey(RandomSeed, _op_msg_id)->Run(out);
   std::make_shared<rosetta::snn::RandomSeed>(_op_msg_id, net_io_)->Run(out);
 
-  rosetta::convert::to_hex_str(out, out_str);
+  rosetta::convert::to_binary_str(out, out_str);
   return 0;
 }
 
@@ -176,6 +173,15 @@ int SnnProtocolOps::PrivateInput(
   int party_id,
   const vector<double>& in_vec,
   vector<string>& out_str_vec) {
+  if (party_id != PARTY_C) {
+    vector<mpc_t> out_vec(in_vec.size(), 0);
+    if (party_id == partyNum) {
+      convert_double_to_mpctype(in_vec, out_vec);
+    }
+    snn_encode(out_vec, out_str_vec);
+    return 0;
+  }
+
   log_debug << "----> PrivateInput(vector<double>).";
   vector<mpc_t> out_vec;
   std::make_shared<rosetta::snn::PrivateInput>(_op_msg_id, net_io_)->Run(party_id, in_vec, out_vec);
@@ -184,10 +190,24 @@ int SnnProtocolOps::PrivateInput(
   return 0;
 }
 
+int SnnProtocolOps::Broadcast(int from_party, const string& msg, string& result) {
+  log_debug << "----> Broadcast(msg).";
+  vector<mpc_t> out_vec;
+  std::make_shared<rosetta::snn::Broadcast>(_op_msg_id, net_io_)->Run(from_party, msg, result);
+
+  // snn_encode(out_vec, out_str_vec);
+  return 0;
+}
+int SnnProtocolOps::Broadcast(int from_party, const char* msg, char* result, size_t size) {
+  vector<mpc_t> out_vec;
+  std::make_shared<rosetta::snn::Broadcast>(_op_msg_id, net_io_)->Run(from_party, msg, result, size);
+  return 0;
+}
+
 template <typename OpFunctor>
 int snn_protocol_binary_ops_call(
   const char* name,
-  const string& msg_id,
+  const msg_id_t& msg_id,
   shared_ptr<NET_IO> net_io,
   const StrVec& a,
   const StrVec& b,
@@ -199,7 +219,7 @@ int snn_protocol_binary_ops_call(
     attr_info && attr_info->count("rh_is_const") > 0 && attr_info->at("rh_is_const") == "1";
   bool lh_is_const =
     attr_info && attr_info->count("lh_is_const") > 0 && attr_info->at("lh_is_const") == "1";
-  log_debug << name << ", lh_is_const = " << rh_is_const << ", rh_is_const = " << rh_is_const;
+  log_debug << name << ", lh_is_const = " << lh_is_const << ", rh_is_const = " << rh_is_const;
 
   vector<mpc_t> out_vec(a.size());
   vector<mpc_t> private_a;
@@ -212,7 +232,7 @@ int snn_protocol_binary_ops_call(
     snn_decode(b, private_b);
     std::make_shared<OpFunctor>(msg_id, net_io)->Run(a, private_b, out_vec, a.size());
   } else {
-    snn_decode(a, private_a);
+    snn_decode(a, private_a);////////// why variable got double string (eg. tf.Variable without private_input)
     snn_decode(b, private_b);
     std::make_shared<OpFunctor>(msg_id, net_io)->Run(private_a, private_b, out_vec, a.size());
   }
@@ -303,12 +323,12 @@ int SnnProtocolOps::Matmul(
 template <typename OpFunctor>
 int snn_protocol_unary_ops_call(
   const char* name,
-  const string& msg_id,
+  const msg_id_t& msg_id,
   shared_ptr<NET_IO> net_io,
   const StrVec& a,
   StrVec& c,
   const attr_type* attr) {
-  log_debug << "----> " << name << " uinary ops ";
+  log_debug << "----> " << name << " unary ops ";
 
   vector<mpc_t> out_vec(a.size());
   vector<mpc_t> private_a(a.size());
@@ -449,12 +469,12 @@ int SnnProtocolOps::AbsPrime(
   const attr_type* attr_info) {
   log_debug << "----> SnnAbsPrime";
 
-  vector<mpc_t> sa, sb;
-  snn_decode(a, sa);
+  vector<mpc_t> private_a, private_b;
+  snn_decode(a, private_a);
 
   std::make_shared<rosetta::snn::SigmoidCrossEntropy>(_op_msg_id, net_io_)
-    ->ABSPrime(sa, sb, a.size());
-  snn_encode(sb, output);
+    ->ABSPrime(private_a, private_b, a.size());
+  snn_encode(private_b, output);
 
   log_debug << "SnnAbsPrime ok. <----";
   return 0;
@@ -497,6 +517,7 @@ int SnnProtocolOps::Log1p(
 
   vector<mpc_t> out_vec(a.size());
   vector<mpc_t> private_a(a.size());
+
   snn_decode(a, private_a);
 
   std::make_shared<rosetta::snn::Log>(_op_msg_id, net_io_)->Run1p(private_a, out_vec, a.size());
@@ -510,7 +531,7 @@ int SnnProtocolOps::Log1p(
 template <typename OpFunctor>
 int snn_protocol_reduce_ops_call(
   const char* name,
-  const string& msg_id,
+  const msg_id_t& msg_id,
   shared_ptr<NET_IO> net_io,
   const StrVec& a,
   StrVec& c,
@@ -527,6 +548,7 @@ int snn_protocol_reduce_ops_call(
 
   vector<mpc_t> out_vec(rows);
   vector<mpc_t> private_a(a.size());
+
   snn_decode(a, private_a);
 
   std::make_shared<OpFunctor>(msg_id, net_io)->Run(private_a, out_vec, rows, cols);
@@ -581,6 +603,7 @@ int SnnProtocolOps::SigmoidCrossEntropy(
   log_debug << "----> SigmoidCrossEntropy";
 
   vector<mpc_t> private_a, private_b;
+
   snn_decode(a, private_a);
   snn_decode(b, private_b);
 
@@ -597,12 +620,26 @@ int SnnProtocolOps::Reveal(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
-  log_debug << "----> Reveal\n" << endl;
+  vector<double> dvalues;
+  Reveal(a, dvalues, attr_info);
+  output.resize(dvalues.size());
+  for (int i = 0; i < dvalues.size(); ++i) {
+    output[i] = std::to_string(dvalues[i]);
+  }
+  return 0;
+}
 
-  int party = attr_info ? std::stoi(attr_info->at("receive_party")) : 1;
+int SnnProtocolOps::Reveal(
+  const vector<string>& a,
+  vector<double>& output,
+  const attr_type* attr_info) {
+  log_debug << "----> Reveal" << endl;
+
+  int party = attr_info ? std::stoi(attr_info->at("receive_party")) : 7;
 
   vector<mpc_t> out_vec(a.size());
   vector<mpc_t> private_a(a.size());
+
   snn_decode(a, private_a);
 
   log_debug << "----> Reveal, call Reconstruct2PC\n" << endl;
@@ -610,17 +647,31 @@ int SnnProtocolOps::Reveal(
     ->RunEx(private_a, out_vec, party);
 
   // to double values
-  vector<double> dvalues(out_vec.size());
-  convert_mpctype_to_double(out_vec, dvalues);
-  // to double literal strings
-  for (int i = 0; i < dvalues.size(); ++i) {
-    output[i] = std::to_string(dvalues[i]);
-  }
-
-  //reveal strings are readable, not decode now for snn
-  // snn_encode(out_vec, output);
+  output.resize(out_vec.size());
+  convert_mpctype_to_double(out_vec, output);
 
   log_debug << "Reveal ok. <----\n";
+  return 0;
+}
+
+/**
+ * Logical ops
+ */
+#define SNN_PROTOCOL_LOGICAL_OPS_CALL SNN_PROTOCOL_BINARY_OPS_CALL
+SNN_PROTOCOL_LOGICAL_OPS_CALL(AND, rosetta::snn::LogicalAND)
+SNN_PROTOCOL_LOGICAL_OPS_CALL(OR, rosetta::snn::LogicalOR)
+SNN_PROTOCOL_LOGICAL_OPS_CALL(XOR, rosetta::snn::LogicalXOR)
+int SnnProtocolOps::NOT(
+  const vector<string>& a,
+  vector<string>& output,
+  const attr_type* attr_info) {
+  size_t size = a.size();
+  vector<mpc_t> private_a(a.size());
+  vector<mpc_t> out_vec(a.size());
+  snn_decode(a, private_a);
+  std::make_shared<rosetta::snn::LogicalNOT>(_op_msg_id, net_io_)->Run(private_a, out_vec, size);
+  snn_encode(out_vec, output);
+
   return 0;
 }
 
@@ -649,7 +700,9 @@ int SnnProtocolOps::ConditionalReveal(
   // case two: only plaintext for selected parties
   vector<mpc_t> inner_out_vec(vec_size);
   vector<mpc_t> shared_input(vec_size);
+
   snn_decode(in_vec, shared_input);
+  // snn_decode(in_vec, shared_input);
 
   if (save_mode & 1) {
     std::make_shared<rosetta::snn::Reconstruct2PC>(_op_msg_id, net_io_)

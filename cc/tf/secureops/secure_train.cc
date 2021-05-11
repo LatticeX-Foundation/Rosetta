@@ -12,23 +12,22 @@ using namespace std;
 using namespace tensorflow;
 using rosetta::ProtocolManager;
 
-static constexpr char kErrorMessage[] = "SecureApplyGradientDescentOp could not correctly convert string: ";
+static constexpr char kErrorMessage[] =
+  "SecureApplyGradientDescentOp could not correctly convert string: ";
 
-namespace tensorflow
-{
-  
+namespace tensorflow {
+
 template <typename T>
 class SecureApplyGradientDescentOp : public SecureOpKernel {
-  
  public:
   explicit SecureApplyGradientDescentOp(OpKernelConstruction* ctx) : SecureOpKernel(ctx) {
     OP_REQUIRES_OK(ctx, ctx->GetAttr("use_locking", &use_exclusive_lock_));
   }
 
-  void Compute(OpKernelContext* ctx) override {
+  void ComputeImpl(OpKernelContext* ctx) {
     log_debug << "begin debuging SecureApplyGradientDescentOp!" << endl;
     // Step 1: check the lock level and validity of inputs the same as the native one.
-    //  Note: For now, we do NOT support the exclusice_lock feature.
+    //  Note: For now, we do NOT support the exclusive_lock feature.
     OP_REQUIRES(
       ctx, use_exclusive_lock_ == false,
       errors::FailedPrecondition(
@@ -37,7 +36,7 @@ class SecureApplyGradientDescentOp : public SecureOpKernel {
     OP_REQUIRES(
       ctx, ctx->input_dtype(0) != DT_RESOURCE,
       errors::FailedPrecondition(
-        "In this MPC version, we do NOT support the 'ResourceVarible'-type variable."));
+        "In this MPC version, we do NOT support the 'ResourceVariable'-type variable."));
     Tensor var;
     //Tensor* var_p;
     var = ctx->mutable_input(0, use_exclusive_lock_);
@@ -78,16 +77,27 @@ class SecureApplyGradientDescentOp : public SecureOpKernel {
     vector<string> out_var(ele_nums);
     attrs_["lh_is_const"] = "1";
     attrs_["rh_is_const"] = "0";
-   
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Mul(input_alpha, input_delta, out_var, &attrs_);
+
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mul);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Mul(input_alpha, input_delta, out_var, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mul);
+    
     attrs_["lh_is_const"] = "0";
     attrs_["rh_is_const"] = "0";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Sub(input_var, out_var, out_var, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Sub);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Sub(input_var, out_var, out_var, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Sub);
 
-    // TODO[georgeshi]: why we canot and need not use this?? due to string?
+    // TODO[GeorgeShi]: why we cannot and need not use this?? due to string?
     //new_var.setZero();
 
-    for(int i = 0; i < ele_nums; ++i){
+    for (int i = 0; i < ele_nums; ++i) {
       new_var(i) = out_var[i];
     }
 
@@ -109,6 +119,7 @@ REGISTER_KERNEL_BUILDER(
   SecureApplyGradientDescentOp<int>);
 
 /// we do not support resourceAGD for now
-// REGISTER_KERNEL_BUILDER(                      
+// REGISTER_KERNEL_BUILDER(
 //   Name("RttApplyGradientDescent").Device(DEVICE_CPU).HostMemory("var").TypeConstraint<float>("T"), cls<Eigen::ThreadPoolDevice, type>);
-}
+} // namespace tensorflow
+

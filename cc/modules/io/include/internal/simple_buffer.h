@@ -18,7 +18,7 @@
 #pragma once
 
 #include "cc/modules/io/include/internal/comm.h"
-#include "cc/modules/io/include/internal/msg_id.h"
+#include "cc/modules/common/include/utils/msg_id.h"
 
 namespace rosetta {
 namespace io {

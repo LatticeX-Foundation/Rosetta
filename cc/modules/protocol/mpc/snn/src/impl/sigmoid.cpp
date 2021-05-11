@@ -47,8 +47,8 @@ int Sigmoid::funcPrivateCompareMPCEx(
   return 0;
 }
 
-//compare two a commond value r with secret-sharing value a,
-//it functions the same as operaotr>=() ">=", if r >= a, returns 8192 (mean "1"), otherwise returns 0
+//compare two a common value r with secret-sharing value a,
+//it functions the same as operator>=() ">=", if r >= a, returns 8192 (mean "1"), otherwise returns 0
 int Sigmoid::funcPrivateCompareMPCEx2(
   const vector<mpc_t>& r, const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
   // LOGI("funcDotProductMPC start");
@@ -86,11 +86,9 @@ int Sigmoid::funcCubeMPC(const vector<mpc_t>& a, vector<mpc_t>& cube, size_t siz
   LOGI("funcCubeMPC run");
   // x * x
   vector<mpc_t> square(size, 0);
-  //funcDotProductMPC(a, a, square, size);
   GetMpcOpInner(DotProduct)->Run(a, a, square, size);
 
   //(x*x) * x
-  //funcDotProductMPC(square, a, cube, size);
   GetMpcOpInner(DotProduct)->Run(square, a, cube, size);
 
   LOGI("funcSquareMPC OK");
@@ -375,15 +373,15 @@ int Sigmoid::funcSigmoidG3PrimeMPC(const vector<mpc_t>& a, vector<mpc_t>& b, siz
 
 /**
 * @brief approximate sigmoid implemented with 6-pieces function
-* @param y input of ZkReal type in range (-inf,+inf)
-* @return sigmoid of ZkReal input
+* @param a input of mpc_t type in range (-inf,+inf)
+* @return sigmoid of mpc_t input
 * @note sigmoid(y) equals:
-0, for y in range (-inf, -4);
-0.0484792 * y + 0.1998976, for y in range [-4, -2); 
-0.1928931 * y + 0.4761351, for y in range [-2, 0);
-0.1928931 * y + 0.5238649, for y in range [0, 2);
-0.0484792 * y + 0.8001024, for y in range [2,4);
-1, for y in range [4, +inf) 
+0, for y in range (-inf, -4];
+0.0484792 * y + 0.1998976, for y in range (-4, -2]; 
+0.1928931 * y + 0.4761351, for y in range (-2, 0];
+0.1928931 * y + 0.5238649, for y in range (0, 2];
+0.0484792 * y + 0.8001024, for y in range (2,4];
+1, for y in range (4, +inf) 
 */
 int Sigmoid::funcSigmoidPieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
   LOGD("funcSigmoidPieceWiseMPC start");
@@ -392,11 +390,10 @@ int Sigmoid::funcSigmoidPieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b, s
     LOGW("4PC is not support !");
     return 1;
   } else if (THREE_PC) {
+    int SEG = 5;
     // vector<mpc_t> y = a;
-    vector<mpc_t> y = a;
-
-    //(0.0484792, 0.1998976),  (0.1928931, 0.4761351), (0.1928931, 0.5238649),  (0.0484792,
-    // 0.8001024)
+    //params(a,b): (0.0484792, 0.1998976),  (0.1928931, 0.4761351), (0.1928931, 0.5238649),  
+    //(0.0484792,0.8001024)
     mpc_t a1 = FloatToMpcType(0.0484792);
     mpc_t b1 = FloatToMpcType(0.1998976) / 2;
     mpc_t a2 = FloatToMpcType(0.1928931);
@@ -406,31 +403,111 @@ int Sigmoid::funcSigmoidPieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b, s
     mpc_t a4 = FloatToMpcType(0.0484792);
     mpc_t b4 = FloatToMpcType(0.8001024) / 2;
 
-    //[-4,4]: (0.0484792, 0.1998976),  (0.1928931, 0.4761351), (0.1928931, 0.5238649),  (0.0484792,
-    // 0.8001024)
-    mpc_t y1 = FloatToMpcType(-4);
-    mpc_t y2 = FloatToMpcType(-2);
-    mpc_t y3 = FloatToMpcType(0);
-    mpc_t y4 = FloatToMpcType(2);
-    mpc_t y5 = FloatToMpcType(4);
+    // vectorization-style to call the costly funcPrivateCompareMPCEx2(ReluPrime) only once.
+    //[-4,4]: -4, -2, 0, 2, 4
+    vector<mpc_t> batch_cmp_C;
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(-4));
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(-2));
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(0));
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(2));
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(4));
+    
+    const vector<mpc_t>& X = a;
+    vector<mpc_t> batch_cmp_X;
+    batch_cmp_X.insert(batch_cmp_X.end(), X.begin(), X.end());
+    batch_cmp_X.insert(batch_cmp_X.end(), X.begin(), X.end());
+    batch_cmp_X.insert(batch_cmp_X.end(), X.begin(), X.end());
+    batch_cmp_X.insert(batch_cmp_X.end(), X.begin(), X.end());
+    batch_cmp_X.insert(batch_cmp_X.end(), X.begin(), X.end());
+
+    vector<mpc_t> batch_cmp_res(batch_cmp_X.size());
+    funcPrivateCompareMPCEx2(batch_cmp_C, batch_cmp_X, batch_cmp_res, batch_cmp_X.size());
+    batch_cmp_X.clear();
+    batch_cmp_C.clear();
+
+    mpc_t lastOne = FloatToMpcType(1) / 2; // add last 1
+
+    // vectorization for calling communication-costly DotProduct only once 
+    vector<mpc_t> batch_dot_product;
+    vector<mpc_t> linear_temp(size);
+
+    if (PRIMARY)
+      funcLinearMPC(X, 0 - a1, 0 - b1, linear_temp, size);
+    batch_dot_product.insert(batch_dot_product.end(), linear_temp.begin(), linear_temp.end());
+
+
+    if (PRIMARY)
+      funcLinearMPC(X, a1 - a2, b1 - b2, linear_temp, size);
+    batch_dot_product.insert(batch_dot_product.end(), linear_temp.begin(), linear_temp.end());
+
+    if (PRIMARY)
+      funcLinearMPC(X, a2 - a3, b2 - b3, linear_temp, size);
+    batch_dot_product.insert(batch_dot_product.end(), linear_temp.begin(), linear_temp.end());
+
+    if (PRIMARY)
+      funcLinearMPC(X, a3 - a4, b3 - b4, linear_temp, size);
+    batch_dot_product.insert(batch_dot_product.end(), linear_temp.begin(), linear_temp.end());
+
+    if (PRIMARY)
+      funcLinearMPC(X, a4 /*-0*/, b4 - lastOne, linear_temp, size);
+    batch_dot_product.insert(batch_dot_product.end(), linear_temp.begin(), linear_temp.end());
+    
+    vector<mpc_t> batch_dp_res(batch_dot_product.size());
+    GetMpcOpInner(DotProduct)->Run(batch_cmp_res, batch_dot_product, batch_dp_res, batch_cmp_res.size());
+    batch_cmp_res.clear();
+    batch_dot_product.clear();
+
+    // unpack the vectorization result and sum up.
+    vector<mpc_t> out(size, lastOne);
+    for(int i = 0; i < SEG; ++i) {
+      vector<mpc_t> seg_mul_res(batch_dp_res.begin() + i * size, 
+                                batch_dp_res.begin() + (i + 1) * size);
+      addVectors(out, seg_mul_res, out, size);
+    }
+    b = out;
+  }
+
+  string party = "A";
+  if (PRIMARY)
+    party = partyNum == PARTY_A ? "A" : "B";
+  else
+    party = "C";
+
+  LOGD("party-%s funcSigmoidPieceWiseMPC ok.", party.data());
+  return 0;
+}
+
+/**
+* @brief approximate secure sigmoid approximated with 3-piece-wise polynomial
+* @param a input of mpc_t type in range (-inf,+inf)
+* @return sigmoid of mpc_t input
+* @note sigmoid(y) equals:
+0, for y in range (-inf, -3.1];
+0.161*y + 0.5, for y in range (-3.1, 3.1];
+1, for y in range (3.1, +inf) 
+*/
+int Sigmoid::funcSigmoid3PieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
+  LOGD("funcSigmoidPieceWiseMPC start");
+
+  if (FOUR_PC) {
+    LOGW("4PC is not support !");
+    return 1;
+  } else if (THREE_PC) {
+    // vector<mpc_t> y = a;
+    vector<mpc_t> y = a;
+
+    //params(a,b): (0.161, 0.5) 
+    mpc_t a1 = FloatToMpcType(0.161);
+    mpc_t b1 = FloatToMpcType(0.5) / 2;
+    
+    //(-3.1,3.1]: -3.1, 3.1
+    // cmp(-3.1, x)*(0 - y1) + cmp(3.1, x)*(y1-1) + 1
+    mpc_t y1 = FloatToMpcType(-3.1);
+    mpc_t y2 = FloatToMpcType(3.1);
     vector<mpc_t> y1_cmp(size, y1);
     vector<mpc_t> y2_cmp(size, y2);
-    vector<mpc_t> y3_cmp(size, y3);
-    vector<mpc_t> y4_cmp(size, y4);
-    vector<mpc_t> y5_cmp(size, y5);
     funcPrivateCompareMPCEx2(y1_cmp, y, y1_cmp, size);
     funcPrivateCompareMPCEx2(y2_cmp, y, y2_cmp, size);
-    funcPrivateCompareMPCEx2(y3_cmp, y, y3_cmp, size);
-    funcPrivateCompareMPCEx2(y4_cmp, y, y4_cmp, size);
-    funcPrivateCompareMPCEx2(y5_cmp, y, y5_cmp, size);
-    // if (PRIMARY)
-    // {
-    // 	funcReconstruct2PC(y1_cmp, size, "y1_cmp");
-    // 	funcReconstruct2PC(y2_cmp, size, "y2_cmp");
-    // 	funcReconstruct2PC(y3_cmp, size, "y3_cmp");
-    // 	funcReconstruct2PC(y4_cmp, size, "y4_cmp");
-    // 	funcReconstruct2PC(y5_cmp, size, "y5_cmp");
-    // }
     mpc_t lastOne = FloatToMpcType(1) / 2; // add last 1
 
     vector<mpc_t> linear_temp(size);
@@ -444,53 +521,28 @@ int Sigmoid::funcSigmoidPieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b, s
     addVectors(out, mul_temp, out, size);
 
     if (PRIMARY)
-      funcLinearMPC(y, a1 - a2, b1 - b2, linear_temp, size);
-    ////funcDotProductMPC(y2_cmp, linear_temp, mul_temp, size);
-    GetMpcOpInner(DotProduct)->Run(y2_cmp, linear_temp, mul_temp, size);
-    addVectors(out, mul_temp, out, size);
-
-    if (PRIMARY)
-      funcLinearMPC(y, a2 - a3, b2 - b3, linear_temp, size);
-    ////funcDotProductMPC(y3_cmp, linear_temp, mul_temp, size);
-    GetMpcOpInner(DotProduct)->Run(y3_cmp, linear_temp, mul_temp, size);
-    addVectors(out, mul_temp, out, size);
-
-    if (PRIMARY)
-      funcLinearMPC(y, a3 - a4, b3 - b4, linear_temp, size);
-    ////funcDotProductMPC(y4_cmp, linear_temp, mul_temp, size);
-    GetMpcOpInner(DotProduct)->Run(y4_cmp, linear_temp, mul_temp, size);
-    addVectors(out, mul_temp, out, size);
-
-    if (PRIMARY)
-      funcLinearMPC(y, a4 /*-0*/, b4 - lastOne, linear_temp, size);
+      funcLinearMPC(y, a1 /*-0*/, b1 - lastOne, linear_temp, size);
     ////funcDotProductMPC(y5_cmp, linear_temp, mul_temp, size);
-    GetMpcOpInner(DotProduct)->Run(y5_cmp, linear_temp, mul_temp, size);
+    GetMpcOpInner(DotProduct)->Run(y2_cmp, linear_temp, mul_temp, size);
     addVectors(out, mul_temp, out, size);
 
     for (size_t i = 0; i < size; i++) {
       b[i] = out[i] + lastOne;
     }
   }
-
-  string party = "A";
-  if (PRIMARY)
-    party = partyNum == PARTY_A ? "A" : "B";
-  else
-    party = "C";
-
-  LOGD("party-%s funcSigmoidPieceWiseMPC ok.", party.data());
+  
+  LOGD("funcSigmoidPieceWiseMPC ok.");
   return 0;
 }
 
 /*
 ** @brief sigmoid approximate function 5-pieces-functions of ali
-** @detail:
-** sigmoid(x) =
-10^−4, x <= −5
-0.02776 * x + 0.145, −5 < x <= −2.5
-0.17 * x + 0.5, −2.5 < x <= 2.5
-0.02776 * x + 0.85498, 2.5 < x <= 5
-1 − 10^−4, x > 5
+** @note sigmoid(y) =
+10^−4, y <= −5
+0.02776 * y + 0.145, where −5 < y <= −2.5
+0.17 * y + 0.5, where −2.5 < y <= 2.5
+0.02776 * y + 0.85498, where 2.5 < y <= 5
+1 − 10^−4, y > 5
 */
 int Sigmoid::funcSigmoidAliPieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
   LOGD("funcSigmoidAliPieceWiseMPC start");
@@ -587,6 +639,61 @@ int Sigmoid::funcSigmoidAliPieceWiseMPC(const vector<mpc_t>& a, vector<mpc_t>& b
 
   LOGD("party-%s funcSigmoidPieceWiseMPCAli ok.", party.data());
 
+  return 0;
+}
+
+/*
+** @brief sigmoid approximate function Chebyshev polynomial
+** @detail:
+** sigmoid(x) = 0.5 + 0.2159198015 * x -0.0082176259 * x^3 + 0.0001825597 * x^5 - 0.0000018848 * x^7 + 0.0000000072 * x^9,  x in [-8,8] is preferable
+*/
+int Sigmoid::funcSigmoidChebyshevPolyMPC(const vector<mpc_t>& a, vector<mpc_t>& b, size_t size) {
+  LOGD("funcSigmoidChebyshevPolyMPC start");
+
+  if (FOUR_PC) {
+    LOGW("4PC is not support !");
+    return -1;
+  } else if (THREE_PC) {
+
+    // y = 0.5 + 0.2159198015 * x -0.0082176259 * x^3 + 0.0001825597 * x^5 - 0.0000018848 * x^7 + 0.0000000072 * x^9
+    mpc_t b0 = FloatToMpcType(0.5/2);
+    mpc_t a1 = FloatToMpcType(0.2159198015);
+    mpc_t a3 = FloatToMpcType(-0.0082176259);
+    mpc_t a5 = FloatToMpcType(0.0001825597);
+    mpc_t a7 = FloatToMpcType(-0.0000018848);
+    mpc_t a9 = FloatToMpcType(0.0000000072);
+    // cout << "------ a1,a3,a5,a7,a9: " << endl;
+    // cout << a1 << endl;
+    // cout << a3 << endl;
+    // cout << a5 << endl;
+    // cout << a7 << endl;
+    // cout << a9 << endl;
+
+    vector<mpc_t> x2(size), x3(size), x5(size), x7(size), x9(size);
+    auto& x1 = a;
+    // x2 = x^2
+    GetMpcOpInner(Square)->Run(x1, x2, size);
+    // x3 = x^3
+    GetMpcOpInner(DotProduct)->Run(x1, x2, x3, size);
+    // x5 = x^5, x5 = x2 * x3
+    GetMpcOpInner(DotProduct)->Run(x2, x3, x5, size);
+    // x7 = x^7,  x7 = x2 * x5
+    GetMpcOpInner(DotProduct)->Run(x2, x5, x7, size);
+    // x9 = x2 * x7
+    GetMpcOpInner(DotProduct)->Run(x2, x7, x9, size);
+
+    // z = y9 + y7 + y5 + y3 + y1 + w0
+    mpc_t c = 0;
+    if (PRIMARY) {
+      for (auto i = 0; i < size; ++i) {
+        c = (x1[i] * a1) + (x3[i] * a3) + (x5[i] * a5) + (x7[i] * a7) + (x9[i] * a9);
+        funcTruncateElem2PC(c, FLOAT_PRECISION_M, PARTY_A, PARTY_B);
+        b[i] = b0 + c;
+      }
+    }//if(PRIMARY)
+  }//else
+
+  LOGD("funcSigmoidChebyshevPolyMPC ok.");
   return 0;
 }
 

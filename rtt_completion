@@ -1,0 +1,149 @@
+# Notes
+_rosetta_complete_func() {
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD - 1]}"
+
+    local cmd=''
+    local n=${#COMP_WORDS[@]}
+    if [ $n -gt 1 ]; then
+        cmd=${COMP_WORDS[1]}
+    fi
+
+    case "${cmd}" in
+    compile) # #####################
+        opts0="--phase --build-type --enable-gmssl"
+        opts0+=" --enable-all --enable-protocol-mpc-securenn"
+        opts0+=" --enable-protocol-mpc-helix --enable-128bit --enable-tests"
+        opts0+=" --enable-shape-inference"
+        arr_opts=(${opts0})
+        opts=""
+        for ((i = 0; i < ${#arr_opts[@]}; i++)); do
+            f=0
+            for ((c = 1; c <= ${#COMP_WORDS[@]}; c++)); do
+                if [ "${COMP_WORDS[c]}" = "${arr_opts[i]}" ]; then
+                    f=1
+                    break
+                fi
+            done
+            if [ $f -eq 0 ]; then
+                opts+=" ${arr_opts[i]}"
+            fi
+        done
+
+        case "${prev}" in
+        --help)
+            return 0
+            ;;
+        --phase)
+            opts="modules py all"
+            COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+            return 0
+            ;;
+        --build-type)
+            opts="Release Debug"
+            COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+            return 0
+            ;;
+        esac
+
+        COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+        return 0
+        ;;
+    test) # #####################
+        opts0="all"
+        opts0+=" common netio mpc mpc-securenn mpc-helix"
+        opts0+=" op gradop spass dpass other"
+        arr_opts=(${opts0})
+        opts=""
+        for ((i = 0; i < ${#arr_opts[@]}; i++)); do
+            f=0
+            for ((c = 1; c <= ${#COMP_WORDS[@]}; c++)); do
+                if [ "${COMP_WORDS[c]}" = "${arr_opts[i]}" ]; then
+                    f=1
+                    break
+                fi
+            done
+            if [ $f -eq 0 ]; then
+                opts+=" ${arr_opts[i]}"
+            fi
+        done
+
+        case "${prev}" in
+        --help | all)
+            return 0
+            ;;
+        esac
+
+        COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+        return 0
+        ;;
+    perf) # #####################
+        opts0="all"
+        opts0+=" mpc mpc-securenn mpc-helix"
+        arr_opts=(${opts0})
+        opts=""
+        for ((i = 0; i < ${#arr_opts[@]}; i++)); do
+            f=0
+            for ((c = 1; c <= ${#COMP_WORDS[@]}; c++)); do
+                if [ "${COMP_WORDS[c]}" = "${arr_opts[i]}" ]; then
+                    f=1
+                    break
+                fi
+            done
+            if [ $f -eq 0 ]; then
+                opts+=" ${arr_opts[i]}"
+            fi
+        done
+
+        case "${prev}" in
+        --help | all)
+            return 0
+            ;;
+        esac
+
+        COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+        return 0
+        ;;
+    install) # #####################
+        return 0
+        # todo
+        opts="--help"
+        case "${prev}" in
+        --help)
+            return 0
+            ;;
+        esac
+
+        COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+        return 0
+        ;;
+    clean) # #####################
+        return 0
+        # todo
+        opts="--help"
+        case "${prev}" in
+        --help)
+            return 0
+            ;;
+        esac
+
+        COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+        return 0
+        ;;
+    --help | --version) # #####################
+        return 0 ;;
+    esac
+
+    cmd_opts="compile install test perf clean"
+    if [[ ${cur} == * ]]; then
+        cmd=''
+        COMPREPLY=($(compgen -W "${cmd_opts}" -- ${cur}))
+        return 0
+    fi
+
+    return 0
+}
+
+complete -F _rosetta_complete_func ./rosetta.sh

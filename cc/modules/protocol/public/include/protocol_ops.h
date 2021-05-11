@@ -21,10 +21,17 @@
 #include <unordered_map>
 #include <vector>
 #include <stdexcept>
-#include "cc/modules/io/include/ex.h"
+#include <memory>
+#include <vector>
+#include <string>
+#include <iostream>
+#include "cc/modules/protocol/mpc/comm/include/mpc_defines.h"
+#include "cc/modules/common/include/utils/msg_id.h"
 
 namespace rosetta {
 
+using std::cout;
+using std::endl;
 using std::shared_ptr;
 using std::string;
 using std::unordered_map;
@@ -43,7 +50,7 @@ class ProtocolOps {
   /**
    * message id for parallel communication
    */
-  string _op_msg_id = "";
+  msg_id_t _op_msg_id;
 
   /** 
    * For now, some tools are passed frm ProtocolBase to its ProtocolOps in 'GetOps' directly.
@@ -54,14 +61,14 @@ class ProtocolOps {
   //shared_ptr<ProtocolBase> _base_ptr;
 
  public:
-  ProtocolOps(const string& msg_id) : _op_msg_id(msg_id){};
+  ProtocolOps(const msg_id_t& msg_id) : _op_msg_id(msg_id){};
   //ProtocolOps(shared_ptr<ProtocolBase> base_ptr): _base_ptr(base_ptr){};
 
   virtual ~ProtocolOps() = default;
 
   /**
    * @desc: encode the literal number to a protocol-specific format 
-   *         wrappered as string.
+   *         wrapped as string.
    * @param:
    *     in, the vector of literal number
    *     out, the vector of the encoded strings
@@ -90,6 +97,16 @@ class ProtocolOps {
   virtual int PrivateInput(int party_id, const vector<double>& in_x, vector<string>& out_x) {
     THROW_NOT_IMPL;
   }
+  virtual int PublicInput(int party_id, const vector<double>& in_x, vector<string>& out_x) {
+    THROW_NOT_IMPL;
+  }
+
+  virtual int Broadcast(int from_party, const string& msg, string& result) { THROW_NOT_IMPL; }
+
+  // result must be allocate outside!
+  virtual int Broadcast(int from_party, const char* msg, char* result, size_t size) { THROW_NOT_IMPL; }
+  // virtual ssize_t Send(int party, const char* data, size_t size, std::string msgid) { THROW_NOT_IMPL; }
+  // virtual ssize_t Recv(int party, char* data, size_t size, std::string msgid) { THROW_NOT_IMPL; }
 
   /**
    * @desc: This is for Tensorflow's SaveV2 Op.
@@ -288,7 +305,7 @@ class ProtocolOps {
 
   /**
    * @desc: optional, for high-precision logarithm. 
-   *    The default implementaion in base class will use the Log.
+   *    The default implementation in base class will use the Log.
    */
   virtual int HLog(
     const vector<string>& a,
@@ -367,6 +384,44 @@ class ProtocolOps {
     THROW_NOT_IMPL;
   }
 
+  virtual int BiasAdd(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
+  // get \sqrt{a}
+  virtual int Sqrt(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
+  // get 1/\sqrt{a}
+  virtual int Rsqrt(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
+  virtual int Invert(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
+  virtual int Exp(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
   ////////////////////////////////// training ops //////////////////////////////////
   virtual int Reveal(
     const vector<string>& a,
@@ -378,6 +433,41 @@ class ProtocolOps {
   virtual int Reveal(
     const vector<string>& a,
     vector<double>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+  ////////////////////////////////// logical ops //////////////////////////////////
+  virtual int AND(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+  virtual int OR(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+  virtual int XOR(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+  virtual int NOT(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
+  virtual int Softmax(
+    const vector<string>& a,
+    vector<string>& output,
     const attr_type* attr_info = nullptr) {
     THROW_NOT_IMPL;
   }

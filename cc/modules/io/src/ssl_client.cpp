@@ -16,30 +16,44 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #include "cc/modules/io/include/internal/client.h"
-#include "cc/modules/common/include/utils/helper.h"
 
 int init_ssl_locking();
 namespace rosetta {
 namespace io {
 
-SSLClient::SSLClient(const std::string& ip, int port) : TCPClient(ip, port) {
-  is_ssl_socket_ = true;
-
+bool SSLClient::init_ssl() {
   init_ssl_locking();
 
-  SSL_library_init();
-  OpenSSL_add_all_algorithms();
-  ERR_load_crypto_strings();
-  SSL_load_error_strings();
+  //   int index = sslid_ * 3 + sid_;
+  // #if USE_GMTASSL
+  //   int ret = gmtassl_init_ssl_ctx(
+  //     false, &ctx_, netutil::vgs_root[index], netutil::vgs_cert[index], netutil::vgs_prik[index],
+  //     netutil::vgs_enc_cert[index], netutil::vgs_enc_prik[index], "123456");
+  // #else // USE_OPENSSL
+  //   int ret = openssl_init_ssl_ctx(
+  //     false, &ctx_, netutil::vgs_root[index], netutil::vgs_cert[index], netutil::vgs_prik[index],
+  //     "123456");
+  // #endif
 
-  ctx_ = SSL_CTX_new(SSLv23_client_method());
-  if (ctx_ == nullptr) {
-    ERR_print_errors_fp(stdout);
-    exit(1);
+#if USE_GMTASSL
+#else // USE_OPENSSL
+  int ret = openssl_init_ssl_ctx(
+    false, &ctx_, "certs/Root.crt", "certs/Client.crt", "certs/Client.key", "123456");
+#endif
+
+  if (ret != 0 || ctx_ == nullptr) {
+    ERR_print_errors_fp(stderr);
+    log_error << "SSLClient init_ssl_ctx ret != 0 || ctx_ == nullptr" << endl;
+    //throw socket_exp("SSLClient init_ssl_ctx ret != 0 || ctx_ == nullptr");
+    return false;
   }
 
-  ssl_ = SSL_new(ctx_);
   log_debug << "ssl client init ssl library done!" << endl;
+  return true;
+}
+
+SSLClient::SSLClient(const std::string& ip, int port) : TCPClient(ip, port) {
+  is_ssl_socket_ = true;
 }
 
 SSLClient::~SSLClient() {

@@ -22,6 +22,7 @@ from latticex.rosetta.secure import decorator as secure_ops
 from latticex.rosetta.secure import MsgIdGenerator
 from latticex.rosetta.rtt.ops.rtt_math_ops import rtt_cast
 from latticex.rosetta.controller.common_util import rtt_get_logger
+from latticex.rosetta.rtt.framework import rtt_tensor
 import re
 
 
@@ -51,6 +52,9 @@ class StaticReplacePass():
     # class variable, map tf native graph to secure rosetta graph
     tf_graph_mapto_secure_graph = {}
 
+    # class variable, map tf native src op to rosetta secure dest op
+    tf_op_mapto_secure_op = {}
+
     # class variable, Optimized Conversion ops(TfToRtt\RttToTf) flag
     enable_opt_conv = True
     support_conv_op_def_name = ("TfToRtt", "RttToTf")
@@ -72,12 +76,14 @@ class StaticReplacePass():
         """
 
         # tf op type name map to secure op info
-        # secure op info = [secure op name, secure op creator, secure op, is support constant attribute]
+        # secure op info = [secure op name, secure op creator, secure op, secure op input numbers, is support constant attribute]
         self.SECURE_DEF_NAME_IDX   = 0
         self.SECURE_CREATOR_IDX    = 1
         self.SECURE_OP_IDX         = 2
-        self.SECURE_CONST_ATTR_IDX = 3
+        self.SECURE_OP_INPUTS_IDX  = 3
+        self.SECURE_CONST_ATTR_IDX = 4
         self.secure_ops_infos = {
+<<<<<<< HEAD
                             # arithmetic binary operation
                             "rttadd" :        ["SecureAdd",      self._create_secure_binary_op,  secure_ops.SecureAdd,    True],
                             "rttsub" :        ["SecureSub",      self._create_secure_binary_op,  secure_ops.SecureSub,    True],
@@ -115,6 +121,61 @@ class StaticReplacePass():
                             "rttreducemean":  ["SecureReduceMean",self._create_secure_reduce_op,  secure_ops.SecureMean,  False],
                             "rttreducesum" :  ["SecureReduceSum", self._create_secure_reduce_op,  secure_ops.SecureSum,   False],
                             }
+=======
+                    # arithmetic binary operation
+                    "rttadd" :        ["SecureAdd",      self._create_secure_binary_op,  secure_ops.SecureAdd,      2,  True],
+                    "rttsub" :        ["SecureSub",      self._create_secure_binary_op,  secure_ops.SecureSub,      2,  True],
+                    "rttmul" :        ["SecureMul",      self._create_secure_binary_op,  secure_ops.SecureMul,      2,  True],
+                    "rttdiv" :        ["SecureRealDiv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,  2,  True],
+                    "rtttruediv" :    ["SecureTruediv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,  2,  True],
+                    "rttrealdiv" :    ["SecureRealDiv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,  2,  True],
+                    "rttfloordiv":    ["SecureFloorDiv", self._create_secure_binary_op,  secure_ops.SecureFloorDiv, 2,  True],
+                    "rttpow" :        ["SecurePow",      self._create_secure_binary_op,  secure_ops.SecurePow,      2,  True],
+                    "rttmatmul" :     ["SecureMatMul",   self._create_secure_binary_op,  secure_ops.SecureMatMul,   2,  False],
+
+                    # arithmetic unary operation
+                    "rttnegative" :   ["SecureNegative", self._create_secure_unary_op,   secure_ops.SecureNeg,      1,  False],
+                    "rttsquare" :     ["SecureSquare",   self._create_secure_unary_op,   secure_ops.SecureSquare,   1,  False],
+                    "rttlog" :        ["SecureLog",      self._create_secure_unary_op,   secure_ops.SecureLog,      1,  False],
+                    "rttlog1p" :      ["SecureLog1p",    self._create_secure_unary_op,   secure_ops.SecureLog1p,    1,  False],
+                    "rttabs" :        ["SecureAbs",      self._create_secure_unary_op,   secure_ops.SecureAbs,      1,  False],
+
+                    # relational operation
+                    "rttequal" :      ["SecureEqual",    self._create_secure_relational_op,      secure_ops.SecureEqual,        2,  True],
+                    "rttnotequal":    ["SecureNotEqual", self._create_secure_relational_op,      secure_ops.SecureNotEqual,     2,  True],
+                    "rttless" :       ["SecureLess",     self._create_secure_relational_op,      secure_ops.SecureLess,         2,  True],
+                    "rttgreater" :    ["SecureGreater",  self._create_secure_relational_op,      secure_ops.SecureGreater,      2,  True],
+                    "rttlessequal":   ["SecureLessEqual",self._create_secure_relational_op,      secure_ops.SecureLessEqual,    2,  True],
+                    "rttgreaterequal":["SecureGreaterEqual", self._create_secure_relational_op,  secure_ops.SecureGreaterEqual, 2,  True],
+
+                    # logical operation
+                    "rttlogicaland" : ["SecureLogicalAnd",self._create_secure_logical_op, secure_ops.SecureLogicalAnd,      2,   True],
+                    "rttlogicalor" :  ["SecureLogicalOr", self._create_secure_logical_op, secure_ops.SecureLogicalOr,       2,   True],
+                    "rttlogicalxor" : ["SecureLogicalXor",self._create_secure_logical_op, secure_ops.SecureLogicalXor,      2,   True],
+                    "rttlogicalnot" : ["SecureLogicalNot",self._create_secure_logic_unary_op, secure_ops.SecureLogicalNot,  1,   False],
+
+                    # reduce operation
+                    "rttreducemin" :  ["SecureReduceMin", self._create_secure_reduce_op,  secure_ops.SecureMin,   2,    False],
+                    "rttreducemax" :  ["SecureReduceMax", self._create_secure_reduce_op,  secure_ops.SecureMax,   2,    False],
+                    "rttreducemean":  ["SecureReduceMean",self._create_secure_reduce_op,  secure_ops.SecureMean,  2,    False],
+                    "rttreducesum" :  ["SecureReduceSum", self._create_secure_reduce_op,  secure_ops.SecureSum,   2,    False],
+                    "rttargmax" :     ["SecureArgMax",    self._create_secure_reduce_op,  secure_ops.SecureArgMax,2,    False],
+
+                    # state operation
+                    "rttassignsub" :  ["SecureAssignSub", self._create_secure_state_op, secure_ops.SecureAssignSub, 2,    False],
+
+                    # nn operation
+                    "rttsigmoid" :    ["SecureSigmoid",  self._create_secure_nn_op,  secure_ops.SecureSigmoid,      1,  False],
+                    "rttrelu" :       ["SecureRelu",     self._create_secure_nn_op,  secure_ops.SecureRelu,         1,  False],
+                    "rttbiasadd" :    ["SecureBiasAdd",  self._create_secure_nn_op,  secure_ops.SecureBiasAdd,      2,  False],
+                    "rttconv2d" :     ["SecureConv2D",   self._create_secure_nn_op,  secure_ops.SecureConv2D,       2,  False],
+                    "rttl2loss" :     ["SecureL2Loss",   self._create_secure_nn_op,  secure_ops.SecureL2Loss,       1,  False],
+                    "rttfusedbatchnorm" : ["SecureFusedBatchNorm", self._create_secure_nn_op, secure_ops.SecureFusedBatchNorm, 5,  False],
+                    "rttavgpool" :    ["SecureAvgPool",  self._create_secure_nn_op,  secure_ops.SecureAvgPool,      1,  False],
+                    "rttmaxpool" :    ["SecureMaxPool",  self._create_secure_nn_op,  secure_ops.SecureMaxPool,      1,  False],
+                    "rttsoftmax" :    ["SecureSoftmax",  self._create_secure_nn_op,  secure_ops.SecureSoftmax,      1,  False],
+                }
+>>>>>>> upstream/master
 
 
         # source graph variable dict, save the train variables
@@ -132,15 +193,16 @@ class StaticReplacePass():
             self.rtt_scope = self.rtt_scope + str(StaticReplacePass.rtt_ns_idx)
         StaticReplacePass.rtt_ns_idx += 1
 
-        # src graph op must be replaced secure op
-        self.need_secure_op_name = []
-
         # save deepcopy op info using dict
         self.dc_op_info = {}
 
         # collect all variables, contain trainable variables
         # & no-trainable global variables & model variables
         self._collect_variables()
+
+        # If the dataflow passes through any of these nodes(rtt/secure ops), 
+        # then the tf/rtt native op need to replace with rtt secure op.
+        self.need_secure_op_sets = []
 
 
     def run(self, loss):
@@ -160,7 +222,7 @@ class StaticReplacePass():
             return secure_loss
 
         # Get default graph
-        to_graph = tf.get_default_graph()
+        to_graph = tf.compat.v1.get_default_graph()
 
         # Deep copy and replace source op
         secure_loss = self.copy_and_replace_to_graph(loss, to_graph)
@@ -241,7 +303,7 @@ class StaticReplacePass():
         """
 
         # Get trainable variable
-        for var in tf.trainable_variables():
+        for var in tf.compat.v1.trainable_variables():
             if self.rtt_scope != '':
                 new_name = (self.rtt_scope + '/' + var.name)
             else:
@@ -250,7 +312,7 @@ class StaticReplacePass():
             self.train_vars[new_name] = var
 
         # Get no-trainable global variable
-        for var in tf.global_variables():
+        for var in tf.compat.v1.global_variables():
             if self.rtt_scope != '':
                 new_name = (self.rtt_scope + '/' + var.name)
             else:
@@ -258,7 +320,7 @@ class StaticReplacePass():
             self.all_vars[new_name] = var
 
         #Get model varibale
-        for var in tf.model_variables():
+        for var in tf.compat.v1.model_variables():
             if self.rtt_scope != '':
                 new_name = (self.rtt_scope + '/' + var.name)
             else:
@@ -293,11 +355,15 @@ class StaticReplacePass():
         # The new collections will also be a part of the given scope.
         collections = []
         for name, collection in src_inst.graph._collections.items():
-            if src_inst in collection:
-                if self.rtt_scope == '':
-                    collections.append(name)
-                else:
-                    collections.append(self.rtt_scope + '/' + name)
+            if (len(collection) > 0):
+                if isinstance(src_inst, ops.Operation) and isinstance(collection[0], rtt_tensor.RttTensor):
+                    continue
+
+                if src_inst in collection:
+                    if self.rtt_scope == '':
+                        collections.append(name)
+                    else:
+                        collections.append(self.rtt_scope + '/' + name)
 
         # Take action based on the class of the source instance
         if isinstance(src_inst, ops.Tensor):
@@ -310,7 +376,7 @@ class StaticReplacePass():
             #and can't copy the placeholder op, return it immediately.
             if src_inst.op.op_def.name in self.support_conv_op_def_name:
                 conv_op = src_inst.op
-                while(True):
+                while(not conv_op.control_inputs):
                     if conv_op.op_def.name in self.support_conv_op_def_name:
                         assert len(conv_op.inputs) == 1, "Conversion operation must have only 1 edge"
                         conv_op = conv_op.inputs[0].op
@@ -347,13 +413,25 @@ class StaticReplacePass():
             if (self.enable_opt_conv):
                 op = self.skip_conversion_ops(op)
 
+            # If the source op has been replaced, return the replaced op directly.
+            if (op in StaticReplacePass.tf_op_mapto_secure_op.keys()):
+                return StaticReplacePass.tf_op_mapto_secure_op[op]
+
+            # If the source op is IteratorGetNext, reuse the tf native op. 
+            if op.op_def.name == "IteratorGetNext":
+                StaticReplacePass.tf_op_mapto_secure_op[op] = op
+                return op
+
             # Take action based on the op, if the op must secure op, we must
             # replace the op with secure op, otherwise, deep copy it.
-            if self._is_need_secure_op(op) and self._is_support_secure_op(op):
-                self.need_secure_op_name.append(new_name)
-                return self.create_secure_op(op, to_graph)
+            if self._is_support_secure_op(op) and self._is_need_secure_op(op):
+                dest_op = self.create_secure_op(op, to_graph)
             else:
-                return self.deep_copy_op(op, to_graph)
+                dest_op = self.deep_copy_op(op, to_graph)
+
+            # save the dest op, then return
+            StaticReplacePass.tf_op_mapto_secure_op[op] = dest_op
+            return dest_op
 
         else:
             # If the instance is not Tensor/Operation, then show error
@@ -368,6 +446,10 @@ class StaticReplacePass():
         :return: True is secure op , otherwise is False
         """
 
+        # If the op in need_secure_op_sets, return true.
+        if op in self.need_secure_op_sets:
+            return True
+
         # The name of the new instance
         if self.rtt_scope != '':
             new_name = self.rtt_scope + '/' + op.name
@@ -381,27 +463,44 @@ class StaticReplacePass():
             else:
                 return False
 
-        # if the op name is in self.need_secure_op_name, 
-        # so need secure op to replace the op
-        if new_name in self.need_secure_op_name:
-            return True
-
         # Take action based on the class of the source instance
         if isinstance(op, ops.Tensor):
             return self._is_need_secure_op(op.op)
 
         elif isinstance(op, ops.Operation):
+            # Save the op to need_secure_op_sets
+            if (op not in self.need_secure_op_sets):
+                self.need_secure_op_sets.append(op)
+
             # If the op is placeholder, return true
             if (op.op_def.name == "Placeholder"):
                 return True
 
-            # If it has inputs, call this function recursively on each.
-            inputs_secure_flag = [self._is_need_secure_op(x)
-                              for x in op.inputs]
-            if True in inputs_secure_flag:
+            # If the op is IteratorV2, subgraph data flow analysis, 
+            # check the subgraph(root op is MakeIterator) has need secure op?
+            if (op.op_def.name == "IteratorV2"):
+                for unit_op in tf.compat.v1.get_default_graph().get_operations():
+                    if (unit_op.op_def.name == "MakeIterator"):
+                        assert len(unit_op.inputs) == 2, "MakeIterator op inputs is incorrect."
+                        if (unit_op.inputs[0].op == op):
+                            return self._is_need_secure_op(unit_op.inputs[1])
+                        elif (unit_op.inputs[1].op == op):
+                            return self._is_need_secure_op(unit_op.inputs[0])
+            
+            # If the op is BatchDatasetV2, return true
+            if (op.op_def.name == "BatchDatasetV2"):
                 return True
-            else:
-                return False
+
+            # If it has inputs, call this function recursively on each.
+            for x in op.inputs:
+                the_input_secure_flag = self._is_need_secure_op(x)
+                if (the_input_secure_flag):
+                    return True
+            
+            # all the input edges don't need secure op, so remove the op from need_secure_op_sets,
+            # and then return false
+            self.need_secure_op_sets.remove(op)
+            return False
 
         else:
             # If the op is not Tensor/Operation, return false.
@@ -475,8 +574,9 @@ class StaticReplacePass():
             secure_def_name = self.secure_ops_infos[src_op.op_def.name.lower()][self.SECURE_DEF_NAME_IDX]
             secure_create_func = self.secure_ops_infos[src_op.op_def.name.lower()][self.SECURE_CREATOR_IDX]
             secure_op = self.secure_ops_infos[src_op.op_def.name.lower()][self.SECURE_OP_IDX]
+            secure_op_inputs = self.secure_ops_infos[src_op.op_def.name.lower()][self.SECURE_OP_INPUTS_IDX]
             assert secure_create_func != None, "secure creator is none."
-            return secure_create_func(src_op, secure_def_name, secure_op, to_graph)  
+            return secure_create_func(src_op, secure_def_name, secure_op, secure_op_inputs, to_graph)
         except KeyError:
             _errmsg = "tf native op {} does not implemented Secure op".format(src_op.op_def.name.lower())
             rtt_get_logger().error(_errmsg)
@@ -571,92 +671,144 @@ class StaticReplacePass():
         return new_op
 
 
-    def _create_secure_binary_op(self, src_op, secure_op_name, secure_op, to_graph):
+    def _create_secure_binary_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
         """
         create secure binary op(eg: secureadd\securesub\securemul\securediv...)
 
         :param src_op: source op instance, it's not secure op, it's tensorflow native op
         :param secure_op_name: secure op name.
         :param secure_op: secure op
+        :param secure_op_input_nums: secure op input numbers
         :param to_graph: dest graph
         :return: the secure op instance
         """
-        secure_op_input_nums = 2
+        assert secure_op_input_nums == 2, "%s op input numbers is incorrect." %secure_op_name
         return self._create_secure_op_helper(src_op, secure_op_name, 
                     secure_op_input_nums, secure_op, to_graph)
 
     
-    def _create_secure_unary_op(self, src_op, secure_op_name, secure_op, to_graph):
+    def _create_secure_unary_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
         """
         create secure unary op(eg: secureneg\securesquare\securelog\securelog1p...)
 
         :param src_op: source op instance, it's not secure op, it's tensorflow native op
         :param secure_op_name: secure op name.
         :param secure_op: secure op
+        :param secure_op_input_nums: secure op input numbers
         :param to_graph: dest graph
         :return: the secure op instance
         """
-        secure_op_input_nums = 1
+        assert secure_op_input_nums == 1, "%s op input numbers is incorrect." %secure_op_name
         return self._create_secure_op_helper(src_op, secure_op_name, 
                     secure_op_input_nums, secure_op, to_graph)
 
     
-    def _create_secure_relational_op(self, src_op, secure_op_name, secure_op, to_graph):
+    def _create_secure_relational_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
         """
         create secure relational op(eg: secureless\securegreater\securelessequal...)
 
         :param src_op: source op instance, it's not secure op, it's tensorflow native op
         :param secure_op_name: secure op name.
         :param secure_op: secure op
+        :param secure_op_input_nums: secure op input numbers
         :param to_graph: dest graph
         :return: the secure op instance
         """
-        secure_op_input_nums = 2
+        assert secure_op_input_nums == 2, "%s op input numbers is incorrect." %secure_op_name
+        return self._create_secure_op_helper(src_op, secure_op_name, 
+                    secure_op_input_nums, secure_op, to_graph)
+
+
+    def _create_secure_logical_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
+        """
+        create secure logical op(eg: securelogicaland\securelogicalor\securelogicalnot...)
+
+        :param src_op: source op instance, it's not secure op, it's tensorflow native op
+        :param secure_op_name: secure op name.
+        :param secure_op: secure op
+        :param secure_op_input_nums: secure op input numbers
+        :param to_graph: dest graph
+        :return: the secure op instance
+        """
+        assert secure_op_input_nums == 2, "%s op input numbers is incorrect." %secure_op_name
         return self._create_secure_op_helper(src_op, secure_op_name, 
                     secure_op_input_nums, secure_op, to_graph)
 
     
-    def _create_secure_reduce_op(self, src_op, secure_op_name, secure_op, to_graph):
+    def _create_secure_reduce_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
         """
         create secure reduce op(eg: securemin\securemax\securemean\securesum...)
 
         :param src_op: source op instance, it's not secure op, it's tensorflow native op
         :param secure_op_name: secure op name.
         :param secure_op: secure op
+        :param secure_op_input_nums: secure op input numbers
         :param to_graph: dest graph
         :return: the secure op instance
         """
-        secure_op_input_nums = 2
+        assert secure_op_input_nums == 2, "%s op input numbers is incorrect." %secure_op_name
         return self._create_secure_op_helper(src_op, secure_op_name, 
                     secure_op_input_nums, secure_op, to_graph)
 
 
-    def _create_secure_logic_binary_op(self, src_op, secure_op_name, secure_op, to_graph):
+    def _create_secure_logic_binary_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
         """
         create secure relational op(eg: secureand\secureor\securexor...)
 
         :param src_op: source op instance, it's not secure op, it's tensorflow native op
         :param secure_op_name: secure op name.
         :param secure_op: secure op
+        :param secure_op_input_nums: secure op input numbers
         :param to_graph: dest graph
         :return: the secure op instance
         """
-        secure_op_input_nums = 2
+        assert secure_op_input_nums == 2, "%s op input numbers is incorrect." %secure_op_name
         return self._create_secure_op_helper(src_op, secure_op_name, 
                     secure_op_input_nums, secure_op, to_graph)
 
 
-    def _create_secure_logic_unary_op(self, src_op, secure_op_name, secure_op, to_graph):
+    def _create_secure_logic_unary_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
         """
         create secure relational op(eg: securenot...)
 
         :param src_op: source op instance, it's not secure op, it's tensorflow native op
         :param secure_op_name: secure op name.
         :param secure_op: secure op
+        :param secure_op_input_nums: secure op input numbers
         :param to_graph: dest graph
         :return: the secure op instance
         """
-        secure_op_input_nums = 1
+        assert secure_op_input_nums == 1, "%s op input numbers is incorrect." %secure_op_name
+        return self._create_secure_op_helper(src_op, secure_op_name, 
+                    secure_op_input_nums, secure_op, to_graph)
+
+
+    def _create_secure_nn_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
+        """
+        create secure nn op(eg: secureconv2d,securebiasadd...)
+
+        :param src_op: source op instance, it's not secure op, it's tensorflow native op
+        :param secure_op_name: secure op name.
+        :param secure_op: secure op
+        :param secure_op_input_nums: secure op input numbers
+        :param to_graph: dest graph
+        :return: the secure op instance
+        """
+        return self._create_secure_op_helper(src_op, secure_op_name, 
+                    secure_op_input_nums, secure_op, to_graph)
+              
+
+    def _create_secure_state_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
+        """
+        create secure nn op(eg: secureassignsub,secureassignadd...)
+
+        :param src_op: source op instance, it's not secure op, it's tensorflow native op
+        :param secure_op_name: secure op name.
+        :param secure_op: secure op
+        :param secure_op_input_nums: secure op input numbers
+        :param to_graph: dest graph
+        :return: the secure op instance
+        """
         return self._create_secure_op_helper(src_op, secure_op_name, 
                     secure_op_input_nums, secure_op, to_graph)
 
@@ -704,10 +856,10 @@ class StaticReplacePass():
         # create secure op
         try:
             if secure_op_input_num == 1:
-                new_op = secure_op_creator(new_inputs[0], name=new_secure_name).op
+                new_op = self._create_unsupport_const_attr_secure_op(src_op, secure_op_creator, new_inputs, secure_op_input_num, new_secure_name)
             elif secure_op_input_num == 2:
                 if self._is_bin_op_unsupport_const_attr(src_op.op_def.name):
-                    new_op = self._create_unsupport_const_attr_secure_bin_op(src_op, secure_op_creator, new_inputs, new_secure_name)
+                    new_op = self._create_unsupport_const_attr_secure_op(src_op, secure_op_creator, new_inputs, secure_op_input_num, new_secure_name)
                 else:
                     new_op = secure_op_creator(new_inputs[0], new_inputs[1], name=new_secure_name,
                                         lh_is_const=self._secure_input_is_const(new_inputs[0]), 
@@ -719,8 +871,7 @@ class StaticReplacePass():
                 new_op = secure_op_creator(new_inputs[0], new_inputs[1], new_inputs[2], 
                                         new_inputs[3], name=new_secure_name).op
             elif secure_op_input_num == 5:
-                new_op = secure_op_creator(new_inputs[0], new_inputs[1], new_inputs[2], 
-                                        new_inputs[3], new_inputs[4], name=new_secure_name).op
+                new_op = self._create_unsupport_const_attr_secure_op(src_op, secure_op_creator, new_inputs, secure_op_input_num, new_secure_name)
             elif secure_op_input_num == 6:
                 new_op = secure_op_creator(new_inputs[0], new_inputs[1], new_inputs[2], 
                                         new_inputs[3], new_inputs[4], new_inputs[5], name=new_secure_name).op
@@ -780,6 +931,38 @@ class StaticReplacePass():
         return not info_val[self.SECURE_CONST_ATTR_IDX]
 
 
+    def _create_secure_op_with_attr(self, tf_op, secure_op, inputs, secure_name):
+        """
+        create Secure op with attrs
+
+        :param tf_op: the origin tensorflow operation
+        :param secure_op: secure op mapping to c++ layer secure op
+        :param inputs: the input of the operation
+        :param op_def_name: the origin name of tensorflow operation
+        :param secure_name: name of Secure operation, eg. SecureMatMul/SecureConv2D
+
+        :return: the new created Operation
+        """
+        
+        op_def_name = tf_op.op_def.name
+        rtt_op_name = op_def_name.lower()
+        if (rtt_op_name == 'rttmatmul'):
+            return self._create_secure_matmul_op_with_attr(tf_op, secure_op, inputs, secure_name)
+        elif (rtt_op_name == 'rttconv2d'):
+            return self._create_secure_conv2d_op_with_attr(tf_op, secure_op, inputs, secure_name)
+        elif (rtt_op_name == 'rttfusedbatchnorm'):
+            return self._create_secure_fusedbatchnorm_op_with_attr(tf_op, secure_op, inputs, secure_name)
+        elif (rtt_op_name == 'rttmaxpool'):
+            return self._create_secure_maxpool_op_with_attr(tf_op, secure_op, inputs, secure_name)
+        elif (rtt_op_name == 'rttavgpool'):
+            return self._create_secure_avgpool_op_with_attr(tf_op, secure_op, inputs, secure_name)
+        elif (rtt_op_name == 'rttreducesum' or rtt_op_name == 'rttreducemean' or 
+              rtt_op_name == 'rttreducemin' or rtt_op_name == 'rttreducemax'):
+            return self._create_secure_reduce_op_with_attr(tf_op, secure_op, inputs, secure_name)
+        else:
+            raise ValueError("the %s op maybe don't have attributes." %secure_name)
+
+
     def _create_secure_matmul_op_with_attr(self, tf_op, secure_op, inputs, secure_name):
         """
         create SecureMatMul op with attrs
@@ -794,20 +977,127 @@ class StaticReplacePass():
         """
         
         attrs_map = {}
-        for attr in tf_op.op_def.attr:
-            attrs_map[attr.name] = attr.default_value.b
+        attrs_map['transpose_a'] = tf_op.get_attr("transpose_a")
+        attrs_map['transpose_b'] = tf_op.get_attr("transpose_b")
         
         return secure_op(inputs[0], inputs[1], transpose_a=attrs_map['transpose_a'], transpose_b=attrs_map['transpose_b'], name=secure_name).op
 
 
-    def _create_unsupport_const_attr_secure_bin_op(self, tf_op, secure_op, inputs, secure_name):
+    def _create_secure_conv2d_op_with_attr(self, tf_op, secure_op, inputs, secure_name):
+        """
+        create SecureConv2D op with attrs
+
+        :param tf_op: the origin tensorflow operation
+        :param secure_op: secure op mapping to c++ layer secure op
+        :param inputs: the input of the operation
+        :param op_def_name: the origin name of tensorflow operation
+        :param secure_name: name of Secure operation, eg. rtt/SecureConv2D
+
+        :return: the new created Operation
+        """
+        
+        attrs_map = {}
+        attrs_map['strides'] = tf_op.get_attr("strides")
+        attrs_map['padding'] = tf_op.get_attr("padding")
+        attrs_map['explicit_paddings'] = tf_op.get_attr("explicit_paddings")
+        attrs_map['data_format'] = tf_op.get_attr("data_format")
+        
+        return secure_op(inputs[0], inputs[1], strides=attrs_map['strides'], padding=attrs_map['padding'], 
+                        explicit_paddings=attrs_map['explicit_paddings'], data_format=attrs_map['data_format'], name=secure_name).op
+
+
+    def _create_secure_fusedbatchnorm_op_with_attr(self, tf_op, secure_op, inputs, secure_name):
+        """
+        create SecureFusedBatchNorm op with attrs
+
+        :param tf_op: the origin tensorflow operation
+        :param secure_op: secure op mapping to c++ layer secure op
+        :param inputs: the input of the operation
+        :param op_def_name: the origin name of tensorflow operation
+        :param secure_name: name of Secure operation, eg. SecureFusedBatchNorm
+
+        :return: the new created Operation
+        """
+        
+        attrs_map = {}
+        attrs_map['epsilon'] = tf_op.get_attr("epsilon")
+        attrs_map['is_training'] = tf_op.get_attr("is_training")
+        
+        return secure_op(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], 
+                        epsilon=attrs_map['epsilon'], is_training=attrs_map['is_training'], name=secure_name).op
+
+
+    def _create_secure_maxpool_op_with_attr(self, tf_op, secure_op, inputs, secure_name):
+        """
+        create SecureMaxPool op with attrs
+
+        :param tf_op: the origin tensorflow operation
+        :param secure_op: secure op mapping to c++ layer secure op
+        :param inputs: the input of the operation
+        :param op_def_name: the origin name of tensorflow operation
+        :param secure_name: name of Secure operation, eg. SecureMaxPool
+
+        :return: the new created Operation
+        """
+        
+        attrs_map = {}
+        attrs_map['ksize'] = tf_op.get_attr("ksize")
+        attrs_map['strides'] = tf_op.get_attr("strides")
+        attrs_map['padding'] = tf_op.get_attr("padding")
+        attrs_map['data_format'] = tf_op.get_attr("data_format")
+        
+        return secure_op(inputs[0], ksize=attrs_map['ksize'], strides=attrs_map['strides'], 
+                        padding=attrs_map['padding'], data_format=attrs_map['data_format'], name=secure_name).op
+
+
+    def _create_secure_avgpool_op_with_attr(self, tf_op, secure_op, inputs, secure_name):
+        """
+        create SecureAvgPool op with attrs
+
+        :param tf_op: the origin tensorflow operation
+        :param secure_op: secure op mapping to c++ layer secure op
+        :param inputs: the input of the operation
+        :param op_def_name: the origin name of tensorflow operation
+        :param secure_name: name of Secure operation, eg. SecureAvgPool
+
+        :return: the new created Operation
+        """
+        
+        attrs_map = {}
+        attrs_map['ksize'] = tf_op.get_attr("ksize")
+        attrs_map['strides'] = tf_op.get_attr("strides")
+        attrs_map['padding'] = tf_op.get_attr("padding")
+        attrs_map['data_format'] = tf_op.get_attr("data_format")
+        
+        return secure_op(inputs[0], ksize=attrs_map['ksize'], strides=attrs_map['strides'], 
+                        padding=attrs_map['padding'], data_format=attrs_map['data_format'], name=secure_name).op
+
+    
+    def _create_secure_reduce_op_with_attr(self, tf_op, secure_op, inputs, secure_name):
+        """
+        create SecureReduce(sum/mean/min/max) op with attrs
+
+        :param tf_op: the origin tensorflow operation
+        :param secure_op: secure op mapping to c++ layer secure op
+        :param inputs: the input of the operation
+        :param op_def_name: the origin name of tensorflow operation
+        :param secure_name: name of Secure operation, eg. SecureAvgPool
+
+        :return: the new created Operation
+        """
+        attrs_map = {}
+        attrs_map['keep_dims'] = tf_op.get_attr("keep_dims")
+        return secure_op(inputs[0], inputs[1], keep_dims=attrs_map['keep_dims'], name=secure_name).op
+
+
+    def _create_unsupport_const_attr_secure_op(self, tf_op, secure_op, inputs, input_nums, secure_name):
         """
         create secure operation which is not supports const attribute
 
         :param tf_op: the origin tensorflow operation
         :param secure_op: secure op mapping to c++ layer secure op
         :param inputs: the input of the operation
-        :param op_def_name: the origin name of tensorflow operation
+        :param input_nums: tthe input numbers of the operation
         :param secure_name: name of Secure operation, eg. rtt/SecureMatMul
 
         :return: the new created Operation
@@ -815,10 +1105,24 @@ class StaticReplacePass():
         op_def_name = tf_op.op_def.name
         op_name = op_def_name.lower()
         new_op = None
-        if op_name == 'rttmatmul':
-            new_op = self._create_secure_matmul_op_with_attr(tf_op, secure_op, inputs, secure_name)
+        if op_name in {'rttmatmul', 'rttconv2d', 'rttfusedbatchnorm', 'rttmaxpool', 'rttavgpool', 
+                       'rttreducesum', 'rttreducemean', 'rttreducemin', 'rttreducemax'}:
+            new_op = self._create_secure_op_with_attr(tf_op, secure_op, inputs, secure_name)
         else:
-            new_op = secure_op(inputs[0], inputs[1], name=secure_name).op
+            if (input_nums == 1):
+                new_op = secure_op(inputs[0], name=secure_name).op
+            elif (input_nums == 2):
+                new_op = secure_op(inputs[0], inputs[1], name=secure_name).op
+            elif (input_nums == 3):
+                new_op = secure_op(inputs[0], inputs[1], inputs[2], name=secure_name).op
+            elif (input_nums == 4):
+                new_op = secure_op(inputs[0], inputs[1], inputs[2], inputs[3], name=secure_name).op
+            elif (input_nums == 5):
+                new_op = secure_op(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], name=secure_name).op
+            elif (input_nums == 6):
+                new_op = secure_op(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5], name=secure_name).op
+            else:
+                raise ValueError("the %s op have %d input edges." %secure_name %input_nums)
         
         return new_op
 
@@ -833,7 +1137,7 @@ class StaticReplacePass():
         dest_op = src_op
         assert isinstance(dest_op, ops.Operation), "Paramete type must be operation"
 
-        while(True):
+        while(not dest_op.control_inputs):
             if dest_op.op_def.name in self.support_conv_op_def_name:
                 assert len(dest_op.inputs) == 1, "Conversion operation must have only 1 edge"
                 dest_op = dest_op.inputs[0].op
@@ -867,7 +1171,7 @@ def replace_tf_subgraph_with_secure_subgraph(fetch):
         # Create StaticReplacePass object
         PassObj = StaticReplacePass()
 
-        if not PassObj.is_exist_secure_op(fetch.op) and not is_gradients_graph(fetch.name):
+        if not is_gradients_graph(fetch.name):
             # run static pass
             fetch = PassObj.run(fetch)
 

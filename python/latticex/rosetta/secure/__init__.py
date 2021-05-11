@@ -18,6 +18,9 @@
 # decorator of secure operators
 from latticex.rosetta.secure.decorator import *
 
+# dataset ops
+from latticex.rosetta.secure.data.ops.readers import *
+
 # ops
 from latticex.rosetta.secure.ops.nn_util import *
 from latticex.rosetta.secure.ops.gradients_util import *
@@ -46,11 +49,19 @@ from latticex.rosetta.secure.grads_ops.secure_log_grad import *
 from latticex.rosetta.secure.grads_ops.secure_log1p_grad import *
 from latticex.rosetta.secure.grads_ops.secure_sigmoid_grad import *
 from latticex.rosetta.secure.grads_ops.secure_nn_grad import *
-from latticex.rosetta.secure.grads_ops.nn.secure_relu_grad import *
 from latticex.rosetta.secure.grads_ops.secure_maxmin_grad import *
 from latticex.rosetta.secure.grads_ops.secure_sum_grad import *
 from latticex.rosetta.secure.grads_ops.secure_mean_grad import *
 from latticex.rosetta.secure.grads_ops.secure_compare_grad import *
+from latticex.rosetta.secure.grads_ops.secure_argmax_grad import *
+from latticex.rosetta.secure.grads_ops.nn.secure_relu_grad import *
+from latticex.rosetta.secure.grads_ops.nn.secure_biasadd_grad import *
+from latticex.rosetta.secure.grads_ops.nn.secure_conv2d_grad import *
+from latticex.rosetta.secure.grads_ops.nn.secure_l2loss_grad import *
+from latticex.rosetta.secure.grads_ops.nn.secure_fusedbatchnorm_grad import *
+from latticex.rosetta.secure.grads_ops.nn.secure_avgpool_grad import *
+from latticex.rosetta.secure.grads_ops.nn.secure_maxpool_grad import *
+from latticex.rosetta.secure.grads_ops.nn.secure_softmax_grad import *
 
 # static pass, replace
 from latticex.rosetta.secure.spass.static_replace_pass import *

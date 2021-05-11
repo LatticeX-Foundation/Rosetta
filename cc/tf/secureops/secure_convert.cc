@@ -39,7 +39,6 @@ using namespace tensorflow;
 #include "cc/modules/protocol/public/protocol_manager.h"
 #include "cc/tf/secureops/secure_base_kernel.h"
 
-
 using rosetta::ProtocolManager;
 
 namespace tensorflow {
@@ -57,7 +56,7 @@ class TfToSecureOp : public SecureOpKernel {
     log_debug << "input dtype: " << dtype << endl;
   }
 
-  void Compute(OpKernelContext* context) override {
+  void ComputeImpl(OpKernelContext* context) {
     log_debug << "tf_to_secure OpKernel compute ..." << endl;
     const Tensor* input_tensor;
     OP_REQUIRES_OK(context, context->input("input", &input_tensor));
@@ -78,7 +77,12 @@ class TfToSecureOp : public SecureOpKernel {
     vector<string> outputs(input_flat.size());
     // string isconst(1, 0);
     // attrs_["is_const"] = isconst;
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->TfToSecure(inputs, outputs, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(TfToSecure);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->TfToSecure(inputs, outputs, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(TfToSecure);
 
     log_debug << "tf_to_rtt out:" << endl;
     for (int i = 0; i < input_flat.size(); ++i) {
@@ -106,8 +110,10 @@ class TfToSecureOp<string> : public SecureOpKernel {
     log_debug << "input dtype: " << dtype << endl;
   }
 
-  void Compute(OpKernelContext* context) override {
-    log_debug << "tf_to_secure OpKernel compute, string input, if not suffix with R, it is constant input ..." << endl;
+  void ComputeImpl(OpKernelContext* context) {
+    log_debug
+      << "tf_to_secure OpKernel compute, string input, if not suffix with R, it is constant input ..."
+      << endl;
     const Tensor* input_tensor;
     OP_REQUIRES_OK(context, context->input("input", &input_tensor));
     const DataType& dtype = input_tensor->dtype();
@@ -127,7 +133,12 @@ class TfToSecureOp<string> : public SecureOpKernel {
     vector<string> outputs(input_flat.size());
     // string isconst(1, 1);
     // attrs_["is_const"] = isconst;
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->TfToSecure(inputs, outputs, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(TfToSecure);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->TfToSecure(inputs, outputs, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(TfToSecure);
 
     for (int i = 0; i < input_flat.size(); ++i) {
       output_flat(i) = outputs[i];
@@ -147,7 +158,7 @@ class SecureToTfOp : public SecureOpKernel {
  public:
   explicit SecureToTfOp(OpKernelConstruction* context) : SecureOpKernel(context) {}
 
-  void Compute(OpKernelContext* context) override {
+  void ComputeImpl(OpKernelContext* context) {
     log_debug << "--> SecureToTfOp OpKernel compute.";
 
     const Tensor* input_tensor;
@@ -155,7 +166,8 @@ class SecureToTfOp : public SecureOpKernel {
     const auto& input_flat = input_tensor->flat<string>();
 
     Tensor* output_tensor = nullptr;
-    OP_REQUIRES_OK(context, context->allocate_output("output", input_tensor->shape(), &output_tensor));
+    OP_REQUIRES_OK(
+      context, context->allocate_output("output", input_tensor->shape(), &output_tensor));
     auto output_flat = output_tensor->flat<T>();
 
     vector<string> inputs(input_flat.size());
@@ -165,10 +177,11 @@ class SecureToTfOp : public SecureOpKernel {
 
     vector<string> outputs(input_flat.size());
     // convert from protocol type hex string to native double string
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->SecureToTf(inputs, outputs);
-
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(SecureToTf);
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->SecureToTf(inputs, outputs);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(SecureToTf);
     for (int i = 0; i < input_flat.size(); ++i) {
-      output_flat(i) = static_cast<T>(rosetta::convert::from_hex_str<double>(outputs[i]));
+      output_flat(i) = static_cast<T>(rosetta::convert::from_binary_str<double>(outputs[i]));
     }
 
     log_debug << "SecureToTf OpKernel compute ok. <--";
@@ -180,7 +193,7 @@ class SecureToTfOp<string> : public SecureOpKernel {
  public:
   explicit SecureToTfOp(OpKernelConstruction* context) : SecureOpKernel(context) {}
 
-  void Compute(OpKernelContext* context) override {
+  void ComputeImpl(OpKernelContext* context) {
     log_debug << "--> SecureToTfOp OpKernel compute. string input";
 
     const Tensor* input_tensor;
@@ -188,9 +201,10 @@ class SecureToTfOp<string> : public SecureOpKernel {
     const auto& input_flat = input_tensor->flat<string>();
 
     const DataType& dtype = input_tensor->dtype();
-    
+
     Tensor* output_tensor = nullptr;
-    OP_REQUIRES_OK(context, context->allocate_output("output", input_tensor->shape(), &output_tensor));
+    OP_REQUIRES_OK(
+      context, context->allocate_output("output", input_tensor->shape(), &output_tensor));
     auto output_flat = output_tensor->flat<string>();
 
     vector<string> inputs(input_flat.size());
@@ -200,14 +214,111 @@ class SecureToTfOp<string> : public SecureOpKernel {
 
     vector<string> outputs(input_flat.size());
     // convert from protocol type hex string to native double string
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->SecureToTf(inputs, outputs);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(SecureToTf);
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->SecureToTf(inputs, outputs);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(SecureToTf);
 
     for (int i = 0; i < input_flat.size(); ++i) {
-      output_flat(i) = std::to_string(rosetta::convert::from_hex_str<double>(outputs[i]));
+      output_flat(i) = std::to_string(rosetta::convert::from_binary_str<double>(outputs[i]));
     }
 
     log_debug << "SecureToTf OpKernel compute ok. <--";
   }
+};
+
+template <typename T>
+class PrivateInputOp : public SecureOpKernel {
+ public:
+  explicit PrivateInputOp(OpKernelConstruction* ctx) : SecureOpKernel(ctx) {
+    OP_REQUIRES_OK(ctx, ctx->GetAttr("data_owner_", &data_owner_));
+    log_debug << "construct private input T op, data_owner_: " << data_owner_ << endl;
+  }
+
+  void ComputeImpl(OpKernelContext* context) {
+    log_debug << "private_input OpKernel compute ..." << endl;
+    const Tensor *input_tensor, *data_owner;
+    OP_REQUIRES_OK(context, context->input("input", &input_tensor));
+    OP_REQUIRES_OK(context, context->input("data_owner", &data_owner));
+    Tensor* output_tensor = nullptr;
+    OP_REQUIRES_OK(
+      context, context->allocate_output("output", input_tensor->shape(), &output_tensor));
+    auto output_flat = output_tensor->flat<string>();
+
+    const auto& input_flat = input_tensor->flat<T>();
+    vector<double> inputs(input_flat.size());
+    for (int i = 0; i < input_flat.size(); ++i) {
+      inputs[i] = double(input_flat(i));
+    }
+
+    const auto& data_owner_flat = data_owner->flat<int>();
+    data_owner_ = data_owner_flat(0);
+
+    // PrivateInput input
+    vector<string> outputs(input_flat.size());
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(PrivateInput);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->PrivateInput(data_owner_, inputs, outputs);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(PrivateInput);
+
+    for (int i = 0; i < input_flat.size(); ++i) {
+      output_flat(i) = outputs[i];
+    }
+
+    log_debug << "run PrivateInput op ok." << endl;
+  }
+
+ private:
+  int data_owner_;
+};
+
+template <>
+class PrivateInputOp<string> : public SecureOpKernel {
+ public:
+  explicit PrivateInputOp(OpKernelConstruction* ctx) : SecureOpKernel(ctx) {
+    // OP_REQUIRES_OK(ctx, ctx->GetAttr("data_owner_", &data_owner_));
+    // log_debug << "construct private input string op, data_owner_: " << data_owner_ << endl;
+  }
+
+  void ComputeImpl(OpKernelContext* context) {
+    log_debug << "private_input OpKernel compute ..." << endl;
+    const Tensor *input_tensor, *data_owner;
+    OP_REQUIRES_OK(context, context->input("input", &input_tensor));
+    OP_REQUIRES_OK(context, context->input("data_owner", &data_owner));
+
+    Tensor* output_tensor = nullptr;
+    OP_REQUIRES_OK(
+      context, context->allocate_output("output", input_tensor->shape(), &output_tensor));
+    auto output_flat = output_tensor->flat<string>();
+
+    const auto& input_flat = input_tensor->flat<string>();
+    vector<double> inputs(input_flat.size());
+    for (int i = 0; i < input_flat.size(); ++i) {
+      inputs[i] = std::stod(input_flat(i));
+    }
+
+    const auto& data_owner_flat = data_owner->flat<int>();
+    data_owner_ = data_owner_flat(0);
+
+    // PrivateInput input
+    vector<string> outputs(input_flat.size());
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(PrivateInput);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->PrivateInput(data_owner_, inputs, outputs);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(PrivateInput);
+
+    for (int i = 0; i < input_flat.size(); ++i) {
+      output_flat(i) = outputs[i];
+    }
+
+    log_debug << "run PrivateInput op ok." << endl;
+  }
+
+ private:
+  int data_owner_;
 };
 
 // Registers the currently supported output types.
@@ -221,18 +332,32 @@ REGISTER(int64);
 REGISTER(string);
 #undef REGISTER
 
+// tf_to_secure kernel
 REGISTER_KERNEL_BUILDER(
-  Name("TfToSecure").Device(DEVICE_CPU).TypeConstraint<string>("dtype"), TfToSecureOp<string>);
+  Name("TfToSecure").Device(DEVICE_CPU).TypeConstraint<string>("dtype"),
+  TfToSecureOp<string>);
 REGISTER_KERNEL_BUILDER(
-  Name("TfToSecure").Device(DEVICE_CPU).TypeConstraint<int32>("dtype"), TfToSecureOp<int32>);
+  Name("TfToSecure").Device(DEVICE_CPU).TypeConstraint<int32>("dtype"),
+  TfToSecureOp<int32>);
 REGISTER_KERNEL_BUILDER(
-  Name("TfToSecure").Device(DEVICE_CPU).TypeConstraint<int64>("dtype"), TfToSecureOp<int64>);
+  Name("TfToSecure").Device(DEVICE_CPU).TypeConstraint<int64>("dtype"),
+  TfToSecureOp<int64>);
 REGISTER_KERNEL_BUILDER(
-  Name("TfToSecure").Device(DEVICE_CPU).TypeConstraint<double>("dtype"), TfToSecureOp<double>);
+  Name("TfToSecure").Device(DEVICE_CPU).TypeConstraint<double>("dtype"),
+  TfToSecureOp<double>);
 
-// REGISTER_KERNEL_BUILDER(
-//   Name("SecureToTf").Device(DEVICE_CPU).TypeConstraint<string>("dtype"), SecureToTfOp<string>);
-// REGISTER_KERNEL_BUILDER(
-//   Name("SecureToTf").Device(DEVICE_CPU).TypeConstraint<int32>("dtype"), SecureToTfOp<int32>);
+// private_input kernel
+REGISTER_KERNEL_BUILDER(
+  Name("PrivateInput").Device(DEVICE_CPU).TypeConstraint<string>("dtype"),
+  PrivateInputOp<string>);
+REGISTER_KERNEL_BUILDER(
+  Name("PrivateInput").Device(DEVICE_CPU).TypeConstraint<int32>("dtype"),
+  PrivateInputOp<int32>);
+REGISTER_KERNEL_BUILDER(
+  Name("PrivateInput").Device(DEVICE_CPU).TypeConstraint<int64>("dtype"),
+  PrivateInputOp<int64>);
+REGISTER_KERNEL_BUILDER(
+  Name("PrivateInput").Device(DEVICE_CPU).TypeConstraint<double>("dtype"),
+  PrivateInputOp<double>);
 
-}
+} // namespace tensorflow

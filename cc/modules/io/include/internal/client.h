@@ -18,31 +18,24 @@
 #pragma once
 
 #include "cc/modules/io/include/internal/comm.h"
-
+#include "cc/modules/common/include/utils/msg_id.h"
 #include "cc/modules/io/include/internal/connection.h"
 #include "cc/modules/io/include/internal/socket.h"
-#include "cc/modules/io/include/internal/msg_id.h"
+#include "cc/modules/io/include/internal/ssl_socket.h"
 
 namespace rosetta {
 namespace io {
 
 class TCPClient : public Socket {
  public:
-  TCPClient(const std::string& ip, int port) : ip_(ip), port_(port) {}
-  ~TCPClient() {
-    close();
-  }
+  TCPClient(const std::string& host, int port) : host_(host), ip_(host), port_(port) {}
+  ~TCPClient() { close(); }
 
  public:
-  bool connected() const {
-    return connected_;
-  }
-  void setcid(int cid) {
-    cid_ = cid;
-  }
-  void setsid(int sid) {
-    sid_ = sid;
-  }
+  bool connected() const { return connected_; }
+  void setcid(int cid) { cid_ = cid; }
+  void setsid(int sid) { sid_ = sid; }
+  void setsslid(int sslid) { sslid_ = sslid; }
 
  public:
   /**
@@ -50,16 +43,20 @@ class TCPClient : public Socket {
    */
   bool connect(int64_t timeout = -1L);
   void close();
+  bool closed() { return !connected_; }
+
+  virtual bool init_ssl() { return true; }
 
  public:
   /**
    * \param timeout ms
    */
-  size_t send(const char* data, size_t len, int64_t timeout = -1L);
-  size_t recv(char* data, size_t len, int64_t timeout = -1L);
+  ssize_t send(const char* data, size_t len, int64_t timeout = -1L);
+  ssize_t recv(char* data, size_t len, int64_t timeout = -1L);
 
  protected:
-  string ip_ = "";
+  string host_ = ""; // Domain www.xxxx.yyy
+  string ip_ = ""; // IP xxx.xxx.xxx.xxx
   int port_ = 0;
   int fd_ = -1;
   bool connected_ = false;
@@ -67,6 +64,7 @@ class TCPClient : public Socket {
 
   int cid_ = 0; // client id
   int sid_ = 0; // server id (connect to)
+  int sslid_ = 0; // from sslid to sid
 
   SSL_CTX* ctx_ = nullptr;
   SSL* ssl_ = nullptr;
@@ -104,6 +102,7 @@ class SSLClient : public TCPClient {
   using TCPClient::TCPClient;
 
  public:
+  virtual bool init_ssl();
   SSLClient(const std::string& ip, int port);
   ~SSLClient();
 };

@@ -20,8 +20,6 @@
 // NOTE THAT THIS FILE IS USED FOR PROTOCOL SNN NOW.
 // WE WILL RENAME THIS AS SOON AS POSSIBLE.
 
-#include "cc/modules/common/include/utils/simple_timer.h"
-
 #include <emmintrin.h>
 #include <cassert>
 #include <climits>
@@ -104,7 +102,7 @@ const __m128i BIT128 = _mm_setr_epi8(128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 
 
 // for debug
-#define MPC_DEBUG_USE_FIXED_AESKEY  1
+#define MPC_DEBUG_USE_FIXED_AESKEY  0
 #define MPC_DEBUG                   0
 
 // for basic operations
@@ -115,6 +113,19 @@ const __m128i BIT128 = _mm_setr_epi8(128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 
 // for use IO with msg_id_t
 #define USE_NETIO_WITH_MESSAGEID 1
+
+/*
+// If there are some large values during its computation process,
+// the probability of the error in MPC arithematic truncation will NOT be negligible any more.
+// [Refer to Theorem 1 in SecureML paper for details]
+// So we may need to fix it in production application.
+// But, in the same time, this fixup will bring extra communication complexity [One round added].
+// 
+// Therefore we provide the solution to this problem as an option, 
+// and by default we will not use this fixup. 
+// If you really need this in your specific application, you can set this macro to '1'. 
+*/
+#define FIX_SHARE_TRUNCATION_PROBABILISTIC_ERROR 0
 
 // some flags
 #define MPC_LOG_DEBUG 		0

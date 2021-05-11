@@ -9,7 +9,7 @@ rtt.activate("SecureNN")
 
 # Get private data from Alice (input x), Bob (input y)
 x = tf.Variable(rtt.private_console_input(0, shape=(2, 3)))
-y = tf.Variable(rtt.private_console_input(1, shape=(2, 3)))
+y = tf.Variable(rtt.private_console_input(1, shape=(3, 2)))
 
 # Define matmul operation
 res = tf.matmul(x, y)
@@ -21,3 +21,5 @@ with tf.Session() as sess:
 
     # Get the result of Rosetta matmul
     print('matmul:', sess.run(rtt.SecureReveal(res)))
+
+rtt.deactivate()

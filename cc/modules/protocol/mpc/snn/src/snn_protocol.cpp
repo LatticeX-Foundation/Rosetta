@@ -28,26 +28,21 @@
 using namespace std;
 
 namespace rosetta {
-shared_ptr<ProtocolOps> SnnProtocol::GetOps(const string& op_token) {
+shared_ptr<ProtocolOps> SnnProtocol::GetOps(const msg_id_t& msgid) {
   //! @todo optimized
-  auto snn_ops_ptr = make_shared<SnnProtocolOps>(op_token);
+  auto snn_ops_ptr = make_shared<SnnProtocolOps>(msgid);
   snn_ops_ptr->net_io_ = GetNetHandler();
   snn_ops_ptr->op_config_map = config_map;
   auto o = std::dynamic_pointer_cast<ProtocolOps>(snn_ops_ptr);
   return o;
 }
 
-void SnnProtocol::_initialize_mpc_enviroment() { 
-    partyNum = my_party_id;
-    NUM_OF_PARTIES = 3;/// set to 3PC
-    initializeMPC();
+void SnnProtocol::_initialize_mpc_environment() {
+  partyNum = my_party_id;
+  NUM_OF_PARTIES = 3; /// set to 3PC
+  initializeMPC();
 }
 int SnnProtocol::_init_aeskeys() {
-#if MPC_DEBUG_USE_FIXED_AESKEY
-  return 0;
-#endif
-  cout << "_init_aeskeys" << endl;
-
   using namespace rosetta::mpc;
   {
     // gen private key
@@ -60,7 +55,7 @@ int SnnProtocol::_init_aeskeys() {
       AESKeyStrings::keys.key_c = gen_key_str();
       AESKeyStrings::keys.key_cd = gen_key_str();
     }
-    usleep(1000);
+    //usleep(1000);//no need to sleep
 
     // public aes key
     string kab, kac, kbc, k0;
@@ -69,7 +64,7 @@ int SnnProtocol::_init_aeskeys() {
     kac = gen_key_str();
     kbc = gen_key_str();
 
-    string msgkey("l---------=+++");
+    msg_id_t msgkey("snn_sync_aes_key");
     auto sync_aes_key = std::make_shared<rosetta::snn::SyncAesKey>(msgkey, GetNetHandler());
 
     sync_aes_key->Run(PARTY_A, PARTY_B, kab, kab);
@@ -82,7 +77,7 @@ int SnnProtocol::_init_aeskeys() {
     AESKeyStrings::keys.key_bc = kbc;
     AESKeyStrings::keys.key_ac = kac;
   }
-  usleep(1000);
+  //usleep(1000);//no need to sleep
 
   return 0;
 }

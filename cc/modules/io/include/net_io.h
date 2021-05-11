@@ -18,7 +18,7 @@
 #pragma once
 
 #include "cc/modules/io/include/internal/comm.h"
-#include "cc/modules/io/include/internal/msg_id.h"
+#include "cc/modules/common/include/utils/msg_id.h"
 #include "cc/modules/io/include/internal/simple_buffer.h"
 #include "cc/modules/io/include/internal/server.h"
 #include "cc/modules/io/include/internal/client.h"
@@ -38,7 +38,7 @@ using namespace std;
 /**
  * Users only need to include this one header file.
  * 
- * Provides NetIO/SSLNetIO/ParallelNetIO/SSLParallelNetIO
+ * Provides NetIOInterface/SSLNetIO/ParallelNetIO/SSLParallelNetIO
  * 
  * Note:
  * 
@@ -52,7 +52,6 @@ namespace io {
 /**
  * This is the basic class of Network IO.
  */
-template <typename Server, typename Client>
 class BasicIO {
  public:
   virtual ~BasicIO();
@@ -166,7 +165,7 @@ class BasicIO {
    * \param len legth size bytes will be received \n
    * \param tid thread id \n
    */
-  int recv(int party, char* data, size_t len, int tid = 0);
+  ssize_t recv(int party, char* data, size_t len, int tid = 0);
   /**
    * thread version \n
    * send len size data to the server which id is party. \n
@@ -176,12 +175,12 @@ class BasicIO {
    * \param len legth size bytes will be sent \n
    * \param tid thread id \n
    */
-  int send(int party, const char* data, size_t len, int tid = 0);
+  ssize_t send(int party, const char* data, size_t len, int tid = 0);
   /**
    * thread version \n
    * current party send len size data to the server which id is not current party. \n
    */
-  int broadcast(const char* data, size_t len, int tid = 0);
+  ssize_t broadcast(const char* data, size_t len, int tid = 0);
 
   /**
    * thread version \n
@@ -189,47 +188,47 @@ class BasicIO {
    * \see recv
    */
   template <typename T>
-  int recv(int party, vector<T>& data, size_t n, int tid = 0);
+  ssize_t recv(int party, vector<T>& data, size_t n, int tid = 0);
   /**
    * thread version \n
    */
   template <typename T>
-  int send(int party, const vector<T>& data, size_t n, int tid = 0);
+  ssize_t send(int party, const vector<T>& data, size_t n, int tid = 0);
   /**
    * thread version \n
    */
   template <typename T>
-  int broadcast(const vector<T>& data, size_t n, int tid = 0);
+  ssize_t broadcast(const vector<T>& data, size_t n, int tid = 0);
 
  public:
   /**
    * message-id version \n
    */
-  int recv(int party, char* data, size_t len, const msg_id_t& msg_id);
+  ssize_t recv(int party, char* data, size_t len, const msg_id_t& msg_id);
   /**
    * message-id version \n
    */
-  int send(int party, const char* data, size_t len, const msg_id_t& msg_id);
+  ssize_t send(int party, const char* data, size_t len, const msg_id_t& msg_id);
   /**
    * message-id version \n
    */
-  int broadcast(const char* data, size_t len, const msg_id_t& msg_id);
+  ssize_t broadcast(const char* data, size_t len, const msg_id_t& msg_id);
 
   /**
    * message-id version \n
    */
   template <typename T>
-  int recv(int party, vector<T>& data, size_t n, const msg_id_t& msg_id);
+  ssize_t recv(int party, vector<T>& data, size_t n, const msg_id_t& msg_id);
   /**
    * message-id version \n
    */
   template <typename T>
-  int send(int party, const vector<T>& data, size_t n, const msg_id_t& msg_id);
+  ssize_t send(int party, const vector<T>& data, size_t n, const msg_id_t& msg_id);
   /**
    * message-id version \n
    */
   template <typename T>
-  int broadcast(const vector<T>& data, size_t n, const msg_id_t& msg_id);
+  ssize_t broadcast(const vector<T>& data, size_t n, const msg_id_t& msg_id);
 
  protected:
   int verbose_ = 0;
@@ -238,7 +237,8 @@ class BasicIO {
   int thread_nums_ = 1;
   int base_port_ = -1;
   vector<string> ips_;
-  bool parallel_ = false;
+  bool is_parallel_io_ = false;
+  bool is_ssl_io_ = false;
 
   NetStat_st net_stat_st_;
 
@@ -249,41 +249,47 @@ class BasicIO {
  protected:
   vector<int> ports_;
   map<int, map<int, int>> party_cids_; // party id --> client ids <tid --> cid>
-  shared_ptr<Server> server = nullptr;
-  vector<vector<shared_ptr<Client>>> client; // [party_id][thread_id]
+  shared_ptr<TCPServer> server = nullptr;
+  vector<vector<shared_ptr<TCPClient>>> client; // [party_id][thread_id]
 };
 
-#include "internal/net_io.hpp"
+#include "cc/modules/io/include/internal/net_io.hpp"
 
 /**
  * General Net IO.
  */
-class NetIO : public BasicIO<TCPServer, TCPClient> {
+class NetIOInterface : public BasicIO {
  public:
-  using BasicIO<TCPServer, TCPClient>::BasicIO;
-  virtual ~NetIO() = default;
+  using BasicIO::BasicIO;
+  virtual ~NetIOInterface() = default;
 };
 
 /**
  * General Net IO with SSL.
  */
-class SSLNetIO : public BasicIO<SSLServer, SSLClient> {
+class SSLNetIO : public BasicIO {
  public:
-  using BasicIO<SSLServer, SSLClient>::BasicIO;
+  using BasicIO::BasicIO;
   virtual ~SSLNetIO() = default;
+
+ protected:
+  virtual bool init_inner() {
+    is_ssl_io_ = true;
+    return true;
+  }
 };
 
 /**
  * Parallel Net IO.
  */
-class ParallelNetIO : public BasicIO<TCPServer, TCPClient> {
+class ParallelNetIO : public BasicIO {
  public:
-  using BasicIO<TCPServer, TCPClient>::BasicIO;
+  using BasicIO::BasicIO;
   virtual ~ParallelNetIO() = default;
 
  protected:
   virtual bool init_inner() {
-    parallel_ = true;
+    is_parallel_io_ = true;
     return true;
   }
 };
@@ -291,14 +297,15 @@ class ParallelNetIO : public BasicIO<TCPServer, TCPClient> {
 /**
  * Parallel Net IO with SSL.
  */
-class SSLParallelNetIO : public BasicIO<SSLServer, SSLClient> {
+class SSLParallelNetIO : public BasicIO {
  public:
-  using BasicIO<SSLServer, SSLClient>::BasicIO;
+  using BasicIO::BasicIO;
   virtual ~SSLParallelNetIO() = default;
 
  protected:
   virtual bool init_inner() {
-    parallel_ = true;
+    is_ssl_io_ = true;
+    is_parallel_io_ = true;
     return true;
   }
 };

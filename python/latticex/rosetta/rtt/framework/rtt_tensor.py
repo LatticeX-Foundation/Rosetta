@@ -19,6 +19,7 @@ import tensorflow as tf
 from tensorflow.python.keras.utils import tf_utils
 from tensorflow.python.client import session as tf_session
 from tensorflow.python.framework import ops as tf_ops
+from tensorflow.python.ops import array_ops as tf_array_ops
 from latticex.rosetta.secure.spass.static_replace_pass import replace_tf_subgraph_with_secure_subgraph
 import numpy as np
 import re
@@ -26,7 +27,10 @@ import os
 from latticex.rosetta.controller.common_util import rtt_get_logger
 
 # load librtt_ops.so
-_rtt_ops_lib = os.path.dirname(__file__) + '/../../../librtt-ops.so'
+if 'ROSETTA_MPC_128' in os.environ and os.environ['ROSETTA_MPC_128'] == 'ON':
+    _rtt_ops_lib = os.path.dirname(__file__) + '/../../../lib128/librtt-ops.so'
+else:
+    _rtt_ops_lib = os.path.dirname(__file__) + '/../../../librtt-ops.so'
 rtt_ops = tf.load_op_library(_rtt_ops_lib)
 
 
@@ -57,6 +61,7 @@ class RttTensor(object):
       "__ge__",
       "__eq__",
       "__ne__",
+      "__getitem__",
       "__pow__",
       "__rpow__",
       "__matmul__",
@@ -73,6 +78,14 @@ class RttTensor(object):
         self._raw = value
         # print(self._raw.dtype)
 
+    def set_shape(self, shape):
+        """Updates the shape of this tensor."""
+        self._raw.set_shape(shape)
+
+    def get_shape(self):
+        """Alias of Tensor.shape."""
+        return self._raw.shape
+
     @property
     def shape(self):
         return self._raw.shape
@@ -80,6 +93,10 @@ class RttTensor(object):
     @property
     def name(self):
         return self._raw.name
+    
+    @property
+    def device(self):
+        return self._raw.device
 
     @property
     def dtype(self):
@@ -204,6 +221,34 @@ class RttTensor(object):
         res = rtt_ops.rtt_not_equal(self._raw, other._raw)
         return RttTensor(res)
 
+    def __and__(self, other):
+        """ self & other """
+        other = convert_to_rtttensor(other)
+        res = rtt_ops.rtt_logical_and(self._raw, other._raw)
+        return RttTensor(res)
+
+    def __or__(self, other):
+        """ self | other """
+        other = convert_to_rtttensor(other)
+        res = rtt_ops.rtt_logical_or(self._raw, other._raw)
+        return RttTensor(res)
+    
+    def __xor__(self, other):
+        """ self ^ other """
+        other = convert_to_rtttensor(other)
+        res = rtt_ops.rtt_logical_xor(self._raw, other._raw)
+        return RttTensor(res)
+
+    def __invert__(self):
+        """ !self """
+        res = rtt_ops.rtt_logical_not(self._raw)
+        return RttTensor(res)
+
+    def __getitem__(self, slice_spec):
+        """ override [] """
+        res = tf_array_ops._slice_helper(self._raw, slice_spec)
+        return RttTensor(res)
+
     def __pow__(self, other):
         """ self ** other """
         other = convert_to_rtttensor(other)
@@ -289,9 +334,6 @@ tf_utils.register_symbolic_tensor_type(RttTensor)
 
 def _convert_numpy_tensor(tensor):
     """ convert numpy tensor to rtt tensor """
-
-    if len(tensor.shape) > 2:
-        raise ValueError("Only matrices are supported for now.")
 
     if (
         np.issubdtype(tensor.dtype, np.int16)

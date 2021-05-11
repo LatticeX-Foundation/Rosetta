@@ -5,7 +5,7 @@
 mkdir -p log
 
 function install_requred() {
-    sklearn=`pip3 show sklearn && pip3 show pandas`
+    sklearn=$(pip3 show sklearn && pip3 show pandas)
     if [ $? -ne 0 ]; then
         echo "install required python package ..."
         pip3 install sklearn pandas --user
@@ -77,7 +77,7 @@ function run_all() {
     # matmul
     run_x tf matmul
     run_x rtt matmul
-	
+
     # millionaire
     run_x tf millionaire
     run_x rtt millionaire
@@ -94,11 +94,11 @@ function run_all() {
 
     # save/load (linear regression)
     run_x rtt linear_regression_saver
-    run_x tf linear_regression_saver
+    run_x tf linear_regression_restore
 
     # save/load (logistic regression)
     run_x rtt logistic_regression_saver
-    run_x tf logistic_regression_saver
+    run_x tf logistic_regression_restore
 
     # stat (linear regression)
     run_x tf linear_regression_stat
@@ -109,6 +109,10 @@ function run_all() {
     run_x tf logistic_regression_stat
     run_x rtt logistic_regression_stat
     run_x stat logistic_regression_stat logistic
+
+    # dataset pipeline
+    run_x tf ds-lr
+    run_x rtt ds-lr
 }
 
 function helper() {

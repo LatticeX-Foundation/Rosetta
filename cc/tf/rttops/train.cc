@@ -1,9 +1,11 @@
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/shape_inference.h"
-
+#include "tensorflow/core/util/bcast.h"
 
 #include <iostream>
+#include <vector>
+#include <string>
 
 using namespace std;
 using namespace tensorflow;
@@ -97,5 +99,6 @@ REGISTER_KERNEL_BUILDER(
   RttApplyGradientDescentOp<int>);
 
 /// we do not support resourceAGD in Demo for now
-// REGISTER_KERNEL_BUILDER(                      
+// REGISTER_KERNEL_BUILDER(
 //   Name("RttApplyGradientDescent").Device(DEVICE_CPU).HostMemory("var").TypeConstraint<float>("T"), cls<Eigen::ThreadPoolDevice, type>);
+

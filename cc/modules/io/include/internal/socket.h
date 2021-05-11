@@ -17,7 +17,11 @@
 // ==============================================================================
 #pragma once
 
+#include "cc/modules/common/include/utils/helper.h"
+#include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/rtt_exceptions.h"
 #include "cc/modules/io/include/internal/comm.h"
+#include "cc/modules/io/include/internal/netutil.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -52,14 +56,13 @@
 #include <event2/bufferevent_ssl.h>
 #endif
 
-#include <openssl/bio.h>
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#include <openssl/rand.h>
-#include <openssl/crypto.h>
-
 namespace rosetta {
 namespace io {
+#ifndef E_TIMEOUT
+#define E_ERROR -1
+#define E_TIMEOUT -3
+#define E_UNCONNECTED -4
+#endif
 
 /**
  * The base class of Server/Client
@@ -71,6 +74,9 @@ class Socket {
  public:
   Socket();
   virtual ~Socket() = default;
+
+ public:
+  static std::string gethostip(std::string hostname = "127.0.0.1");
 
   // 1
  public:
@@ -99,6 +105,8 @@ class Socket {
   int set_reuseport(int fd, int optval);
   int set_sendbuf(int fd, int size);
   int set_recvbuf(int fd, int size);
+  int set_send_timeout(int fd, int64_t timeout);
+  int set_recv_timeout(int fd, int64_t timeout);
   size_t default_buffer_size_ = 1024 * 1024 * 10;
   size_t default_buffer_size() { return default_buffer_size_; }
 

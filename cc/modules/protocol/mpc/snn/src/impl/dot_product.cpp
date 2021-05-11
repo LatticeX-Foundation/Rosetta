@@ -20,6 +20,91 @@
 namespace rosetta {
 namespace snn {
 
+// beaver-triple style MUltiplication for bit-AND
+int DotProduct::BitMul(const vector<small_mpc_t>& a,
+                        const vector<small_mpc_t>& b,
+                        vector<small_mpc_t> & c,
+                        size_t size) {
+  if (FOUR_PC) {
+    notYet();
+  }
+
+  if (THREE_PC) {
+    vector<small_mpc_t> A(size, 0), B(size, 0), C(size, 0);
+
+    if (HELPER) {
+      vector<small_mpc_t> A1(size, 0), A2(size, 0), B1(size, 0), B2(size, 0), C1(size, 0), C2(size, 0);
+      // We only use the last bit!
+      populateRandomVector<small_mpc_t>(A1, size, "a_1", "POSITIVE");
+      populateRandomVector<small_mpc_t>(A2, size, "a_2", "POSITIVE");
+      populateRandomVector<small_mpc_t>(B1, size, "b_1", "POSITIVE");
+      populateRandomVector<small_mpc_t>(B2, size, "b_2", "POSITIVE");
+      populateRandomVector<small_mpc_t>(C1, size, "c_1", "POSITIVE");
+
+      for(int i = 0; i < size; ++i) {
+        A[i] = A1[i] ^ A2[i] & 0x01;
+        B[i] = B1[i] ^ B2[i] & 0x01;
+        C[i] = A[i] & B[i] & 0x01;
+        C2[i] = C[i] ^ C1[i] & 0x01;
+      }
+      sendBitVector(C2, PARTY_B, size);
+    }
+
+    if (PRIMARY) {
+      if (partyNum == PARTY_A) {
+        populateRandomVector<small_mpc_t>(A, size, "a_1", "POSITIVE");
+        populateRandomVector<small_mpc_t>(B, size, "b_1", "POSITIVE");
+        populateRandomVector<small_mpc_t>(C, size, "c_1", "POSITIVE");
+      }
+
+      if (partyNum == PARTY_B) {
+        populateRandomVector<small_mpc_t>(A, size, "a_2", "POSITIVE");
+        populateRandomVector<small_mpc_t>(B, size, "b_2", "POSITIVE");
+        receiveBitVector(C, PARTY_C, size);
+        //cout << "partyNum " << partyNum << ",  C[0]:" << C[0] << endl;
+      }
+
+      // receiveThreeVectors<mpc_t>(A, B, C, PARTY_C, size, size, size);
+      vector<small_mpc_t> E(size), F(size), temp_E(size), temp_F(size);
+
+      for(int i = 0; i < size; ++i) {
+        E[i] = a[i] ^ A[i] & 0x01;
+        F[i] = b[i] ^ B[i] & 0x01;
+      }
+
+      thread* threads = new thread[2];
+      threads[0] = thread(
+        &OpBase_::sendTwoBitVector, this, ref(E), ref(F), adversary(partyNum), size, size);
+      threads[1] = thread(
+        &OpBase_::receiveTwoBitVector, this, ref(temp_E), ref(temp_F), adversary(partyNum),
+        size, size);
+
+      for (int i = 0; i < 2; i++)
+        threads[i].join();
+
+      delete[] threads;
+
+      for(int i = 0; i < size; ++i) {
+        E[i] = E[i] ^ temp_E[i] & 0x01;
+        F[i] = F[i] ^ temp_F[i] & 0x01;
+      }
+
+      for (size_t i = 0; i < size; ++i) {
+        c[i] = a[i] & F[i] & 0x01;
+        small_mpc_t temp = E[i] & b[i] & 0x01;
+        c[i] = c[i] ^ temp & 0x01;
+
+        if (partyNum == PARTY_A) {
+          temp = E[i] & F[i] & 0x01;
+          c[i] = c[i] ^ temp & 0x01;
+        }
+        c[i] = c[i] ^ C[i] & 0x01;
+      }
+    }
+  }
+  return 0;
+}
+
 int DotProduct::funcDotProduct(
   const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
   if (FOUR_PC) {
@@ -53,9 +138,9 @@ int DotProduct::funcDotProduct(
 
       populateRandomVector<mpc_t>(A1, size, "a_1", "POSITIVE");
       populateRandomVector<mpc_t>(A2, size, "a_2", "POSITIVE");
-      populateRandomVector<mpc_t>(B1, size, "b_1", "POSITIVE");
-      populateRandomVector<mpc_t>(B2, size, "b_2", "POSITIVE");
-      populateRandomVector<mpc_t>(C1, size, "c_1", "POSITIVE");
+      populateRandomVector<mpc_t>(B1, size, "a_1", "POSITIVE");
+      populateRandomVector<mpc_t>(B2, size, "a_2", "POSITIVE");
+      populateRandomVector<mpc_t>(C1, size, "a_1", "POSITIVE");
 
       addVectors<mpc_t>(A1, A2, A, size);
       addVectors<mpc_t>(B1, B2, B, size);
@@ -65,21 +150,20 @@ int DotProduct::funcDotProduct(
 
       subtractVectors<mpc_t>(C, C1, C2, size);
       sendVector<mpc_t>(C2, PARTY_B, size);
-      //cout << "partyNum " << partyNum << " C2[0]:" << C2[0] << endl;
     }
 
     if (PRIMARY) {
       if (partyNum == PARTY_A) {
         populateRandomVector<mpc_t>(A, size, "a_1", "POSITIVE");
-        populateRandomVector<mpc_t>(B, size, "b_1", "POSITIVE");
-        populateRandomVector<mpc_t>(C, size, "c_1", "POSITIVE");
+        populateRandomVector<mpc_t>(B, size, "a_1", "POSITIVE");
+        populateRandomVector<mpc_t>(C, size, "a_1", "POSITIVE");
       }
 
       if (partyNum == PARTY_B) {
         populateRandomVector<mpc_t>(A, size, "a_2", "POSITIVE");
-        populateRandomVector<mpc_t>(B, size, "b_2", "POSITIVE");
+        populateRandomVector<mpc_t>(B, size, "a_2", "POSITIVE");
         receiveVector<mpc_t>(C, PARTY_C, size);
-        //cout << "partyNum " << partyNum << " C[0]:" << C[0] << endl;
+        //cout << "partyNum " << partyNum << ",  C[0]:" << C[0] << endl;
       }
 
       // receiveThreeVectors<mpc_t>(A, B, C, PARTY_C, size, size, size);
@@ -111,11 +195,6 @@ int DotProduct::funcDotProduct(
       }
 #endif
 
-      //cout << "partyNum " << partyNum << "      E[0]:" << E[0] << endl;
-      //cout << "partyNum " << partyNum << "      F[0]:" << F[0] << endl;
-      //cout << "partyNum " << partyNum << " temp_E[0]:" << temp_E[0] << endl;
-      //cout << "partyNum " << partyNum << " temp_F[0]:" << temp_F[0] << endl;
-
       addVectors<mpc_t>(E, temp_E, E, size);
       addVectors<mpc_t>(F, temp_F, F, size);
 
@@ -130,12 +209,115 @@ int DotProduct::funcDotProduct(
         }
       }
       addVectors<mpc_t>(c, C, c, size);
+    #if FIX_SHARE_TRUNCATION_PROBABILISTIC_ERROR
+      // Fix the serious truncation error by restricting any shares <X_0, X_1>
+      // to <X-r, r> s.t r \in [2^{-62}, 2^{62}]. 
+      //  In this way, the serious error that MSB(X) = b and MSB<X-r> == MSB<r> == (1-b)
+      // can be avoided! 
+      // check section5.1.1 in ABY3 paper
+      vector<mpc_t> before_c = c;
+      vector<mpc_t> tmp_rand_share(size);
+      if (partyNum == PARTY_B) {
+        populateRandomVector<mpc_t>(tmp_rand_share, size, "INDEP", "POSITIVE");
+        for(int fix_iter = 0; fix_iter < size; ++fix_iter) {
+          // make sure r \in [2^{-62}, 2^{62}
+          tmp_rand_share[fix_iter] = (mpc_t)((signed_mpc_t)tmp_rand_share[fix_iter] >> 1);
+        }
+        subtractVectors(c, tmp_rand_share, c, size);
+        sendVector<mpc_t>(c, PARTY_A, size);
+        c = tmp_rand_share;
+      } else if (partyNum == PARTY_A) {
+        receiveVector<mpc_t>(tmp_rand_share, PARTY_B, size);
+        addVectors<mpc_t>(c, tmp_rand_share, c, size);
+      }
+    #endif
+    
       funcTruncate2PC(c, FLOAT_PRECISION_M, size, PARTY_A, PARTY_B);
+      
+      // just for debuging
+      #if MPC_DEBUG
+      for(int i = 0; i < size; ++i) {
+        cout << i << "-th context:" << endl;
+        cout << " local [signed] a:" << (signed_mpc_t)a[i];
+        cout << ", bit-presentation: ";
+        for (int j = sizeof(mpc_t) * 8 - 1; j >= 0; --j) {
+          cout << ((a[i] >> j) & 0x01);
+        }
+        cout << endl;
+
+        cout << " local b:" << (signed_mpc_t) b[i];
+        cout << ", bit-presentation: ";
+        for (int j = sizeof(mpc_t) * 8 - 1; j >= 0; --j) {
+          cout << ((b[i] >> j) & 0x01);
+        }
+        cout << endl;
+
+        cout << " local masking triple random:"<< endl;
+        cout << " A: " << (signed_mpc_t) A[i];
+        cout << ", bit-presentation: ";
+        for (int j = sizeof(mpc_t) * 8 - 1; j >= 0; --j) {
+          cout << ((A[i] >> j) & 0x01);
+        }
+        cout << endl;
+        
+        cout << " B: " << (signed_mpc_t) B[i];
+        cout << ", bit-presentation: ";
+        for (int j = sizeof(mpc_t) * 8 - 1; j >= 0; --j) {
+          cout << ((B[i] >> j) & 0x01);
+        }
+        cout << endl;      
+        cout << " C: " << (signed_mpc_t) C[i];
+        cout << ", bit-presentation: ";
+        for (int j = sizeof(mpc_t) * 8 - 1; j >= 0; --j) {
+          cout << ((C[i] >> j) & 0x01);
+        }
+        cout << endl;
+
+        cout << "Mul result::::" << endl;
+        cout << " Local share BEFORE truncation:" << (signed_mpc_t) before_c[i];
+        cout << ", bit-presentation: ";
+        for (int j = sizeof(mpc_t) * 8 - 1; j >= 0; --j) {
+          cout << ((before_c[i] >> j) & 0x01);
+        }
+        cout << endl;     
+        cout << " Local share AFTER truncation:" << (signed_mpc_t) c[i];
+        cout << ", bit-presentation: ";
+        for (int j = sizeof(mpc_t) * 8 - 1; j >= 0; --j) {
+          cout << ((c[i] >> j) & 0x01);
+        }
+        cout << endl;
+      }
+
+    } else {
+      for(int i = 0; i < size; ++i) {
+        cout << i << "-th context:" << endl;
+        cout << " local masking triple random:"<< endl;
+        cout << " A: " << (signed_mpc_t) A[i];
+        cout << ", bit-presentation: ";
+        for (int j = sizeof(mpc_t) * 8 - 1; j >= 0; --j) {
+          cout << ((A[i] >> j) & 0x01);
+        }
+        cout << endl;
+        
+        cout << " B: " << (signed_mpc_t) B[i];
+        cout << ", bit-presentation: ";
+        for (int j = sizeof(mpc_t) * 8 - 1; j >= 0; --j) {
+          cout << ((B[i] >> j) & 0x01);
+        }
+        cout << endl;      
+        cout << " C: " << (signed_mpc_t) C[i];
+        cout << ", bit-presentation: ";
+        for (int j = sizeof(mpc_t) * 8 - 1; j >= 0; --j) {
+          cout << ((C[i] >> j) & 0x01);
+        }
+        cout << endl;
+      }
+      #endif
     }
   }
 
   return 0;
 }
 
-} // namespace mpc
+} // namespace snn
 } // namespace rosetta

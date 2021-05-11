@@ -23,6 +23,7 @@
 #include <iostream>
 #include <mutex>
 #include <fstream>
+using namespace std;
 
 #include "cc/modules/protocol/public/protocol_manager.h"
 
@@ -79,7 +80,8 @@ class ProtocolHandler {
       throw;
     }
 
-    auto randop = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(seed_msg_id);
+    msg_id_t msg__seed_msg_id(seed_msg_id);
+    auto randop = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(msg__seed_msg_id);
     uint64_t seed = (uint64_t)randop->RandSeed();
     return seed;
   }
@@ -103,4 +105,18 @@ class ProtocolHandler {
   void set_logfile(const std::string& logfile) { Logger::Get().set_filename(logfile); }
   // Note: LogLevel \in { Cout = 0, Trace, Debug, Info, Warn, Error, Fatal };
   void set_loglevel(int loglevel) { Logger::Get().set_level(loglevel); }
+
+  // stats
+  void start_perf_stats() {
+    if (is_activated()) {
+      rosetta::ProtocolManager::Instance()->GetProtocol()->StartPerfStats();
+    }
+  }
+  std::string get_perf_stats(bool pretty = false) {
+    if (!is_activated()) {
+      return "{}";
+    }
+    auto stats = rosetta::ProtocolManager::Instance()->GetProtocol()->GetPerfStats();
+    return stats.to_json(pretty);
+  }
 };

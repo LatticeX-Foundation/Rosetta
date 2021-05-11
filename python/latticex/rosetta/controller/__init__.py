@@ -23,3 +23,4 @@ from latticex.rosetta.controller.protocol_api import *
 from latticex.rosetta.controller.input_api import *
 from latticex.rosetta.controller.random_api import *
 from latticex.rosetta.controller.dataset_api import *
+from latticex.rosetta.controller.netutil_api import *

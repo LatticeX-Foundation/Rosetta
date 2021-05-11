@@ -17,38 +17,13 @@
 // ==============================================================================
 #pragma once
 
-/*
-** thread-safe log based on spdlog
-*/
-
-#include <cstring>
-#include <string>
+/**
+ * thread-safe log based on spdlog
+ */
 #include <sstream>
-#include <iostream>
-using namespace std;
+#include <cstring>
 
-#ifdef _WIN32
-#include <Windows.h>
-#include <process.h>
-#define getpid _getpid
-#else
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#endif
-
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/basic_file_sink.h"
-
-#ifdef _WIN32
-#define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
-#else
-#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
-#endif
-
-namespace LoggerLevel
-{
+namespace LoggerLevel {
 enum LogEnum { Trace, Debug, Info, Warn, Error, Fatal };
 }
 using LogLevel = LoggerLevel::LogEnum;
@@ -60,84 +35,48 @@ class Logger {
     LogLevel level_;
 
    public:
-    log_stream(Logger& logger, LogLevel level, const char* file, const char* func, int line)
-        : logger_(logger), level_(level) {
-#ifndef NDEBUG
-      oss_prefix_ << "[" << file << ":" << line << "] ";
-#endif
-      }
-
-    log_stream(const log_stream& ls) : logger_(ls.logger_) {}
-    ~log_stream() {
-      std::string s(std::move(str()));
-      // if (s.empty() || (s[s.length() - 1] != '\n'))
-      //   s += "\n";
-      
-#ifndef NDEBUG
-      s = oss_prefix_.str() + s;
-#endif
-      if (logger_.to_stdout) {
-        //std::cout << str() << std::endl;
-        spdlog::log(static_cast<spdlog::level::level_enum>(level_), s.data());
-      }
-
-      auto logger = spdlog::get("Rosetta"); 
-      if (logger_.to_file && logger.get())
-        logger->log(static_cast<spdlog::level::level_enum>(level_), s.data());
-    }
+    log_stream(Logger& logger, LogLevel level, const char* file, const char* func, int line);
+    log_stream(const log_stream& ls);
+    ~log_stream();
   };
-
- public:
-  static Logger& Get() {
-    static Logger logger;
-    return logger;
-  }
-
- public:
-  void log_to_stdout(bool flag = true) { to_stdout = flag; }
-  void set_level(int level) { 
-    level_ = static_cast<LogLevel>(level);
-    spdlog::set_level(static_cast<spdlog::level::level_enum>(level_));
-  }
-
-  void set_filename(const std::string& filename) {
-    if (filename == filename_) {
-      return;
-    }
-
-    filename_ = filename;
-    to_file = true;
-    char buf[256] = {0};
-    snprintf(buf, 256, "%s.%d", filename_.data(), pid_);
-    auto logger = spdlog::basic_logger_mt("Rosetta", buf);//it will auto register
-  }
 
  private:
-  Logger() {
-    //mkdir("log", 0777);
-    pid_ = (int)getpid();
-    spdlog::set_automatic_registration(true);
-  };
+  Logger();
 
  public:
+  static Logger& Get();
+
   virtual ~Logger() { release(); }
-  void release() {}
+  void release();
 
   virtual log_stream operator()(LogLevel level, const char* file, const char* func, int line) {
     return log_stream(*this, level, file, func, line);
   }
 
+ public:
   LogLevel Level() { return level_; }
+  void log_to_stdout(bool flag = true) { to_stdout_ = flag; }
+  void set_level(int level);
+  void set_filename(const std::string& filename);
 
-private:
+ private:
   LogLevel level_ = LoggerLevel::Info;
   int pid_;
   std::string filename_;
-public:
-  bool to_stdout = true; //false;
-  bool to_file = false;
+
+  bool to_stdout_ = true; //false;
+  bool to_file_ = false;
 };
 
+#ifdef _WIN32
+#define __FILENAME__ (strrchr(__FILE__, '\\') ? std::strrchr(__FILE__, '\\') + 1 : __FILE__)
+#else
+#define __FILENAME__ (strrchr(__FILE__, '/') ? std::strrchr(__FILE__, '/') + 1 : __FILE__)
+#endif
+
+/**
+ * Cpp-style iostream
+ */
 // clang-format off
 #define log_trace if (Logger::Get().Level() <= LoggerLevel::Trace) Logger::Get()(LoggerLevel::Trace, __FILENAME__, __FUNCTION__, __LINE__)
 #define log_debug if (Logger::Get().Level() <= LoggerLevel::Debug) Logger::Get()(LoggerLevel::Debug, __FILENAME__, __FUNCTION__, __LINE__)
@@ -149,26 +88,10 @@ public:
 #define log_cout  cout
 // clang-format on
 
-#include <stdarg.h>
-static void clog_log(
-  LogLevel level,
-  const char* file,
-  const char* func,
-  int line,
-  const char* fmt,
-  ...) {
-  if (Logger::Get().Level() > level)
-    return;
-
-  va_list args;
-  char buf[1024 * 1024] = {0};
-  va_start(args, fmt);
-  vsprintf(buf, fmt, args);
-  va_end(args);
-
-  Logger::Get()(level, file, func, line) << buf;
-}
-
+/**
+ * C-style print
+ */
+void clog_log(LogLevel level, const char* file, const char* func, int line, const char* fmt, ...);
 // clang-format off
 #define clog_log_trace(...)  clog_log(LoggerLevel::Trace, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)
 #define clog_log_debug(...)  clog_log(LoggerLevel::Debug, __FILENAME__, __FUNCTION__, __LINE__, ##__VA_ARGS__)

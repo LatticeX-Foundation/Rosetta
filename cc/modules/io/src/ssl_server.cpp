@@ -22,48 +22,30 @@ int init_ssl_locking();
 namespace rosetta {
 namespace io {
 
-static SSL_CTX* evssl_init(
-  string server_cert,
-  string server_prikey,
-  string server_prikey_password) {
-  SSL_CTX* ctx = nullptr;
-
-  //! Initialize the OpenSSL library
-  SSL_load_error_strings();
-  SSL_library_init();
-
-  // disable
-  //if (!RAND_poll()) {
-  //  return nullptr;
-  //}
-
-  ctx = SSL_CTX_new(SSLv23_server_method());
-
-  //! set a password (if have).
-  SSL_CTX_set_default_passwd_cb_userdata(ctx, (void*)server_prikey_password.c_str());
-
-  if (!SSL_CTX_use_certificate_chain_file(ctx, server_cert.c_str())) {
-    cerr << "error: SSL_CTX_use_certificate_file " << server_cert << endl;
-    return nullptr;
-  }
-
-  if (!SSL_CTX_use_PrivateKey_file(ctx, server_prikey.c_str(), SSL_FILETYPE_PEM)) {
-    cerr << "error: SSL_CTX_use_PrivateKey_file " << server_prikey << endl;
-    return nullptr;
-  }
-
-  SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
-
-  log_debug << "ssl server init ssl library & load cert done!" << endl;
-  return ctx;
-}
-
 bool SSLServer::init_ssl() {
   init_ssl_locking();
-  ctx_ = evssl_init(server_cert_, server_prikey_, server_prikey_password_);
-  if (ctx_ == NULL) {
+
+// int index = sid_ * 3 + sid_;
+// #if USE_GMTASSL
+//   int ret = gmtassl_init_ssl_ctx(
+//     true, &ctx_, netutil::vgs_root[index], netutil::vgs_cert[index], netutil::vgs_prik[index],
+//     netutil::vgs_enc_cert[index], netutil::vgs_enc_prik[index], "123456");
+// #else // USE_OPENSSL
+//   int ret = openssl_init_ssl_ctx(
+//     true, &ctx_, netutil::vgs_root[index], netutil::vgs_cert[index], netutil::vgs_prik[index],
+//     "123456");
+// #endif
+#if USE_GMTASSL
+#else // USE_OPENSSL
+  int ret = openssl_init_ssl_ctx(
+    true, &ctx_, "certs/Root.crt", "certs/Server.crt", "certs/Server.key", "123456");
+#endif
+
+  if (ret != 0 || ctx_ == nullptr) {
     ERR_print_errors_fp(stderr);
-    exit(0);
+    log_error << "SSLServer init_ssl_ctx ret != 0 || ctx_ == nullptr" << endl;
+    //throw socket_exp("SSLServer init_ssl_ctx ret != 0 || ctx_ == nullptr");
+    return false;
   }
   return true;
 }
