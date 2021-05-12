@@ -336,8 +336,32 @@ int ReciprocalDiv::ReciprocalDivfor2(
       if (partyNum == PARTY_B) {
         initial_exp[i] = 1-initial_temp[i];
       }
+      //e^(1-2x)=1+(1-2x)+0.5*(1-2x)^2+0.1667*(1-2x)^3
+      //e^(1-2x)=1+initial_exp[i]+0.5*initial_exp[i]^2+0.1667*initial_exp[i]^3
+      /*
+      1.错误1：函数使用错误，针对向量而不是针对个别数字
+      GetMpcOpInner(DotProduct)->Run(initial_exp[i], initial_exp[i], initial_temp_b[i], vec_size);
+      GetMpcOpInner(DotProduct)->Run(initial_temp_b, initial_exp[i], initial_temp_c[i], vec_size);
+      GetMpcOpInner(DotProduct)->Run(initial_temp_b[i], NUM_HALF, initial_temp_b[i], vec_size);//0.5*initial_exp[i]^2
+      GetMpcOpInner(DotProduct)->Run(initial_temp_C[i], NUM_Factorialof3, initial_temp_c[i], vec_size);//0.1667*initial_exp[i]^3
+      GetMpcOpInner(DotProduct)->Run(initial_exp[i],NUM_0NE, initial_temp[i], vec_size);//initial_exp[i]
+      initial_temp[i]=SHARED_ONE+initial_temp[i]+initial_temp_c[i]+initial_temp_b[i]
+      2.错误2：使用c++自带exp
       initial_exp[i]=MpcTypeToFloat(initial_exp[i])
-      initial_exp[i]=FloatToMpcType(exp(initial_exp[i]))//这个实现方式就很离谱。估计是错的
+      initial_exp[i]=FloatToMpcType(exp(initial_exp[i]))
+      这个是错误的exp因为不能保证x0+x1=x;then exp(x0)+exp(x1)=exp(x)
+      那么上述正确的办法中，NUM_HALF在用作倍数的时候不能用share的值。之前声明过share的常量，可以不需要if语句对于不同的party分别处理。
+      */
+    }//initial_exp[i] =1-2*DEN
+      GetMpcOpInner(DotProduct)->Run(initial_exp, initial_exp, initial_temp_b, vec_size);//initial_exp^2
+      GetMpcOpInner(DotProduct)->Run(initial_temp_b, initial_exp, initial_temp_c, vec_size);//initial_exp^3
+      GetMpcOpInner(DotProduct)->Run(initial_temp_b, NUM_HALF, initial_temp_b, vec_size);//0.5*initial_exp^2
+      GetMpcOpInner(DotProduct)->Run(initial_temp_c, NUM_Factorialof3, initial_temp_c, vec_size);//0.1667*initial_exp^3
+      GetMpcOpInner(DotProduct)->Run(initial_exp,NUM_0NE, initial_temp, vec_size);//initial_exp[i]
+      addVectors(SHARED_ONE,initial_temp,initial_temp,vec_size);//1+x
+      addVectors(initial_temp,initial_temp_c,initial_temp,vec_size);//1+x+0.5x^2
+      addVectors(initial_temp,initial_temp_b,initial_temp,vec_size);//1+x+0.5x^2+0.1667x^3
+      
     }//exp(1-2*DEN)
     for (int i = 0; i < size; ++i) {
       initial_temp[i] = initial_exp[i];
