@@ -70,8 +70,8 @@ test_op division_test
 # test_op test_xxx_pow
 
 
-test_op log
-test_op log1p
+#test_op log
+#test_op log1p
 
 
 # test_op max
