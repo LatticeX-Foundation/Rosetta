@@ -414,9 +414,9 @@ class Rsqrt : public OpBase{
     int funcRsqrt(const vector<mpc_t>& a,  vector<mpc_t>& b, size_t size);
     int funcRsqrt(const vector<string>& as,  vector<string>& bs,size_t size){
       vector<mpc_t>  a , b ;
-      rosetta::convert::from_hex_str(as,a);
+      rosetta::convert::from_binary_str(as,a);
       MPCOP_RETURN(funcRsqrt(a,b,size));
-      rosetta::convert::to_hex_str(b,bs);
+      rosetta::convert::to_binary_str(b,bs);
       return 0;
     };
 };
@@ -434,9 +434,9 @@ class Exp : public OpBase{
     int funcExp(const vector<mpc_t>& a,  vector<mpc_t>& b, size_t size);
     int funcExp(const vector<string>& as,  vector<string>& bs,size_t size){
       vector<mpc_t>  a , b ;
-      rosetta::convert::from_hex_str(as,a);
+      rosetta::convert::from_binary_str(as,a);
       MPCOP_RETURN(funcExp(a,b,size));
-      rosetta::convert::to_hex_str(b,bs);
+      rosetta::convert::to_binary_str(b,bs);
       return 0;
     };
 };
@@ -455,9 +455,9 @@ class Sqrt : public OpBase{
     int funcSqrt(const vector<mpc_t>& a,  vector<mpc_t>& b, size_t size);
     int funcSqrt(const vector<string>& as,  vector<string>& bs,size_t size){
       vector<mpc_t>  a , b ;
-      rosetta::convert::from_hex_str(as,a);
+      rosetta::convert::from_binary_str(as,a);
       MPCOP_RETURN(funcSqrt(a,b,size));
-      rosetta::convert::to_hex_str(b,bs);
+      rosetta::convert::to_binary_str(b,bs);
       return 0;
     };
 };
