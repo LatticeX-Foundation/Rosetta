@@ -340,7 +340,7 @@ int snn_protocol_unary_ops_call(
 
   return 0;
 }
-//_________________________________________________
+
 int SnnProtocolOps::Rsqrt(
   const vector<string>& a,
   vector<string>& output,
@@ -427,7 +427,7 @@ int SnnProtocolOps::Exp(
 
   return 0;
 }
-//——————————————————————————————————————————————
+
 #define SNN_PROTOCOL_UNARY_OPS_CALL(OpFunctor, name, a, c, attr) \
   snn_protocol_unary_ops_call<OpFunctor>(name, _op_msg_id, net_io_, a, c, attr)
 

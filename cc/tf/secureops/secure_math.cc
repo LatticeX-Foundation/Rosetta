@@ -562,8 +562,6 @@ class SecureAbsOp : public SecureUnaryOp {
   }
 };
 
-<<<<<<< HEAD
-/*——————————————————————————————————————*/
 class SecureRsqrtOp : public StrUnaryOp {
  private:
   /* data */
@@ -610,11 +608,7 @@ class SecureExpOp : public StrUnaryOp {
   }
 };
 
-/*——————————————————————————————————————*/
-class SecureAbsPrimeOp : public StrUnaryOp {
-=======
 class SecureAbsPrimeOp : public SecureUnaryOp {
->>>>>>> upstream/master
  private:
   /* data */
  public:
