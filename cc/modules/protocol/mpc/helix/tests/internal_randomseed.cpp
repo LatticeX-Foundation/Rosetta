@@ -1,0 +1,22 @@
+#include "helix__test.h"
+
+void run(int partyid) {
+  HELIX_PROTOCOL_INTERNAL_TEST_INIT(partyid);
+  //////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////
+
+  {
+    vector<uint64_t> seeds(4);
+
+    hi->beg_statistics();
+    hi->RandSeed(seeds, seeds.size());
+    hi->end_statistics("RTT RandSeed(k=" + to_string(seeds.size()) + "):");
+
+    print_vec(seeds, 8, "seeds");
+  }
+  //////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////
+  HELIX_PROTOCOL_TEST_UNINIT(partyid);
+}
+
+RUN_MPC_TEST(run);

@@ -1,0 +1,22 @@
+name: Check Links
+
+on:
+  push:
+    paths: ["**.md", "**/link-check.yml"]
+  pull_request:
+    paths: ["**.md", "**/link-check.yml"]
+
+jobs:
+  markdown-link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git clone repository
+        uses: actions/checkout@v2
+      - name: Do markdown-link-check
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: "yes"
+          use-verbose-mode: "yes"
+          # No exclude parameter, so,
+          folder-path: "cc/modules,cc/python_export,cc/tf,doc,example,python"
+          file-path: "CODE_OF_CONDUCT.md,CONTRIBUTING.md,README_CN.md,README.md,RELEASE.md,cc/README.md"

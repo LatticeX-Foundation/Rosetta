@@ -1,0 +1,3 @@
+[submodule "cc/third_party/emp-toolkit/emp-tool"]
+	path = cc/third_party/emp-toolkit/emp-tool
+	url = https://github.com/emp-toolkit/emp-tool.git
