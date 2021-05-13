@@ -224,7 +224,6 @@ REGISTER_OP("RttMatmul")
   .Attr("transpose_a: bool = false")
   .Attr("transpose_b: bool = false");
 
-<<<<<<< HEAD
 REGISTER_OP("RttRsqrt")
   .Input("x: string")
   .Output("res: string");
@@ -240,9 +239,7 @@ REGISTER_OP("RttExp")
   .Output("res: string");
 
 
-=======
 REGISTER_OP("RttSquare").Input("x: string").Output("res: string");
->>>>>>> upstream/master
 
 REGISTER_OP("RttReduceMean")
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
