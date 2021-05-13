@@ -83,45 +83,6 @@ class StaticReplacePass():
         self.SECURE_OP_INPUTS_IDX  = 3
         self.SECURE_CONST_ATTR_IDX = 4
         self.secure_ops_infos = {
-<<<<<<< HEAD
-                            # arithmetic binary operation
-                            "rttadd" :        ["SecureAdd",      self._create_secure_binary_op,  secure_ops.SecureAdd,    True],
-                            "rttsub" :        ["SecureSub",      self._create_secure_binary_op,  secure_ops.SecureSub,    True],
-                            "rttmul" :        ["SecureMul",      self._create_secure_binary_op,  secure_ops.SecureMul,    True],
-                            "rttdiv" :        ["SecureRealDiv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,True],
-                            "rtttruediv" :    ["SecureTruediv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,True],
-                            "rttrealdiv" :    ["SecureRealDiv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,True],
-                            "rttfloordiv":    ["SecureFloorDiv", self._create_secure_binary_op,  secure_ops.SecureFloorDiv,True],
-                            "rttpow" :        ["SecurePow",      self._create_secure_binary_op,  secure_ops.SecurePow,    True],
-                            "rttmatmul" :     ["SecureMatMul",   self._create_secure_binary_op,  secure_ops.SecureMatMul, False],
-
-                            # arithmetic unary operation
-                            "rttnegative" :   ["SecureNegative", self._create_secure_unary_op,   secure_ops.SecureNeg,    False],
-                            "rttsquare" :     ["SecureSquare",   self._create_secure_unary_op,   secure_ops.SecureSquare, False],
-                            "rttrsqrt" :     ["SecureRsqrt",   self._create_secure_unary_op,   secure_ops.SecureRsqrt, False],
-                            "rttsqrt" :     ["SecureSqrt",   self._create_secure_unary_op,   secure_ops.SecureSqrt, False],
-                            "rttexp" :     ["SecureExp",   self._create_secure_unary_op,   secure_ops.SecureExp, False],
-                            "rttlog" :        ["SecureLog",      self._create_secure_unary_op,   secure_ops.SecureLog,    False],
-                            "rttlog1p" :      ["SecureLog1p",    self._create_secure_unary_op,   secure_ops.SecureLog1p,  False],
-                            "rttsigmoid" :    ["SecureSigmoid",  self._create_secure_unary_op,   secure_ops.SecureSigmoid,False],
-                            "rttrelu" :       ["SecureRelu",     self._create_secure_unary_op,   secure_ops.SecureRelu,   False],
-                            "rttabs" :        ["SecureAbs",      self._create_secure_unary_op,   secure_ops.SecureAbs,    False],
-
-                            # relational operation
-                            "rttequal" :      ["SecureEqual",    self._create_secure_relational_op,      secure_ops.SecureEqual,      True],
-                            "rttnotequal":    ["SecureNotEqual", self._create_secure_relational_op,      secure_ops.SecureNotEqual,   True],
-                            "rttless" :       ["SecureLess",     self._create_secure_relational_op,      secure_ops.SecureLess,       True],
-                            "rttgreater" :    ["SecureGreater",  self._create_secure_relational_op,      secure_ops.SecureGreater,    True],
-                            "rttlessequal":   ["SecureLessEqual",self._create_secure_relational_op,      secure_ops.SecureLessEqual,  True],
-                            "rttgreaterequal":["SecureGreaterEqual", self._create_secure_relational_op,  secure_ops.SecureGreaterEqual,True],
-
-                            # reduce operation
-                            "rttreducemin" :  ["SecureReduceMin", self._create_secure_reduce_op,  secure_ops.SecureMin,   False],
-                            "rttreducemax" :  ["SecureReduceMax", self._create_secure_reduce_op,  secure_ops.SecureMax,   False],
-                            "rttreducemean":  ["SecureReduceMean",self._create_secure_reduce_op,  secure_ops.SecureMean,  False],
-                            "rttreducesum" :  ["SecureReduceSum", self._create_secure_reduce_op,  secure_ops.SecureSum,   False],
-                            }
-=======
                     # arithmetic binary operation
                     "rttadd" :        ["SecureAdd",      self._create_secure_binary_op,  secure_ops.SecureAdd,      2,  True],
                     "rttsub" :        ["SecureSub",      self._create_secure_binary_op,  secure_ops.SecureSub,      2,  True],
@@ -139,6 +100,9 @@ class StaticReplacePass():
                     "rttlog" :        ["SecureLog",      self._create_secure_unary_op,   secure_ops.SecureLog,      1,  False],
                     "rttlog1p" :      ["SecureLog1p",    self._create_secure_unary_op,   secure_ops.SecureLog1p,    1,  False],
                     "rttabs" :        ["SecureAbs",      self._create_secure_unary_op,   secure_ops.SecureAbs,      1,  False],
+                    "rttrsqrt" :     ["SecureRsqrt",   self._create_secure_unary_op,   secure_ops.SecureRsqrt, False],
+                    "rttsqrt" :     ["SecureSqrt",   self._create_secure_unary_op,   secure_ops.SecureSqrt, False],
+                    "rttexp" :     ["SecureExp",   self._create_secure_unary_op,   secure_ops.SecureExp, False],
 
                     # relational operation
                     "rttequal" :      ["SecureEqual",    self._create_secure_relational_op,      secure_ops.SecureEqual,        2,  True],
@@ -175,7 +139,6 @@ class StaticReplacePass():
                     "rttmaxpool" :    ["SecureMaxPool",  self._create_secure_nn_op,  secure_ops.SecureMaxPool,      1,  False],
                     "rttsoftmax" :    ["SecureSoftmax",  self._create_secure_nn_op,  secure_ops.SecureSoftmax,      1,  False],
                 }
->>>>>>> upstream/master
 
 
         # source graph variable dict, save the train variables

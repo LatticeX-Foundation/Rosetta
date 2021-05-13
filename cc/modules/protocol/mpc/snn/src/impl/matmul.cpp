@@ -66,8 +66,8 @@ int MatMul::funcMatMulMPC(
       populateRandomVector<mpc_t>(B2, size_right, "a_2", "POSITIVE");
       populateRandomVector<mpc_t>(C1, size, "a_1", "POSITIVE");
 
-      addVectors<mpc_t>(A1, A2, A, size_left);//算A
-      addVectors<mpc_t>(B1, B2, B, size_right);//算B
+      addVectors<mpc_t>(A1, A2, A, size_left);
+      addVectors<mpc_t>(B1, B2, B, size_right);
 
       EigenMatMul(A, B, C, rows, common_dim, columns, transpose_a, transpose_b);
       subtractVectors<mpc_t>(C, C1, C2, size);
@@ -129,5 +129,5 @@ int MatMul::funcMatMulMPC(
   }
   return 0;
 }
-} // namespace mpc
 } // namespace snn
+} // namespace rosetta
