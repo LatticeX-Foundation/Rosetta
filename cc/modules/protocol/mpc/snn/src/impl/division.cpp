@@ -330,26 +330,28 @@ int ReciprocalDiv::ReciprocalDivfor2(
     vector<mpc_t> initial_temp_c(vec_size,0);//迭代初值的中间值(1-2x)^3
     vector<mpc_t> SHARED_Factorialof3(vec_size, 0);
     if(partyNum == PARTY_A) {
-			// math.log(2) = 0.693147181
-			SHARED_Factorialof3 = vector<mpc_t>(vec_size, FloatToMpcType(0.16667));
-		}
-		vector<mpc_t> SHARED_HALF(vec_size, 0);
-		if(partyNum == PARTY_A) {
-			SHARED_HALF = vector<mpc_t>(vec_size, FloatToMpcType(0.5));
-		}
-		vector<mpc_t> SHARED_ONE(vec_size, 0);
-		if(partyNum == PARTY_A) {
-			SHARED_ONE = vector<mpc_t>(vec_size, FloatToMpcType(1));
-		}
-    vector<mpc_t> NUM_HALF(vec_size, 0);
-		NUM_HALF = vector<mpc_t>(vec_size, FloatToMpcType(0.5));
-		
-		vector<mpc_t> NUM_0NE(vec_size, 0);
-		NUM_0NE = vector<mpc_t>(vec_size, FloatToMpcType(1));
-		
-		vector<mpc_t> NUM_Factorialof3(vec_size, 0);
-		NUM_Factorialof3 = vector<mpc_t>(vec_size, FloatToMpcType(0.16667));
-		//以上凑齐了e^x次方泰勒展开式前三项
+	SHARED_Factorialof3 = vector<mpc_t>(vec_size, FloatToMpcType(0.16667));
+	}
+	vector<mpc_t> SHARED_HALF(vec_size, 0);
+    if(partyNum == PARTY_A) {
+	SHARED_HALF = vector<mpc_t>(vec_size, FloatToMpcType(0.5));
+	}
+	vector<mpc_t> SHARED_ONE(vec_size, 0);
+    if(partyNum == PARTY_A) {
+	SHARED_ONE = vector<mpc_t>(vec_size, FloatToMpcType(1));
+	}
+	vector<mpc_t> NUM_HALF(vec_size, 0);
+	NUM_HALF = vector<mpc_t>(vec_size, FloatToMpcType(0.5));
+
+	vector<mpc_t> NUM_0NE(vec_size, 0);
+	NUM_0NE = vector<mpc_t>(vec_size, FloatToMpcType(1));
+
+	vector<mpc_t> NUM_TWO(vec_size, 0);
+	NUM_TWO = vector<mpc_t>(vec_size, FloatToMpcType(2));
+
+	vector<mpc_t> NUM_Factorialof3(vec_size, 0);
+	NUM_Factorialof3 = vector<mpc_t>(vec_size, FloatToMpcType(0.16667));
+			//以上凑齐了e^x次方泰勒展开式前三项
     if (PRIMARY) {//这里的primary的条件具体含义是什么？是代表有任何一端的用户输入嘛？--是的，两个端口都是要进来的
     for (int i = 0; i < vec_size; ++i) {
       initial_temp[i] = denominator_vec[i] << 1;
@@ -386,46 +388,48 @@ int ReciprocalDiv::ReciprocalDivfor2(
       addVectors(initial_temp,initial_temp_c,initial_temp,vec_size);//1+x+0.5x^2
       addVectors(initial_temp,initial_temp_b,initial_temp,vec_size);//1+x+0.5x^2+0.1667x^3
       
-    }//exp(1-2*DEN)
+    //exp(1-2*DEN)
     for (int i = 0; i < vec_size; ++i) {
       initial_temp[i] = initial_exp[i];
       initial_exp[i] = initial_exp[i] << 1;
-      initial_temp[i]=initial_temp[i]+initial_exp[i]//这里实现了3倍
+      initial_temp[i]=initial_temp[i]+initial_exp[i];//这里实现了3倍
       //这里的result也需要share一下
       if(partyNum == PARTY_A) {
-          result[i]=initial_temp[i]
+          result[i]=initial_temp[i];
       }
       if(partyNum == PARTY_B) {
-          result[i]=result[i]+FloatToMpcType(0.003)
+          result[i]=result[i]+FloatToMpcType(0.003);
       }
       //result[i] = initial_exp[i] + initial_temp[i] + 0.003;//这里的数字不是十进制的，怎么实现加小数，是把0.003转化为mpc_t类型嘛？--已经解决
-    }//3*exp+0.003
+    }//3*exp+0.003=A=result
     //这里对于容器和常数的计算，就需要用这种形式进行每一位的运算，才能保证正确的处理，容器级的运算，就不需要这么麻烦。使用已有的算子即可。
     //这里的疑惑是，我用的是share的值，那我直接使用这种算法计算不太能保证最后得到的值就能对啊，这个算法并非经过SNN考量的。
     vector<mpc_t> iteraion_temp_2A(vec_size,0);//2*A
     vector<mpc_t> iteraion_temp_AA(vec_size,0);//A^2
-    vector<mpc_t> den_reprocial(vec_size,0);//这个就是最后要和分子相乘的分母的倒数
+    vector<mpc_t> den_reprocial_temp(vec_size,0);//这个就是最后要和分子相乘的分母的倒数中间值
     vector<mpc_t> quo(vec_size,0);
+/*这里的循环逻辑是错的
     for (int j = 0; j < vec_size; ++j) {
-      iteraion_temp[i] = result[i] << 1;//2*A
+      iteraion_temp_2A[j] = result[j] << 1;//2*A
     }
+*/
 
-    for(i=0;i<=iteration_time;i++)
+    for(int i=0;i<=iteration_time;i++)
     {
-      GetMpcOpInner(DotProduct)->Run(result, result, iteraion_temp_AA, vec_size);
-      GetMpcOpInner(DotProduct)->Run(iteraion_temp_AA, denominator_vec, den_reprocial, vec_size);
+      GetMpcOpInner(DotProduct)->Run(result, NUM_TWO, iteraion_temp_2A, vec_size);//2*A
+      GetMpcOpInner(DotProduct)->Run(result, result, iteraion_temp_AA, vec_size);//A*A
+      GetMpcOpInner(DotProduct)->Run(iteraion_temp_AA, denominator_vec, den_reprocial_temp, vec_size);//A*A*SELF
+      subtractVectors<mpc_t>(iteraion_temp_2A,den_reprocial_temp,result,vec_size);
     }
-    GetMpcOpInner(DotProduct)->Run(numerator_vec, den_reprocial, quo, vec_size);//这里是最后一步，但是还有一步，结果的正负没完成，结果的正负就存放在quotient_sign里面。
+    GetMpcOpInner(DotProduct)->Run(numerator_vec, result, quo, vec_size);//这里是最后一步，但是还有一步，结果的正负没完成，结果的正负就存放在quotient_sign里面。
      GetMpcOpInner(DotProduct)->Run(quo, quotient_sign, shared_quotient_vec, vec_size);//这里可能可以完成？
 
-    }
-  }
+    }//primary
+  }//threepc
 
-  }
-
-  }
+  
   return 0;
-}
+}//reciprocaldiv
   
 // clang-format off
 int DivisionV2::funcDivisionMPCV2(
