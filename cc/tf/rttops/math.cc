@@ -492,7 +492,7 @@ class RttRsqrtOp : public OpKernel {
   }
 
   void Compute(OpKernelContext* context) override {
-    print("RttRsqrt")
+    PRINT_END("RttRsqrt");
   }
 };
 
@@ -503,8 +503,7 @@ class RttSqrtOp : public OpKernel {
   }
 
   void Compute(OpKernelContext* context) override {
-    print("RttSqrt")
-  }
+    PRINT_END("RttSqrt");
 };
 
 
@@ -515,7 +514,7 @@ class RttExpOp : public OpKernel {
   }
 
   void Compute(OpKernelContext* context) override {
-    print("RttExp")
+    PRINT_END("RttExp");
   }
 };
 
