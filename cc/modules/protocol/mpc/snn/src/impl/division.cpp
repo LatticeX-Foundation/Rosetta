@@ -363,7 +363,7 @@ int ReciprocalDiv::ReciprocalDivfor2(
       addVectors(initial_temp,initial_temp_b,initial_temp,vec_size);//1+x+0.5x^2+0.1667x^3
       
     }//exp(1-2*DEN)
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < vec_size; ++i) {
       initial_temp[i] = initial_exp[i];
       initial_exp[i] = initial_exp[i] << 1;
       initial_temp[i]=initial_temp[i]+initial_exp[i]//这里实现了3倍

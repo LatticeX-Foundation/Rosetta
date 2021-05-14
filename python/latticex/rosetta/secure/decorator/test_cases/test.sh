@@ -51,9 +51,9 @@ echo "run standalone test case..."
 # test_op tf_const
 # test_op axis_test
 # test_op abs_test
-test_op save_v2
-test_op restore_v2
-test_op nn_ops_test
+#test_op save_v2
+#test_op restore_v2
+#test_op nn_ops_test
 
 
 # test_op fused_batch_norm
