@@ -326,8 +326,32 @@ int ReciprocalDiv::ReciprocalDivfor2(
     vector<mpc_t> result(vec_size,0);//迭代的初值语义为初代的1/x
     vector<mpc_t> initial_temp(vec_size,0);//迭代初值计算的中间值
     vector<mpc_t> initial_exp(vec_size,0);//迭代初值的指数部分
+    vector<mpc_t> initial_temp_b(vec_size,0);//迭代初值计算的中间值:(1-2x)^2
+    vector<mpc_t> initial_temp_c(vec_size,0);//迭代初值的中间值(1-2x)^3
+    vector<mpc_t> SHARED_Factorialof3(vec_size, 0);
+    if(partyNum == PARTY_A) {
+			// math.log(2) = 0.693147181
+			SHARED_Factorialof3 = vector<mpc_t>(vec_size, FloatToMpcType(0.16667));
+		}
+		vector<mpc_t> SHARED_HALF(vec_size, 0);
+		if(partyNum == PARTY_A) {
+			SHARED_HALF = vector<mpc_t>(vec_size, FloatToMpcType(0.5));
+		}
+		vector<mpc_t> SHARED_ONE(vec_size, 0);
+		if(partyNum == PARTY_A) {
+			SHARED_ONE = vector<mpc_t>(vec_size, FloatToMpcType(1));
+		}
+    vector<mpc_t> NUM_HALF(vec_size, 0);
+		NUM_HALF = vector<mpc_t>(vec_size, FloatToMpcType(0.5));
+		
+		vector<mpc_t> NUM_0NE(vec_size, 0);
+		NUM_0NE = vector<mpc_t>(vec_size, FloatToMpcType(1));
+		
+		vector<mpc_t> NUM_Factorialof3(vec_size, 0);
+		NUM_Factorialof3 = vector<mpc_t>(vec_size, FloatToMpcType(0.16667));
+		//以上凑齐了e^x次方泰勒展开式前三项
     if (PRIMARY) {//这里的primary的条件具体含义是什么？是代表有任何一端的用户输入嘛？--是的，两个端口都是要进来的
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < vec_size; ++i) {
       initial_temp[i] = denominator_vec[i] << 1;
       //这里涉及到加减法，因此，我们需要share
       if (partyNum == PARTY_A) {
@@ -363,7 +387,7 @@ int ReciprocalDiv::ReciprocalDivfor2(
       addVectors(initial_temp,initial_temp_b,initial_temp,vec_size);//1+x+0.5x^2+0.1667x^3
       
     }//exp(1-2*DEN)
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < vec_size; ++i) {
       initial_temp[i] = initial_exp[i];
       initial_exp[i] = initial_exp[i] << 1;
       initial_temp[i]=initial_temp[i]+initial_exp[i]//这里实现了3倍
@@ -382,7 +406,7 @@ int ReciprocalDiv::ReciprocalDivfor2(
     vector<mpc_t> iteraion_temp_AA(vec_size,0);//A^2
     vector<mpc_t> den_reprocial(vec_size,0);//这个就是最后要和分子相乘的分母的倒数
     vector<mpc_t> quo(vec_size,0);
-    for (int j = 0; j < size; ++j) {
+    for (int j = 0; j < vec_size; ++j) {
       iteraion_temp[i] = result[i] << 1;//2*A
     }
 
