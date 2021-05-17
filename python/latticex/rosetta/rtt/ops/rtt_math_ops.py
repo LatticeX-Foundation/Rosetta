@@ -184,17 +184,19 @@ def rtt_square(x, name=None):
 def rtt_rsqrt(x, name=None):
     """Computes 1/sqrt(x) of x element-wise."""
     x = rtt_ts.convert_to_rtttensor(x)
-    _result = rtt_ts.rtt_ops.rtt_rsqrt(x._raw, name)
+    _result = rtt_ts.rtt_ops.rtt_rsqrt(x._raw, name=name)
     return rtt_ts.RttTensor(_result)
+    
 def rtt_sqrt(x, name=None):
     """Computes square of x element-wise."""
     x = rtt_ts.convert_to_rtttensor(x)
-    _result = rtt_ts.rtt_ops.rtt_sqrt(x._raw, name)
+    _result = rtt_ts.rtt_ops.rtt_sqrt(x._raw, name=name)
     return rtt_ts.RttTensor(_result)
+
 def rtt_exp(x, name=None):
     """Computes square of x element-wise."""
     x = rtt_ts.convert_to_rtttensor(x)
-    _result = rtt_ts.rtt_ops.rtt_exp(x._raw, name)
+    _result = rtt_ts.rtt_ops.rtt_exp(x._raw, name=name)
     return rtt_ts.RttTensor(_result)
 
 

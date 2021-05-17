@@ -562,47 +562,46 @@ class SecureAbsOp : public SecureUnaryOp {
   }
 };
 
-class SecureRsqrtOp : public StrUnaryOp {
+class SecureRsqrtOp : public SecureUnaryOp {
  private:
   /* data */
  public:
-  SecureRsqrtOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  SecureRsqrtOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureRsqrtOp() {}
 
   int UnaryCompute(const vector<string>& input, vector<string>& output) {
     log_debug << "--> Rsqrt OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Rsqrt(input, output, &attrs_);
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Rsqrt(input, output, &attrs_);
     log_debug << "Rsqrt OpKernel compute ok. <--";
     return 0;
   }
 };
 
-
-class SecureSqrtOp : public StrUnaryOp {
+class SecureSqrtOp : public SecureUnaryOp {
  private:
   /* data */
  public:
-  SecureSqrtOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  SecureSqrtOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureSqrtOp() {}
 
   int UnaryCompute(const vector<string>& input, vector<string>& output) {
     log_debug << "--> Sqrt OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Sqrt(input, output, &attrs_);
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Sqrt(input, output, &attrs_);
     log_debug << "Sqrt OpKernel compute ok. <--";
     return 0;
   }
 };
 
-class SecureExpOp : public StrUnaryOp {
+class SecureExpOp : public SecureUnaryOp {
  private:
   /* data */
  public:
-  SecureExpOp(OpKernelConstruction* context) : StrUnaryOp(context) {}
+  SecureExpOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureExpOp() {}
 
   int UnaryCompute(const vector<string>& input, vector<string>& output) {
     log_debug << "--> Exp OpKernel compute.";
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id().str())->Exp(input, output, &attrs_);
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Exp(input, output, &attrs_);
     log_debug << "Exp OpKernel compute ok. <--";
     return 0;
   }

@@ -483,42 +483,7 @@ class RttMatMulOp : public OpKernel {
   bool transpose_a_;
   bool transpose_b_;
 };
-//————————————————————————————————————————
 
-template <typename Device>
-class RttRsqrtOp : public OpKernel {
- public:
-  explicit RttRsqrtOp(OpKernelConstruction* context) : OpKernel(context) {
-  }
-
-  void Compute(OpKernelContext* context) override {
-    PRINT_END("RttRsqrt");
-  }
-};
-
-template <typename Device>
-class RttSqrtOp : public OpKernel {
- public:
-  explicit RttSqrtOp(OpKernelConstruction* context) : OpKernel(context) {
-  }
-
-  void Compute(OpKernelContext* context) override {
-    PRINT_END("RttSqrt");
-};
-
-
-template <typename Device>
-class RttExpOp : public OpKernel {
- public:
-  explicit RttExpOp(OpKernelConstruction* context) : OpKernel(context) {
-  }
-
-  void Compute(OpKernelContext* context) override {
-    PRINT_END("RttExp");
-  }
-};
-
-//————————————————————————————————————————————
 template <typename Device>
 class RttLessOp : public RttBinaryOp<Device> {
  public:
@@ -801,6 +766,38 @@ class RttArgMaxOp : public OpKernel {
   }
 };
 
+template <typename Device>
+class RttRsqrtOp : public OpKernel {
+ public:
+  explicit RttRsqrtOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+  void Compute(OpKernelContext* context) {
+    PRINT_BEG("RttRsqrtOp");
+    throw;
+  }
+};
+
+template <typename Device>
+class RttSqrtOp : public OpKernel {
+ public:
+  explicit RttSqrtOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+  void Compute(OpKernelContext* context) {
+    PRINT_BEG("RttSqrtOp");
+    throw;
+  }
+};
+
+template <typename Device>
+class RttExpOp : public OpKernel {
+ public:
+  explicit RttExpOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+  void Compute(OpKernelContext* context) {
+    PRINT_BEG("RttExpOp");
+    throw;
+  }
+};
 ////////////////   register kernels (with string type only)   ////////////////
 using CPUDevice=Eigen::ThreadPoolDevice;
 

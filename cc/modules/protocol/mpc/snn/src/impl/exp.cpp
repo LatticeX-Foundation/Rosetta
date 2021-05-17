@@ -35,4 +35,5 @@ int Exp::funcExp(const vector<mpc_t>& a ,vector<mpc_t>& b,size_t size)
     b = result;//result = (1 + x / n) ^ n,其中n = 2的8次方
     return 0;
 }
-}}
+}
+}

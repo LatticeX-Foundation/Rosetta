@@ -418,7 +418,7 @@ class Rsqrt : public OpBase{
       MPCOP_RETURN(funcRsqrt(a,b,size));
       rosetta::convert::to_binary_str(b,bs);
       return 0;
-    };
+    }
 };
 class Exp : public OpBase{
   using OpBase::OpBase;
@@ -438,7 +438,7 @@ class Exp : public OpBase{
       MPCOP_RETURN(funcExp(a,b,size));
       rosetta::convert::to_binary_str(b,bs);
       return 0;
-    };
+    }
 };
 
 class Sqrt : public OpBase{
@@ -459,7 +459,7 @@ class Sqrt : public OpBase{
       MPCOP_RETURN(funcSqrt(a,b,size));
       rosetta::convert::to_binary_str(b,bs);
       return 0;
-    };
+    }
 };
 
 class Negative : public OpBase {
