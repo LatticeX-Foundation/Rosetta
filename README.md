@@ -178,7 +178,7 @@ Rosetta is an open source project developed under the LPGLv3 license and maintai
 You can cite our work as folllows:
 ```latex 
     @misc{Rosetta,
-      author = {Yuanfeng Chen, Gaofeng Huang, Junjie Shi, Xiang Xie, and Yilin Yan},
+      author = {Yuanfeng Chen and Gaofeng Huang and Junjie Shi and Xiang Xie and Yilin Yan},
       title = {{Rosetta: A Privacy-Preserving Framework Based on TensorFlow}},
       howpublished = {\url{https://github.com/LatticeX-Foundation/Rosetta}},
       year={2020}
