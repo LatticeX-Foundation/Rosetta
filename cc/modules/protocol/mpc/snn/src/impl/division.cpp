@@ -25,7 +25,7 @@ int Div::funcDiv(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& 
 }
 int Truediv::funcTruediv(
   const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
-  return GetMpcOpInner(DivisionV2)->Run(a, b, c, size);
+  return GetMpcOpInner(ReciprocalDiv)->Run(a, b, c, size);
 }
 
 // All parties start with shares of a number in a and b and the quotient is in quotient.
@@ -413,8 +413,8 @@ int ReciprocalDiv::ReciprocalDivfor2(
       iteraion_temp_2A[j] = result[j] << 1;//2*A
     }
 */
-
-    for(int i=0;i<=iteration_time;i++)
+     notYet();
+    for(int i=0;i<=1;i++)
     {
       GetMpcOpInner(DotProduct)->Run(result, NUM_TWO, iteraion_temp_2A, vec_size);//2*A
       GetMpcOpInner(DotProduct)->Run(result, result, iteraion_temp_AA, vec_size);//A*A

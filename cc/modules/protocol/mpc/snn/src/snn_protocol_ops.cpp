@@ -232,9 +232,13 @@ int snn_protocol_binary_ops_call(
     snn_decode(b, private_b);
     std::make_shared<OpFunctor>(msg_id, net_io)->Run(a, private_b, out_vec, a.size());
   } else {
+    log_debug << name << "  post 1 is ok. <----";
     snn_decode(a, private_a);////////// why variable got double string (eg. tf.Variable without private_input)
+    log_debug << name << "  post 2 is ok. <----";
     snn_decode(b, private_b);
+    log_debug << name << "  post 3 is ok. <----";
     std::make_shared<OpFunctor>(msg_id, net_io)->Run(private_a, private_b, out_vec, a.size());
+    log_debug << name << "  post 4 is ok. <----";
   }
   snn_encode(out_vec, c);
 
@@ -255,6 +259,7 @@ SNN_PROTOCOL_BINARY_OPS_CALL(Mul, rosetta::snn::Mul)
 //SNN_PROTOCOL_BINARY_OPS_CALL(Div, rosetta::snn::DivisionV2)
 SNN_PROTOCOL_BINARY_OPS_CALL(Div, rosetta::snn::ReciprocalDiv)
 SNN_PROTOCOL_BINARY_OPS_CALL(Truediv, rosetta::snn::Truediv)
+//SNN_PROTOCOL_BINARY_OPS_CALL(Truediv, rosetta::snn::ReciprocalDiv)
 SNN_PROTOCOL_BINARY_OPS_CALL(Floordiv, rosetta::snn::FloorDivision)
 
 SNN_PROTOCOL_BINARY_OPS_CALL(Less, rosetta::snn::Less)
