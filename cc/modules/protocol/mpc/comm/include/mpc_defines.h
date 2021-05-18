@@ -135,6 +135,6 @@ const __m128i BIT128 = _mm_setr_epi8(128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 
 // clang-format on
 
-//for crypten division method
+//for reciprocal division method
 #define iteration_time     10
 

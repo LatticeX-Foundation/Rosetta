@@ -239,19 +239,19 @@ int ReciprocalDiv::ReciprocalDivfor2(
   if (all_less) {
     GetMpcOpInner(Division)->Run(shared_numerator_vec, shared_denominator_vec, shared_quotient_vec, vec_size);
     return 0;
-  }//如果都是分子小于分母就可以加速处理 
+  }
 
   if (THREE_PC) {
     /*In the whole aspect,we are going to compute the reciprocial of shared_denominator_vec,
-    then we can make the reciprocal to matmul the shared_denominator_vec.
+    then we can make the reciprocal to matmul the shared_numerator_vec.
     First, because we dicide to use the iteration function,
     so we should make sure the postivate/negativate of the den,and then get the sign of the final result, SJJ have done this part.
-    Second,we should decide the iteration initial A by 3*exp(1-2*den)+0.003,the exp function we may use the polynimal to solve.
-    Third,10 times for iteration is enough ,so we make each circle to compute:A=2*A-A*A*den.
+    Second,we should decide the iteration initial A by 3*exp(1-2*den)+0.003,but in this method we will use our exprience to set two initial value.but we should notice the formula above is more precise,but more exhaustive.
+    Third,15 times for iteration is enough ,and we make each circle to compute:A=2*A-A*A*den.
     Finally,the A is 1/den,we realize num/den by num*（1/den).
     */
 
-   /// PART 0: determine whether the values are positive or negative.
+   /// determine whether the values are positive or negative.
     vector<mpc_t> shared_numer_sign(vec_size, 0);
     GetMpcOpInner(ComputeMSB)->Run3PC(shared_numerator_vec, shared_numer_sign, vec_size);
 
@@ -260,17 +260,15 @@ int ReciprocalDiv::ReciprocalDivfor2(
 
     vector<mpc_t> shared_sign_pos(vec_size, 0);
     if (partyNum == PARTY_A) {
-      shared_sign_pos = vector<mpc_t>(vec_size, FloatToMpcType(1));//这个数据转换大概是类型转换的意思。但具体是什么意思？
-    }
+      shared_sign_pos = vector<mpc_t>(vec_size, FloatToMpcType(1));
+	}
     vector<mpc_t> shared_sign_neg(vec_size, 0);
     if (partyNum == PARTY_A) {
       shared_sign_neg = vector<mpc_t>(vec_size, FloatToMpcType(-1));
     }
     vector<mpc_t> shared_x_sign(vec_size, 0);
-    /*在这个以上，应该是解决了首位是正负号的问题*/
+    
 
-    // Note: actually we can do the three independent MPC calls together
-    // in one call by using a triple-size vector.
     GetMpcOpInner(Select1Of2)->Run(shared_sign_neg, shared_sign_pos, shared_numer_sign, shared_x_sign, vec_size);
 
     vector<mpc_t> shared_y_sign(vec_size, 0);
@@ -278,25 +276,7 @@ int ReciprocalDiv::ReciprocalDivfor2(
 
     vector<mpc_t> quotient_sign_bit(vec_size, 0);
     GetMpcOpInner(XorBit)->Run(shared_numer_sign, shared_denom_sign, quotient_sign_bit, vec_size);
-    /*
-    这里shared_numer_sign、shared_denom_sign这两个量在computeMSB的时候确定的就是分子分母的最高位（0、1），然后经过2选择1的之后将
-    正负值转化为1和-1，靠选择shared_sign_neg和shared_sign_pos。然后确定分子分母的正负，确定系数的正负靠0和1异或，不同肯定是负数
-    */
-
-    // Note: actually we can do the three independent MPC calls together
-    // in one call by using a triple-size vector.
-    /*
-    shared_numerator_vec:函数形参
-    shared_denominator_vec:函数形参
-    shared_quotient_vec：商的张量形参
-    shared_x_sign:<vector>mpc_t格式的1or-1
-    shared_y_sign:<vector>mpc_t格式的1or-1
-    quotient_sign_bit：相同为0不同为1
-    numerator_vec:新生成的分子
-    denominator_vec:新生成的分母
-    quotient_vec：新生成的商
-    quotient_sign:商的张量的符号
-    */
+   
     vector<mpc_t> numerator_vec(vec_size, 0);
     vector<mpc_t> denominator_vec(vec_size, 0);
 
@@ -307,27 +287,12 @@ int ReciprocalDiv::ReciprocalDivfor2(
     GetMpcOpInner(Select1Of2)->Run(shared_sign_neg, shared_sign_pos, quotient_sign_bit, quotient_sign, vec_size);
 
     vector<mpc_t> quotient_vec = shared_quotient_vec;
-    /*以下为非隐私计算下的除法运算
-    result=3*exp(1-2*denominator_vec)+0.003; 
-    进入迭代：
-    for(i=0;i<=iteration_time;i++)
-    {
-      result=2*result-result*reault*denominator_vec;
-    }
+
     
-    den_reprocial=0;
-    den_reprocial = result;
-    quotient_vec=den_reprocial*numerator_vec*quotient_sign
-    */
-    
-   //对于倍数关系，应该是对于share的值来说都是一样的，比如最终想要达到2x的效果那么我们需要x0和x1都2倍就可以满足，但是如果是加法的话，我们
-   //就不能单纯的考虑一方，这个时候就就需要考虑share的和是整体即可，如果需要用到prg就用，不用到，一个是0，一个是C也是完全可以的
-    
-    vector<mpc_t> result(vec_size,0);//迭代的初值语义为初代的1/x
-    vector<mpc_t> initial_temp(vec_size,0);//迭代初值计算的中间值
-    vector<mpc_t> initial_exp(vec_size,0);//迭代初值的指数部分
-    vector<mpc_t> initial_temp_b(vec_size,0);//迭代初值计算的中间值:(1-2x)^2
-    vector<mpc_t> initial_temp_c(vec_size,0);//迭代初值的中间值(1-2x)^3
+    vector<mpc_t> result(vec_size,0);//initial of 1/x
+    vector<mpc_t> initial_temp(vec_size,0);
+    vector<mpc_t> initial_exp(vec_size,0);
+    /// compute the initial_value
     vector<mpc_t> SHARED_Factorialof3(vec_size, 0);
     if(partyNum == PARTY_A) {
 	SHARED_Factorialof3 = vector<mpc_t>(vec_size, FloatToMpcType(0.16667));
@@ -351,80 +316,54 @@ int ReciprocalDiv::ReciprocalDivfor2(
 
 	vector<mpc_t> NUM_Factorialof3(vec_size, 0);
 	NUM_Factorialof3 = vector<mpc_t>(vec_size, FloatToMpcType(0.16667));
-			//以上凑齐了e^x次方泰勒展开式前三项
-    if (PRIMARY) {//这里的primary的条件具体含义是什么？是代表有任何一端的用户输入嘛？--是的，两个端口都是要进来的
+			
+    if (PRIMARY) {
     for (int i = 0; i < vec_size; ++i) {
       initial_temp[i] = denominator_vec[i] << 1;
-      //这里涉及到加减法，因此，我们需要share
-      if (partyNum == PARTY_A) {
-        initial_exp[i] = 0;
-      }
-      if (partyNum == PARTY_B) {
-        initial_exp[i] = 1-initial_temp[i];
-      }
-      //e^(1-2x)=1+(1-2x)+0.5*(1-2x)^2+0.1667*(1-2x)^3
-      //e^(1-2x)=1+initial_exp[i]+0.5*initial_exp[i]^2+0.1667*initial_exp[i]^3
-      /*
-      1.错误1：函数使用错误，针对向量而不是针对个别数字
-      GetMpcOpInner(DotProduct)->Run(initial_exp[i], initial_exp[i], initial_temp_b[i], vec_size);
-      GetMpcOpInner(DotProduct)->Run(initial_temp_b, initial_exp[i], initial_temp_c[i], vec_size);
-      GetMpcOpInner(DotProduct)->Run(initial_temp_b[i], NUM_HALF, initial_temp_b[i], vec_size);//0.5*initial_exp[i]^2
-      GetMpcOpInner(DotProduct)->Run(initial_temp_C[i], NUM_Factorialof3, initial_temp_c[i], vec_size);//0.1667*initial_exp[i]^3
-      GetMpcOpInner(DotProduct)->Run(initial_exp[i],NUM_0NE, initial_temp[i], vec_size);//initial_exp[i]
-      initial_temp[i]=SHARED_ONE+initial_temp[i]+initial_temp_c[i]+initial_temp_b[i]
-      2.错误2：使用c++自带exp
-      initial_exp[i]=MpcTypeToFloat(initial_exp[i])
-      initial_exp[i]=FloatToMpcType(exp(initial_exp[i]))
-      这个是错误的exp因为不能保证x0+x1=x;then exp(x0)+exp(x1)=exp(x)
-      那么上述正确的办法中，NUM_HALF在用作倍数的时候不能用share的值。之前声明过share的常量，可以不需要if语句对于不同的party分别处理。
-      */
-    }//initial_exp[i] =1-2*DEN
-      GetMpcOpInner(DotProduct)->Run(initial_exp, initial_exp, initial_temp_b, vec_size);//initial_exp^2
-      GetMpcOpInner(DotProduct)->Run(initial_temp_b, initial_exp, initial_temp_c, vec_size);//initial_exp^3
-      GetMpcOpInner(DotProduct)->Run(initial_temp_b, NUM_HALF, initial_temp_b, vec_size);//0.5*initial_exp^2
-      GetMpcOpInner(DotProduct)->Run(initial_temp_c, NUM_Factorialof3, initial_temp_c, vec_size);//0.1667*initial_exp^3
-      GetMpcOpInner(DotProduct)->Run(initial_exp,NUM_0NE, initial_temp, vec_size);//initial_exp[i]
-      addVectors(SHARED_ONE,initial_temp,initial_temp,vec_size);//1+x
-      addVectors(initial_temp,initial_temp_c,initial_temp,vec_size);//1+x+0.5x^2
-      addVectors(initial_temp,initial_temp_b,initial_temp,vec_size);//1+x+0.5x^2+0.1667x^3
-      
-    //exp(1-2*DEN)
-    for (int i = 0; i < vec_size; ++i) {
-      initial_temp[i] = initial_exp[i];
-      initial_exp[i] = initial_exp[i] << 1;
-      initial_temp[i]=initial_temp[i]+initial_exp[i];//这里实现了3倍
-      //这里的result也需要share一下
-      if(partyNum == PARTY_A) {
-          result[i]=initial_temp[i];
-      }
-      if(partyNum == PARTY_B) {
-          result[i]=result[i]+FloatToMpcType(0.003);
-      }
-      //result[i] = initial_exp[i] + initial_temp[i] + 0.003;//这里的数字不是十进制的，怎么实现加小数，是把0.003转化为mpc_t类型嘛？--已经解决
-    }//3*exp+0.003=A=result
-    //这里对于容器和常数的计算，就需要用这种形式进行每一位的运算，才能保证正确的处理，容器级的运算，就不需要这么麻烦。使用已有的算子即可。
-    //这里的疑惑是，我用的是share的值，那我直接使用这种算法计算不太能保证最后得到的值就能对啊，这个算法并非经过SNN考量的。
-    vector<mpc_t> iteraion_temp_2A(vec_size,0);//2*A
-    vector<mpc_t> iteraion_temp_AA(vec_size,0);//A^2
-    vector<mpc_t> den_reprocial_temp(vec_size,0);//这个就是最后要和分子相乘的分母的倒数中间值
-    vector<mpc_t> quo(vec_size,0);
-/*这里的循环逻辑是错的
-    for (int j = 0; j < vec_size; ++j) {
-      iteraion_temp_2A[j] = result[j] << 1;//2*A
-    }
-*/
-     notYet();
-    for(int i=0;i<=1;i++)
-    {
-      GetMpcOpInner(DotProduct)->Run(result, NUM_TWO, iteraion_temp_2A, vec_size);//2*A
-      GetMpcOpInner(DotProduct)->Run(result, result, iteraion_temp_AA, vec_size);//A*A
-      GetMpcOpInner(DotProduct)->Run(iteraion_temp_AA, denominator_vec, den_reprocial_temp, vec_size);//A*A*SELF
-      subtractVectors<mpc_t>(iteraion_temp_2A,den_reprocial_temp,result,vec_size);
-    }
-    GetMpcOpInner(DotProduct)->Run(numerator_vec, result, quo, vec_size);//这里是最后一步，但是还有一步，结果的正负没完成，结果的正负就存放在quotient_sign里面。
-     GetMpcOpInner(DotProduct)->Run(quo, quotient_sign, shared_quotient_vec, vec_size);//这里可能可以完成？
+     }
+	}//primary
 
-    }//primary
+	subtractVectors<mpc_t>(SHARED_ONE,initial_temp,initial_exp,vec_size);
+	GetMpcOpInner(Reconstruct2PC)->Run(initial_exp, initial_exp.size(), "1-2*den");
+
+	vector<mpc_t> shared_beta(vec_size,0);
+	vector<mpc_t> update(vec_size,0);
+	GetMpcOpInner(ReluPrime)->Run3PC(initial_exp,shared_beta,vec_size);
+	initial_exp=vector<mpc_t>(vec_size,0);
+	if(partyNum == PARTY_A) {
+	initial_exp=vector<mpc_t>(vec_size,FloatToMpcType(0.003));
+	update=vector<mpc_t>(vec_size,FloatToMpcType(4.074));
+	}
+	
+	//GetMpcOpInner(Reconstruct2PC)->Run(shared_beta, shared_beta.size(), "shared_beta");
+	GetMpcOpInner(SelectShares)->Run3PC(update,shared_beta,update,vec_size);
+	//GetMpcOpInner(Reconstruct2PC)->Run(update, update.size(), "update");
+	addVectors<mpc_t>(initial_exp,update,result,vec_size);
+
+
+      	GetMpcOpInner(Reconstruct2PC)->Run(result, result.size(), "initial_value");
+	vector<mpc_t> iteraion_temp_2A(vec_size,0);//2*A
+	vector<mpc_t> iteraion_temp_AA(vec_size,0);//A^2
+	vector<mpc_t> den_reprocial_temp(vec_size,0);
+	vector<mpc_t> quo(vec_size,0);
+
+	///get initial foriteration
+    for(int i=0;i<=iteration_time;i++)
+    {
+	GetMpcOpInner(DotProduct)->Run(result, NUM_0NE, iteraion_temp_2A, vec_size);
+	//GetMpcOpInner(Reconstruct2PC)->Run(iteraion_temp_2A, iteraion_temp_2A.size(), "iteraion_temp_2A");
+	//GetMpcOpInner(Square)->Run(result, iteraion_temp_AA, vec_size);//A*A
+	GetMpcOpInner(DotProduct)->Run(result, result, iteraion_temp_AA, vec_size);//A*A
+	//GetMpcOpInner(Reconstruct2PC)->Run(iteraion_temp_AA, iteraion_temp_AA.size(), "iteraion_temp_AA");
+	//GetMpcOpInner(Reconstruct2PC)->Run(denominator_vec, denominator_vec.size(), "denominator_vec");
+	GetMpcOpInner(DotProduct)->Run(iteraion_temp_AA, denominator_vec, den_reprocial_temp, vec_size);//A*A*SELF
+	//GetMpcOpInner(Reconstruct2PC)->Run(den_reprocial_temp, den_reprocial_temp.size(), "den_reprocial_temp");
+	subtractVectors<mpc_t>(iteraion_temp_2A,den_reprocial_temp,result,vec_size);
+    }
+    GetMpcOpInner(DotProduct)->Run(numerator_vec, result, quo, vec_size);
+    GetMpcOpInner(DotProduct)->Run(quo, quotient_sign, shared_quotient_vec, vec_size);
+
+    
   }//threepc
 
   
