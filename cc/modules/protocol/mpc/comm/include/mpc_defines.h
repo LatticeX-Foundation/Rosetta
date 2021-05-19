@@ -83,7 +83,12 @@ extern int NUM_OF_PARTIES;
 #define CPP_ASSEMBLY 1
 #define PARALLEL false
 #define NO_CORES 4
+
+#if ROSETTA_MPC_128
+#define PRIME_NUMBER 251
+#else
 #define PRIME_NUMBER 127
+#endif
 
 
 const int BIT_SIZE = (sizeof(mpc_t) * CHAR_BIT);
