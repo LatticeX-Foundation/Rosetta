@@ -85,7 +85,7 @@ extern int NUM_OF_PARTIES;
 #define NO_CORES 4
 
 #if ROSETTA_MPC_128
-//avoid overflow error in PrivateCompare when prime is not larger enough
+//avoid overflow error in PrivateCompare when prime is not large enough
 #define PRIME_NUMBER 251
 #else
 #define PRIME_NUMBER 127
