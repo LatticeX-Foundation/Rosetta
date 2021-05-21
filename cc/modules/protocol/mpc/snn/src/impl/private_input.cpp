@@ -56,5 +56,36 @@ int PrivateInput::funPrivateInput(int party, const vector<double>& v, vector<mpc
   return 0;
 }
 
+int PrivateInput::funPrivateInput(int party, const vector<mpc_t>& v, vector<mpc_t>& shares) {
+  shares.resize(v.size());
+  if (party == PARTY_C) {
+    auto przs = GetMpcOpInner(PRZS);
+    przs->Run(PARTY_B, PARTY_C, shares);
+
+    if (partyNum == PARTY_C) {
+      for (size_t i = 0; i < v.size(); ++i)
+        shares[i] = shares[i] + v[i];
+
+      // send C's to A
+      sendVector<mpc_t>(shares, PARTY_A, shares.size());
+    } else if (partyNum == PARTY_A) {
+      receiveVector<mpc_t>(shares, PARTY_C, shares.size());
+    }
+
+    return 0;
+  }
+
+  if (PRIMARY) {
+    auto przs = GetMpcOpInner(PRZS);
+    przs->Run(PARTY_A, PARTY_B, shares);
+
+    if (partyNum == party) {
+      for (size_t i = 0; i < v.size(); ++i)
+        shares[i] = shares[i] + v[i];
+    }
+  }
+  return 0;
+}
+
 } // namespace snn
 } // namespace rosetta

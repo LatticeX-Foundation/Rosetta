@@ -283,11 +283,15 @@ class PrivateInput : public OpBase {
   int Run(int party, const vector<double>& v, vector<double>& shares) {
     MPCOP_RETURN(funPrivateInput(party, v, shares));
   }
+  int Run(int party, const vector<mpc_t>& v, vector<mpc_t>& shares) {
+    MPCOP_RETURN(funPrivateInput(party, v, shares));
+  }
   int Run(int party, double v, mpc_t& shares) { MPCOP_RETURN(funPrivateInput(party, v, shares)); }
   int Run(int party, double v, double& shares) { MPCOP_RETURN(funPrivateInput(party, v, shares)); }
 
  private:
   int funPrivateInput(int party, const vector<double>& v, vector<mpc_t>& shares);
+  int funPrivateInput(int party, const vector<mpc_t>& v, vector<mpc_t>& shares);
   int funPrivateInput(int party, const vector<double>& v, vector<double>& shares) {
     vector<mpc_t> ss(shares.size());
     funPrivateInput(party, v, ss);
@@ -627,6 +631,11 @@ class Reconstruct2PC : public OpBase {
     MPCOP_RETURN(reconstruct_general(a, size, out, recv_party));
   }
 
+  /* Reconstruct in Z_{L_1} */
+  int RunModOdd(const vector<mpc_t>& a, vector<mpc_t>& out, int recv_party = PARTY_A) {
+    MPCOP_RETURN(funcReconstruct2PC_ex_mod_odd(a, out, recv_party));
+  }
+
  private:
   int funcReconstruct2PC(const mpc_t& a, mpc_t& out, int recv_party) {
     vector<mpc_t> va = {a}, vo(1);
@@ -640,6 +649,10 @@ class Reconstruct2PC : public OpBase {
     const vector<mpc_t>& a,
     size_t size,
     vector<mpc_t>& out,
+    int recv_party);
+  int funcReconstruct2PC_ex_mod_odd(
+    const vector<mpc_t>& shared_v,
+    vector<mpc_t>& plaintext_v,
     int recv_party);
 
   /**
