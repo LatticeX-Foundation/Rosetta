@@ -341,88 +341,47 @@ int snn_protocol_unary_ops_call(
   return 0;
 }
 
-int SnnProtocolOps::Rsqrt(
-  const vector<string>& a,
-  vector<string>& output,
-  const attr_type* attr_info) {
-  log_debug << "----> "
-            << "SnnRsqrt";
-  int m = 0,n=0;
-  if (attr_info->count("m") > 0 && attr_info->count("n") > 0 ) {
-    m = std::stoi(attr_info->at("m"));
-    n = std::stoi(attr_info->at("n"));
-  } else {
-    log_error << "please fill m,n for SnnRsqrt(a, y, m,n) ";
-    return -1;
-  }
 
-  vector<mpc_t> out_vec(m * n);
-  vector<mpc_t> private_a;
-  snn_decode(a, private_a);
- 
-  std::make_shared<rosetta::snn::Rsqrt>(_op_msg_id, net_io_)
-    ->Run(private_a, out_vec, m);
 
-  snn_encode(out_vec, output);
-  log_debug << "SnnRsqrt ok. <----";
-
-  return 0;
-}
-
+#define SNN_PROTOCOL_UNARY_OPS_CALL(OpFunctor, name, a, c, attr) \
+  snn_protocol_unary_ops_call<OpFunctor>(name, _op_msg_id, net_io_, a, c, attr)
 
 int SnnProtocolOps::Sqrt(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
-  log_debug << "----> "
-            << "SnnSqrt";
-  int m = 0,n=0;
-  if (attr_info->count("m") > 0 && attr_info->count("n") > 0 ) {
-    m = std::stoi(attr_info->at("m"));
-    n = std::stoi(attr_info->at("n"));
-  } else {
-    log_error << "please fill m,n for SnnSqrt(a, y, m,n) ";
-    return -1;
-  }
-
-  vector<mpc_t> out_vec(m * n);
-  vector<mpc_t> private_a;
-  snn_decode(a, private_a);
- 
-  std::make_shared<rosetta::snn::Sqrt>(_op_msg_id, net_io_)
-    ->Run(private_a, out_vec, m);
-
-  snn_encode(out_vec, output);
+  log_debug << "----> "<< "SnnSqrt";
+  output.resize(a.size());
+  SNN_PROTOCOL_UNARY_OPS_CALL(rosetta::snn::Sqrt, "SnnSqrt", a, output, attr_info);
   log_debug << "SnnSqrt ok. <----";
-
   return 0;
 }
 
 
+#define SNN_PROTOCOL_UNARY_OPS_CALL(OpFunctor, name, a, c, attr) \
+  snn_protocol_unary_ops_call<OpFunctor>(name, _op_msg_id, net_io_, a, c, attr)
+
+int SnnProtocolOps::Rsqrt(
+  const vector<string>& a,
+  vector<string>& output,
+  const attr_type* attr_info) {
+  log_debug << "----> "<< "SnnRsqrt";
+  output.resize(a.size());
+  SNN_PROTOCOL_UNARY_OPS_CALL(rosetta::snn::Rsqrt, "SnnRsqrt", a, output, attr_info);
+  log_debug << "SnnRsqrt ok. <----";
+  return 0;
+}
+
+#define SNN_PROTOCOL_UNARY_OPS_CALL(OpFunctor, name, a, c, attr) \
+  snn_protocol_unary_ops_call<OpFunctor>(name, _op_msg_id, net_io_, a, c, attr)
 
 int SnnProtocolOps::Exp(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
-  log_debug << "----> "
-            << "SnnExp";
-  int m = 0,n=0;
-  if (attr_info->count("m") > 0 && attr_info->count("n") > 0 ) {
-    m = std::stoi(attr_info->at("m"));
-    n = std::stoi(attr_info->at("n"));
-  } else {
-    log_error << "please fill m,n for SnnExp(a, y, m,n) ";
-    return -1;
-  }
-
-  vector<mpc_t> out_vec(m * n);
-  vector<mpc_t> private_a;
-  snn_decode(a, private_a);
- 
-  std::make_shared<rosetta::snn::Exp>(_op_msg_id, net_io_)
-    ->Run(private_a, out_vec, m);
-
-  snn_encode(out_vec, output);
+  log_debug << "----> "<< "SnnExp";
+  output.resize(a.size());
+  SNN_PROTOCOL_UNARY_OPS_CALL(rosetta::snn::Exp, "SnnExp", a, output, attr_info);
   log_debug << "SnnExp ok. <----";
 
   return 0;

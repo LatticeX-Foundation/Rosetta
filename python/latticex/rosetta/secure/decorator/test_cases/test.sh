@@ -51,9 +51,9 @@ echo "run standalone test case..."
 # test_op tf_const
 # test_op axis_test
 # test_op abs_test
-test_op save_v2
-test_op restore_v2
-test_op nn_ops_test
+#test_op save_v2
+#test_op restore_v2
+#test_op nn_ops_test
 
 # test_op fused_batch_norm
 
@@ -63,13 +63,14 @@ test_op nn_ops_test
 # test_op add
 # test_op sub
 # test_op mul
-test_op division_test
+#test_op division_test
 # test_op relu
 # test_op pow_const
 # test_op test_xxx_pow
 
-test_op log
-test_op log1p
+test_op exp
+#test_op log
+#test_op log1p
 
 # test_op max
 # test_op mean
