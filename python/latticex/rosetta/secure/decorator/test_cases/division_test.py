@@ -30,14 +30,14 @@ TEST_CASES = []
 #### 1.1 first case: variable / variable
 val_a = np.array(
     [
-        [2.0, 20.0],
-        [20 * 100.0, -200.0]
+        [2000.0, 20000.0],
+        [20000 * 100.0, -200.0]
     ], dtype =np.float)
 
 val_b = np.array(
     [
-        [5, -50.0],
-        [-50, -0.02] 
+        [50000, -50000.0],
+        [-50000, -0.02] 
     ],dtype= np.float)
 
 curr_case = {}

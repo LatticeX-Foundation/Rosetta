@@ -1656,10 +1656,10 @@ class ReciprocalDiv : public DivBase {
  public:
   int funcBinaryOp(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
     c.resize(size);
-    return ReciprocalDivfor2(a, b, c, size);//这里的函数应该可以放在division里面
+    return ReciprocalDivfor2(a, b, c, size);
     /*
   @note:
-	
+	one number is divided can be handle as producting the reciprocal of the number.
   @author: LJF
   */
   }
@@ -1672,8 +1672,8 @@ class ReciprocalDiv : public DivBase {
   * 
   */
   int ReciprocalDivfor2(
-    const vector<mpc_t>& shared_numerator_vec,//分子
-    const vector<mpc_t>& shared_denominator_vec,//分母
+    const vector<mpc_t>& shared_numerator_vec,
+    const vector<mpc_t>& shared_denominator_vec,
     vector<mpc_t>& shared_quotient_vec,
     size_t common_vec_size,
     bool common_all_less = false);

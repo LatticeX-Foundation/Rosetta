@@ -25,7 +25,7 @@ int Div::funcDiv(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& 
 }
 int Truediv::funcTruediv(
   const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
-  return GetMpcOpInner(ReciprocalDiv)->Run(a, b, c, size);
+  return GetMpcOpInner(DivisionV2)->Run(a, b, c, size);
 }
 
 // All parties start with shares of a number in a and b and the quotient is in quotient.
@@ -288,7 +288,59 @@ int ReciprocalDiv::ReciprocalDivfor2(
 
     vector<mpc_t> quotient_vec = shared_quotient_vec;
 
-    
+//we should limit the denominator to expand the scope of computation and the accuracy.
+    	vector<mpc_t> SHARED_ONE(vec_size, 0);
+	 if(partyNum == PARTY_A) {
+	SHARED_ONE = vector<mpc_t>(vec_size, FloatToMpcType(1));
+	}
+	vector<mpc_t> SHARED_TEN(vec_size, 0);
+	 if(partyNum == PARTY_A) {
+	SHARED_TEN = vector<mpc_t>(vec_size, FloatToMpcType(10));
+	}
+	vector<mpc_t> SHARED_divTEN(vec_size, 0);
+	if(partyNum == PARTY_A) {
+	SHARED_divTEN = vector<mpc_t>(vec_size, FloatToMpcType(0.1));
+	}
+	vector<mpc_t> judge_val_1(vec_size, 0);
+	vector<mpc_t> judge_val_2(vec_size, 0);
+	vector<mpc_t> judge_val_1_p(vec_size, 0);//msb of judge number
+	vector<mpc_t> judge_val_2_p(vec_size, 0);
+	vector<mpc_t> judge(vec_size, 0);
+	vector<mpc_t> factor(vec_size, 0);//multiple factor
+	vector<mpc_t> denominator_temp(vec_size, 0);
+	vector<mpc_t> numerator_temp(vec_size, 0);
+
+	for(int i=0;i<4;i++)
+{
+	subtractVectors<mpc_t>(denominator_vec,SHARED_TEN,judge_val_1,vec_size);//x-10
+	subtractVectors<mpc_t>(denominator_vec,SHARED_ONE,judge_val_2,vec_size);//x-1
+	//GetMpcOpInner(Reconstruct2PC)->Run(judge_val_2, judge_val_2.size(), "judge_val_2");
+
+	GetMpcOpInner(ComputeMSB)->Run3PC(judge_val_1, judge_val_1_p, vec_size);
+	GetMpcOpInner(ComputeMSB)->Run3PC(judge_val_2, judge_val_2_p, vec_size);//positive or negative
+	//GetMpcOpInner(Reconstruct2PC)->Run(judge_val_2_p, judge_val_2_p.size(), "judge_val_2_p");
+
+
+	GetMpcOpInner(XorBit)->Run(judge_val_1_p, judge_val_2_p, judge, vec_size);
+	//GetMpcOpInner(Reconstruct2PC)->Run(judge, judge.size(), "judge");
+
+
+	GetMpcOpInner(Select1Of2)->Run(SHARED_TEN, SHARED_divTEN, judge_val_1_p, factor, vec_size);
+	GetMpcOpInner(Select1Of2)->Run(SHARED_ONE, factor, judge, factor, vec_size);
+	//GetMpcOpInner(Reconstruct2PC)->Run(factor, factor.size(), "factor");
+	
+	//GetMpcOpInner(Reconstruct2PC)->Run(denominator_vec, denominator_vec.size(), "denominator_vec");	
+
+	GetMpcOpInner(DotProduct)->Run(factor, denominator_vec, denominator_temp, vec_size);
+	GetMpcOpInner(DotProduct)->Run(factor, numerator_vec, numerator_temp, vec_size);
+	denominator_vec=denominator_temp;
+	numerator_vec=numerator_temp;
+	GetMpcOpInner(Reconstruct2PC)->Run(denominator_vec, denominator_vec.size(), "denominator_vec");	
+		
+	
+}    
+
+
     vector<mpc_t> result(vec_size,0);//initial of 1/x
     vector<mpc_t> initial_temp(vec_size,0);
     vector<mpc_t> initial_exp(vec_size,0);
@@ -300,10 +352,6 @@ int ReciprocalDiv::ReciprocalDivfor2(
 	vector<mpc_t> SHARED_HALF(vec_size, 0);
     if(partyNum == PARTY_A) {
 	SHARED_HALF = vector<mpc_t>(vec_size, FloatToMpcType(0.5));
-	}
-	vector<mpc_t> SHARED_ONE(vec_size, 0);
-    if(partyNum == PARTY_A) {
-	SHARED_ONE = vector<mpc_t>(vec_size, FloatToMpcType(1));
 	}
 	vector<mpc_t> NUM_HALF(vec_size, 0);
 	NUM_HALF = vector<mpc_t>(vec_size, FloatToMpcType(0.5));
@@ -352,8 +400,8 @@ int ReciprocalDiv::ReciprocalDivfor2(
     {
 	GetMpcOpInner(DotProduct)->Run(result, NUM_0NE, iteraion_temp_2A, vec_size);
 	//GetMpcOpInner(Reconstruct2PC)->Run(iteraion_temp_2A, iteraion_temp_2A.size(), "iteraion_temp_2A");
-	//GetMpcOpInner(Square)->Run(result, iteraion_temp_AA, vec_size);//A*A
-	GetMpcOpInner(DotProduct)->Run(result, result, iteraion_temp_AA, vec_size);//A*A
+	GetMpcOpInner(Square)->Run(result, iteraion_temp_AA, vec_size);//A*A
+	//GetMpcOpInner(DotProduct)->Run(result, result, iteraion_temp_AA, vec_size);//A*A
 	//GetMpcOpInner(Reconstruct2PC)->Run(iteraion_temp_AA, iteraion_temp_AA.size(), "iteraion_temp_AA");
 	//GetMpcOpInner(Reconstruct2PC)->Run(denominator_vec, denominator_vec.size(), "denominator_vec");
 	GetMpcOpInner(DotProduct)->Run(iteraion_temp_AA, denominator_vec, den_reprocial_temp, vec_size);//A*A*SELF
