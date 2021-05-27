@@ -373,6 +373,8 @@ def static_override_tf_ops_to_rtt_ops():
     tf.matmul = rtt_matmul
     tf.square = rtt_square
     tf.pow = rtt_pow
+    tf.sqrt = rtt_sqrt
+    tf.exp = rtt_exp
     tf.log = rtt_log
     tf.log1p = rtt_log1p
     tf.abs = rtt_abs

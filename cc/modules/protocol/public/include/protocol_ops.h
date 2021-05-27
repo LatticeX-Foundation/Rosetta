@@ -234,20 +234,21 @@ class ProtocolOps {
     const attr_type* attr_info = nullptr) {
     THROW_NOT_IMPL;
   }
+  //get 1/(a^0.5)
   virtual int Rsqrt(
     const vector<string>& a,
     vector<string>& output,
     const attr_type* attr_info = nullptr) {
     THROW_NOT_IMPL;
   }
-  
+//get a^0.5
   virtual int Sqrt(
     const vector<string>& a,
     vector<string>& output,
     const attr_type* attr_info = nullptr) {
     THROW_NOT_IMPL;
   }
-
+//get e^a
   virtual int Exp(
     const vector<string>& a,
     vector<string>& output,
