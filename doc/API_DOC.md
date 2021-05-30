@@ -326,7 +326,27 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
 
 #### `SecureReciprocaldiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
-  Alias for `SecureDivide`. Please refer to `SecureDivide`.
+On the whole, we need to calculate the reciprocal of the denominator to achieve division, and then calculate the reciprocal of the denominator times the numerator to get the quotient.
+
+  **Args:**
+
+- **`x`**: A  `Tensor` in TensorFlow, whose values are in shared status.
+- **`y`**: A `Tensor` in TensorFlow, whose values are in shared status. . Must have the same type as `x`.
+- **`name(optional)`**: A name for the operation, the default value of it is None.
+- **`lh_is_const(optional)`**: flag indicating whether the `x` is a const number. If it is set as True, the `x` will be added just as the sum of all parties' shared input pieces. The default value is `False`.
+- **`rh_is_const(optional)`** :flag indicating whether the `y` is a const number. If it is set as True, the `y` will be added just as the sum of all parties' shared input pieces.The default value is `False`.
+
+  **Returns:**
+
+  ​ A `Tensor`. Has the same type as `x`.
+  
+  *NOTE:*
+
+- the denominator can not be too large(smaller than 10000 at best), otherwise the process will be overflow or influence the precision.
+- normally,the precision of output  can get close to 1e-4.
+- this SecureOp is just the same as `SecureRealDiv` and `SecureTrueDiv`, but in fact, the reciprocaldiv algorithm is 6 times faster than the `SecureTrueDiv`.
+
+
   
 #### `SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
   
