@@ -344,7 +344,7 @@ On the whole, we need to calculate the reciprocal of the denominator to achieve 
 
 - the denominator can not be too large(smaller than 10000 at best), otherwise the process will be overflow or influence the precision.
 - normally,the precision of output  can get close to 1e-4.
-- this SecureOp is just the same as `SecureRealDiv` and `SecureTrueDiv`, but in fact, the reciprocaldiv algorithm is 6 times faster than the `SecureTrueDiv`.
+- this SecureOp is just the same as `SecureRealDiv` and `SecureTrueDiv`, but in fact, the reciprocaldiv algorithm is 5 times faster than the `SecureTrueDiv`.
 
 
   

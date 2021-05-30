@@ -183,7 +183,7 @@
   *注意*:
 - 分母不能太大（最好小于10000），否则会溢出或影响精度。
 - 通常情况下，输出精度可以接近1e-4。
-- 这个SecureOp与“SecureRealDiv”和“SecureTrueDiv”相同，但实际上，Reciprocaldiv算法比“SecureTrueDiv”快6倍。
+- 这个SecureOp与“SecureRealDiv”和“SecureTrueDiv”相同，但实际上，Reciprocaldiv算法比“SecureTrueDiv”快5倍。
 
 
 
