@@ -55,6 +55,7 @@ test_op save_v2
 test_op restore_v2
 test_op nn_ops_test
 
+
 # test_op fused_batch_norm
 
 # # test_op print
@@ -68,8 +69,10 @@ test_op division_test
 # test_op pow_const
 # test_op test_xxx_pow
 
+
 test_op log
 test_op log1p
+
 
 # test_op max
 # test_op mean

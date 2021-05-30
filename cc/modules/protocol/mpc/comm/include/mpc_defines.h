@@ -140,3 +140,7 @@ const __m128i BIT128 = _mm_setr_epi8(128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 #define MPC_USE_INIT_KEYS2	1
 
 // clang-format on
+
+//for reciprocal division method
+#define iteration_time     10
+
