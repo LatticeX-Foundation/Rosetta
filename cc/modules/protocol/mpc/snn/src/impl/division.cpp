@@ -290,15 +290,15 @@ int ReciprocalDiv::ReciprocalDivfor2(
 
 //we should limit the denominator to expand the scope of computation and the accuracy.
     	vector<mpc_t> SHARED_ONE(vec_size, 0);
-	 if(partyNum == PARTY_A) {
+  if(partyNum == PARTY_A) {
 	SHARED_ONE = vector<mpc_t>(vec_size, FloatToMpcType(1));
 	}
 	vector<mpc_t> SHARED_TEN(vec_size, 0);
-	 if(partyNum == PARTY_A) {
+  if(partyNum == PARTY_A) {
 	SHARED_TEN = vector<mpc_t>(vec_size, FloatToMpcType(10));
 	}
 	vector<mpc_t> SHARED_divTEN(vec_size, 0);
-	if(partyNum == PARTY_A) {
+  if(partyNum == PARTY_A) {
 	SHARED_divTEN = vector<mpc_t>(vec_size, FloatToMpcType(0.1));
 	}
 	vector<mpc_t> judge_val_1(vec_size, 0);
@@ -310,8 +310,8 @@ int ReciprocalDiv::ReciprocalDivfor2(
 	vector<mpc_t> denominator_temp(vec_size, 0);
 	vector<mpc_t> numerator_temp(vec_size, 0);
 
-	for(int i=0;i<4;i++)
-{
+  for(int i = 0 ; i < 4 ; i++)
+   {
 	subtractVectors<mpc_t>(denominator_vec,SHARED_TEN,judge_val_1,vec_size);//x-10
 	subtractVectors<mpc_t>(denominator_vec,SHARED_ONE,judge_val_2,vec_size);//x-1
 	//GetMpcOpInner(Reconstruct2PC)->Run(judge_val_2, judge_val_2.size(), "judge_val_2");
@@ -333,12 +333,12 @@ int ReciprocalDiv::ReciprocalDivfor2(
 
 	GetMpcOpInner(DotProduct)->Run(factor, denominator_vec, denominator_temp, vec_size);
 	GetMpcOpInner(DotProduct)->Run(factor, numerator_vec, numerator_temp, vec_size);
-	denominator_vec=denominator_temp;
-	numerator_vec=numerator_temp;
+	denominator_vec = denominator_temp;
+	numerator_vec = numerator_temp;
 	GetMpcOpInner(Reconstruct2PC)->Run(denominator_vec, denominator_vec.size(), "denominator_vec");	
 		
 	
-}    
+  }    
 
 
     vector<mpc_t> result(vec_size,0);//initial of 1/x
@@ -377,10 +377,10 @@ int ReciprocalDiv::ReciprocalDivfor2(
 	vector<mpc_t> shared_beta(vec_size,0);
 	vector<mpc_t> update(vec_size,0);
 	GetMpcOpInner(ReluPrime)->Run3PC(initial_exp,shared_beta,vec_size);
-	initial_exp=vector<mpc_t>(vec_size,0);
+	initial_exp = vector<mpc_t>(vec_size,0);
 	if(partyNum == PARTY_A) {
-	initial_exp=vector<mpc_t>(vec_size,FloatToMpcType(0.003));
-	update=vector<mpc_t>(vec_size,FloatToMpcType(4.074));
+	initial_exp = vector<mpc_t>(vec_size,FloatToMpcType(0.003));
+	update = vector<mpc_t>(vec_size,FloatToMpcType(4.074));
 	}
 	
 	//GetMpcOpInner(Reconstruct2PC)->Run(shared_beta, shared_beta.size(), "shared_beta");
@@ -396,7 +396,7 @@ int ReciprocalDiv::ReciprocalDivfor2(
 	vector<mpc_t> quo(vec_size,0);
 
 	///get initial foriteration
-    for(int i=0;i<=iteration_time;i++)
+    for(int i = 0;i <= iteration_time ; i++)
     {
 	GetMpcOpInner(DotProduct)->Run(result, NUM_0NE, iteraion_temp_2A, vec_size);
 	//GetMpcOpInner(Reconstruct2PC)->Run(iteraion_temp_2A, iteraion_temp_2A.size(), "iteraion_temp_2A");

@@ -25,6 +25,7 @@
       - [`SecureMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securemulx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securefloordivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureReciprocaldiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#secureReciprocaldivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securedividex-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securetruedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securerealdivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
@@ -322,6 +323,10 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
 - broadcasting is supported for this SecureOp.
 - due to its intrinsic algorithm complexity in MPC style to meet the security guarantee, **this SecureOp is comparatively much more time-consuming. So you may aviod to use this SecureOp as possible as you can.**
 - this SecureOp is just the same as `SecureRealDiv` and `SecureTrueDiv`.
+
+#### `SecureReciprocaldiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+
+  Alias for `SecureDivide`. Please refer to `SecureDivide`.
   
 #### `SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
   

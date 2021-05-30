@@ -11,6 +11,7 @@
       - [`SecureMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securemulx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securefloordivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureReciprocaldiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#secureReciprocaldivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securedividex-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securetruedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securerealdivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
@@ -162,6 +163,10 @@
 
 - 这个SecureOp支持Tensorflow中的广播机制。
 - 由于在Secure下实现此算子本身的复杂度较高，此算子的计算时间开销和通讯数据量开销都相对更大。在具体的上层模型构建中，应该尽可能的避免直接使用此算子。
+
+#### `SecureReciprocaldiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+
+  等价于 `SecureDivide`. 请参考 `SecureDivide`的接口说明.
 
 #### `SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 
