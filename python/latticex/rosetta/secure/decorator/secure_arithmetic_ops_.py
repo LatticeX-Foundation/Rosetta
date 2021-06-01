@@ -43,6 +43,9 @@ def SecureDiv(x, y, name=None, lh_is_const=False, rh_is_const=False):
     return _secure_ops.secure_div(x, y, name=name,
                                   lh_is_const=lh_is_const, rh_is_const=rh_is_const)
 
+def SecureReciprocaldiv(x, y, name=None, lh_is_const=False, rh_is_const=False):
+    return _secure_ops.secure_reciprocaldiv(x, y, name=name,
+                                  lh_is_const=lh_is_const, rh_is_const=rh_is_const)
 
 def SecureRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False):
     return _secure_ops.secure_realdiv(x, y, name=name,

@@ -224,6 +224,27 @@ class SecureDivOp : public SecureBinaryOp<BinaryOpState> {
   }
 };
 
+class SecureReciprocaldivOp : public SecureBinaryOp<BinaryOpState> {
+ private:
+  /* data */
+ public:
+  SecureReciprocaldivOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
+  ~SecureReciprocaldivOp() {}
+
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+    log_debug << "--> Reciprocaldiv OpKernel compute.";
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Reciprocaldiv);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Reciprocaldiv(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Reciprocaldiv);
+    log_debug << "Reciprocaldiv OpKernel compute ok. <--";
+    return 0;
+  }
+};
+
+
 class SecureTruedivOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
@@ -838,6 +859,7 @@ REGISTER_STR_CPU_KERNEL(SecureAdd, SecureAddOp);
 REGISTER_STR_CPU_KERNEL(SecureSub, SecureSubOp);
 REGISTER_STR_CPU_KERNEL(SecureMul, SecureMulOp);
 REGISTER_STR_CPU_KERNEL(SecureDiv, SecureDivOp);
+REGISTER_STR_CPU_KERNEL(SecureReciprocaldiv, SecureReciprocaldivOp);
 REGISTER_STR_CPU_KERNEL(SecureTruediv, SecureTruedivOp);
 REGISTER_STR_CPU_KERNEL(SecureRealdiv, SecureRealdivOp);
 REGISTER_STR_CPU_KERNEL(SecureFloordiv, SecureFloordivOp);

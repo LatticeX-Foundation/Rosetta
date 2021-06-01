@@ -64,9 +64,9 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     populateRandomVector<mpc_t>(r2, size, "a_2", "POSITIVE");
     for (size_t i = 0; i < size; ++i) {
       if (r1[i] == MINUS_ONE)
-        r1[i]--;
+        r1[i] = 0;////[HGF] fix for odd ring Z_{2^128 - 1}, origin: r1[i]--
       if (r2[i] == MINUS_ONE)
-        r2[i]--;
+        r2[i] = 0;////[HGF] fix for odd ring Z_{2^128 - 1}, origin: r2[i]--
     }
 
     addModuloOdd<mpc_t, mpc_t>(r1, r2, r, size);
@@ -82,20 +82,16 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     populateRandomVector<mpc_t>(r2, size, "a_2", "POSITIVE");
     for (size_t i = 0; i < size; ++i) {
       if (r1[i] == MINUS_ONE)
-        r1[i] = 0;////[huanggaofeng] fix for odd ring Z_{2^128 - 1}, origin: r1[i]--
+        r1[i] = 0;////[HGF] fix for odd ring Z_{2^128 - 1}, origin: r1[i]--
       if (r2[i] == MINUS_ONE)
-        r2[i] = 0;////[huanggaofeng] fix for odd ring Z_{2^128 - 1}, origin: r2[i]--
+        r2[i] = 0;////[HGF] fix for odd ring Z_{2^128 - 1}, origin: r2[i]--
     }
 
     addModuloOdd<mpc_t, mpc_t>(r1, r2, r, size);
-    //sharesOfBits(bit_shares_r_1, bit_shares_r_2, r, size, "INDEP");//PRSS, user a
     sharesOfBits(bit_shares_r_1, bit_shares_r_2, r, size, "a_1"); //PRSS, user a
-    //sharesOfLSB(LSB_shares_1, LSB_shares_2, r, size, "INDEP");
     sharesOfLSB2(LSB_shares_1, LSB_shares_2, r, size, "a_1");
 
-    //sendVector<small_mpc_t>(bit_shares_r_1, PARTY_A, size * BIT_SIZE);//PRSS saved
     sendVector<small_mpc_t>(bit_shares_r_2, PARTY_B, size * BIT_SIZE);
-    //sendVector<mpc_t>(LSB_shares_1, PARTY_A, size);//r1 saved ?
     sendVector<mpc_t>(LSB_shares_2, PARTY_B, size);//
 #endif
   }
@@ -125,7 +121,6 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     {
       populateRandomVector<mpc_t>(ri, size, "a_1", "POSITIVE");
       gen_side_shareOfBits(bit_shares, size, "a_1");
-      //receiveVector<mpc_t>(LSB_shares, PARTY_C, size);
       populateRandomVector<mpc_t>(LSB_shares, size, "a_1", "POSITIVE");
     }
     else
@@ -137,7 +132,7 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
 
     for (size_t i = 0; i < size; ++i) {
       if (ri[i] == MINUS_ONE)
-        ri[i] = 0;////[huanggaofeng] fix for odd ring Z_{2^128 - 1}, origin: ri[i] -= 1;
+        ri[i] = 0;////[HGF] fix for odd ring Z_{2^128 - 1}, origin: ri[i] -= 1;
     }
 #endif
 
@@ -156,7 +151,6 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     populateBitsVector(beta, "COMMON", size);
   }
 
-  //funcPrivateCompareMPC(bit_shares, c, beta, betaP, size, BIT_SIZE);
   GetMpcOpInner(PrivateCompare)->Run(bit_shares, c, beta, betaP, size, BIT_SIZE);
 
   if (partyNum == PARTY_C) {
@@ -197,7 +191,6 @@ int ComputeMSB::funcComputeMSB3PC(const vector<mpc_t>& a, vector<mpc_t>& b, size
     }
   }
 
-  //funcDotProductMPC(theta_shares, LSB_shares, prod, size);
   GetMpcOpInner(DotProduct)->Run(theta_shares, LSB_shares, prod, size);
 
   if (PRIMARY) {

@@ -8,6 +8,7 @@
 
 [中文版](./README_CN.md)
 
+
 ## Overview
 
 Rosetta is a privacy-preserving framework based on [TensorFlow](https://www.tensorflow.org). It integrates with mainstream privacy-preserving computation technologies, including cryptography, federated learning and trusted execution environment. Rosetta aims to provide privacy-preserving solutions for artificial intelligence without requiring expertise in cryptography, federated learning and trusted execution environment. Rosetta reuses the APIs of TensorFlow and allows to transfer traditional TensorFlow codes into a privacy-preserving manner with minimal changes. E.g., just add the following line.
@@ -178,7 +179,7 @@ Rosetta is an open source project developed under the LPGLv3 license and maintai
 You can cite our work as folllows:
 ```latex 
     @misc{Rosetta,
-      author = {Yuanfeng Chen, Gaofeng Huang, Junjie Shi, Xiang Xie, and Yilin Yan},
+      author = {Yuanfeng Chen and Gaofeng Huang and Junjie Shi and Xiang Xie and Yilin Yan},
       title = {{Rosetta: A Privacy-Preserving Framework Based on TensorFlow}},
       howpublished = {\url{https://github.com/LatticeX-Foundation/Rosetta}},
       year={2020}

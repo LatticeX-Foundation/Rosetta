@@ -155,7 +155,7 @@ import tensorflow as tf
 The second step is activate protocol.
 
 ```py
-rtt.rtt.activate("SecureNN")
+rtt.activate("SecureNN")
 ```
 
 The third step is to set how much wealth each has privately.

@@ -149,42 +149,92 @@ int Reconstruct2PC::funcReconstruct2PC_ex(
   return 0;
 }
 
-// Added by SJJ
-int Reconstruct2PC::reconstruct_general(
-  const vector<mpc_t>& shared_v, size_t size, vector<mpc_t>& plaintext_v, int target_party) {
-  if (shared_v.size() < size) {
-    size = shared_v.size();
+/**
+ * Reveal, arithmetic, the input is in Z_{L-1}
+ * 
+ * \param plain the result (fixpoint for arithmetic), sets to p
+ * \param p bit-wised, which party will get the plaintext
+ * 
+ * p --> 0x 0 1 1 1
+ * P -->      2 1 0
+ * eg.
+ * p ==> 0x ... 0000 0001 --> P0
+ * p ==> 0x ... 0000 0101 --> P2 & P0
+ * p ==> 0x ... 0000 0111 --> P2 & P1 & P0
+ * and so on.
+ * 
+ * for balancing traffic:
+ * reveal P0: P1 sends A1 to P0
+ * reveal P1: P2 sends A0 to P1
+ * reveal P2: P0 sends delta to P2
+ * 
+ * @note
+ * <T1,T2> ==>  <Share, mpc_t> or <BitShare, bit_t>
+ */
+int Reconstruct2PC::funcReconstruct2PC_ex_mod_odd(
+  const vector<mpc_t>& a, vector<mpc_t>& out, int recv_party) {
+  if (recv_party > 7 || recv_party <= 0)
+  {
+    cout << "!! bad receive_party, should be 1-7, Notice: one bit represent for one part\n" << endl;
+    return -1;
   }
 
-  plaintext_v.resize(size);
+  size_t size = a.size();
 
-  if (target_party == PARTY_A || target_party == PARTY_B) {
-    if (!PRIMARY) {
-      return 1;
-    }
-    int tempPartyA = (target_party == PARTY_A) ? PARTY_A : PARTY_B;
-    int tempPartyB = (target_party == PARTY_A) ? PARTY_B : PARTY_A;
-    if (partyNum == tempPartyB) {
-      sendVector<mpc_t>(shared_v, tempPartyA, size);
-    }
+  out.resize(size, 0);
+ 
+  bool reveal_a = recv_party & 0x00000001 ? true : false;
+  bool reveal_b = recv_party & 0x00000002 ? true : false;
+  bool reveal_c = recv_party & 0x00000004 ? true : false;
 
-    if (partyNum == tempPartyA) {
-      receiveVector<mpc_t>(plaintext_v, tempPartyB, size);
-      addVectors<mpc_t>(plaintext_v, shared_v, plaintext_v, size);
+  if (reveal_a) {
+    if (partyNum == PARTY_A) {
+      receiveVector<mpc_t>(out, PARTY_B, size);
+      addModuloOdd<mpc_t, mpc_t>(out, a, out, size);
     }
-  } else {
-    // the receiver is neither P0 nor P1
-    if (PRIMARY) {
-      sendVector<mpc_t>(shared_v, target_party, size);
-    } else if (partyNum == target_party) {
-      vector<mpc_t> tmp_in(size, 0);
-      receiveVector<mpc_t>(tmp_in, PARTY_A, size);
-      receiveVector<mpc_t>(plaintext_v, PARTY_B, size);
-      addVectors<mpc_t>(plaintext_v, tmp_in, plaintext_v, size);
+    if (partyNum == PARTY_B) {
+      sendVector<mpc_t>(a, PARTY_A, size);
+    }
+  }
+
+  if (reveal_b) {
+    if (partyNum == PARTY_A) {
+      sendVector<mpc_t>(a, PARTY_B, size);
+    }
+    if (partyNum == PARTY_B) {
+      receiveVector<mpc_t>(out, PARTY_A, size);
+      addModuloOdd<mpc_t, mpc_t>(out, a, out, size);
+    }
+  }
+
+  if (reveal_c) {
+    if (partyNum == PARTY_A) {
+      sendVector<mpc_t>(a, PARTY_C, size);
+    }
+    if (partyNum == PARTY_B) {
+      sendVector<mpc_t>(a, PARTY_C, size);
+    }
+    if (partyNum == PARTY_C) {
+      receiveVector<mpc_t>(out, PARTY_A, size);
+
+      vector<mpc_t> b_secret(size, 0);
+      receiveVector<mpc_t>(b_secret, PARTY_B, size);
+      addModuloOdd<mpc_t, mpc_t>(out, b_secret, out, size);
     }
   }
 
   return 0;
+}
+
+// Added by SJJ
+int Reconstruct2PC::reconstruct_general(
+  const vector<mpc_t>& shared_v, size_t size, vector<mpc_t>& plaintext_v, int target_party) {
+  // Note: [HGF] fix this
+  if (target_party > PARTY_C || target_party < PARTY_A) {
+    target_party = PARTY_A;
+  }
+
+  return funcReconstruct2PC_ex(shared_v, size, plaintext_v, 0x00000001 << target_party);
 }
 
 int ReconstructBit2PC::funcReconstructBit2PC(

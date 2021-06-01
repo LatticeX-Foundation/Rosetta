@@ -153,6 +153,15 @@ class ProtocolOps {
     THROW_NOT_IMPL;
   }
 
+  virtual int Reciprocaldiv(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
+
   virtual int Truediv(
     const vector<string>& a,
     const vector<string>& b,
