@@ -23,6 +23,7 @@ namespace snn {
 int PrivateCompare::funcPrivateCompareMPC(
   const vector<small_mpc_t>& share_m, const vector<mpc_t>& r, const vector<small_mpc_t>& beta,
   vector<small_mpc_t>& betaPrime, size_t size, size_t dim) {
+  assert(THREE_PC && "funcShareConvertMPC called in non-3PC mode");
   assert(dim == BIT_SIZE && "Private Compare assert issue");
   size_t sizeLong = size * dim;
   size_t index3, index2;
@@ -67,8 +68,6 @@ int PrivateCompare::funcPrivateCompareMPC(
             c[index3] = a;
             tempM = share_m[index3];
 
-            // [huanggaofeng] fix:
-            // bit_r = (small_mpc_t)((valueX >> (63 - k)) & 1);
             bit_r = (small_mpc_t)((valueX >> (BIT_SIZE - 1 - k)) & 1);
 
             if (bit_r == 0)

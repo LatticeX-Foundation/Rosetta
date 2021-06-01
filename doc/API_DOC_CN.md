@@ -11,6 +11,7 @@
       - [`SecureMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securemulx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securefloordivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureReciprocaldiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#secureReciprocaldivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securedividex-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securetruedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securerealdivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
@@ -165,6 +166,29 @@
 
 - 这个SecureOp支持Tensorflow中的广播机制。
 - 由于在Secure下实现此算子本身的复杂度较高，此算子的计算时间开销和通讯数据量开销都相对更大。在具体的上层模型构建中，应该尽可能的避免直接使用此算子。
+
+#### `SecureReciprocaldiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+
+  从整体上讲，我们要通过计算分母的倒数来实现除法，然后通过计算分母的倒数乘以分子来得到商。
+
+  **参数:**
+
+- **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
+- **`y`**: TensorFlow中的`Tensor`，其值处于共享状态。且必须具有与`x`相同的`shape`。
+- **`name(可选)`**: 指定的该操作的名称，默认值为 None。
+- **`lh_is_const(可选)`**：标识`x`是否为常数。如果它被设置为`True`，那么`x`将被视为所有各方共享的输入值的总和，即真实值。默认值为 `False`。
+- **`rh_is_const(可选)`** :标识`y`是否为常数。如果设置为`True`，那么`y`将被视为各方共享的输入值的综合，即真实值，默认值为 `False`。
+
+  **返回值：**
+
+  一个 `Tensor`。类型与`x`相同。
+
+  *注意*:
+- 分母不能太大（最好小于10000），否则会溢出或影响精度。
+- 通常情况下，输出精度可以接近1e-4。
+- 这个SecureOp与“SecureRealDiv”和“SecureTrueDiv”相同，但实际上，Reciprocaldiv算法比“SecureTrueDiv”快5倍。
+
+
 
 #### `SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
 

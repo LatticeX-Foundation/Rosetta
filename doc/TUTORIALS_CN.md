@@ -152,7 +152,7 @@ import tensorflow as tf
 第二步，激活协议。此处选择 `SecureNN` 协议。
 
 ```py
-rtt.rtt.activate("SecureNN")
+rtt.activate("SecureNN")
 ```
 
 第三步，设置各有多少财富。

@@ -16,6 +16,7 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #include "cc/modules/protocol/mpc/snn/src/impl/op_impl.h"
+#include <inttypes.h>
 
 namespace rosetta {
 namespace snn {
@@ -23,8 +24,7 @@ namespace snn {
 // Convert shares of a in \Z_L to shares in \Z_{L-1} (in place)
 // a \neq L-1
 int ShareConvert::funcShareConvertMPC(vector<mpc_t>& a, size_t size) {
-  // LOGI("funcShareConvertMPC");
-
+  assert(THREE_PC && "funcShareConvertMPC called in non-3PC mode");
   vector<mpc_t> r(size);
   vector<small_mpc_t> etaDP(size);
   vector<small_mpc_t> alpha(size);
@@ -38,8 +38,10 @@ int ShareConvert::funcShareConvertMPC(vector<mpc_t>& a, size_t size) {
 
   if (THREE_PC)
     PARTY = PARTY_C;
-  else if (FOUR_PC)
-    PARTY = PARTY_D;
+  else {
+    std::cout << "only support 3PC SecureNN!!!" << endl;
+    return -1;
+  }
 
   if (PRIMARY) {
     vector<mpc_t> r1(size);
@@ -111,16 +113,16 @@ int ShareConvert::funcShareConvertMPC(vector<mpc_t>& a, size_t size) {
 #endif
   }
 
-  ////funcPrivateCompareMPC(bit_shares, r, etaDP, etaP, size, BIT_SIZE);
+  // [HGF]:  to fellow the definition of SecureNN, i add the code below
+  for (size_t i = 0; i < size; ++i)
+    if(r[i] != 0)
+      r[i] = r[i] - 1;
+  
   GetMpcOpInner(PrivateCompare)->Run(bit_shares, r, etaDP, etaP, size, BIT_SIZE);
 
   if (partyNum == PARTY) {
     vector<mpc_t> eta_shares_1(size);
     vector<mpc_t> eta_shares_2(size);
-
-    //huanggaofeng note: not required in the paper, cause relu-prime(0) failed
-    // for (size_t i = 0; i < size; ++i)
-    //   etaP[i] = 1 - etaP[i];
 
 #if 0
     sharesModuloOdd<small_mpc_t>(eta_shares_1, eta_shares_2, etaP, size, "INDEP");
@@ -146,13 +148,21 @@ int ShareConvert::funcShareConvertMPC(vector<mpc_t>& a, size_t size) {
 
     funcXORModuloOdd2PC(etaDP, eta_shares, theta_shares, size);
     addModuloOdd<mpc_t, small_mpc_t>(theta_shares, betai, theta_shares, size);
-    subtractModuloOdd<mpc_t, mpc_t>(theta_shares, delta_shares, theta_shares, size);
+    // // [HGF]:  I fix the the code below, from subtractModuloOdd to addModuloOdd
+    addModuloOdd<mpc_t, mpc_t>(theta_shares, delta_shares, theta_shares, size);
+    
+    if (partyNum == PARTY_A) {
+      // [HGF]:  I add the code below
+      // alpha + 1
+      for (size_t i = 0; i < size; ++i)
+        alpha[i] += 1;
 
-    if (partyNum == PARTY_A)
       subtractModuloOdd<mpc_t, small_mpc_t>(theta_shares, alpha, theta_shares, size);
-
+    }
+    
     subtractModuloOdd<mpc_t, mpc_t>(a, theta_shares, a, size);
   }
+
   return 0;
 }
 

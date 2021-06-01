@@ -229,6 +229,195 @@ int XorBit::mpc_xor_bit(
   return 0;
 }
 
+  
+  
+//Reciprocal_div
+//by LJF
+int ReciprocalDiv::ReciprocalDivfor2(
+  const vector<mpc_t>& shared_numerator_vec, const vector<mpc_t>& shared_denominator_vec,
+  vector<mpc_t>& shared_quotient_vec, size_t vec_size, bool all_less) {
+  if (all_less) {
+    GetMpcOpInner(Division)->Run(shared_numerator_vec, shared_denominator_vec, shared_quotient_vec, vec_size);
+    return 0;
+  }
+
+  if (THREE_PC) {
+    /*In the whole aspect,we are going to compute the reciprocial of shared_denominator_vec,
+    then we can make the reciprocal to matmul the shared_numerator_vec.
+    First, because we dicide to use the iteration function,
+    so we should make sure the postivate/negativate of the den,and then get the sign of the final result, SJJ have done this part.
+    Second,we should decide the iteration initial A by 3*exp(1-2*den)+0.003,but in this method we will use our exprience to set two initial value.but we should notice the formula above is more precise,but more exhaustive.
+    Third,15 times for iteration is enough ,and we make each circle to compute:A=2*A-A*A*den.
+    Finally,the A is 1/den,we realize num/den by num*（1/den).
+    */
+
+   /// determine whether the values are positive or negative.
+    vector<mpc_t> shared_numer_sign(vec_size, 0);
+    GetMpcOpInner(ComputeMSB)->Run3PC(shared_numerator_vec, shared_numer_sign, vec_size);
+
+    vector<mpc_t> shared_denom_sign(vec_size, 0);
+    GetMpcOpInner(ComputeMSB)->Run3PC(shared_denominator_vec, shared_denom_sign, vec_size);
+
+    vector<mpc_t> shared_sign_pos(vec_size, 0);
+    if (partyNum == PARTY_A) {
+      shared_sign_pos = vector<mpc_t>(vec_size, FloatToMpcType(1));
+	}
+    vector<mpc_t> shared_sign_neg(vec_size, 0);
+    if (partyNum == PARTY_A) {
+      shared_sign_neg = vector<mpc_t>(vec_size, FloatToMpcType(-1));
+    }
+    vector<mpc_t> shared_x_sign(vec_size, 0);
+    
+
+    GetMpcOpInner(Select1Of2)->Run(shared_sign_neg, shared_sign_pos, shared_numer_sign, shared_x_sign, vec_size);
+
+    vector<mpc_t> shared_y_sign(vec_size, 0);
+    GetMpcOpInner(Select1Of2)->Run(shared_sign_neg, shared_sign_pos, shared_denom_sign, shared_y_sign, vec_size);
+
+    vector<mpc_t> quotient_sign_bit(vec_size, 0);
+    GetMpcOpInner(XorBit)->Run(shared_numer_sign, shared_denom_sign, quotient_sign_bit, vec_size);
+   
+    vector<mpc_t> numerator_vec(vec_size, 0);
+    vector<mpc_t> denominator_vec(vec_size, 0);
+
+    GetMpcOpInner(DotProduct)->Run(shared_numerator_vec, shared_x_sign, numerator_vec, vec_size);
+    GetMpcOpInner(DotProduct)->Run(shared_denominator_vec, shared_y_sign, denominator_vec, vec_size);
+
+    vector<mpc_t> quotient_sign(vec_size, 0);
+    GetMpcOpInner(Select1Of2)->Run(shared_sign_neg, shared_sign_pos, quotient_sign_bit, quotient_sign, vec_size);
+
+    vector<mpc_t> quotient_vec = shared_quotient_vec;
+
+//we should limit the denominator to expand the scope of computation and the accuracy.
+    	vector<mpc_t> SHARED_ONE(vec_size, 0);
+  if(partyNum == PARTY_A) {
+	SHARED_ONE = vector<mpc_t>(vec_size, FloatToMpcType(1));
+	}
+	vector<mpc_t> SHARED_TEN(vec_size, 0);
+  if(partyNum == PARTY_A) {
+	SHARED_TEN = vector<mpc_t>(vec_size, FloatToMpcType(10));
+	}
+	vector<mpc_t> SHARED_divTEN(vec_size, 0);
+  if(partyNum == PARTY_A) {
+	SHARED_divTEN = vector<mpc_t>(vec_size, FloatToMpcType(0.1));
+	}
+	vector<mpc_t> judge_val_1(vec_size, 0);
+	vector<mpc_t> judge_val_2(vec_size, 0);
+	vector<mpc_t> judge_val_1_p(vec_size, 0);//msb of judge number
+	vector<mpc_t> judge_val_2_p(vec_size, 0);
+	vector<mpc_t> judge(vec_size, 0);
+	vector<mpc_t> factor(vec_size, 0);//multiple factor
+	vector<mpc_t> denominator_temp(vec_size, 0);
+	vector<mpc_t> numerator_temp(vec_size, 0);
+
+  for(int i = 0 ; i < 4 ; i++)
+   {
+	subtractVectors<mpc_t>(denominator_vec,SHARED_TEN,judge_val_1,vec_size);//x-10
+	subtractVectors<mpc_t>(denominator_vec,SHARED_ONE,judge_val_2,vec_size);//x-1
+	//GetMpcOpInner(Reconstruct2PC)->Run(judge_val_2, judge_val_2.size(), "judge_val_2");
+
+	GetMpcOpInner(ComputeMSB)->Run3PC(judge_val_1, judge_val_1_p, vec_size);
+	GetMpcOpInner(ComputeMSB)->Run3PC(judge_val_2, judge_val_2_p, vec_size);//positive or negative
+	//GetMpcOpInner(Reconstruct2PC)->Run(judge_val_2_p, judge_val_2_p.size(), "judge_val_2_p");
+
+
+	GetMpcOpInner(XorBit)->Run(judge_val_1_p, judge_val_2_p, judge, vec_size);
+	//GetMpcOpInner(Reconstruct2PC)->Run(judge, judge.size(), "judge");
+
+
+	GetMpcOpInner(Select1Of2)->Run(SHARED_TEN, SHARED_divTEN, judge_val_1_p, factor, vec_size);
+	GetMpcOpInner(Select1Of2)->Run(SHARED_ONE, factor, judge, factor, vec_size);
+	//GetMpcOpInner(Reconstruct2PC)->Run(factor, factor.size(), "factor");
+	
+	//GetMpcOpInner(Reconstruct2PC)->Run(denominator_vec, denominator_vec.size(), "denominator_vec");	
+
+	GetMpcOpInner(DotProduct)->Run(factor, denominator_vec, denominator_temp, vec_size);
+	GetMpcOpInner(DotProduct)->Run(factor, numerator_vec, numerator_temp, vec_size);
+	denominator_vec = denominator_temp;
+	numerator_vec = numerator_temp;
+	GetMpcOpInner(Reconstruct2PC)->Run(denominator_vec, denominator_vec.size(), "denominator_vec");	
+		
+	
+  }    
+
+
+    vector<mpc_t> result(vec_size,0);//initial of 1/x
+    vector<mpc_t> initial_temp(vec_size,0);
+    vector<mpc_t> initial_exp(vec_size,0);
+    /// compute the initial_value
+    vector<mpc_t> SHARED_Factorialof3(vec_size, 0);
+    if(partyNum == PARTY_A) {
+	SHARED_Factorialof3 = vector<mpc_t>(vec_size, FloatToMpcType(0.16667));
+	}
+	vector<mpc_t> SHARED_HALF(vec_size, 0);
+    if(partyNum == PARTY_A) {
+	SHARED_HALF = vector<mpc_t>(vec_size, FloatToMpcType(0.5));
+	}
+	vector<mpc_t> NUM_HALF(vec_size, 0);
+	NUM_HALF = vector<mpc_t>(vec_size, FloatToMpcType(0.5));
+
+	vector<mpc_t> NUM_0NE(vec_size, 0);
+	NUM_0NE = vector<mpc_t>(vec_size, FloatToMpcType(1));
+
+	vector<mpc_t> NUM_TWO(vec_size, 0);
+	NUM_TWO = vector<mpc_t>(vec_size, FloatToMpcType(2));
+
+	vector<mpc_t> NUM_Factorialof3(vec_size, 0);
+	NUM_Factorialof3 = vector<mpc_t>(vec_size, FloatToMpcType(0.16667));
+			
+    if (PRIMARY) {
+    for (int i = 0; i < vec_size; ++i) {
+      initial_temp[i] = denominator_vec[i] << 1;
+     }
+	}//primary
+
+	subtractVectors<mpc_t>(SHARED_ONE,initial_temp,initial_exp,vec_size);
+	GetMpcOpInner(Reconstruct2PC)->Run(initial_exp, initial_exp.size(), "1-2*den");
+
+	vector<mpc_t> shared_beta(vec_size,0);
+	vector<mpc_t> update(vec_size,0);
+	GetMpcOpInner(ReluPrime)->Run3PC(initial_exp,shared_beta,vec_size);
+	initial_exp = vector<mpc_t>(vec_size,0);
+	if(partyNum == PARTY_A) {
+	initial_exp = vector<mpc_t>(vec_size,FloatToMpcType(0.003));
+	update = vector<mpc_t>(vec_size,FloatToMpcType(4.074));
+	}
+	
+	//GetMpcOpInner(Reconstruct2PC)->Run(shared_beta, shared_beta.size(), "shared_beta");
+	GetMpcOpInner(SelectShares)->Run3PC(update,shared_beta,update,vec_size);
+	//GetMpcOpInner(Reconstruct2PC)->Run(update, update.size(), "update");
+	addVectors<mpc_t>(initial_exp,update,result,vec_size);
+
+
+      	GetMpcOpInner(Reconstruct2PC)->Run(result, result.size(), "initial_value");
+	vector<mpc_t> iteraion_temp_2A(vec_size,0);//2*A
+	vector<mpc_t> iteraion_temp_AA(vec_size,0);//A^2
+	vector<mpc_t> den_reprocial_temp(vec_size,0);
+	vector<mpc_t> quo(vec_size,0);
+
+	///get initial foriteration
+    for(int i = 0;i <= iteration_time ; i++)
+    {
+	GetMpcOpInner(DotProduct)->Run(result, NUM_0NE, iteraion_temp_2A, vec_size);
+	//GetMpcOpInner(Reconstruct2PC)->Run(iteraion_temp_2A, iteraion_temp_2A.size(), "iteraion_temp_2A");
+	GetMpcOpInner(Square)->Run(result, iteraion_temp_AA, vec_size);//A*A
+	//GetMpcOpInner(DotProduct)->Run(result, result, iteraion_temp_AA, vec_size);//A*A
+	//GetMpcOpInner(Reconstruct2PC)->Run(iteraion_temp_AA, iteraion_temp_AA.size(), "iteraion_temp_AA");
+	//GetMpcOpInner(Reconstruct2PC)->Run(denominator_vec, denominator_vec.size(), "denominator_vec");
+	GetMpcOpInner(DotProduct)->Run(iteraion_temp_AA, denominator_vec, den_reprocial_temp, vec_size);//A*A*SELF
+	//GetMpcOpInner(Reconstruct2PC)->Run(den_reprocial_temp, den_reprocial_temp.size(), "den_reprocial_temp");
+	subtractVectors<mpc_t>(iteraion_temp_2A,den_reprocial_temp,result,vec_size);
+    }
+    GetMpcOpInner(DotProduct)->Run(numerator_vec, result, quo, vec_size);
+    GetMpcOpInner(DotProduct)->Run(quo, quotient_sign, shared_quotient_vec, vec_size);
+
+    
+  }//threepc
+
+  
+  return 0;
+}//reciprocaldiv
+  
 // clang-format off
 int DivisionV2::funcDivisionMPCV2(
   const vector<mpc_t>& shared_numerator_vec, const vector<mpc_t>& shared_denominator_vec,

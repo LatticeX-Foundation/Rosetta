@@ -83,7 +83,13 @@ extern int NUM_OF_PARTIES;
 #define CPP_ASSEMBLY 1
 #define PARALLEL false
 #define NO_CORES 4
+
+#if ROSETTA_MPC_128
+//avoid overflow error in PrivateCompare when prime is not large enough
+#define PRIME_NUMBER 251
+#else
 #define PRIME_NUMBER 127
+#endif
 
 
 const int BIT_SIZE = (sizeof(mpc_t) * CHAR_BIT);
@@ -134,3 +140,7 @@ const __m128i BIT128 = _mm_setr_epi8(128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 #define MPC_USE_INIT_KEYS2	1
 
 // clang-format on
+
+//for reciprocal division method
+#define iteration_time     10
+
