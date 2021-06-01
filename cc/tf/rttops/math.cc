@@ -784,6 +784,38 @@ class RttArgMaxOp : public OpKernel {
   }
 };
 
+template <typename Device>
+class RttRsqrtOp : public OpKernel {
+ public:
+  explicit RttRsqrtOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+  void Compute(OpKernelContext* context) {
+    PRINT_BEG("RttRsqrtOp");
+    throw;
+  }
+};
+
+template <typename Device>
+class RttSqrtOp : public OpKernel {
+ public:
+  explicit RttSqrtOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+  void Compute(OpKernelContext* context) {
+    PRINT_BEG("RttSqrtOp");
+    throw;
+  }
+};
+
+template <typename Device>
+class RttExpOp : public OpKernel {
+ public:
+  explicit RttExpOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+  void Compute(OpKernelContext* context) {
+    PRINT_BEG("RttExpOp");
+    throw;
+  }
+};
 ////////////////   register kernels (with string type only)   ////////////////
 using CPUDevice=Eigen::ThreadPoolDevice;
 
@@ -799,6 +831,9 @@ REGISTER_KERNEL_BUILDER(Name("RttNegative").Device(DEVICE_CPU), RttNegOp<CPUDevi
 REGISTER_KERNEL_BUILDER(Name("RttAdd").Device(DEVICE_CPU), RttAddOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttSub").Device(DEVICE_CPU), RttSubOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttMul").Device(DEVICE_CPU), RttMulOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttRsqrt").Device(DEVICE_CPU), RttRsqrtOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttSqrt").Device(DEVICE_CPU), RttSqrtOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttExp").Device(DEVICE_CPU), RttExpOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttSquare").Device(DEVICE_CPU), RttSquareOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttDiv").Device(DEVICE_CPU), RttDivOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttReciprocaldiv").Device(DEVICE_CPU), RttDivOp<CPUDevice>);

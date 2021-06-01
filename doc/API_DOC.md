@@ -40,6 +40,9 @@
       - [`SecureLogicalNot(x, name=None)`](#securelogicalnotx-namenone)
       - [`SecureMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`](#securematmula-b-transpose_afalse-transpose_bfalse-namenone)
       - [`SecurePow(x, y, name=None, lh_is_const=False, rh_is_const=True)`](#securepowx-y-namenone-lh_is_constfalse-rh_is_consttrue)
+      - [`SecureExp(x, name=None)`](#secureexpx-namenone)
+      - [`SecureRsqrt(x, name=None)`](#securersqrtx-namenone)
+      - [`SecureSqrt(x, name=None)`](#securesqrtx-namenone)
       - [`SecureLog(x, name=None)`](#securelogx-namenone)
       - [`SecureLog1p(x, name=None)`](#securelog1px-namenone)
       - [`SecureHLog(x, name=None)`](#securehlogx-namenone)
@@ -579,7 +582,52 @@ On the whole, we need to calculate the reciprocal of the denominator to achieve 
   **Returns:**
 
   ​ A `Tensor`. Has the same type as `x`.
-  
+
+#### `SecureExp(x, name=None)`
+
+  Computes e^x of `x` element-wise. Any dimension of `x` is supported. 
+
+  **Args:**
+
+- **`x`**: A  `Tensor` in TensorFlow, whose values are in shared status.
+- **`name(optional)`**: A name for the operation, the default value of it is None.
+
+  **Returns:**
+
+  ​ A `Tensor`. Has the same type as `x`.
+
+*NOTE*: The current accuracy of the operator is 0.1 ~ 0.01, we will optimize it in the next version.
+
+#### `SecureRsqrt(x, name=None)`
+
+  Computes 1/(x^(0.5)) of `x` element-wise by using Newton Raphson method. Any dimension of `x` is supported. 
+
+  **Args:**
+
+- **`x`**: A  `Tensor` in TensorFlow, whose values are in shared status.
+- **`name(optional)`**: A name for the operation, the default value of it is None.
+
+  **Returns:**
+
+  ​ A `Tensor`. Has the same type as `x`.
+
+
+#### `SecureSqrt(x, name=None)`
+
+  Computes x^(0.5) of `x` element-wise. Any dimension of `x` is supported. 
+
+  **Args:**
+
+- **`x`**: A  `Tensor` in TensorFlow, whose values are in shared status.
+- **`name(optional)`**: A name for the operation, the default value of it is None.
+
+  **Returns:**
+
+  ​ A `Tensor`. Has the same type as `x`.
+
+  *NOTE*: To calculate the square root of the input,the input is calculated by using the Newton Raphson method to get Rsqrt(x) and multiplied by itself .
+
+
 #### `SecureLog(x, name=None)`
 
   Computes natural logarithm of `x` element-wise. Any dimension of `x` is supported. This is optimized version for $x \in [0.0001, 10]$, so **DO NOT** use it for other $x$.

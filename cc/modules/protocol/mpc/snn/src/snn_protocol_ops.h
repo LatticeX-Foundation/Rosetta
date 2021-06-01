@@ -180,6 +180,20 @@ class SnnProtocolOps : public ProtocolOps {
 
   int AddN(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 
+
+  int Exp(
+    const vector<string>& a,vector<string>& output,
+    const attr_type* attr_info = nullptr);
+
+  int Rsqrt(
+    const vector<string>& a,vector<string>& output,
+    const attr_type* attr_info = nullptr);
+
+
+  int Sqrt(
+    const vector<string>& a,vector<string>& output,
+    const attr_type* attr_info = nullptr);
+
   ////////////////////////////////// nn ops //////////////////////////////////
   int Relu(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
 

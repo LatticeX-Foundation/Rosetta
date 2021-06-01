@@ -101,6 +101,9 @@ class StaticReplacePass():
                     "rttlog" :        ["SecureLog",      self._create_secure_unary_op,   secure_ops.SecureLog,      1,  False],
                     "rttlog1p" :      ["SecureLog1p",    self._create_secure_unary_op,   secure_ops.SecureLog1p,    1,  False],
                     "rttabs" :        ["SecureAbs",      self._create_secure_unary_op,   secure_ops.SecureAbs,      1,  False],
+                    "rttrsqrt" :     ["SecureRsqrt",   self._create_secure_unary_op,   secure_ops.SecureRsqrt, False],
+                    "rttsqrt" :     ["SecureSqrt",   self._create_secure_unary_op,   secure_ops.SecureSqrt, False],
+                    "rttexp" :     ["SecureExp",   self._create_secure_unary_op,   secure_ops.SecureExp, False],
 
                     # relational operation
                     "rttequal" :      ["SecureEqual",    self._create_secure_relational_op,      secure_ops.SecureEqual,        2,  True],

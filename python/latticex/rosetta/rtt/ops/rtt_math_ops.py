@@ -189,6 +189,25 @@ def rtt_square(x, name=None):
     _result = rtt_ts.rtt_ops.rtt_square(x._raw, name=name)
     return rtt_ts.RttTensor(_result)
 
+def rtt_rsqrt(x, name=None):
+    """Computes 1/sqrt(x) of x element-wise."""
+    x = rtt_ts.convert_to_rtttensor(x)
+    _result = rtt_ts.rtt_ops.rtt_rsqrt(x._raw, name=name)
+    return rtt_ts.RttTensor(_result)
+    
+def rtt_sqrt(x, name=None):
+    """Computes square of x element-wise."""
+    x = rtt_ts.convert_to_rtttensor(x)
+    _result = rtt_ts.rtt_ops.rtt_sqrt(x._raw, name=name)
+    return rtt_ts.RttTensor(_result)
+
+def rtt_exp(x, name=None):
+    """Computes square of x element-wise."""
+    x = rtt_ts.convert_to_rtttensor(x)
+    _result = rtt_ts.rtt_ops.rtt_exp(x._raw, name=name)
+    return rtt_ts.RttTensor(_result)
+
+
 
 def rtt_pow(x, y, name=None): 
     """Computes the power of one value to another."""
@@ -363,6 +382,9 @@ def static_override_tf_ops_to_rtt_ops():
     tf.matmul = rtt_matmul
     tf.square = rtt_square
     tf.pow = rtt_pow
+    tf.sqrt = rtt_sqrt
+    tf.rsqrt = rtt_rsqrt
+    tf.exp = rtt_exp
     tf.log = rtt_log
     tf.log1p = rtt_log1p
     tf.abs = rtt_abs

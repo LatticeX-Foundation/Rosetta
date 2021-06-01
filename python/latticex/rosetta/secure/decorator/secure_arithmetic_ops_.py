@@ -81,6 +81,14 @@ def SecureSquare(x, name=None):
     return _secure_ops.secure_square(x, name)
 
 
+def SecureRsqrt(x, name=None):
+    return _secure_ops.secure_rsqrt(x, name)
+def SecureSqrt(x, name=None):
+    return _secure_ops.secure_sqrt(x, name)
+def SecureExp(x, name=None):
+    return _secure_ops.secure_exp(x, name)
+
+
 def SecureLog(x, name=None):
     return _secure_ops.secure_log(x, name=name)
 

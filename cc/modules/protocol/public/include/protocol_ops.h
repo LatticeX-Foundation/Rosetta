@@ -243,6 +243,28 @@ class ProtocolOps {
     const attr_type* attr_info = nullptr) {
     THROW_NOT_IMPL;
   }
+  //get 1/(a^0.5)
+  virtual int Rsqrt(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+//get a^0.5
+  virtual int Sqrt(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+//get e^a
+  virtual int Exp(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
 
   virtual int Square(
     const vector<string>& a,
@@ -380,30 +402,7 @@ class ProtocolOps {
     THROW_NOT_IMPL;
   }
 
-  // get \sqrt{a}
-  virtual int Sqrt(
-    const vector<string>& a,
-    vector<string>& output,
-    const attr_type* attr_info = nullptr) {
-    THROW_NOT_IMPL;
-  }
-
-  // get 1/\sqrt{a}
-  virtual int Rsqrt(
-    const vector<string>& a,
-    vector<string>& output,
-    const attr_type* attr_info = nullptr) {
-    THROW_NOT_IMPL;
-  }
-
   virtual int Invert(
-    const vector<string>& a,
-    vector<string>& output,
-    const attr_type* attr_info = nullptr) {
-    THROW_NOT_IMPL;
-  }
-
-  virtual int Exp(
     const vector<string>& a,
     vector<string>& output,
     const attr_type* attr_info = nullptr) {

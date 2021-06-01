@@ -345,6 +345,52 @@ int snn_protocol_unary_ops_call(
   return 0;
 }
 
+
+
+#define SNN_PROTOCOL_UNARY_OPS_CALL(OpFunctor, name, a, c, attr) \
+  snn_protocol_unary_ops_call<OpFunctor>(name, _op_msg_id, net_io_, a, c, attr)
+
+int SnnProtocolOps::Sqrt(
+  const vector<string>& a,
+  vector<string>& output,
+  const attr_type* attr_info) {
+  log_debug << "----> "<< "SnnSqrt";
+  output.resize(a.size());
+  SNN_PROTOCOL_UNARY_OPS_CALL(rosetta::snn::Sqrt, "SnnSqrt", a, output, attr_info);
+  log_debug << "SnnSqrt ok. <----";
+  return 0;
+}
+
+
+#define SNN_PROTOCOL_UNARY_OPS_CALL(OpFunctor, name, a, c, attr) \
+  snn_protocol_unary_ops_call<OpFunctor>(name, _op_msg_id, net_io_, a, c, attr)
+
+int SnnProtocolOps::Rsqrt(
+  const vector<string>& a,
+  vector<string>& output,
+  const attr_type* attr_info) {
+  log_debug << "----> "<< "SnnRsqrt";
+  output.resize(a.size());
+  SNN_PROTOCOL_UNARY_OPS_CALL(rosetta::snn::Rsqrt, "SnnRsqrt", a, output, attr_info);
+  log_debug << "SnnRsqrt ok. <----";
+  return 0;
+}
+
+#define SNN_PROTOCOL_UNARY_OPS_CALL(OpFunctor, name, a, c, attr) \
+  snn_protocol_unary_ops_call<OpFunctor>(name, _op_msg_id, net_io_, a, c, attr)
+
+int SnnProtocolOps::Exp(
+  const vector<string>& a,
+  vector<string>& output,
+  const attr_type* attr_info) {
+  log_debug << "----> "<< "SnnExp";
+  output.resize(a.size());
+  SNN_PROTOCOL_UNARY_OPS_CALL(rosetta::snn::Exp, "SnnExp", a, output, attr_info);
+  log_debug << "SnnExp ok. <----";
+
+  return 0;
+}
+
 #define SNN_PROTOCOL_UNARY_OPS_CALL(OpFunctor, name, a, c, attr) \
   snn_protocol_unary_ops_call<OpFunctor>(name, _op_msg_id, net_io_, a, c, attr)
 

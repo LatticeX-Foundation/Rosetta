@@ -26,6 +26,9 @@
       - [`SecureLogicalNot(x, name=None)`](#securelogicalnotx-namenone)
       - [`SecureMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`](#securematmula-b-transpose_afalse-transpose_bfalse-namenone)
       - [`SecurePow(x, y, name=None, lh_is_const=False, rh_is_const=True)`](#securepowx-y-namenone-lh_is_constfalse-rh_is_consttrue)
+      - [`SecureExp(x, name=None)`](#secureexpx-namenone)
+      - [`SecureRsqrt(x, name=None)`](#securersqrtx-namenone)
+      - [`SecureSqrt(x, name=None)`](#securesqrtx-namenone)
       - [`SecureLog(x, name=None)`](#securelogx-namenone)
       - [`SecureLog1p(x, name=None)`](#securelog1px-namenone)
       - [`SecureHLog(x, name=None)`](#securehlogx-namenone)
@@ -420,6 +423,48 @@
   **返回值:**
 
   ​ 一个 `Tensor`。类型与`x`相同。
+
+#### `SecureExp(x, name=None)`
+
+  逐元素计算$e^x$ 。任意维度的 `x` 都是支持的。
+
+  **参数:**
+
+- **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
+- **`name(可选)`**: 指定的该操作的名称，默认值为 None。
+
+  **返回值:**
+  
+  一个 `Tensor`。类型与`x`相同。
+
+
+#### `SecureRsqrt(x, name=None)`
+
+  逐元素计算$1/(x^(0.5))$ 。任意维度的 `x` 都是支持的。
+
+  **参数:**
+
+- **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
+- **`name(可选)`**: 指定的该操作的名称，默认值为 None。
+
+  **返回值:**
+  
+  一个 `Tensor`。类型与`x`相同。
+
+#### `SecureSqrt(x, name=None)`
+
+  逐元素计算$x^(0.5)$ 。任意维度的 `x` 都是支持的。
+
+  **参数:**
+
+- **`x`**: TensorFlow中的 `Tensor`，其值处于共享状态。
+- **`name(可选)`**: 指定的该操作的名称，默认值为 None。
+
+  **返回值:**
+  
+  一个 `Tensor`。类型与`x`相同。
+
+  *注意*:  使用Newton-Raphson方法计算SecureRsqrt(x)并乘以其自身,得到输入的平方根。
 
 #### `SecureLog(x, name=None)`
 

@@ -228,6 +228,9 @@ REGISTER_OP("RttMatmul")
   .Attr("transpose_a: bool = false")
   .Attr("transpose_b: bool = false");
 
+REGISTER_OP("RttRsqrt").Input("x: string").Output("res: string");
+REGISTER_OP("RttSqrt").Input("x: string").Output("res: string");
+REGISTER_OP("RttExp").Input("x: string").Output("res: string");
 REGISTER_OP("RttSquare").Input("x: string").Output("res: string");
 
 REGISTER_OP("RttReduceMean")

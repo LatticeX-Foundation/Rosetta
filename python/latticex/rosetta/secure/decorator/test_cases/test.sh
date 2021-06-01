@@ -70,8 +70,12 @@ test_op division_test
 # test_op test_xxx_pow
 
 
+#test_op rsqrt
+#test_op exp
+#test_op sqrt
 test_op log
 test_op log1p
+
 
 
 # test_op max
