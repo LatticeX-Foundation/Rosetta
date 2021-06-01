@@ -63,7 +63,7 @@ test_op nn_ops_test
 # test_op add
 # test_op sub
 # test_op mul
-#test_op division_test
+test_op division_test
 # test_op relu
 # test_op pow_const
 # test_op test_xxx_pow

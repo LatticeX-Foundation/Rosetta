@@ -21,7 +21,7 @@ print("input xa:", sess.run(xa))
 
 ###########
 print("=========================== tf op rsqrt 1")
-xc = tf.reciprocal(tf.sqrt(xa))
+xc = tf.rsqrt(xa)
 xcc = sess.run(xc)
 print("=========================== tf op rsqrt 2")
 print("TF Rsqrt: ", xcc)
