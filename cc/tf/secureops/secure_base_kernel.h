@@ -93,36 +93,46 @@ typedef Eigen::SyclDevice SYCLDevice;
 #define DO_SECURE_OP_PERFORMANCE_STATISTICS 1
 #if DO_SECURE_OP_PERFORMANCE_STATISTICS
 // ////////////////////// PERFORMANCE STATISTICS
-struct secure_op_stats {
-  secure_op_stats(const string& _op) : op(_op) {}
-  string op;
+struct __op_stats {
   atomic<int64_t> calls{0};
   atomic<int64_t> elapse{0};
-  map<string, atomic<int64_t>> protocol_op_elapse;
 };
-extern mutex secure_op_stats_mtx;
-extern map<string, secure_op_stats*> map_op_stats;
+struct op_stats {
+  op_stats(const string& _op) : op(_op) {}
+  string op; // secure op name
+  __op_stats secure_op_stats; // secure op
+  map<string, __op_stats> protocol_op_stats; // protocol op
+};
+extern mutex op_stats_mtx;
+extern map<string, op_stats*> map_op_stats;
 extern atomic<int64_t> init_exit_counter;
-void secure_op_stats_exit_func();
+extern std::chrono::time_point<std::chrono::steady_clock> ops_wall_clock;
+void op_stats_exit_func();
 // ////////////////////// PERFORMANCE STATISTICS
 #define SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_BEG() \
-  map_op_stats[op_]->calls++;                           \
+  map_op_stats[op_]->secure_op_stats.calls++;           \
   auto ___begin = std::chrono::steady_clock::now()
 #define SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_END()                    \
-  map_op_stats[op_]->elapse +=                                             \
+  map_op_stats[op_]->secure_op_stats.elapse +=                             \
     std::chrono::duration_cast<std::chrono::duration<int64_t, std::nano>>( \
       std::chrono::steady_clock::now() - ___begin)                         \
       .count()
 
-#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(opname) \
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG_(opname)    \
+  map_op_stats[op_]->protocol_op_stats[#opname].calls++; \
   auto __##opname##_begin = std::chrono::steady_clock::now()
 
-#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END(opname)                                           \
-  auto __##opname##_end = std::chrono::steady_clock::now();                                    \
-  auto __##opname##__ = std::chrono::duration_cast<std::chrono::duration<int64_t, std::nano>>( \
-                          __##opname##_end - __##opname##_begin)                               \
-                          .count();                                                            \
-  map_op_stats[op_]->protocol_op_elapse[#opname] += __##opname##__
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END_(opname)                                            \
+  auto __##opname##_end = std::chrono::steady_clock::now();                                      \
+  auto __##opname##_dur = std::chrono::duration_cast<std::chrono::duration<int64_t, std::nano>>( \
+                            __##opname##_end - __##opname##_begin)                               \
+                            .count();                                                            \
+  map_op_stats[op_]->protocol_op_stats[#opname].elapse += __##opname##_dur
+
+// clang-format off
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(opname) {SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG_(opname)
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END(opname) SECURE_OP_CALL_PROTOCOL_OP_STATS_END_(opname) ;} (void)0
+// clang-format on
 
 //! Usage
 //! SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(XXX);
@@ -157,12 +167,13 @@ class SecureOpKernel : public OpKernel {
 #if DO_SECURE_OP_PERFORMANCE_STATISTICS
     {
       if (init_exit_counter++ == 0) {
-        atexit(secure_op_stats_exit_func);
+        atexit(op_stats_exit_func);
+        ops_wall_clock = std::chrono::steady_clock::now();
       }
-      unique_lock<mutex> lck(secure_op_stats_mtx);
+      unique_lock<mutex> lck(op_stats_mtx);
       auto iter = map_op_stats.find(op_);
       if (iter == map_op_stats.end()) {
-        map_op_stats[op_] = new secure_op_stats(op_);
+        map_op_stats[op_] = new op_stats(op_);
       }
     }
 #endif

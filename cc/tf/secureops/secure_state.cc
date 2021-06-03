@@ -61,8 +61,9 @@ class SecureAssignSubOp : public SecureOpKernel {
 
     // secure protocol calling
     vector<string> output;
+    int ret = -1;
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Sub);
-    int ret = ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Sub(in1, in2, output, &attrs_);
+    ret = ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Sub(in1, in2, output, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Sub);
     if (ret != 0) {
       log_error << "call Secure Sub failed, ret: " << ret;

@@ -788,6 +788,9 @@ class SecureRestoreV2Op : public SecureOpKernel {
       int64_t n = shapes.size();
       SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
       ops->Broadcast(partyid_, (const char*)&n, (char*)&n, sizeof(n));
+      SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
+      
+      SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
       ops->Broadcast(
         partyid_, (const char*)shapes.data(), (char*)shapes.data(),
         sizeof(int64_t) * shapes.size());
@@ -796,7 +799,11 @@ class SecureRestoreV2Op : public SecureOpKernel {
       int64_t n = 0;
       SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
       ops->Broadcast(restore_party_id, (const char*)&n, (char*)&n, sizeof(n));
+      SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
+
       vector<int64_t> shapes(n);
+
+      SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
       ops->Broadcast(
         restore_party_id, (const char*)shapes.data(), (char*)shapes.data(),
         sizeof(int64_t) * shapes.size());
