@@ -48,9 +48,9 @@ function test_op()
 
 # simple standalone op test cases
 echo "run standalone test case..."
-# test_op tf_const
-# test_op axis_test
-# test_op abs_test
+test_op tf_const
+test_op axis_test
+test_op abs_test
 test_op save_v2
 test_op restore_v2
 test_op nn_ops_test
@@ -58,37 +58,36 @@ test_op nn_ops_test
 
 # test_op fused_batch_norm
 
-# # test_op print
-# test_op matmul
-# test_op sigmoid
-# test_op add
-# test_op sub
-# test_op mul
+# test_op print
+test_op matmul
+test_op sigmoid
+test_op add
+test_op sub
+test_op mul
 test_op division_test
-# test_op relu
-# test_op pow_const
-# test_op test_xxx_pow
+test_op relu
+test_op pow_const
 
 
-#test_op rsqrt
-#test_op exp
-#test_op sqrt
+test_op rsqrt
+test_op exp
+test_op sqrt
 test_op log
 test_op log1p
 
 
 
-# test_op max
-# test_op mean
-# test_op sum
-# test_op min
+test_op max
+test_op mean
+test_op sum
+test_op min
 
 # test_op apply_gradient_descent
 
-# test_op greater_equal
-# test_op greater
-# test_op less_equal
-# test_op less
-# test_op equal # with equal and not_equal
+test_op greater_equal
+test_op greater
+test_op less_equal
+test_op less
+test_op equal # with equal and not_equal
 
 echo "*** decorator test all Done. ****"
