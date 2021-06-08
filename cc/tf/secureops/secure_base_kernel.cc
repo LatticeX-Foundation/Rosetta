@@ -27,7 +27,7 @@ map<string, op_stats*> map_op_stats;
 atomic<int64_t> init_exit_counter;
 std::chrono::time_point<std::chrono::steady_clock> ops_wall_clock;
 void op_stats_exit_func() {
-  size_t max_width = 0;
+  size_t max_width = strlen("(%)Summary");
   for (auto& iter : map_op_stats) {
     auto stat = iter.second;
     max_width = std::max(stat->op.length(), max_width);
