@@ -534,12 +534,12 @@ class SecureBinaryOp : public SecureOpKernel {
     const Tensor& x1 = context->input(1);
     const auto& in0_flat = x0.flat<string>();
     const auto& in1_flat = x1.flat<string>();
-
     const int ndims = state.ndims;
     int in0_dims = state.in0_dims;
     int in1_dims = state.in1_dims;
     int out_dims = state.out_dims;
 
+    log_debug << "dim info::: " << "N:" << ndims << ", in0:" << in0_dims << ", in1:" << in1_dims << ", out_dims:" << out_dims;
     const CPUDevice& eigen_device = context->eigen_device<CPUDevice>();
     auto out_shape = out->shape();
     Tensor in0_tensor;
@@ -564,6 +564,7 @@ class SecureBinaryOp : public SecureOpKernel {
       ASSIGN_TENSOR<5>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
     } else {
       if (out_dims == 0) {
+        log_debug << "Hit out_dim == 0!";
         input0[0] = in0_flat(0);
         input1[0] = in1_flat(0);
       } else {
@@ -571,13 +572,10 @@ class SecureBinaryOp : public SecureOpKernel {
           "dim error, ndims:" + std::to_string(ndims) + ",out_dims:" + std::to_string(out_dims));
       }
     }
-    if (out_dims != 0) {
-      const auto& in0_flat = in0_tensor.flat<string>();
-      const auto& in1_flat = in1_tensor.flat<string>();
-      for (int64_t i = 0; i < size; i++) {
-        input0[i] = in0_flat(i);
-        input1[i] = in1_flat(i);
-      }
+
+    for (int64_t i = 0; i < size; i++) {
+      input0[i] = in0_flat(i);
+      input1[i] = in1_flat(i);
     }
 
     // fill attributes
