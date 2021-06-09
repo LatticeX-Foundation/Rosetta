@@ -49,19 +49,33 @@ static inline void convert_plain_double_to_mpctype(const vector<double>& a, vect
     b[i] = disable_sharing ? FloatToMpcType(a[i]) : FloatToMpcType(a[i] / 2);
 }
 
+static inline void convert_plain_double_to_mpctype(const double& a, mpc_t& b, bool disable_sharing=false) {
+    b = disable_sharing ? FloatToMpcType(a) : FloatToMpcType(a / 2);
+}
+
 static inline int snn_decode_(const StrVec& a, MpcVec& sa) {
   ELAPSED_STATISTIC_BEG(convert_string_to_share_timer);
+  // if (rosetta::convert::is_secure_text(a[0])) {
+  //   sa.resize(a.size());
+  //   for (auto i = 0; i < a.size(); ++i)
+  //     memcpy((char*)&sa[i], a[i].data(), sizeof(mpc_t));
 
-  if (rosetta::convert::is_secure_text(a[0])) {
-    sa.resize(a.size());
-    for (auto i = 0; i < a.size(); ++i)
+  //   ELAPSED_STATISTIC_END(convert_string_to_share_timer);
+  // } else {
+  //   ELAPSED_STATISTIC_END(convert_string_to_share_timer);
+  //   convert_plain_double_to_mpctype(rosetta::convert::from_double_str(a), sa);
+  // }
+  // fix different encoding in the input vector
+  sa.resize(a.size());
+  for (auto i = 0; i < a.size(); ++i) {
+    if (rosetta::convert::is_secure_text(a[i])) {
       memcpy((char*)&sa[i], a[i].data(), sizeof(mpc_t));
-
-    ELAPSED_STATISTIC_END(convert_string_to_share_timer);
-  } else {
-    ELAPSED_STATISTIC_END(convert_string_to_share_timer);
-    convert_plain_double_to_mpctype(rosetta::convert::from_double_str(a), sa);
+    } else {
+      double dv = to_double(a[i].c_str());
+      convert_plain_double_to_mpctype(dv, sa[i]);
+    }
   }
+  ELAPSED_STATISTIC_END(convert_string_to_share_timer);
 
   return 0;
 }
@@ -232,13 +246,9 @@ int snn_protocol_binary_ops_call(
     snn_decode(b, private_b);
     std::make_shared<OpFunctor>(msg_id, net_io)->Run(a, private_b, out_vec, a.size());
   } else {
-    log_debug << name << "  post 1 is ok. <----";
     snn_decode(a, private_a);////////// why variable got double string (eg. tf.Variable without private_input)
-    log_debug << name << "  post 2 is ok. <----";
     snn_decode(b, private_b);
-    log_debug << name << "  post 3 is ok. <----";
     std::make_shared<OpFunctor>(msg_id, net_io)->Run(private_a, private_b, out_vec, a.size());
-    log_debug << name << "  post 4 is ok. <----";
   }
   snn_encode(out_vec, c);
 
@@ -612,7 +622,6 @@ int SnnProtocolOps::Reveal(
   // to double values
   output.resize(out_vec.size());
   convert_mpctype_to_double(out_vec, output);
-
   log_debug << "Reveal ok. <----\n";
   return 0;
 }
