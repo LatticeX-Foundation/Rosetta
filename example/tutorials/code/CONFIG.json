@@ -17,7 +17,7 @@
       "HOST": "127.0.0.1",
       "PORT": 13169
     },
-    "SAVER_MODE": 0,
+    "SAVER_MODE": 7,
     "RESTORE_MODE": 0
   }
 }
