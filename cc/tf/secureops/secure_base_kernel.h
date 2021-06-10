@@ -551,8 +551,9 @@ class SecureBinaryOp : public SecureOpKernel {
     vector<string> input0(size);
     vector<string> input1(size);
     vector<string> output(size);
-
+    // we need to align the input tensor by broadcasting the low-dim tensor in missing dim.
     if (ndims == 1) {
+      // log_debug << "debug: hit ndims==1";
       ASSIGN_TENSOR<1>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
     } else if (ndims == 2) {
       ASSIGN_TENSOR<2>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
@@ -564,7 +565,7 @@ class SecureBinaryOp : public SecureOpKernel {
       ASSIGN_TENSOR<5>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
     } else {
       if (out_dims == 0) {
-        log_debug << "Hit out_dim == 0!";
+        // log_debug << "Hit out_dim == 0!";
         input0[0] = in0_flat(0);
         input1[0] = in1_flat(0);
       } else {
@@ -573,9 +574,13 @@ class SecureBinaryOp : public SecureOpKernel {
       }
     }
 
+    log_debug << "DEBUG raw in0:" << x0.shape() << ", and in1:" << x1.shape();
+    log_debug << "DEBUG in0: " << in0_tensor.shape() << ", and in1:" << in1_tensor.shape();
+    const auto& expanded_in0_flat = in0_tensor.flat<string>();
+    const auto& expanded_in1_flat = in1_tensor.flat<string>();
     for (int64_t i = 0; i < size; i++) {
-      input0[i] = in0_flat(i);
-      input1[i] = in1_flat(i);
+      input0[i] = expanded_in0_flat(i);
+      input1[i] = expanded_in1_flat(i);
     }
 
     // fill attributes
