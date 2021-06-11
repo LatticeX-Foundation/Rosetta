@@ -461,6 +461,11 @@ void ASSIGN_TENSOR(
     // log_info << "_lhs type:\n" << TYPENAME(typeid(_lhs).name()) << endl;
     // log_info << "_rhs type:\n" << TYPENAME(typeid(_rhs).name()) << endl;
     if (out_dims == 0) {
+      log_debug << "ASSIGN_TENSOR hit out_dims == 0, which means both inputs are scale values.";
+      auto _out = out->tensor<string, 0>();
+      Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      in0_tensor.tensor<string, 0>().reshape(_out_shape).device(eigen_device) = _lhs;
+      in1_tensor.tensor<string, 0>().reshape(_out_shape).device(eigen_device) = _rhs;  
     } else if (out_dims == 1) {
       auto _out = out->tensor<string, 1>();
       Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
@@ -553,7 +558,7 @@ class SecureBinaryOp : public SecureOpKernel {
     vector<string> output(size);
     // we need to align the input tensor by broadcasting the low-dim tensor in missing dim.
     if (ndims == 1) {
-      // log_debug << "debug: hit ndims==1";
+      log_debug << "debug: hit ndims==1";
       ASSIGN_TENSOR<1>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
     } else if (ndims == 2) {
       ASSIGN_TENSOR<2>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
