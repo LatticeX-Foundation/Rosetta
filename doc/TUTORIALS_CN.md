@@ -172,7 +172,7 @@ init = tf.global_variables_initializer()
 with tf.Session() as sess:
     sess.run(init)
     res = sess.run(res)
-    print('res:', res)  # res: 722739251331272.4
+    print('res:', res)  # res: b'\x90\xa3\xff\x14\x87f\x95\xc3#'
 ```
 
 上面的输出的 `res` 是一个 `sharing` 值。
@@ -185,7 +185,7 @@ with tf.Session() as sess:
 with tf.Session() as sess:
     # ...
     ret = rtt.SecureReveal(res)
-    print('ret:', sess.run(ret))  # ret: 1.0
+    print('ret:', sess.run(ret))  # ret: b'1.000000'
 ```
 
 控制台版本，完整代码参考 [rtt-millionaire-console.py](../example/tutorials/code/rtt-millionaire-console.py)。
@@ -247,7 +247,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 np.random.seed(0)
 
-EPOCHES = 100
+EPOCHES = 10
 BATCH_SIZE = 16
 learning_rate = 0.0002
 ```
@@ -331,13 +331,13 @@ with tf.Session() as sess:
 输出如下：
 
 ```log
-Y_pred: [[5.409453 ]
- [5.803287 ]
- [5.9634194]
+Y_pred: [[4.8402567]
+ [5.297159 ]
+ [5.81963  ]
  ...
- [4.978249 ]
- [5.9761114]
- [5.9929996]]
+ [4.9908857]
+ [5.8464894]
+ [6.157756 ]]
 ```
 
 #### rosetta 基础版
@@ -402,13 +402,13 @@ OK，简单总结一下与 `tensorflow` 版本的区别：
 输出如下：
 
 ```log
-Y_pred: [[1.22580022e+14]
- [1.22481157e+14]
- [1.22514398e+14]
+Y_pred: [[b'\x9f\xf5\n\xc2\x81\x06\x00\x00#']
+ [b'g6j\x7fq\x0f\x00\x00#']
+ [b'\x95\xfc\x06\x1cA}\x00\x00#']
  ...
- [1.22532401e+14]
- [1.22508954e+14]
- [1.22495981e+14]]
+ [b'\x19\x02\xd5\xfd\xf1c\x00\x00#']
+ [b'\xe1\xd5\x16pGz\x00\x00#']
+ [b'}\xfe8\xd3,\x91\xff\xff#']]
 ```
 
 没错，你看到是 sharing 值。
@@ -463,13 +463,13 @@ with tf.Session() as sess:
 输出如下：
 
 ```log
-Y_pred: [[5.40625 ]
- [5.828125]
- [5.953125]
+Y_pred: [[b'4.844925']
+ [b'5.297165']
+ [b'5.819885']
  ...
- [5.      ]
- [5.984375]
- [5.984375]]
+ [b'4.992172']
+ [b'5.845917']
+ [b'6.159866']]
 ```
 
 尝试着将这个输出与 `tensorflow` 版本的输出比对一下，看看误差有多少。
@@ -484,29 +484,29 @@ Y_pred: [[5.40625 ]
 
 下面是 `tensorflow` 与 `rosetta` 的评分对比。
 
-tensorflow:
+TensorFlow:
 
 ```json
 {
   "tag": "tensorflow",
-  "mse": 0.5182142087177698,
-  "rmse": 0.7198709667140145,
-  "mae": 0.4328875541499997,
-  "evs": 0.22396289848005935,
-  "r2": 0.19491626081852909
+  "mse": 0.5228572335042407,
+  "rmse": 0.7230886761001314,
+  "mae": 0.4290781021000001,
+  "evs": 0.2238489236789002,
+  "r2": 0.18746385319936198
 }
 ```
 
-rosetta:
+Rosetta:
 
 ```json
 {
   "tag": "rosetta",
-  "mse": 0.5210866435592723,
-  "rmse": 0.7218633136261132,
-  "mae": 0.421875,
-  "evs": 0.2204962547250663,
-  "r2": 0.19045372284900097
+  "mse": 0.5219412461669367,
+  "rmse": 0.72245501324784,
+  "mae": 0.4286960000000004,
+  "evs": 0.2244437402223386,
+  "r2": 0.18888732556213872
 }
 ```
 
@@ -515,9 +515,21 @@ rosetta:
 > R^2 比较低是因为这个数据集是逻辑回归模型，不是线性回归模型
 > 此处只需要关心两个版本之间的误差（是非常小的）
 
-下图是关于 `tensorflow` 与 `rosetta` 预测值的误差对比。
+<details>
+  <summary><mark><font color=darkred>误差对比(线性回归)</font></mark></summary>
+
+
+下图是关于 `tensorflow` 与 `rosetta` 预测值的绝对误差对比。
+
+![linear_regression_stat-Y-diff](./_static/tutorials/linear_regression_stat-Y-diff.png)
+
+
+下图是关于 `tensorflow` 与 `rosetta` 预测值的相对误差对比。
 
 ![linear_regression_stat-Y-diff4](./_static/tutorials/linear_regression_stat-Y-diff4.png)
+
+</details>
+
 
 #### 对比与评估 2
 
@@ -639,12 +651,6 @@ saver.save(sess, './log/ckpt'+str(party_id)+'/model')
 ./tutorials.sh rtt linear_regression_saver
 ```
 
-输出如下：
-
-```sh
-...
-```
-
 #### 模型加载与预测
 
 上一步已经（根据配置文件）将模型保存到相应的节点了，现在直接使用 `tensorflow` 加载上一步保存的明文模型，进行预测。
@@ -676,13 +682,13 @@ with tf.Session() as sess:
 输出如下：
 
 ```log
-Y_pred: [[5.4112522 ]
- [5.80601873]
- [5.96399414]
+Y_pred: [[6.17608922]
+ [6.15961048]
+ [5.40468624]
  ...
- [4.97999231]
- [5.97734902]
- [5.98777173]]
+ [5.20862467]
+ [5.49407074]
+ [6.21659464]]
 ```
 
 <br/>
@@ -757,42 +763,60 @@ rosetta 版本
 
 此处展示一下逻辑回归的评估对比。
 
-tensorflow:
+TensorFlow:
 
 ```json
 {
   "tag": "tensorflow",
-  "score_auc": 0.7346938775510203,
-  "score_ks": 0.428171268507403,
-  "threshold_opt": 0.6036468147999999,
-  "score_accuracy": 0.71,
-  "score_precision": 0.8666666666666667,
-  "score_recall": 0.5098039215686274,
-  "score_f1": 0.6419753086419753
+  "score_auc": 0.698190821826193,
+  "score_ks": 0.2857188520398128,
+  "threshold_opt": 0.6037812829,
+  "score_accuracy": 0.6458170445660673,
+  "score_precision": 0.6661931818181818,
+  "score_recall": 0.6826783114992722,
+  "score_f1": 0.6743350107836089
 }
 ```
 
-rosetta:
+Rosetta:
 
 ```json
 {
   "tag": "rosetta",
-  "score_auc": 0.7366946778711485,
-  "score_ks": 0.42737094837935174,
-  "threshold_opt": 0.6110839844,
-  "score_accuracy": 0.71,
-  "score_precision": 0.84375,
-  "score_recall": 0.5294117647058824,
-  "score_f1": 0.6506024096385543
+  "score_auc": 0.6977740568078996,
+  "score_ks": 0.2857188520398128,
+  "threshold_opt": 0.607208,
+  "score_accuracy": 0.6458170445660673,
+  "score_precision": 0.6661931818181818,
+  "score_recall": 0.6826783114992722,
+  "score_f1": 0.6743350107836089
 }
 ```
 
 > 此处只需要关心两个版本之间的误差（是非常小的）
 > rosetta 甚至比 tensorflow 稍微好一些
 
-下图是关于 `tensorflow` 与 `rosetta` 预测值的误差对比。
+
+<details>
+  <summary><mark><font color=darkred>误差对比(逻辑回归)</font></mark></summary>
+
+下图是关于 `tensorflow` 与 `rosetta` 预测值的绝对误差对比。
+
+![logistic_regression_stat-Y-diff](./_static/tutorials/logistic_regression_stat-Y-diff.png)
+
+
+
+下图是关于 `tensorflow` 与 `rosetta` 预测值的相对误差对比。
 
 ![logistic_regression_stat-Y-diff4](./_static/tutorials/logistic_regression_stat-Y-diff4.png)
+
+**温馨提示**：这里可能会有个别的`rtt预测值`与`tf预测值`相差较大(但不影响评分)，原因如下：
+- Rosetta sigmoid 采用的6分段(区间为[-4,4])模拟方式，当 sigmoid 的输入值小于 -4 或大于 4 时，会将输出值置为 0 或 1。这样会导致 (`tf预测值` - `rtt预测值`)/`rtt预测值` 较大。
+- 如上图，第 425，727 sigmoid 的输入值分别为 -4.1840362549，-4.6936187744。
+
+
+</details>
+
 
 ### 支持超大数据集
 

@@ -175,7 +175,7 @@ init = tf.global_variables_initializer()
 with tf.Session() as sess:
     sess.run(init)
     res = sess.run(res)
-    print('res:', res)  # res: 722739251331272.4
+    print('res:', res)  # res: b'\x90\xa3\xff\x14\x87f\x95\xc3#'
 ```
 
 The above output of `res` is a `sharing` value in [Secret-Sharing scheme](GLOSSARY.md).
@@ -188,7 +188,7 @@ How do we know the plaintext value? We provide a `reveal` interface to get the p
 with tf.Session() as sess:
     # ...
     ret = rtt.SecureReveal(res)
-    print('ret:', sess.run(ret))  # ret: 1.0
+    print('ret:', sess.run(ret))  # ret: b'1.000000'
 ```
 
 For the complete program of console version, refer to [rtt-millionaire-console.py](../example/tutorials/code/rtt-millionaire-console.py).
@@ -248,7 +248,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 np.random.seed(0)
 
-EPOCHES = 100
+EPOCHES = 10
 BATCH_SIZE = 16
 learning_rate = 0.0002
 ```
@@ -332,13 +332,13 @@ And then, we run this program as follows:
 The output is as follows:
 
 ```log
-Y_pred: [[5.409453 ]
- [5.803287 ]
- [5.9634194]
+Y_pred: [[4.8402567]
+ [5.297159 ]
+ [5.81963  ]
  ...
- [4.978249 ]
- [5.9761114]
- [5.9929996]]
+ [4.9908857]
+ [5.8464894]
+ [6.157756 ]]
 ```
 
 #### Rosetta Basic Version
@@ -403,13 +403,13 @@ Just run it as follows:
 The output is as follows:
 
 ```log
-Y_pred: [[1.22580022e+14]
- [1.22481157e+14]
- [1.22514398e+14]
+Y_pred: [[b'\x9f\xf5\n\xc2\x81\x06\x00\x00#']
+ [b'g6j\x7fq\x0f\x00\x00#']
+ [b'\x95\xfc\x06\x1cA}\x00\x00#']
  ...
- [1.22532401e+14]
- [1.22508954e+14]
- [1.22495981e+14]]
+ [b'\x19\x02\xd5\xfd\xf1c\x00\x00#']
+ [b'\xe1\xd5\x16pGz\x00\x00#']
+ [b'}\xfe8\xd3,\x91\xff\xff#']]
 ```
 
 Don't be panic, what you're seeing are `random` values in [`Secret sharing` scheme](GLOSSARY.md), rather than plaintext values, because Rosetta is protecting the privacy of your own data right now.
@@ -464,13 +464,13 @@ Then, we run it as follows:
 And, the output will be as follows:
 
 ```log
-Y_pred: [[5.40625 ]
- [5.828125]
- [5.953125]
+Y_pred: [[b'4.844925']
+ [b'5.297165']
+ [b'5.819885']
  ...
- [5.      ]
- [5.984375]
- [5.984375]]
+ [b'4.992172']
+ [b'5.845917']
+ [b'6.159866']]
 ```
 
 Try to compare this output with the output of the `tensorflow` version to see how much the error is.
@@ -490,11 +490,11 @@ TensorFlow:
 ```json
 {
   "tag": "tensorflow",
-  "mse": 0.5182142087177698,
-  "rmse": 0.7198709667140145,
-  "mae": 0.4328875541499997,
-  "evs": 0.22396289848005935,
-  "r2": 0.19491626081852909
+  "mse": 0.5228572335042407,
+  "rmse": 0.7230886761001314,
+  "mae": 0.4290781021000001,
+  "evs": 0.2238489236789002,
+  "r2": 0.18746385319936198
 }
 ```
 
@@ -503,11 +503,11 @@ Rosetta:
 ```json
 {
   "tag": "rosetta",
-  "mse": 0.5210866435592723,
-  "rmse": 0.7218633136261132,
-  "mae": 0.421875,
-  "evs": 0.2204962547250663,
-  "r2": 0.19045372284900097
+  "mse": 0.5219412461669367,
+  "rmse": 0.72245501324784,
+  "mae": 0.4286960000000004,
+  "evs": 0.2244437402223386,
+  "r2": 0.18888732556213872
 }
 ```
 
@@ -516,9 +516,20 @@ We can see that the evaluation scores (with little loss on precision) are almost
 > R^2 is lower because this dataset is a Logistic Regression model, not a Linear Regression model
 > Here we only need to care about the error between the two versions (it is very small)
 
-The following figure is about the error comparison between the predicted values ​​of `tensorflow` and `rosetta`.
+<details>
+  <summary><mark><font color=darkred>Error comparison (linear regression)</font></mark></summary>
+
+The following figure is about the absolute error comparison between the predicted values ​​of `tensorflow` and `rosetta`.
+
+![linear_regression_stat-Y-diff](./_static/tutorials/linear_regression_stat-Y-diff.png)
+
+ 
+The following figure is about the relative error comparison between the predicted values ​​of `tensorflow` and `rosetta`.
 
 ![linear_regression_stat-Y-diff4](./_static/tutorials/linear_regression_stat-Y-diff4.png)
+
+</details>
+
 
 #### Comparison and Evaluation 2
 
@@ -671,13 +682,13 @@ And then run it as follows:
 The output will be as follows:
 
 ```log
-Y_pred: [[5.4112522 ]
- [5.80601873]
- [5.96399414]
+Y_pred: [[6.17608922]
+ [6.15961048]
+ [5.40468624]
  ...
- [4.97999231]
- [5.97734902]
- [5.98777173]]
+ [5.20862467]
+ [5.49407074]
+ [6.21659464]]
 ```
 
 <br/>
@@ -759,13 +770,13 @@ TensorFlow:
 ```json
 {
   "tag": "tensorflow",
-  "score_auc": 0.7346938775510203,
-  "score_ks": 0.428171268507403,
-  "threshold_opt": 0.6036468147999999,
-  "score_accuracy": 0.71,
-  "score_precision": 0.8666666666666667,
-  "score_recall": 0.5098039215686274,
-  "score_f1": 0.6419753086419753
+  "score_auc": 0.698190821826193,
+  "score_ks": 0.2857188520398128,
+  "threshold_opt": 0.6037812829,
+  "score_accuracy": 0.6458170445660673,
+  "score_precision": 0.6661931818181818,
+  "score_recall": 0.6826783114992722,
+  "score_f1": 0.6743350107836089
 }
 ```
 
@@ -774,22 +785,39 @@ Rosetta:
 ```json
 {
   "tag": "rosetta",
-  "score_auc": 0.7366946778711485,
-  "score_ks": 0.42737094837935174,
-  "threshold_opt": 0.6110839844,
-  "score_accuracy": 0.71,
-  "score_precision": 0.84375,
-  "score_recall": 0.5294117647058824,
-  "score_f1": 0.6506024096385543
+  "score_auc": 0.6977740568078996,
+  "score_ks": 0.2857188520398128,
+  "threshold_opt": 0.607208,
+  "score_accuracy": 0.6458170445660673,
+  "score_precision": 0.6661931818181818,
+  "score_recall": 0.6826783114992722,
+  "score_f1": 0.6743350107836089
 }
 ```
 
 > Here we only care about the error between the two versions (we can see that it is very small)
 > Rosetta is even slightly better than TensorFlow
 
-The following figure is about the error comparison between the predicted values ​​of `tensorflow` and `rosetta`.
+<details>
+  <summary><mark><font color=darkred>Error comparison (logistic regression)</font></mark></summary>
+
+The following figure is about the absolute error comparison between the predicted values ​​of `tensorflow` and `rosetta`.
+
+![logistic_regression_stat-Y-diff](./_static/tutorials/logistic_regression_stat-Y-diff.png)
+
+
+The following figure is about the relative error comparison between the predicted values ​​of `tensorflow` and `rosetta`.
 
 ![logistic_regression_stat-Y-diff4](./_static/tutorials/logistic_regression_stat-Y-diff4.png)
+
+
+**Warm tip:** There may be individual `rtt predictions value` here that differ significantly from `tf predictions value` (but do not affect scoring) for the following reason:
+- The Rosetta uses a 6-segment (interval [-4,4]) function to simulate sigmoid that sets the output value to 0 or 1 when the sigmoid input is less than -4 or greater than 4. This results in a larger when computing (`tf prediction value` - `rtt prediction value`)/`rtt prediction value`.
+- As shown above, for the 425th, 727th sample, the input values of sigmoid are -4.1840362549 and -4.6936187744, respectively.
+
+
+</details>
+
 
 ### Support big data sets
 
