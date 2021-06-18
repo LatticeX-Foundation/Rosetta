@@ -9,7 +9,7 @@
 
 ## 概述
 
-Rosetta 是基于[TensorFlow](https://www.tensorflow.org)开发的一个隐私计算框架，旨在为人工智能(AI)提供快速、安全、可以保护隐私的技术解决方案，而不需要用户（AI开发者）掌握任何密码学（cryptography）、联邦学习（FL）和硬件安全执行环境（TEE）领域的专业知识。Rosetta 在用户接口层复用了 TensorFlow 的对外 API，从而使得用户可以以最低的改造成本将隐私保护功能集成到现有的 TensorFlow 程序中。比如在简单场景下，通过`import`即可完成这样的转换：
+Rosetta 是基于[TensorFlow](https://www.tensorflow.org)开发的一个隐私计算框架，旨在为人工智能(AI)提供快速、安全、可以保护隐私的技术解决方案，而不需要用户（AI开发者）掌握任何密码学（cryptography）、联邦学习（FL）和硬件安全执行环境（TEE）领域的专业知识。Rosetta 在用户接口层复用了 TensorFlow 的对外 API，使得用户可以以最低的改造成本将隐私保护功能集成到现有的 TensorFlow 程序中。在一般场景下，通过`import`即可完成上述转换：
 
 ```python3
 import latticex.rosetta
@@ -18,22 +18,22 @@ import latticex.rosetta
 
 ## Rosetta 整体架构
 
-Rosetta 是通过深度扩展、改造 TensorFlow 的前后端各个组件，并融合底层密码学协议来实现的。通过划分不同的层次和模块，实现 TensorFlow 相关的 AI 框架相关部分和隐私保护技术相关部分的解耦，从而便于来自 AI 领域和来自隐私计算技术领域的专家开发者可以专注于各自擅长和感兴趣的部分，快速的进一步扩展 Rosetta。
+Rosetta 是通过深度扩展、改造 TensorFlow 的前后端各个组件，并融合底层密码学协议来实现的。通过不同层次和模块的划分，实现 TensorFlow 中 AI 框架相关部分和隐私保护技术相关部分的解耦，便于来自不同（AI和隐私计算）领域的专家/开发者可以专注于各自擅长和感兴趣的部分，快速的进一步扩展 Rosetta。
 
 <img src='doc/_static/figs/architecture_detail_cn.png' width = "600" height = "400" align="middle"/>
 
-在运行 Rosetta 程序时，在数据流图的构建阶段，原生的 TensorFlow 数据流图中的算子（无论是前向子图还是后向梯度子图中的算子）会被自动的替换为 Rosetta 中对应的具有隐私保护功能的 SecureOp 算子。
+在运行 Rosetta 程序中数据流图的构建阶段，原生的 TensorFlow 数据流图中的算子（无论是前向子图还是后向梯度子图中的算子）会被自动的替换为 Rosetta 中对应的具有隐私保护功能的 SecureOp 算子。
 
 <img src='doc/_static/figs/static_pass.png' width = "600" height = "300" align="middle"/>
 
-然后在实际开始执行各个算子时，SecureOp 算子中会进一步的根据用户所配置的后端协议调用具体协议中的基础运算算子来实现多方协同的隐私计算。
+然后在实际开始执行各个算子时，SecureOp 算子中会进一步根据用户所配置的后端协议调用具体协议中的基础运算算子来实现多方协同的隐私计算。
 
 <img src='doc/_static/figs/dynamic_pass.png' width = "600" height = "300" align="middle"/>
 
 Rosetta 当前版本集成了3方交互（3-server model）的安全多方计算（MPC）协议。当前使用的默认底层协议是 [SecureNN](https://eprint.iacr.org/2018/442.pdf)。这一协议可以在诚实者占多数的半诚实安全模型假设下保障数据安全。我们将陆续集成更多密码学、联邦学习和可行执行环境（TEE）等主流的隐私计算技术和更多高效的安全协议进来，同时，也欢迎开发者参照[协议集成示例](https://github.com/LatticeX-Foundation/Rosetta/pull/38)自行集成协议。
 
 
-## 文档列表
+## 相关文档列表
 
 * [Rosetta 术语表](doc/GLOSSARY_CN.md)
 
@@ -82,7 +82,7 @@ import latticex.rosetta as rtt
 
 ## 使用示例
 
-这里我们用多方执行矩阵乘法的例子来演示Rosetta的基本用法。此处默认不同用户/机构间已配置好网络拓扑等信息。
+我们将用多方执行矩阵乘法的例子来演示Rosetta的基本用法。此处默认不同用户/机构间已配置好网络拓扑等信息。
 
 矩阵乘法是AI中常见的操作。基于Rosetta，我们可以实现：在每方机构持有各自私有数据，且不想泄露自己明文数据的前提下，进行联合计算并让有限方得到矩阵乘积的可能性。
 
@@ -110,7 +110,7 @@ python3 rosetta_demo.py --party_id=1
 python3 rosetta_demo.py --party_id=2
 ```
 
-当三方均准备就绪后，每方可以privately输入己方数据，如下P0方的输入为`2 3 1 7 6 2`：
+当三方均准备就绪后，每方可以隐秘的输入己方数据，如下P0方的输入为`2 3 1 7 6 2`：
 
 > [2020-07-29 20:10:49.070] [info] Rosetta: Protocol [SecureNN] backend initialization succeeded!
 >
