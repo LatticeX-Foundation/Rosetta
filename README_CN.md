@@ -92,14 +92,13 @@ with tf.Session() as sess:
 ```bash
 python rosetta_demo.py --party_id=0
 ```
-,
 
 第二个bash模拟P1方：
 ```bash
 python rosetta_demo.py --party_id=1
 ```
-，
-第三个bash模拟P2方，
+
+第三个bash模拟P2方：
 ```bash
 python rosetta_demo.py --party_id=2
 ```
