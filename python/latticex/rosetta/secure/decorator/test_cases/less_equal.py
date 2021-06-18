@@ -40,8 +40,10 @@ print(xcc)
 
 print("=========================== mpc op less_equal 1")
 xc = rtt.SecureLessEqual(xa, xb)
-xcc = sess.run(xc)
+revealed_res = rtt.SecureReveal(xc)
+xcc, revealed_res = sess.run([xc, revealed_res])
+print("Ciphertext res: ", xcc)
+print("Plaintext res: ", revealed_res)
 print("=========================== mpc op less_equal 2")
-print(xcc)
 
 ###########

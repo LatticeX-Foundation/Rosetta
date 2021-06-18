@@ -47,6 +47,10 @@ REGISTER_SECURE_BINARY_OP(SecureDiv).Doc(R"doc(
     SecureDiv
 )doc");
 
+REGISTER_SECURE_BINARY_OP(SecureReciprocaldiv).Doc(R"doc(
+    SecureReciprocaldiv
+)doc");
+
 REGISTER_SECURE_BINARY_OP(SecureTruediv).Doc(R"doc(
     SecureTruediv
 )doc");
@@ -132,6 +136,9 @@ REGISTER_OP("SecureMatmul")
 ;
 
 REGISTER_OP("SecureSquare").Input("x: string").Output("res: string").SetIsStateful();
+REGISTER_OP("SecureSqrt").Input("x: string").Output("res: string").SetIsStateful();
+REGISTER_OP("SecureRsqrt").Input("x: string").Output("res: string").SetIsStateful();
+REGISTER_OP("SecureExp").Input("x: string").Output("res: string").SetIsStateful();
 
 REGISTER_OP("SecureReduceMean")
   .Input("input: string")

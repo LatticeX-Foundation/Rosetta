@@ -283,11 +283,15 @@ class PrivateInput : public OpBase {
   int Run(int party, const vector<double>& v, vector<double>& shares) {
     MPCOP_RETURN(funPrivateInput(party, v, shares));
   }
+  int Run(int party, const vector<mpc_t>& v, vector<mpc_t>& shares) {
+    MPCOP_RETURN(funPrivateInput(party, v, shares));
+  }
   int Run(int party, double v, mpc_t& shares) { MPCOP_RETURN(funPrivateInput(party, v, shares)); }
   int Run(int party, double v, double& shares) { MPCOP_RETURN(funPrivateInput(party, v, shares)); }
 
  private:
   int funPrivateInput(int party, const vector<double>& v, vector<mpc_t>& shares);
+  int funPrivateInput(int party, const vector<mpc_t>& v, vector<mpc_t>& shares);
   int funPrivateInput(int party, const vector<double>& v, vector<double>& shares) {
     vector<mpc_t> ss(shares.size());
     funPrivateInput(party, v, ss);
@@ -399,6 +403,67 @@ class MatMul : public OpBase {
     rosetta::convert::to_binary_str<mpc_t>(c, cs);
     return 0;
   }
+};
+class Rsqrt : public OpBase{
+  using OpBase::OpBase;
+
+ public :
+  int Run(const vector<mpc_t>& a,  vector<mpc_t>& b,size_t size){
+    MPCOP_RETURN(funcRsqrt(a,b,size));
+  }
+  int Run(const vector<string>& a, vector<string>& b,size_t size){
+    MPCOP_RETURN(funcRsqrt(a,b,size));
+  }
+  private:
+    int funcRsqrt(const vector<mpc_t>& a,  vector<mpc_t>& b, size_t size);
+    int funcRsqrt(const vector<string>& as,  vector<string>& bs,size_t size){
+      vector<mpc_t>  a , b ;
+      rosetta::convert::from_binary_str(as,a);
+      MPCOP_RETURN(funcRsqrt(a,b,size));
+      rosetta::convert::to_binary_str(b,bs);
+      return 0;
+    }
+};
+class Exp : public OpBase{
+  using OpBase::OpBase;
+
+ public :
+  int Run(const vector<mpc_t>& a,  vector<mpc_t>& b,size_t size){
+    MPCOP_RETURN(funcExp(a,b,size));
+  }
+  int Run(const vector<string>& a, vector<string>& b,size_t size){
+    MPCOP_RETURN(funcExp(a,b,size));
+  }
+  private:
+    int funcExp(const vector<mpc_t>& a,  vector<mpc_t>& b, size_t size);
+    int funcExp(const vector<string>& as,  vector<string>& bs,size_t size){
+      vector<mpc_t>  a , b ;
+      rosetta::convert::from_binary_str(as,a);
+      MPCOP_RETURN(funcExp(a,b,size));
+      rosetta::convert::to_binary_str(b,bs);
+      return 0;
+    }
+};
+
+class Sqrt : public OpBase{
+  using OpBase::OpBase;
+
+ public :
+  int Run(const vector<mpc_t>& a,  vector<mpc_t>& b,size_t size){
+    MPCOP_RETURN(funcSqrt(a,b,size));
+  }
+  int Run(const vector<string>& a, vector<string>& b,size_t size){
+    MPCOP_RETURN(funcSqrt(a,b,size));
+  }
+  private:
+    int funcSqrt(const vector<mpc_t>& a,  vector<mpc_t>& b, size_t size);
+    int funcSqrt(const vector<string>& as,  vector<string>& bs,size_t size){
+      vector<mpc_t>  a , b ;
+      rosetta::convert::from_binary_str(as,a);
+      MPCOP_RETURN(funcSqrt(a,b,size));
+      rosetta::convert::to_binary_str(b,bs);
+      return 0;
+    }
 };
 
 class Negative : public OpBase {
@@ -627,6 +692,11 @@ class Reconstruct2PC : public OpBase {
     MPCOP_RETURN(reconstruct_general(a, size, out, recv_party));
   }
 
+  /* Reconstruct in Z_{L_1} */
+  int RunModOdd(const vector<mpc_t>& a, vector<mpc_t>& out, int recv_party = PARTY_A) {
+    MPCOP_RETURN(funcReconstruct2PC_ex_mod_odd(a, out, recv_party));
+  }
+
  private:
   int funcReconstruct2PC(const mpc_t& a, mpc_t& out, int recv_party) {
     vector<mpc_t> va = {a}, vo(1);
@@ -640,6 +710,10 @@ class Reconstruct2PC : public OpBase {
     const vector<mpc_t>& a,
     size_t size,
     vector<mpc_t>& out,
+    int recv_party);
+  int funcReconstruct2PC_ex_mod_odd(
+    const vector<mpc_t>& shared_v,
+    vector<mpc_t>& plaintext_v,
     int recv_party);
 
   /**
@@ -1650,6 +1724,37 @@ class XorBit : public OpBase {
 		the precision of the fractional part is FLOAT_PRECISION_M.
   @author: SJJ
 */
+class ReciprocalDiv : public DivBase {
+  using DivBase::DivBase;
+
+ public:
+  int funcBinaryOp(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c, size_t size) {
+    c.resize(size);
+    return ReciprocalDivfor2(a, b, c, size);
+    /*
+  @note:
+	one number is divided can be handle as producting the reciprocal of the number.
+  @author: LJF
+  */
+  }
+
+ private:
+  /**
+  * @param: 
+  *   @common_vec_size: vector size which all party known
+  *   @common_all_less: indicate whether all element (numerator < denominator) to speed up.      
+  * 
+  */
+  int ReciprocalDivfor2(
+    const vector<mpc_t>& shared_numerator_vec,
+    const vector<mpc_t>& shared_denominator_vec,
+    vector<mpc_t>& shared_quotient_vec,
+    size_t common_vec_size,
+    bool common_all_less = false);
+};
+	
+	
+	
 class DivisionV2 : public DivBase {
   using DivBase::DivBase;
 

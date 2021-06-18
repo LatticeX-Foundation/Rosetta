@@ -88,6 +88,7 @@ class StaticReplacePass():
                     "rttsub" :        ["SecureSub",      self._create_secure_binary_op,  secure_ops.SecureSub,      2,  True],
                     "rttmul" :        ["SecureMul",      self._create_secure_binary_op,  secure_ops.SecureMul,      2,  True],
                     "rttdiv" :        ["SecureRealDiv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,  2,  True],
+		    "rttreciprocaldiv" :        ["SecureReciprocalDiv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,  2,  True],
                     "rtttruediv" :    ["SecureTruediv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,  2,  True],
                     "rttrealdiv" :    ["SecureRealDiv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,  2,  True],
                     "rttfloordiv":    ["SecureFloorDiv", self._create_secure_binary_op,  secure_ops.SecureFloorDiv, 2,  True],
@@ -100,6 +101,9 @@ class StaticReplacePass():
                     "rttlog" :        ["SecureLog",      self._create_secure_unary_op,   secure_ops.SecureLog,      1,  False],
                     "rttlog1p" :      ["SecureLog1p",    self._create_secure_unary_op,   secure_ops.SecureLog1p,    1,  False],
                     "rttabs" :        ["SecureAbs",      self._create_secure_unary_op,   secure_ops.SecureAbs,      1,  False],
+                    "rttrsqrt" :     ["SecureRsqrt",   self._create_secure_unary_op,   secure_ops.SecureRsqrt, False],
+                    "rttsqrt" :     ["SecureSqrt",   self._create_secure_unary_op,   secure_ops.SecureSqrt, False],
+                    "rttexp" :     ["SecureExp",   self._create_secure_unary_op,   secure_ops.SecureExp, False],
 
                     # relational operation
                     "rttequal" :      ["SecureEqual",    self._create_secure_relational_op,      secure_ops.SecureEqual,        2,  True],

@@ -2,7 +2,9 @@
 
 [![github license](https://img.shields.io/badge/license-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.en.html)
 
---------------------------------------------------------------------------------
+[![Build-and-Test](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/build-and-test.yml) [![Performance Test](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/performance-test.yml/badge.svg)](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/performance-test.yml)
+
+------
 
 
 ## 概述
@@ -140,6 +142,38 @@ a_and_c_can_get_plain = 0b101
 Rosetta 是一个由[Lattice基金会]((https://latticex.foundation/))维护的、基于 LPGLv3 许可证的开源项目。
 
 **我们欢迎来自个人和组织的各种贡献，包括代码开发、文档撰写、合作交流等各个方面，也欢迎 star、推广我们的 Github 项目**。具体内容请参考[社区参与指南](CONTRIBUTING.md)、[社区行为规范](CODE_OF_CONDUCT.md)。如果在使用或开发中有任何的问题，你也可以直接的在 [这里](https://github.com/LatticeX-Foundation/Rosetta/issues/new)给我们提 issues。
+
+## 文档列表
+
+* [Rosetta 教程](doc/TUTORIALS_CN.md)
+
+* [Rosetta 部署手册](doc/DEPLOYMENT_CN.md)
+
+* [Rosetta 用户使用手册](doc/API_DOC_CN.md)
+
+* [Rosetta 白皮书](doc/Rosetta_whitepaper_cn.pdf)
+
+* [Rosetta 术语表](doc/GLOSSARY_CN.md)
+
+* [Rosetta 版本说明](RELEASE.md)
+  
+* [FAQ](https://github.com/LatticeX-Foundation/Rosetta/wiki/FAQ)
+
+## 引用方式
+
+如果需要引用我们的项目，可以使用如下的格式:
+```latex 
+    @misc{Rosetta,
+      author = {Yuanfeng Chen, Gaofeng Huang, Junjie Shi, Xiang Xie, and Yilin Yan},
+      title = {{Rosetta: A Privacy-Preserving Framework Based on TensorFlow}},
+      howpublished = {\url{https://github.com/LatticeX-Foundation/Rosetta}},
+      year={2020}
+    }
+```
+
+## 参考文献
+
+可以查看 [wiki 页面](https://github.com/LatticeX-Foundation/Rosetta/wiki/Reference) 了解我们参考的学术论文和相关软件.
 
 ## 联系方式
 

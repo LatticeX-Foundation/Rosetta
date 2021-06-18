@@ -20,11 +20,11 @@ sess.run(init)
 print("input xa:", sess.run(xa))
 
 ###########
-print("=========================== tf op log 1")
-xc = tf.log(xa)
+print("=========================== tf op exp 1")
+xc = tf.exp(xa)
 xcc = sess.run(xc)
-print("=========================== tf op log 2")
-print("TF Log: ", xcc)
+print("=========================== tf op exp 2")
+print("TF exp: ", xcc)
 
 import latticex.rosetta as rtt
 # rtt.py_protocol_handler.set_loglevel(0)
@@ -37,19 +37,14 @@ xb = tf.Variable(
     ]
 )
 
-print("=========================== secure op log 1")
+print("=========================== secure op exp 1")
 #xc = rtt.SecureAbs(xb)
-xc = rtt.SecureLog(xb)
+xc = rtt.SecureExp(xb)
 init = tf.compat.v1.global_variables_initializer()
 sess = tf.compat.v1.Session()
 sess.run(init)
-print("MPC cipher Log:", sess.run(xc))
+print("MPC cipher exp:", sess.run(xc))
 xcc = sess.run(rtt.SecureReveal(xc))
-print("MPC plain Log: ", xcc)
-print("=========================== secure op log 2")
-print("=========================== secure op high-precision log 1")
-xc = rtt.SecureHLog(xb)
-xcc = sess.run(rtt.SecureReveal(xc))
-print("MPC plain HLog: ", xcc)
-print("=========================== secure op high-precision log 2")
+print("MPC plain exp: ", xcc)
+print("=========================== secure op exp 2")
 ###########:

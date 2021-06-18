@@ -49,19 +49,33 @@ static inline void convert_plain_double_to_mpctype(const vector<double>& a, vect
     b[i] = disable_sharing ? FloatToMpcType(a[i]) : FloatToMpcType(a[i] / 2);
 }
 
+static inline void convert_plain_double_to_mpctype(const double& a, mpc_t& b, bool disable_sharing=false) {
+    b = disable_sharing ? FloatToMpcType(a) : FloatToMpcType(a / 2);
+}
+
 static inline int snn_decode_(const StrVec& a, MpcVec& sa) {
   ELAPSED_STATISTIC_BEG(convert_string_to_share_timer);
+  // if (rosetta::convert::is_secure_text(a[0])) {
+  //   sa.resize(a.size());
+  //   for (auto i = 0; i < a.size(); ++i)
+  //     memcpy((char*)&sa[i], a[i].data(), sizeof(mpc_t));
 
-  if (rosetta::convert::is_secure_text(a[0])) {
-    sa.resize(a.size());
-    for (auto i = 0; i < a.size(); ++i)
+  //   ELAPSED_STATISTIC_END(convert_string_to_share_timer);
+  // } else {
+  //   ELAPSED_STATISTIC_END(convert_string_to_share_timer);
+  //   convert_plain_double_to_mpctype(rosetta::convert::from_double_str(a), sa);
+  // }
+  // fix different encoding in the input vector
+  sa.resize(a.size());
+  for (auto i = 0; i < a.size(); ++i) {
+    if (rosetta::convert::is_secure_text(a[i])) {
       memcpy((char*)&sa[i], a[i].data(), sizeof(mpc_t));
-
-    ELAPSED_STATISTIC_END(convert_string_to_share_timer);
-  } else {
-    ELAPSED_STATISTIC_END(convert_string_to_share_timer);
-    convert_plain_double_to_mpctype(rosetta::convert::from_double_str(a), sa);
+    } else {
+      double dv = to_double(a[i].c_str());
+      convert_plain_double_to_mpctype(dv, sa[i]);
+    }
   }
+  ELAPSED_STATISTIC_END(convert_string_to_share_timer);
 
   return 0;
 }
@@ -253,9 +267,9 @@ SNN_PROTOCOL_BINARY_OPS_CALL(Add, rosetta::snn::Add)
 SNN_PROTOCOL_BINARY_OPS_CALL(Sub, rosetta::snn::Sub)
 SNN_PROTOCOL_BINARY_OPS_CALL(Mul, rosetta::snn::Mul)
 SNN_PROTOCOL_BINARY_OPS_CALL(Div, rosetta::snn::DivisionV2)
+SNN_PROTOCOL_BINARY_OPS_CALL(Reciprocaldiv, rosetta::snn::ReciprocalDiv)
 SNN_PROTOCOL_BINARY_OPS_CALL(Truediv, rosetta::snn::Truediv)
 SNN_PROTOCOL_BINARY_OPS_CALL(Floordiv, rosetta::snn::FloorDivision)
-
 SNN_PROTOCOL_BINARY_OPS_CALL(Less, rosetta::snn::Less)
 SNN_PROTOCOL_BINARY_OPS_CALL(LessEqual, rosetta::snn::LessEqual)
 SNN_PROTOCOL_BINARY_OPS_CALL(Equal, rosetta::snn::Equal)
@@ -337,6 +351,52 @@ int snn_protocol_unary_ops_call(
   std::make_shared<OpFunctor>(msg_id, net_io)->Run(private_a, out_vec, a.size());
   snn_encode(out_vec, c);
   log_debug << name << " ok. <----";
+
+  return 0;
+}
+
+
+
+#define SNN_PROTOCOL_UNARY_OPS_CALL(OpFunctor, name, a, c, attr) \
+  snn_protocol_unary_ops_call<OpFunctor>(name, _op_msg_id, net_io_, a, c, attr)
+
+int SnnProtocolOps::Sqrt(
+  const vector<string>& a,
+  vector<string>& output,
+  const attr_type* attr_info) {
+  log_debug << "----> "<< "SnnSqrt";
+  output.resize(a.size());
+  SNN_PROTOCOL_UNARY_OPS_CALL(rosetta::snn::Sqrt, "SnnSqrt", a, output, attr_info);
+  log_debug << "SnnSqrt ok. <----";
+  return 0;
+}
+
+
+#define SNN_PROTOCOL_UNARY_OPS_CALL(OpFunctor, name, a, c, attr) \
+  snn_protocol_unary_ops_call<OpFunctor>(name, _op_msg_id, net_io_, a, c, attr)
+
+int SnnProtocolOps::Rsqrt(
+  const vector<string>& a,
+  vector<string>& output,
+  const attr_type* attr_info) {
+  log_debug << "----> "<< "SnnRsqrt";
+  output.resize(a.size());
+  SNN_PROTOCOL_UNARY_OPS_CALL(rosetta::snn::Rsqrt, "SnnRsqrt", a, output, attr_info);
+  log_debug << "SnnRsqrt ok. <----";
+  return 0;
+}
+
+#define SNN_PROTOCOL_UNARY_OPS_CALL(OpFunctor, name, a, c, attr) \
+  snn_protocol_unary_ops_call<OpFunctor>(name, _op_msg_id, net_io_, a, c, attr)
+
+int SnnProtocolOps::Exp(
+  const vector<string>& a,
+  vector<string>& output,
+  const attr_type* attr_info) {
+  log_debug << "----> "<< "SnnExp";
+  output.resize(a.size());
+  SNN_PROTOCOL_UNARY_OPS_CALL(rosetta::snn::Exp, "SnnExp", a, output, attr_info);
+  log_debug << "SnnExp ok. <----";
 
   return 0;
 }
@@ -562,7 +622,6 @@ int SnnProtocolOps::Reveal(
   // to double values
   output.resize(out_vec.size());
   convert_mpctype_to_double(out_vec, output);
-
   log_debug << "Reveal ok. <----\n";
   return 0;
 }

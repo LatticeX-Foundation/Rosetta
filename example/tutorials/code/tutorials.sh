@@ -4,7 +4,7 @@
 
 mkdir -p log
 
-function install_requred() {
+function install_required_packages() {
     sklearn=$(pip3 show sklearn && pip3 show pandas)
     if [ $? -ne 0 ]; then
         echo "install required python package ..."
@@ -67,7 +67,7 @@ function run_x() {
 
 function run_all() {
     # check and install required packages
-    install_requred
+    install_required_packages
 
     echo "run all tutorials examples"
     # #########################################################

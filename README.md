@@ -2,9 +2,12 @@
 
 [![github license](https://img.shields.io/badge/license-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.en.html)
 
---------------------------------------------------------------------------------
+[![Build-and-Test](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/build-and-test.yml) [![Performance Test](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/performance-test.yml/badge.svg)](https://github.com/LatticeX-Foundation/Rosetta/actions/workflows/performance-test.yml)
+
+------
 
 [中文版](./README_CN.md)
+
 
 ## Overview
 
@@ -169,6 +172,23 @@ Rosetta is an open source project developed under the LPGLv3 license and maintai
 * [Rosetta Release Notes](RELEASE.md)
   
 * [FAQ](https://github.com/LatticeX-Foundation/Rosetta/wiki/FAQ)
+
+
+## Citation
+
+You can cite our work as folllows:
+```latex 
+    @misc{Rosetta,
+      author = {Yuanfeng Chen and Gaofeng Huang and Junjie Shi and Xiang Xie and Yilin Yan},
+      title = {{Rosetta: A Privacy-Preserving Framework Based on TensorFlow}},
+      howpublished = {\url{https://github.com/LatticeX-Foundation/Rosetta}},
+      year={2020}
+    }
+```
+
+## Reference
+
+Check this [wiki page](https://github.com/LatticeX-Foundation/Rosetta/wiki/Reference) for the reference.
 
 ## Contact
 

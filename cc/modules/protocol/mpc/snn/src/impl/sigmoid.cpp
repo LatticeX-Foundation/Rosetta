@@ -16,6 +16,7 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #include "cc/modules/protocol/mpc/snn/src/impl/op_impl.h"
+#include "cc/modules/common/include/utils/logger.h"
 
 namespace rosetta {
 namespace snn {
@@ -25,25 +26,18 @@ namespace snn {
 */
 int Sigmoid::funcPrivateCompareMPCEx(
   const vector<mpc_t>& a, const vector<mpc_t>& r, vector<mpc_t>& b, size_t size) {
-  // LOGI("funcDotProductMPC start");
-  if (FOUR_PC) {
-    LOGW("not support 4PC now !");
-    return 1;
-  } else if (THREE_PC) {
+  assert(THREE_PC && "funcPrivateCompareMPCEx called in non-3PC mode");
+  {
     //<x_j - j*r>_i
     vector<mpc_t> v(a.size(), 0);
     for (size_t i = 0; i < size; i++) {
       v[i] = a[i] - partyNum * r[i];
     }
-    //funcRELUPrime3PC(v, b, size);
     GetMpcOpInner(ReluPrime)->Run3PC(v, b, size);
 
-  } else {
-    LOGE("funcPrivateCompareMPCEx should not be here!");
-    return 1;
   }
 
-  // LOGI("sigmoid.private.compare OK");
+  //log_debug << "sigmoid.private.compare OK";
   return 0;
 }
 

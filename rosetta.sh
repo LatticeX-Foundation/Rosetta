@@ -12,6 +12,7 @@
 #
 # Important! If you want to run tests/perf under 128bit(only mpc), please export ROSETTA_MPC_128=ON first.
 #
+set -e
 
 . ./rosetta_.sh
 
@@ -66,7 +67,6 @@ function show_compile_usage() {
     echo "       --enable-protocol-mpc-securenn     [OFF] Secure Multi-party Computation (base on SecureNN)"
     echo "       --enable-protocol-mpc-helix        [OFF] Secure Multi-party Computation (base on Helix)"
     echo "       --enable-128bit                    [OFF] 128-bit data type"
-    echo "       --enable-shape-inference           [OFF] Enable Shape Inference"
     echo "       --enable-tests                     [OFF] Compile all the test cases"
     echo ""
     echo "  The default options: --phase all --build-type Release"
@@ -164,7 +164,7 @@ if [ "${cmd}" = "compile" ]; then
         enable_shape_inference=ON
     fi
 
-    ARGS=$(getopt -o "h" -l "help,phase:,build-type:,enable-all,enable-protocol-mpc-securenn,enable-protocol-mpc-helix,enable-128bit,enable-shape-inference,enable-tests" -n "$0" -- "$@")
+    ARGS=$(getopt -o "h" -l "help,phase:,build-type:,enable-all,enable-protocol-mpc-securenn,enable-protocol-mpc-helix,enable-128bit,enable-tests" -n "$0" -- "$@")
     eval set -- "${ARGS}"
     while true; do
         case "${1}" in
@@ -197,10 +197,6 @@ if [ "${cmd}" = "compile" ]; then
             enable_128bit=ON
             shift
             ;;
-        --enable-shape-inference)
-            enable_shape_inference=ON
-            shift
-            ;;
         --enable-tests)
             enable_tests=ON
             shift
@@ -219,7 +215,6 @@ if [ "${cmd}" = "compile" ]; then
         enable_protocol_mpc_securenn=ON
         enable_protocol_mpc_helix=ON
         enable_128bit=ON
-        enable_shape_inference=ON
         enable_tests=ON
     fi
     # valid check [todo]
@@ -311,6 +306,11 @@ elif [ "${cmd}" = "test" ]; then
         test_py_dpass=1
         test_py_other=1
     fi
+    if [ $test_cpp_mpc -eq 1 ]; then
+        test_cpp_mpc=1
+        test_cpp_mpc_securenn=1
+        test_cpp_mpc_helix=1
+    fi
 
     export rtt_command=test
     export rtt_test_cpp_common=${test_cpp_common}
@@ -375,6 +375,11 @@ elif [ "${cmd}" = "perf" ]; then
         esac
     done
     if [ $test_all -eq 1 ]; then
+        perf_cpp_mpc=1
+        perf_cpp_mpc_securenn=1
+        perf_cpp_mpc_helix=1
+    fi
+    if [ $perf_cpp_mpc -eq 1 ]; then
         perf_cpp_mpc=1
         perf_cpp_mpc_securenn=1
         perf_cpp_mpc_helix=1

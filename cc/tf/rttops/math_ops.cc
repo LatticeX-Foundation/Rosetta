@@ -131,6 +131,10 @@ REGISTER_RTT_BINARY_OP(RttDiv).Doc(R"doc(
     RttDiv
 )doc");
 
+REGISTER_RTT_BINARY_OP(RttReciprocaldiv).Doc(R"doc(
+    RttReciprocaldiv
+)doc");
+
 REGISTER_RTT_BINARY_OP(RttTruediv).Doc(R"doc(
     RttTruediv
 )doc");
@@ -224,6 +228,9 @@ REGISTER_OP("RttMatmul")
   .Attr("transpose_a: bool = false")
   .Attr("transpose_b: bool = false");
 
+REGISTER_OP("RttRsqrt").Input("x: string").Output("res: string");
+REGISTER_OP("RttSqrt").Input("x: string").Output("res: string");
+REGISTER_OP("RttExp").Input("x: string").Output("res: string");
 REGISTER_OP("RttSquare").Input("x: string").Output("res: string");
 
 REGISTER_OP("RttReduceMean")

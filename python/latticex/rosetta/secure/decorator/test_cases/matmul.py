@@ -7,13 +7,13 @@ import sys, os
 import numpy as np
 np.set_printoptions(suppress=True)
 
-protocol="helix"
+protocol = "SecureNN" # "helix"
 
 if "TEST_PROTOCOL" in os.environ.keys():
     print("***** test_cases use ", os.environ["TEST_PROTOCOL"])
     protocol = os.environ["TEST_PROTOCOL"]
 else:
-    print("***** test_cases use default helix protocol ")
+    print("***** test_cases use default SecureNN protocol ")
 rtt.activate(protocol)
 
 sess = None

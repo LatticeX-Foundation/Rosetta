@@ -42,7 +42,6 @@ if(UNIX)
   list(APPEND LINKLIBS protocol-api)
   list(APPEND LINKLIBS mpc-io)
   list(APPEND LINKLIBS protocol-base)
-  list(APPEND LINKLIBS ${TF_LD_FLAGS})
 endif()
 
 message(STATUS "TF_LD_FLAGS :  ${TF_LD_FLAGS}")

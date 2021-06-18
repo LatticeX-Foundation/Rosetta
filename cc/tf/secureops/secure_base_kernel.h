@@ -93,36 +93,46 @@ typedef Eigen::SyclDevice SYCLDevice;
 #define DO_SECURE_OP_PERFORMANCE_STATISTICS 1
 #if DO_SECURE_OP_PERFORMANCE_STATISTICS
 // ////////////////////// PERFORMANCE STATISTICS
-struct secure_op_stats {
-  secure_op_stats(const string& _op) : op(_op) {}
-  string op;
+struct __op_stats {
   atomic<int64_t> calls{0};
   atomic<int64_t> elapse{0};
-  map<string, atomic<int64_t>> protocol_op_elapse;
 };
-extern mutex secure_op_stats_mtx;
-extern map<string, secure_op_stats*> map_op_stats;
+struct op_stats {
+  op_stats(const string& _op) : op(_op) {}
+  string op; // secure op name
+  __op_stats secure_op_stats; // secure op
+  map<string, __op_stats> protocol_op_stats; // protocol op
+};
+extern mutex op_stats_mtx;
+extern map<string, op_stats*> map_op_stats;
 extern atomic<int64_t> init_exit_counter;
-void secure_op_stats_exit_func();
+extern std::chrono::time_point<std::chrono::steady_clock> ops_wall_clock;
+void op_stats_exit_func();
 // ////////////////////// PERFORMANCE STATISTICS
 #define SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_BEG() \
-  map_op_stats[op_]->calls++;                           \
+  map_op_stats[op_]->secure_op_stats.calls++;           \
   auto ___begin = std::chrono::steady_clock::now()
 #define SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_END()                    \
-  map_op_stats[op_]->elapse +=                                             \
+  map_op_stats[op_]->secure_op_stats.elapse +=                             \
     std::chrono::duration_cast<std::chrono::duration<int64_t, std::nano>>( \
       std::chrono::steady_clock::now() - ___begin)                         \
       .count()
 
-#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(opname) \
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG_(opname)    \
+  map_op_stats[op_]->protocol_op_stats[#opname].calls++; \
   auto __##opname##_begin = std::chrono::steady_clock::now()
 
-#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END(opname)                                           \
-  auto __##opname##_end = std::chrono::steady_clock::now();                                    \
-  auto __##opname##__ = std::chrono::duration_cast<std::chrono::duration<int64_t, std::nano>>( \
-                          __##opname##_end - __##opname##_begin)                               \
-                          .count();                                                            \
-  map_op_stats[op_]->protocol_op_elapse[#opname] += __##opname##__
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END_(opname)                                            \
+  auto __##opname##_end = std::chrono::steady_clock::now();                                      \
+  auto __##opname##_dur = std::chrono::duration_cast<std::chrono::duration<int64_t, std::nano>>( \
+                            __##opname##_end - __##opname##_begin)                               \
+                            .count();                                                            \
+  map_op_stats[op_]->protocol_op_stats[#opname].elapse += __##opname##_dur
+
+// clang-format off
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(opname) {SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG_(opname)
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END(opname) SECURE_OP_CALL_PROTOCOL_OP_STATS_END_(opname) ;} (void)0
+// clang-format on
 
 //! Usage
 //! SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(XXX);
@@ -157,12 +167,13 @@ class SecureOpKernel : public OpKernel {
 #if DO_SECURE_OP_PERFORMANCE_STATISTICS
     {
       if (init_exit_counter++ == 0) {
-        atexit(secure_op_stats_exit_func);
+        atexit(op_stats_exit_func);
+        ops_wall_clock = std::chrono::steady_clock::now();
       }
-      unique_lock<mutex> lck(secure_op_stats_mtx);
+      unique_lock<mutex> lck(op_stats_mtx);
       auto iter = map_op_stats.find(op_);
       if (iter == map_op_stats.end()) {
-        map_op_stats[op_] = new secure_op_stats(op_);
+        map_op_stats[op_] = new op_stats(op_);
       }
     }
 #endif
@@ -450,6 +461,11 @@ void ASSIGN_TENSOR(
     // log_info << "_lhs type:\n" << TYPENAME(typeid(_lhs).name()) << endl;
     // log_info << "_rhs type:\n" << TYPENAME(typeid(_rhs).name()) << endl;
     if (out_dims == 0) {
+      log_debug << "ASSIGN_TENSOR hit out_dims == 0, which means both inputs are scale values.";
+      auto _out = out->tensor<string, 0>();
+      Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      in0_tensor.tensor<string, 0>().reshape(_out_shape).device(eigen_device) = _lhs;
+      in1_tensor.tensor<string, 0>().reshape(_out_shape).device(eigen_device) = _rhs;  
     } else if (out_dims == 1) {
       auto _out = out->tensor<string, 1>();
       Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
@@ -523,12 +539,12 @@ class SecureBinaryOp : public SecureOpKernel {
     const Tensor& x1 = context->input(1);
     const auto& in0_flat = x0.flat<string>();
     const auto& in1_flat = x1.flat<string>();
-
     const int ndims = state.ndims;
     int in0_dims = state.in0_dims;
     int in1_dims = state.in1_dims;
     int out_dims = state.out_dims;
 
+    log_debug << "dim info::: " << "N:" << ndims << ", in0:" << in0_dims << ", in1:" << in1_dims << ", out_dims:" << out_dims;
     const CPUDevice& eigen_device = context->eigen_device<CPUDevice>();
     auto out_shape = out->shape();
     Tensor in0_tensor;
@@ -540,8 +556,9 @@ class SecureBinaryOp : public SecureOpKernel {
     vector<string> input0(size);
     vector<string> input1(size);
     vector<string> output(size);
-
+    // we need to align the input tensor by broadcasting the low-dim tensor in missing dim.
     if (ndims == 1) {
+      log_debug << "debug: hit ndims==1";
       ASSIGN_TENSOR<1>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
     } else if (ndims == 2) {
       ASSIGN_TENSOR<2>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
@@ -553,6 +570,7 @@ class SecureBinaryOp : public SecureOpKernel {
       ASSIGN_TENSOR<5>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
     } else {
       if (out_dims == 0) {
+        // log_debug << "Hit out_dim == 0!";
         input0[0] = in0_flat(0);
         input1[0] = in1_flat(0);
       } else {
@@ -560,13 +578,14 @@ class SecureBinaryOp : public SecureOpKernel {
           "dim error, ndims:" + std::to_string(ndims) + ",out_dims:" + std::to_string(out_dims));
       }
     }
-    if (out_dims != 0) {
-      const auto& in0_flat = in0_tensor.flat<string>();
-      const auto& in1_flat = in1_tensor.flat<string>();
-      for (int64_t i = 0; i < size; i++) {
-        input0[i] = in0_flat(i);
-        input1[i] = in1_flat(i);
-      }
+
+    log_debug << "DEBUG raw in0:" << x0.shape() << ", and in1:" << x1.shape();
+    log_debug << "DEBUG in0: " << in0_tensor.shape() << ", and in1:" << in1_tensor.shape();
+    const auto& expanded_in0_flat = in0_tensor.flat<string>();
+    const auto& expanded_in1_flat = in1_tensor.flat<string>();
+    for (int64_t i = 0; i < size; i++) {
+      input0[i] = expanded_in0_flat(i);
+      input1[i] = expanded_in1_flat(i);
     }
 
     // fill attributes

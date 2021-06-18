@@ -25,6 +25,7 @@
       - [`SecureMul(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securemulx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureFloorDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securefloordivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureReciprocaldiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#secureReciprocaldivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureDivide(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securedividex-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securetruedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securerealdivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
@@ -39,6 +40,9 @@
       - [`SecureLogicalNot(x, name=None)`](#securelogicalnotx-namenone)
       - [`SecureMatMul(a, b, transpose_a=False, transpose_b=False, name=None)`](#securematmula-b-transpose_afalse-transpose_bfalse-namenone)
       - [`SecurePow(x, y, name=None, lh_is_const=False, rh_is_const=True)`](#securepowx-y-namenone-lh_is_constfalse-rh_is_consttrue)
+      - [`SecureExp(x, name=None)`](#secureexpx-namenone)
+      - [`SecureRsqrt(x, name=None)`](#securersqrtx-namenone)
+      - [`SecureSqrt(x, name=None)`](#securesqrtx-namenone)
       - [`SecureLog(x, name=None)`](#securelogx-namenone)
       - [`SecureLog1p(x, name=None)`](#securelog1px-namenone)
       - [`SecureHLog(x, name=None)`](#securehlogx-namenone)
@@ -322,6 +326,30 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
 - broadcasting is supported for this SecureOp.
 - due to its intrinsic algorithm complexity in MPC style to meet the security guarantee, **this SecureOp is comparatively much more time-consuming. So you may aviod to use this SecureOp as possible as you can.**
 - this SecureOp is just the same as `SecureRealDiv` and `SecureTrueDiv`.
+
+#### `SecureReciprocaldiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+
+On the whole, we need to calculate the reciprocal of the denominator to achieve division, and then calculate the reciprocal of the denominator times the numerator to get the quotient.
+
+  **Args:**
+
+- **`x`**: A  `Tensor` in TensorFlow, whose values are in shared status.
+- **`y`**: A `Tensor` in TensorFlow, whose values are in shared status. . Must have the same type as `x`.
+- **`name(optional)`**: A name for the operation, the default value of it is None.
+- **`lh_is_const(optional)`**: flag indicating whether the `x` is a const number. If it is set as True, the `x` will be added just as the sum of all parties' shared input pieces. The default value is `False`.
+- **`rh_is_const(optional)`** :flag indicating whether the `y` is a const number. If it is set as True, the `y` will be added just as the sum of all parties' shared input pieces.The default value is `False`.
+
+  **Returns:**
+
+  ​ A `Tensor`. Has the same type as `x`.
+  
+  *NOTE:*
+
+- the denominator can not be too large(smaller than 10000 at best), otherwise the process will be overflow or influence the precision.
+- normally,the precision of output  can get close to 1e-4.
+- this SecureOp is just the same as `SecureRealDiv` and `SecureTrueDiv`, but in fact, the reciprocaldiv algorithm is 5 times faster than the `SecureTrueDiv`.
+
+
   
 #### `SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
   
@@ -554,7 +582,52 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
   **Returns:**
 
   ​ A `Tensor`. Has the same type as `x`.
-  
+
+#### `SecureExp(x, name=None)`
+
+  Computes e^x of `x` element-wise. Any dimension of `x` is supported. 
+
+  **Args:**
+
+- **`x`**: A  `Tensor` in TensorFlow, whose values are in shared status.
+- **`name(optional)`**: A name for the operation, the default value of it is None.
+
+  **Returns:**
+
+  ​ A `Tensor`. Has the same type as `x`.
+
+*NOTE*: The current accuracy of the operator is 0.1 ~ 0.01, we will optimize it in the next version.
+
+#### `SecureRsqrt(x, name=None)`
+
+  Computes 1/(x^(0.5)) of `x` element-wise by using Newton Raphson method. Any dimension of `x` is supported. 
+
+  **Args:**
+
+- **`x`**: A  `Tensor` in TensorFlow, whose values are in shared status.
+- **`name(optional)`**: A name for the operation, the default value of it is None.
+
+  **Returns:**
+
+  ​ A `Tensor`. Has the same type as `x`.
+
+
+#### `SecureSqrt(x, name=None)`
+
+  Computes x^(0.5) of `x` element-wise. Any dimension of `x` is supported. 
+
+  **Args:**
+
+- **`x`**: A  `Tensor` in TensorFlow, whose values are in shared status.
+- **`name(optional)`**: A name for the operation, the default value of it is None.
+
+  **Returns:**
+
+  ​ A `Tensor`. Has the same type as `x`.
+
+  *NOTE*: To calculate the square root of the input,the input is calculated by using the Newton Raphson method to get Rsqrt(x) and multiplied by itself .
+
+
 #### `SecureLog(x, name=None)`
 
   Computes natural logarithm of `x` element-wise. Any dimension of `x` is supported. This is optimized version for $x \in [0.0001, 10]$, so **DO NOT** use it for other $x$.

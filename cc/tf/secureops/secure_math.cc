@@ -224,6 +224,27 @@ class SecureDivOp : public SecureBinaryOp<BinaryOpState> {
   }
 };
 
+class SecureReciprocaldivOp : public SecureBinaryOp<BinaryOpState> {
+ private:
+  /* data */
+ public:
+  SecureReciprocaldivOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
+  ~SecureReciprocaldivOp() {}
+
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+    log_debug << "--> Reciprocaldiv OpKernel compute.";
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Reciprocaldiv);
+    ProtocolManager::Instance()
+      ->GetProtocol()
+      ->GetOps(msg_id())
+      ->Reciprocaldiv(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Reciprocaldiv);
+    log_debug << "Reciprocaldiv OpKernel compute ok. <--";
+    return 0;
+  }
+};
+
+
 class SecureTruedivOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
@@ -562,6 +583,51 @@ class SecureAbsOp : public SecureUnaryOp {
   }
 };
 
+class SecureRsqrtOp : public SecureUnaryOp {
+ private:
+  /* data */
+ public:
+  SecureRsqrtOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
+  ~SecureRsqrtOp() {}
+
+  int UnaryCompute(const vector<string>& input, vector<string>& output) {
+    log_debug << "--> Rsqrt OpKernel compute.";
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Rsqrt(input, output, &attrs_);
+    log_debug << "Rsqrt OpKernel compute ok. <--";
+    return 0;
+  }
+};
+
+class SecureSqrtOp : public SecureUnaryOp {
+ private:
+  /* data */
+ public:
+  SecureSqrtOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
+  ~SecureSqrtOp() {}
+
+  int UnaryCompute(const vector<string>& input, vector<string>& output) {
+    log_debug << "--> Sqrt OpKernel compute.";
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Sqrt(input, output, &attrs_);
+    log_debug << "Sqrt OpKernel compute ok. <--";
+    return 0;
+  }
+};
+
+class SecureExpOp : public SecureUnaryOp {
+ private:
+  /* data */
+ public:
+  SecureExpOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
+  ~SecureExpOp() {}
+
+  int UnaryCompute(const vector<string>& input, vector<string>& output) {
+    log_debug << "--> Exp OpKernel compute.";
+    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Exp(input, output, &attrs_);
+    log_debug << "Exp OpKernel compute ok. <--";
+    return 0;
+  }
+};
+
 class SecureAbsPrimeOp : public SecureUnaryOp {
  private:
   /* data */
@@ -793,6 +859,7 @@ REGISTER_STR_CPU_KERNEL(SecureAdd, SecureAddOp);
 REGISTER_STR_CPU_KERNEL(SecureSub, SecureSubOp);
 REGISTER_STR_CPU_KERNEL(SecureMul, SecureMulOp);
 REGISTER_STR_CPU_KERNEL(SecureDiv, SecureDivOp);
+REGISTER_STR_CPU_KERNEL(SecureReciprocaldiv, SecureReciprocaldivOp);
 REGISTER_STR_CPU_KERNEL(SecureTruediv, SecureTruedivOp);
 REGISTER_STR_CPU_KERNEL(SecureRealdiv, SecureRealdivOp);
 REGISTER_STR_CPU_KERNEL(SecureFloordiv, SecureFloordivOp);
@@ -803,6 +870,9 @@ REGISTER_STR_CPU_KERNEL(SecureNotEqual, SecureNotEqualOp);
 REGISTER_STR_CPU_KERNEL(SecureGreaterEqual, SecureGreaterEqualOp);
 REGISTER_STR_CPU_KERNEL(SecureLessEqual, SecureLessEqualOp);
 REGISTER_STR_CPU_KERNEL(SecurePow, SecurePowOp);
+REGISTER_STR_CPU_KERNEL(SecureRsqrt, SecureRsqrtOp);
+REGISTER_STR_CPU_KERNEL(SecureSqrt, SecureSqrtOp);
+REGISTER_STR_CPU_KERNEL(SecureExp, SecureExpOp);
 
 REGISTER_STR_CPU_KERNEL(SecureMatmul, SecureMatmulOp);
 REGISTER_STR_CPU_KERNEL(SecureNegative, SecureNegativeOp);
