@@ -143,22 +143,6 @@ Rosetta 是一个由[Lattice基金会]((https://latticex.foundation/))维护的�
 
 **我们欢迎来自个人和组织的各种贡献，包括代码开发、文档撰写、合作交流等各个方面，也欢迎 star、推广我们的 Github 项目**。具体内容请参考[社区参与指南](CONTRIBUTING.md)、[社区行为规范](CODE_OF_CONDUCT.md)。如果在使用或开发中有任何的问题，你也可以直接的在 [这里](https://github.com/LatticeX-Foundation/Rosetta/issues/new)给我们提 issues。
 
-## 文档列表
-
-* [Rosetta 教程](doc/TUTORIALS_CN.md)
-
-* [Rosetta 部署手册](doc/DEPLOYMENT_CN.md)
-
-* [Rosetta 用户使用手册](doc/API_DOC_CN.md)
-
-* [Rosetta 白皮书](doc/Rosetta_whitepaper_cn.pdf)
-
-* [Rosetta 术语表](doc/GLOSSARY_CN.md)
-
-* [Rosetta 版本说明](RELEASE.md)
-  
-* [FAQ](https://github.com/LatticeX-Foundation/Rosetta/wiki/FAQ)
-
 ## 引用方式
 
 如果需要引用我们的项目，可以使用如下的格式:
