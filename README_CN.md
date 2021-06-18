@@ -9,7 +9,7 @@
 
 ## 概述
 
-Rosetta 是基于[TensorFlow](https://www.tensorflow.org)开发的一个隐私计算框架，旨在为人工智能(AI)提供快速、安全、可以保护隐私的技术解决方案，而不需要用户（AI开发者）掌握任何密码学（cryptography）、联邦学习（FL）和硬件安全执行环境（TEE）领域的专业知识。Rosetta 在用户接口层复用了 TensorFlow 的对外 API，使得用户可以以最低的改造成本将隐私保护功能集成到现有的 TensorFlow 程序中。在一般场景下，通过`import`即可完成上述转换：
+Rosetta 是一个基于[TensorFlow](https://www.tensorflow.org)开发的隐私计算框架，旨在为人工智能(AI)提供快速、安全、保护隐私的技术解决方案，而不需要用户（AI开发者）掌握任何密码学（cryptography）、联邦学习（FL）和硬件安全执行环境（TEE）领域的专业知识。Rosetta 在用户接口层复用了 TensorFlow 的对外 API，使得用户可以以最低的改造成本将隐私保护功能集成到现有的 TensorFlow 程序中。在一般场景下，通过`import`即可完成上述转换：
 
 ```python3
 import latticex.rosetta
@@ -72,12 +72,14 @@ cd Rosetta && source rtt_completion
 import latticex.rosetta as rtt
 ```
 
-如果没有报错，恭喜你，Rosetta已安装成功！下面我们来看看应用示例吧。
+如果没有报错，恭喜你，Rosetta已安装成功！下面我们来看看使用示例吧。
 
 
- > ***在生产环境中，数据是分布式存储的，所以在运行之前还需进行多方之间网络拓扑关系等信息的配置，以使得分布式执行时多方之间可以正常的通讯。***
+ > **温馨提示：**
  > 
- > ***实际运用场景的安装、配置和部署的步骤请参考[部署指南](doc/DEPLOYMENT_CN.md#部署)。***
+ > 在生产环境中，因数据分布式存储的特性，需要在运行之前进行多方之间网络拓扑关系等信息的配置，从而保证执行时的正常通讯。
+ > 
+ > 实际运用场景的安装、配置和部署的步骤请参考[部署指南](doc/DEPLOYMENT_CN.md#部署)。
 
 
 ## 使用示例
@@ -116,16 +118,14 @@ python3 rosetta_demo.py --party_id=2
 >
 > please input the private data (float or integer, 6 items, separated by space): 2 3 1 7 6 2
 
-如我们在程序中指定的那样，
+如我们在程序中指定的那样，只有 P0 和 P2 可以得到最终的明文结果，P1不会拿到任何有意义的结果。
 
 ```python3
 # Set only party a and c can get plain result
 a_and_c_can_get_plain = 0b101
 ```
 
-只有 P0 和 P2 可以得到最终的明文结果，而P1不会拿到任何有意义的结果。当然，也可以只让一方知道结果，或者所有方均得到明文结果。
-
-想看输出结果？自己跑跑看吧！相信你一定能行！:)
+通过配置也可以只让一方或者让所有方均得到明文结果。想看输出结果？自己跑跑看吧！相信你一定能行！:)
 
 如此，还想了解更多？去看看[示例目录](./example)吧。
 
