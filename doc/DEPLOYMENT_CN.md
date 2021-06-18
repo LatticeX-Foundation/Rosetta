@@ -1,21 +1,6 @@
 # Rosetta安装及部署指南
 
-- [Rosetta部署指南](#rosetta%e9%83%a8%e7%bd%b2%e6%8c%87%e5%8d%97)
-  - [文档说明](#%e6%96%87%e6%a1%a3%e8%af%b4%e6%98%8e)
-  - [系统要求](#%e7%b3%bb%e7%bb%9f%e8%a6%81%e6%b1%82)
-    - [系统组件](#%e7%b3%bb%e7%bb%9f%e7%bb%84%e4%bb%b6)
-    - [TensorFlow](#tensorflow)
-  - [安装](#%e5%ae%89%e8%a3%85)
-    - [Rosett源码安装](#rosetta)
-  - [部署](#%e9%83%a8%e7%bd%b2%e6%b5%8b%e8%af%95)
-    - [范例](#%e8%8c%83%e4%be%8b)
-    - [准备](#%e5%87%86%e5%a4%87)
-    - [配置](#%e9%85%8d%e7%bd%ae)
-    - [运行测试](#%e8%bf%90%e8%a1%8c%e6%b5%8b%e8%af%95)
-      - [单机测试](#%e5%8d%95%e6%9c%ba%e6%b5%8b%e8%af%95)
-      - [多机测试](#%e5%a4%9a%e6%9c%ba%e6%b5%8b%e8%af%95)
 
-----
 
 ## 文档说明
 
@@ -76,13 +61,9 @@
   pip3 install tensorflow==1.14.0
   ```
 
-### Rosetta
+### Rosetta源码安装
 
-安装Rosetta当前仅支持源码方式安装（如下Rosetta源码安装），二进制方式即将推出。
-
-## Rosetta源码安装
-
-编译源码和安装：
+当前仅支持源码方式安装，二进制方式即将推出。编译源码和安装如下：
 
 ```bash
 # clone rosetta git repository
