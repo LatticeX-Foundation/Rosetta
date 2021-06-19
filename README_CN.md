@@ -8,29 +8,32 @@
 
 ## 概述
 
-Rosetta 是一个基于[TensorFlow](https://www.tensorflow.org)开发的隐私计算框架。它将陆续集成密码学、联邦学习和可行执行环境（TEE）等主流的隐私计算技术。Rosetta 旨在为人工智能快速提供隐私保护技术解决方案，而不需要用户掌握任何密码学、联邦学习和硬件安全执行环境领域的专门知识。Rosetta 在用户接口层复用了 TensorFlow 的对外 API 从而使得用户可以以最低的改造成本将隐私保护功能集成到现有的 TensorFlow 程序中。比如在一般场景下，可能只添加如下一行代码就可以完成这样的转换：
+Rosetta 是一个基于[TensorFlow](https://www.tensorflow.org)开发的隐私计算框架，它将陆续集成密码学、联邦学习和可信执行环境等主流的隐私计算技术。Rosetta 旨在为人工智能快速提供隐私保护技术解决方案，不需要用户掌握任何密码学、联邦学习和硬件安全执行环境领域的专业知识。Rosetta 在用户接口层复用了 TensorFlow 的对外 API 从而使得用户可以以最低的改造成本将隐私保护功能集成到现有的 TensorFlow 程序中。在简单场景下，只需添加如下一行代码就可以完成这样的转换：
 
 ```python
 import latticex.rosetta
 ```
 
-当前版本集成了3方参与的安全多方计算（MPC）协议。当前使用的默认底层协议是 [SecureNN](https://eprint.iacr.org/2018/442.pdf)。这一协议可以在诚实者占多数的半诚实安全模型假设下保障数据安全。我们将持续集成更多新的高效的安全协议进来，我们也欢迎开发者参照[协议集成示例](https://github.com/LatticeX-Foundation/Rosetta/pull/38)自行集成协议。
+当前版本集成了3方参与的安全多方计算（Secure Multi-Party Competiton，MPC）协议。使用的默认底层协议是 [SecureNN](https://eprint.iacr.org/2018/442.pdf)，该协议可以在诚实者占多数的半诚实安全模型假设下保障数据安全。我们将持续集成更多高效的安全协议，我们也欢迎开发者参照[协议集成示例](https://github.com/LatticeX-Foundation/Rosetta/pull/38)自行集成协议。
+
+<div align=center>
+<img src="doc/_static/figs/deployment.png" width="500" height="350" />
+</div>
 
 ## 安装
 
-目前，Rosetta 可以运行在 Ubuntu 18.04 操作系统下（其他环境有待测试验证），并且基于 TensorFlow 1.14 CPU 版本开发。安装方式如下。
+目前，Rosetta 可以运行在 Ubuntu 18.04 操作系统下，并且基于 TensorFlow 1.14 CPU 版本开发。安装方式如下：
 
 首先，请确认本地系统的基础环境已经符合[要求](doc/DEPLOYMENT_CN.md#系统要求)。
 
-然后使用如下命令行安装原生 TensorFlow 库。
+然后，使用如下命令行安装原生 TensorFlow 库：
 
 ```bash
 # install tensorflow
 pip3 install tensorflow==1.14.0
 ```
-（你也可以通过编译 TensorFlow 源码加以安装，具体方法请参考[这里](doc/TENSORFLOW_INSTALL_CN.md)。）
 
-接下来就是使用我们提供的一键安装脚本来编译与安装 Rosetta 包了，命令如下：
+接着，使用一键安装脚本编译与安装 Rosetta 包，命令如下：
 
 ```bash
 # clone rosetta git repository
@@ -40,21 +43,17 @@ cd Rosetta
 ./rosetta.sh compile --enable-protocol-mpc-securenn; ./rosetta.sh install
 ```
 
-安装完成后，基于下面介绍的例子可以验证是否安装成功。在实际使用中，在运行之前还需要进行多方之间网络拓扑关系等信息的配置，以使得分布式执行时多方之间可以正常的通讯。
+安装完成后，基于下面介绍的例子可以验证是否安装成功。
 
-<img src='doc/_static/figs/deployment.png'  width = "667" height = "400" align="middle"/>
-
-更多完整具体的安装、配置和部署的步骤请参考[部署指南](doc/DEPLOYMENT_CN.md)。
+在实际使用中，运行脚本之前还需要进行多方之间网络拓扑关系等信息的配置，以使得分布式执行时多方之间可以正常的通讯。更多安装、配置和部署的详情请参考[部署指南](doc/DEPLOYMENT_CN.md)。
 
 ## 使用示例
 
-我们将用多方联合执行矩阵乘法的例子[demo 示例](example/tutorials/code/rosetta_demo.py)来演示Rosetta的基本使用。
+我们将用多方联合执行矩阵乘法的[示例](example/tutorials/code/rosetta_demo.py)来演示Rosetta的基本使用。
 
-矩阵乘法是AI中常见的操作。基于Rosetta，我们可以实现：在每方机构持有各自私有数据，且不想泄露自己明文数据的前提下，进行联合计算并让有限方得到矩阵乘积的可能性。
+矩阵乘法是AI中常见的操作。基于Rosetta，我们可以实现：在每方用户持有各自私有数据，且不想泄露自己明文数据的场景下，进行联合计算并让有限方得到矩阵乘积的可能。
 
-假设三个个体各自持有一个私有的数据矩阵，他们想在不泄露自己明文数据的前提下共同计算出这三个矩阵的乘积。为了简便，我们称这三方分别为 P0，P1 和 P2。
-
-每方直接运行下面的代码即可完成这个任务。可以看出：简单的改动几行代码就可以完全复用 TensorFlow 中的 API 接口了。
+假设P0, P1 和 P2 三方用户各自持有私有的数据矩阵，他们想在不泄露自己明文数据的前提下共同计算出这三个矩阵的乘积。每方直接运行下面的代码即可完成这个任务：
 
 ```python
 #!/usr/bin/env python3
@@ -86,7 +85,7 @@ with tf.Session() as sess:
     print('plaintext matmul result:', sess.run(rtt.SecureReveal(cipher_result, a_and_c_can_get_plain)))
 ```
 
-运行这个隐私计算程序需要三方的协同，在配置好网络拓扑等信息后，三方可以各自执行下面的命令行即可启动执行:
+如上，简单的改动几行代码就可以完全复用 TensorFlow 中的 API 接口了。当然，运行这个隐私计算程序需要三方的协同，在配置好网络拓扑等信息后，三方需要各自执行下面的命令行来启动执行。如果在本地模拟三方的场景，可以用三个bash来实现：
 
 第一个bash模拟P0方：
 ```bash
@@ -103,24 +102,30 @@ python rosetta_demo.py --party_id=1
 python rosetta_demo.py --party_id=2
 ```
 
-运行时各方会被提示输入自己的隐私数据（注意，这里是为了便于演示采用了这种输入方式，在实际中请采用 Rosetta 中的数据预处理接口），比如 P0 可以在提示下输入自己的私有数据，如下：
+运行时各方会被提示输入自己的隐私数据（注意，这里是为了便于演示采用了这种输入方式，在实际中请采用 Rosetta 中的数据预处理接口），比如 P0 可以在如下提示后输入自己的私有数据：
 
 > [2020-07-29 20:10:49.070] [info] Rosetta: Protocol [SecureNN] backend initialization succeeded!
 >
 > please input the private data (float or integer, 6 items, separated by space): 2 3 1 7 6 2
 
-在程序的最后，如我们在程序中特意指定的那样，只有 P0 和 P2 可以得到最后的明文结果：
+在程序的最后，如我们在程序中特意指定的那样，只有 P0 和 P2 会得到最后的明文结果：
 > plaintext matmul result: 
+> 
 > [[b'8.000000' b'14.000000' b'18.000000' b'4.000000']
+> 
 > [b'4.000000' b'7.000000' b'9.000000' b'2.000000']
+> 
 > [b'24.000000' b'42.000000' b'54.000000' b'12.000000']]
 >
 > [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
 
 P1 方不会拿到有意义的明文结果:
 > plaintext matmul result: 
+> 
 > [[b'0.000000' b'0.000000' b'0.000000' b'0.000000']
+>
 > [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
+> 
 > [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
 >
 > [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
@@ -133,29 +138,35 @@ P1 方不会拿到有意义的明文结果:
 
 ## 快速上手
 
-为了进一步帮助你快速上手 Rosetta，实现自己的程序。我们在[教程文档](doc/TUTORIALS_CN.md)中详细的介绍了 Rosetta 的使用。在这个教程中，我们会首先介绍关于 Rosetta 的一些基本概念，然后通过一系列简单易懂的例子协助您在真实数据集上构建一个完整可运行的实际隐私保护的机器学习模型。
+为了让大家快速上手 Rosetta，实现自己的程序，我们在[教程文档](doc/TUTORIALS_CN.md)中详细的介绍了 Rosetta 的使用。在这个教程中，我们会介绍y有关 Rosetta 的一些基本概念，然后通过一系列简单易懂的例子协助大家在真实数据集上构建一个完整可运行的隐私保护的机器学习模型。
 
 ## Rosetta 整体架构
 
 Rosetta 是通过深度扩展、改造 TensorFlow 的前后端各个组件，并融合底层密码学协议来实现的。通过划分不同的层次和模块，实现 TensorFlow 相关的 AI 框架相关部分和隐私保护技术相关部分的解耦，从而便于来自 AI 领域和来自隐私计算技术领域的专家开发者可以专注于各自擅长和感兴趣的部分，快速的进一步扩展 Rosetta。
 
-<img src='doc/_static/figs/architecture_detail_cn.png' width = "700" height = "600" align="middle"/>
+<div align=center>
+<img src="doc/_static/figs/architecture_detail_cn.png" width="580" height="450" />
+</div>
 
 在运行 Rosetta 程序时，在数据流图的构建阶段，原生的 TensorFlow 数据流图中的算子（无论是前向子图还是后向梯度子图中的算子）会被自动的替换为 Rosetta 中对应的具有隐私保护功能的 SecureOp 算子。
 
-<img src='doc/_static/figs/static_pass.png' width = "800" height = "400" align="middle"/>
+<div align=center>
+<img src="doc/_static/figs/static_pass.png" width="600" height="300" />
+</div>
 
-然后在实际开始执行各个算子时，SecureOp 算子中会进一步的根据用户所配置的后端协议调用具体协议中的基础运算算子来实现多方协同的隐私计算。
+在实际执行各个算子时，SecureOp 算子中会进一步根据用户所配置的后端协议调用具体协议中的基础运算算子来实现多方协同的隐私计算。
 
-<img src='doc/_static/figs/dynamic_pass.png' width = "800" height = "400" align="middle"/>
+<div align=center>
+<img src="doc/_static/figs/dynamic_pass.png" width="600" height="300" />
+</div>
 
-> **为了帮助大家进一步了解 Rosetta 的整体设计和工程化实践，我们会持续发表一系列的深度技术文章，比如在[InfoQ上的专栏介绍](https://www.infoq.cn/profile/931348F344CDE1/publish/article)，欢迎大家持续关注。**
+> **为了帮助大家进一步了解 Rosetta 的整体设计和工程化实践，我们会持续发表一系列有深度的技术文章，比如在[InfoQ上的专栏介绍](https://www.infoq.cn/profile/931348F344CDE1/publish/article)，欢迎大家持续关注。**
 
 ## 参与Rosetta建设
 
 Rosetta 是一个由[Lattice基金会]((https://latticex.foundation/))维护的、基于 LPGLv3 许可证的开源项目。
 
-**我们欢迎来自个人和组织的各种贡献，包括代码开发、文档撰写、合作交流等各个方面，也欢迎 star、推广我们的 Github 项目**。具体内容请参考[社区参与指南](CONTRIBUTING.md)、[社区行为规范](CODE_OF_CONDUCT.md)。如果在使用或开发中有任何的问题，你也可以直接的在 [这里](https://github.com/LatticeX-Foundation/Rosetta/issues/new)给我们提 issues。
+**我们欢迎来自个人和组织的各种贡献，包括代码开发、文档撰写、合作交流等各个方面，也欢迎 star、推广我们的 Github 项目**。具体内容请参考[社区参与指南](CONTRIBUTING.md)、[社区行为规范](CODE_OF_CONDUCT.md)。如果在使用或开发中有任何的问题，你也可以直接的在 [这里](https://github.com/LatticeX-Foundation/Rosetta/issues/new) 给我们提 issues。
 
 ## 文档列表
 
