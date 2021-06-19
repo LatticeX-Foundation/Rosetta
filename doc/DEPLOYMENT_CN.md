@@ -1,5 +1,18 @@
 # Rosetta安装及部署指南
-
+- [Rosetta安装及部署指南](#rosetta安装及部署指南)
+  - [文档说明](#文档说明)
+  - [系统要求](#系统要求)
+    - [系统组件](#系统组件)
+  - [安装](#安装)
+    - [TensorFlow](#tensorflow)
+    - [Rosetta](#rosetta)
+  - [部署](#部署)
+    - [示例](#示例)
+    - [准备](#准备)
+    - [配置](#配置)
+    - [运行测试](#运行测试)
+      - [单机测试](#单机测试)
+      - [多机测试](#多机测试)
 
 
 ## 文档说明
@@ -52,16 +65,18 @@
 
   请确保安装环境符合要求。
 
+## 安装
+
 ### TensorFlow
 
   使用如下命令安装原生 TensorFlow 库。
 
   ```bash
-  # install tensorflow
-  pip3 install tensorflow==1.14.0
+# install tensorflow
+pip3 install tensorflow==1.14.0
   ```
 
-### Rosetta源码安装
+### Rosetta
 
 当前仅支持源码方式安装，二进制方式即将推出。编译源码和安装如下：
 
@@ -107,7 +122,7 @@ wget https://github.com/LatticeX-Foundation/Rosetta/tree/master/example/milliona
 ```
 
 - 生成证书和key
-`P0`、`P1`、`P2`分别生成ssl服务端证书和key，执行命令:
+  `P0`、`P1`、`P2`分别生成ssl服务端证书和key，执行命令:
 
 ```bash
 mkdir certs
@@ -128,29 +143,7 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 编写配置文件，配置文件模版如下:
 
 ```json
-{
-  "PARTY_ID": 0,
-  "MPC": {
-    "FLOAT_PRECISION": 16,
-    "P0": {
-      "NAME": "PartyA(P0)",
-      "HOST": "127.0.0.1",
-      "PORT": 11121
-    },
-    "P1": {
-      "NAME": "PartyB(P1)",
-      "HOST": "127.0.0.1",
-      "PORT": 12144
-    },
-    "P2": {
-      "NAME": "PartyC(P2)",
-      "HOST": "127.0.0.1",
-      "PORT": 13169
-    },
-    "SAVER_MODE": 7,
-    "RESTORE_MODE": 0
-  }
-}
+{  "PARTY_ID": 0,  "MPC": {    "FLOAT_PRECISION": 16,    "P0": {      "NAME": "PartyA(P0)",      "HOST": "127.0.0.1",      "PORT": 11121    },    "P1": {      "NAME": "PartyB(P1)",      "HOST": "127.0.0.1",      "PORT": 12144    },    "P2": {      "NAME": "PartyC(P2)",      "HOST": "127.0.0.1",      "PORT": 13169    },    "SAVER_MODE": 7,    "RESTORE_MODE": 0  }}
 ```
 
 字段说明:
@@ -178,33 +171,25 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 - **`P2`节点**
 
 ```bash
-mkdir log
-# MPC player 2
-python3 millionaire.py --party_id=2
+mkdir log# MPC player 2python3 millionaire.py --party_id=2
 ```
 
 - **`P1`节点**
 
 ```bash
-mkdir log
-# MPC player 1
-python3 millionaire.py --party_id=1
+mkdir log# MPC player 1python3 millionaire.py --party_id=1
 ```
 
 - **`P0`节点**
 
 ```bash
-mkdir log
-# MPC player 0
-python3 millionaire.py --party_id=0
+mkdir log# MPC player 0python3 millionaire.py --party_id=0
 ```
 
 执行完成后，如果可以查看到类似输出:
 
 ```bash
--------------------------
-1.0
--------------------------
+-------------------------1.0-------------------------
 ```
 
 则表示执行正确，单机部署测试成功，否则部署失败。
