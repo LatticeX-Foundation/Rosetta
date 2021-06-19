@@ -143,7 +143,29 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 编写配置文件，配置文件模版如下:
 
 ```json
-{  "PARTY_ID": 0,  "MPC": {    "FLOAT_PRECISION": 16,    "P0": {      "NAME": "PartyA(P0)",      "HOST": "127.0.0.1",      "PORT": 11121    },    "P1": {      "NAME": "PartyB(P1)",      "HOST": "127.0.0.1",      "PORT": 12144    },    "P2": {      "NAME": "PartyC(P2)",      "HOST": "127.0.0.1",      "PORT": 13169    },    "SAVER_MODE": 7,    "RESTORE_MODE": 0  }}
+{
+  "PARTY_ID": 0,
+  "MPC": {
+    "FLOAT_PRECISION": 16,
+    "P0": {
+      "NAME": "PartyA(P0)",
+      "HOST": "127.0.0.1",
+      "PORT": 11121
+    },
+    "P1": {
+      "NAME": "PartyB(P1)",
+      "HOST": "127.0.0.1",
+      "PORT": 12144
+    },
+    "P2": {
+      "NAME": "PartyC(P2)",
+      "HOST": "127.0.0.1",
+      "PORT": 13169
+    },
+    "SAVER_MODE": 7,
+    "RESTORE_MODE": 0
+  }
+}
 ```
 
 字段说明:
@@ -171,19 +193,25 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 - **`P2`节点**
 
 ```bash
-mkdir log# MPC player 2python3 millionaire.py --party_id=2
+mkdir log
+# MPC player 2
+python3 millionaire.py --party_id=2
 ```
 
 - **`P1`节点**
 
 ```bash
-mkdir log# MPC player 1python3 millionaire.py --party_id=1
+mkdir log
+# MPC player 1
+python3 millionaire.py --party_id=1
 ```
 
 - **`P0`节点**
 
 ```bash
-mkdir log# MPC player 0python3 millionaire.py --party_id=0
+mkdir log
+# MPC player 0
+python3 millionaire.py --party_id=0
 ```
 
 执行完成后，如果可以查看到类似输出:
