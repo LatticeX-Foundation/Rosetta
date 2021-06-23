@@ -76,70 +76,66 @@ class StaticReplacePass():
         """
 
         # tf op type name map to secure op info
-        # secure op info = [secure op name, secure op creator, secure op, secure op input numbers, is support constant attribute]
-        self.SECURE_DEF_NAME_IDX   = 0
-        self.SECURE_CREATOR_IDX    = 1
-        self.SECURE_OP_IDX         = 2
-        self.SECURE_OP_INPUTS_IDX  = 3
-        self.SECURE_CONST_ATTR_IDX = 4
+        # secure op info = [secure op name, secure op creator with build-in attribute, secure op creator without build-in attribute, secure op input numbers, is support constant attribute]
+        self.SECURE_DEF_NAME_IDX                = 0
+        self.SECURE_OP_CREATOR_WITH_ATTR_IDX    = 1
+        self.SECURE_OP_CREATOR_WITHOUT_ATTR_IDX = 2
+        self.SECURE_OP_INPUTS_IDX               = 3
+        self.SECURE_CONST_ATTR_IDX              = 4
         self.secure_ops_infos = {
-                    # arithmetic binary operation
-                    "rttadd" :        ["SecureAdd",      self._create_secure_binary_op,  secure_ops.SecureAdd,      2,  True],
-                    "rttsub" :        ["SecureSub",      self._create_secure_binary_op,  secure_ops.SecureSub,      2,  True],
-                    "rttmul" :        ["SecureMul",      self._create_secure_binary_op,  secure_ops.SecureMul,      2,  True],
-                    "rttdiv" :        ["SecureRealDiv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,  2,  True],
-		    "rttreciprocaldiv" :        ["SecureReciprocalDiv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,  2,  True],
-                    "rtttruediv" :    ["SecureTruediv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,  2,  True],
-                    "rttrealdiv" :    ["SecureRealDiv",  self._create_secure_binary_op,  secure_ops.SecureTruediv,  2,  True],
-                    "rttfloordiv":    ["SecureFloorDiv", self._create_secure_binary_op,  secure_ops.SecureFloorDiv, 2,  True],
-                    "rttpow" :        ["SecurePow",      self._create_secure_binary_op,  secure_ops.SecurePow,      2,  True],
-                    "rttmatmul" :     ["SecureMatMul",   self._create_secure_binary_op,  secure_ops.SecureMatMul,   2,  False],
+            # arithmetic binary operation
+            "rttadd" :        ["SecureAdd",                         None,                   secure_ops.SecureAdd,           2,  True],
+            "rttsub" :        ["SecureSub",                         None,                   secure_ops.SecureSub,           2,  True],
+            "rttmul" :        ["SecureMul",                         None,                   secure_ops.SecureMul,           2,  True],
+            "rttdiv" :        ["SecureRealDiv",                     None,                   secure_ops.SecureTruediv,       2,  True],
+            "rtttruediv" :    ["SecureTruediv",                     None,                   secure_ops.SecureTruediv,       2,  True],
+            "rttrealdiv" :    ["SecureRealDiv",                     None,                   secure_ops.SecureTruediv,       2,  True],
+            "rttfloordiv":    ["SecureFloorDiv",                    None,                   secure_ops.SecureFloorDiv,      2,  True],
+            "rttpow" :        ["SecurePow",                         None,                   secure_ops.SecurePow,           2,  True],
+            "rttmatmul" :     ["SecureMatMul",   self._create_secure_matmul_op_with_attr,   secure_ops.SecureMatMul,        2,  False],
 
-                    # arithmetic unary operation
-                    "rttnegative" :   ["SecureNegative", self._create_secure_unary_op,   secure_ops.SecureNeg,      1,  False],
-                    "rttsquare" :     ["SecureSquare",   self._create_secure_unary_op,   secure_ops.SecureSquare,   1,  False],
-                    "rttlog" :        ["SecureLog",      self._create_secure_unary_op,   secure_ops.SecureLog,      1,  False],
-                    "rttlog1p" :      ["SecureLog1p",    self._create_secure_unary_op,   secure_ops.SecureLog1p,    1,  False],
-                    "rttabs" :        ["SecureAbs",      self._create_secure_unary_op,   secure_ops.SecureAbs,      1,  False],
-                    "rttrsqrt" :     ["SecureRsqrt",   self._create_secure_unary_op,   secure_ops.SecureRsqrt, False],
-                    "rttsqrt" :     ["SecureSqrt",   self._create_secure_unary_op,   secure_ops.SecureSqrt, False],
-                    "rttexp" :     ["SecureExp",   self._create_secure_unary_op,   secure_ops.SecureExp, False],
+            # arithmetic unary operation
+            "rttnegative" :   ["SecureNegative",                    None,                   secure_ops.SecureNeg,           1,  False],
+            "rttsquare" :     ["SecureSquare",                      None,                   secure_ops.SecureSquare,        1,  False],
+            "rttlog" :        ["SecureLog",                         None,                   secure_ops.SecureLog,           1,  False],
+            "rttlog1p" :      ["SecureLog1p",                       None,                   secure_ops.SecureLog1p,         1,  False],
+            "rttabs" :        ["SecureAbs",                         None,                   secure_ops.SecureAbs,           1,  False],
 
-                    # relational operation
-                    "rttequal" :      ["SecureEqual",    self._create_secure_relational_op,      secure_ops.SecureEqual,        2,  True],
-                    "rttnotequal":    ["SecureNotEqual", self._create_secure_relational_op,      secure_ops.SecureNotEqual,     2,  True],
-                    "rttless" :       ["SecureLess",     self._create_secure_relational_op,      secure_ops.SecureLess,         2,  True],
-                    "rttgreater" :    ["SecureGreater",  self._create_secure_relational_op,      secure_ops.SecureGreater,      2,  True],
-                    "rttlessequal":   ["SecureLessEqual",self._create_secure_relational_op,      secure_ops.SecureLessEqual,    2,  True],
-                    "rttgreaterequal":["SecureGreaterEqual", self._create_secure_relational_op,  secure_ops.SecureGreaterEqual, 2,  True],
+            # relational operation
+            "rttequal" :      ["SecureEqual",                       None,                   secure_ops.SecureEqual,         2,  True],
+            "rttnotequal":    ["SecureNotEqual",                    None,                   secure_ops.SecureNotEqual,      2,  True],
+            "rttless" :       ["SecureLess",                        None,                   secure_ops.SecureLess,          2,  True],
+            "rttgreater" :    ["SecureGreater",                     None,                   secure_ops.SecureGreater,       2,  True],
+            "rttlessequal":   ["SecureLessEqual",                   None,                   secure_ops.SecureLessEqual,     2,  True],
+            "rttgreaterequal":["SecureGreaterEqual",                None,                   secure_ops.SecureGreaterEqual,  2,  True],
 
-                    # logical operation
-                    "rttlogicaland" : ["SecureLogicalAnd",self._create_secure_logical_op, secure_ops.SecureLogicalAnd,      2,   True],
-                    "rttlogicalor" :  ["SecureLogicalOr", self._create_secure_logical_op, secure_ops.SecureLogicalOr,       2,   True],
-                    "rttlogicalxor" : ["SecureLogicalXor",self._create_secure_logical_op, secure_ops.SecureLogicalXor,      2,   True],
-                    "rttlogicalnot" : ["SecureLogicalNot",self._create_secure_logic_unary_op, secure_ops.SecureLogicalNot,  1,   False],
+            # logical operation
+            "rttlogicaland" : ["SecureLogicalAnd",                  None,                   secure_ops.SecureLogicalAnd,    2,  True],
+            "rttlogicalor" :  ["SecureLogicalOr",                   None,                   secure_ops.SecureLogicalOr,     2,  True],
+            "rttlogicalxor" : ["SecureLogicalXor",                  None,                   secure_ops.SecureLogicalXor,    2,  True],
+            "rttlogicalnot" : ["SecureLogicalNot",                  None,                   secure_ops.SecureLogicalNot,    1,  False],
 
-                    # reduce operation
-                    "rttreducemin" :  ["SecureReduceMin", self._create_secure_reduce_op,  secure_ops.SecureMin,   2,    False],
-                    "rttreducemax" :  ["SecureReduceMax", self._create_secure_reduce_op,  secure_ops.SecureMax,   2,    False],
-                    "rttreducemean":  ["SecureReduceMean",self._create_secure_reduce_op,  secure_ops.SecureMean,  2,    False],
-                    "rttreducesum" :  ["SecureReduceSum", self._create_secure_reduce_op,  secure_ops.SecureSum,   2,    False],
-                    "rttargmax" :     ["SecureArgMax",    self._create_secure_reduce_op,  secure_ops.SecureArgMax,2,    False],
+            # reduce operation
+            "rttreducemin" :  ["SecureReduceMin", self._create_secure_reduce_op_with_attr,  secure_ops.SecureMin,           2,  False],
+            "rttreducemax" :  ["SecureReduceMax", self._create_secure_reduce_op_with_attr,  secure_ops.SecureMax,           2,  False],
+            "rttreducemean":  ["SecureReduceMean",self._create_secure_reduce_op_with_attr,  secure_ops.SecureMean,          2,  False],
+            "rttreducesum" :  ["SecureReduceSum", self._create_secure_reduce_op_with_attr,  secure_ops.SecureSum,           2,  False],
+            "rttargmax" :     ["SecureArgMax",                      None,                   secure_ops.SecureArgMax,        2,  False],
 
-                    # state operation
-                    "rttassignsub" :  ["SecureAssignSub", self._create_secure_state_op, secure_ops.SecureAssignSub, 2,    False],
+            # state operation
+            "rttassignsub" :  ["SecureAssignSub",                   None,                   secure_ops.SecureAssignSub,     2,  False],
 
-                    # nn operation
-                    "rttsigmoid" :    ["SecureSigmoid",  self._create_secure_nn_op,  secure_ops.SecureSigmoid,      1,  False],
-                    "rttrelu" :       ["SecureRelu",     self._create_secure_nn_op,  secure_ops.SecureRelu,         1,  False],
-                    "rttbiasadd" :    ["SecureBiasAdd",  self._create_secure_nn_op,  secure_ops.SecureBiasAdd,      2,  False],
-                    "rttconv2d" :     ["SecureConv2D",   self._create_secure_nn_op,  secure_ops.SecureConv2D,       2,  False],
-                    "rttl2loss" :     ["SecureL2Loss",   self._create_secure_nn_op,  secure_ops.SecureL2Loss,       1,  False],
-                    "rttfusedbatchnorm" : ["SecureFusedBatchNorm", self._create_secure_nn_op, secure_ops.SecureFusedBatchNorm, 5,  False],
-                    "rttavgpool" :    ["SecureAvgPool",  self._create_secure_nn_op,  secure_ops.SecureAvgPool,      1,  False],
-                    "rttmaxpool" :    ["SecureMaxPool",  self._create_secure_nn_op,  secure_ops.SecureMaxPool,      1,  False],
-                    "rttsoftmax" :    ["SecureSoftmax",  self._create_secure_nn_op,  secure_ops.SecureSoftmax,      1,  False],
-                }
+            # nn operation
+            "rttsigmoid" :    ["SecureSigmoid",                     None,                   secure_ops.SecureSigmoid,       1,  False],
+            "rttrelu" :       ["SecureRelu",                        None,                   secure_ops.SecureRelu,          1,  False],
+            "rttbiasadd" :    ["SecureBiasAdd",                     None,                   secure_ops.SecureBiasAdd,       2,  False],
+            "rttconv2d" :     ["SecureConv2D",   self._create_secure_conv2d_op_with_attr,   secure_ops.SecureConv2D,        2,  False],
+            "rttl2loss" :     ["SecureL2Loss",                      None,                   secure_ops.SecureL2Loss,        1,  False],
+            "rttfusedbatchnorm" : ["SecureFusedBatchNorm", self._create_secure_fusedbatchnorm_op_with_attr, secure_ops.SecureFusedBatchNorm, 5,  False],
+            "rttavgpool" :    ["SecureAvgPool",  self._create_secure_avgpool_op_with_attr,  secure_ops.SecureAvgPool,       1,  False],
+            "rttmaxpool" :    ["SecureMaxPool",  self._create_secure_maxpool_op_with_attr,  secure_ops.SecureMaxPool,       1,  False],
+            "rttsoftmax" :    ["SecureSoftmax",                     None,                   secure_ops.SecureSoftmax,       1,  False],
+        }
 
 
         # source graph variable dict, save the train variables
@@ -536,11 +532,12 @@ class StaticReplacePass():
         # get new dest op define name and create functor with the dest secure op define name.
         try:
             secure_def_name = self.secure_ops_infos[src_op.op_def.name.lower()][self.SECURE_DEF_NAME_IDX]
-            secure_create_func = self.secure_ops_infos[src_op.op_def.name.lower()][self.SECURE_CREATOR_IDX]
-            secure_op = self.secure_ops_infos[src_op.op_def.name.lower()][self.SECURE_OP_IDX]
+            secure_op_creator_with_attr = self.secure_ops_infos[src_op.op_def.name.lower()][self.SECURE_OP_CREATOR_WITH_ATTR_IDX]
+            secure_op_creator_without_attr = self.secure_ops_infos[src_op.op_def.name.lower()][self.SECURE_OP_CREATOR_WITHOUT_ATTR_IDX]
             secure_op_inputs = self.secure_ops_infos[src_op.op_def.name.lower()][self.SECURE_OP_INPUTS_IDX]
-            assert secure_create_func != None, "secure creator is none."
-            return secure_create_func(src_op, secure_def_name, secure_op, secure_op_inputs, to_graph)
+
+            return self._create_secure_op_helper(src_op, secure_def_name, secure_op_creator_with_attr,
+                                                secure_op_creator_without_attr, secure_op_inputs, to_graph)
         except KeyError:
             _errmsg = "tf native op {} does not implemented Secure op".format(src_op.op_def.name.lower())
             rtt_get_logger().error(_errmsg)
@@ -635,157 +632,16 @@ class StaticReplacePass():
         return new_op
 
 
-    def _create_secure_binary_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
-        """
-        create secure binary op(eg: secureadd\securesub\securemul\securediv...)
-
-        :param src_op: source op instance, it's not secure op, it's tensorflow native op
-        :param secure_op_name: secure op name.
-        :param secure_op: secure op
-        :param secure_op_input_nums: secure op input numbers
-        :param to_graph: dest graph
-        :return: the secure op instance
-        """
-        assert secure_op_input_nums == 2, "%s op input numbers is incorrect." %secure_op_name
-        return self._create_secure_op_helper(src_op, secure_op_name, 
-                    secure_op_input_nums, secure_op, to_graph)
-
-    
-    def _create_secure_unary_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
-        """
-        create secure unary op(eg: secureneg\securesquare\securelog\securelog1p...)
-
-        :param src_op: source op instance, it's not secure op, it's tensorflow native op
-        :param secure_op_name: secure op name.
-        :param secure_op: secure op
-        :param secure_op_input_nums: secure op input numbers
-        :param to_graph: dest graph
-        :return: the secure op instance
-        """
-        assert secure_op_input_nums == 1, "%s op input numbers is incorrect." %secure_op_name
-        return self._create_secure_op_helper(src_op, secure_op_name, 
-                    secure_op_input_nums, secure_op, to_graph)
-
-    
-    def _create_secure_relational_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
-        """
-        create secure relational op(eg: secureless\securegreater\securelessequal...)
-
-        :param src_op: source op instance, it's not secure op, it's tensorflow native op
-        :param secure_op_name: secure op name.
-        :param secure_op: secure op
-        :param secure_op_input_nums: secure op input numbers
-        :param to_graph: dest graph
-        :return: the secure op instance
-        """
-        assert secure_op_input_nums == 2, "%s op input numbers is incorrect." %secure_op_name
-        return self._create_secure_op_helper(src_op, secure_op_name, 
-                    secure_op_input_nums, secure_op, to_graph)
-
-
-    def _create_secure_logical_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
-        """
-        create secure logical op(eg: securelogicaland\securelogicalor\securelogicalnot...)
-
-        :param src_op: source op instance, it's not secure op, it's tensorflow native op
-        :param secure_op_name: secure op name.
-        :param secure_op: secure op
-        :param secure_op_input_nums: secure op input numbers
-        :param to_graph: dest graph
-        :return: the secure op instance
-        """
-        assert secure_op_input_nums == 2, "%s op input numbers is incorrect." %secure_op_name
-        return self._create_secure_op_helper(src_op, secure_op_name, 
-                    secure_op_input_nums, secure_op, to_graph)
-
-    
-    def _create_secure_reduce_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
-        """
-        create secure reduce op(eg: securemin\securemax\securemean\securesum...)
-
-        :param src_op: source op instance, it's not secure op, it's tensorflow native op
-        :param secure_op_name: secure op name.
-        :param secure_op: secure op
-        :param secure_op_input_nums: secure op input numbers
-        :param to_graph: dest graph
-        :return: the secure op instance
-        """
-        assert secure_op_input_nums == 2, "%s op input numbers is incorrect." %secure_op_name
-        return self._create_secure_op_helper(src_op, secure_op_name, 
-                    secure_op_input_nums, secure_op, to_graph)
-
-
-    def _create_secure_logic_binary_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
-        """
-        create secure relational op(eg: secureand\secureor\securexor...)
-
-        :param src_op: source op instance, it's not secure op, it's tensorflow native op
-        :param secure_op_name: secure op name.
-        :param secure_op: secure op
-        :param secure_op_input_nums: secure op input numbers
-        :param to_graph: dest graph
-        :return: the secure op instance
-        """
-        assert secure_op_input_nums == 2, "%s op input numbers is incorrect." %secure_op_name
-        return self._create_secure_op_helper(src_op, secure_op_name, 
-                    secure_op_input_nums, secure_op, to_graph)
-
-
-    def _create_secure_logic_unary_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
-        """
-        create secure relational op(eg: securenot...)
-
-        :param src_op: source op instance, it's not secure op, it's tensorflow native op
-        :param secure_op_name: secure op name.
-        :param secure_op: secure op
-        :param secure_op_input_nums: secure op input numbers
-        :param to_graph: dest graph
-        :return: the secure op instance
-        """
-        assert secure_op_input_nums == 1, "%s op input numbers is incorrect." %secure_op_name
-        return self._create_secure_op_helper(src_op, secure_op_name, 
-                    secure_op_input_nums, secure_op, to_graph)
-
-
-    def _create_secure_nn_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
-        """
-        create secure nn op(eg: secureconv2d,securebiasadd...)
-
-        :param src_op: source op instance, it's not secure op, it's tensorflow native op
-        :param secure_op_name: secure op name.
-        :param secure_op: secure op
-        :param secure_op_input_nums: secure op input numbers
-        :param to_graph: dest graph
-        :return: the secure op instance
-        """
-        return self._create_secure_op_helper(src_op, secure_op_name, 
-                    secure_op_input_nums, secure_op, to_graph)
-              
-
-    def _create_secure_state_op(self, src_op, secure_op_name, secure_op, secure_op_input_nums, to_graph):
-        """
-        create secure nn op(eg: secureassignsub,secureassignadd...)
-
-        :param src_op: source op instance, it's not secure op, it's tensorflow native op
-        :param secure_op_name: secure op name.
-        :param secure_op: secure op
-        :param secure_op_input_nums: secure op input numbers
-        :param to_graph: dest graph
-        :return: the secure op instance
-        """
-        return self._create_secure_op_helper(src_op, secure_op_name, 
-                    secure_op_input_nums, secure_op, to_graph)
-
-
-    def _create_secure_op_helper(self, src_op, secure_op_name, secure_op_input_num,
-                            secure_op_creator, to_graph):
+    def _create_secure_op_helper(self, src_op, secure_op_name, secure_op_creator_with_attr,
+                                secure_op_creator_without_attr, secure_op_input_num, to_graph):
         """
         create secure op helper function
 
         :param src_op: source op instance, it's not secure op
         :param secure_op_name: secure op name, don't contain namespace
+        :param secure_op_creator_with_attr: secure op creator with build-in attribute, eg: SecureMatmul's transpose_a and transpose_b attributes
+        :param secure_op_creator_without_attr: secure op creator without build-in attribute, eg:SecureMul
         :param secure_op_input_num: secure op input numbers
-        :param secure_op_creator: secure op creator
         :param to_graph: dest graph
         :return: the secure op instance
         """
@@ -817,37 +673,22 @@ class StaticReplacePass():
         # checked secure op inputs
         self._checked_secure_op_inputs(secure_op_name, new_inputs)
 
-        # create secure op
+        # create a secure op
         try:
-            if secure_op_input_num == 1:
-                new_op = self._create_unsupport_const_attr_secure_op(src_op, secure_op_creator, new_inputs, secure_op_input_num, new_secure_name)
-            elif secure_op_input_num == 2:
-                if self._is_bin_op_unsupport_const_attr(src_op.op_def.name):
-                    new_op = self._create_unsupport_const_attr_secure_op(src_op, secure_op_creator, new_inputs, secure_op_input_num, new_secure_name)
-                else:
-                    new_op = secure_op_creator(new_inputs[0], new_inputs[1], name=new_secure_name,
-                                        lh_is_const=self._secure_input_is_const(new_inputs[0]), 
-                                        rh_is_const=self._secure_input_is_const(new_inputs[1])).op
-            elif secure_op_input_num == 3:
-                new_op = secure_op_creator(new_inputs[0], new_inputs[1], 
-                                        new_inputs[2], name=new_secure_name).op
-            elif secure_op_input_num == 4:
-                new_op = secure_op_creator(new_inputs[0], new_inputs[1], new_inputs[2], 
-                                        new_inputs[3], name=new_secure_name).op
-            elif secure_op_input_num == 5:
-                new_op = self._create_unsupport_const_attr_secure_op(src_op, secure_op_creator, new_inputs, secure_op_input_num, new_secure_name)
-            elif secure_op_input_num == 6:
-                new_op = secure_op_creator(new_inputs[0], new_inputs[1], new_inputs[2], 
-                                        new_inputs[3], new_inputs[4], new_inputs[5], name=new_secure_name).op
+            if self._is_op_support_const_attr(src_op.op_def.name):
+                new_op = self._create_secure_op_with_const_attr(src_op, secure_op_creator_with_attr, 
+                                                                secure_op_creator_without_attr, new_inputs,
+                                                                secure_op_input_num, new_secure_name)
             else:
-                raise ValueError("the %s op don't have %d inputs" %secure_op_name %secure_op_input_num)
+                new_op = self._create_secure_op_without_const_attr(src_op, secure_op_creator_with_attr, 
+                                                                secure_op_creator_without_attr, new_inputs,
+                                                                secure_op_input_num, new_secure_name)
         except Exception as e:
             rtt_get_logger().error(str(e))
 
-        # Save the op info
+        # Save the op info and return the op
         self.dc_op_info[new_src_name] = new_op
 
-        # Return the op
         return new_op
 
 
@@ -882,49 +723,17 @@ class StaticReplacePass():
             return True
 
 
-    def _is_bin_op_unsupport_const_attr(self, op_def_name):
+    def _is_op_support_const_attr(self, op_def_name):
         """
-        check the binary op is support lr/hr_is_const attrubute
+        Check if the op supports lr/hr_is_const attributes
 
         :param op_def_name: op define name
-        :return: True mean unsupport lr/hr_is_const attrubute, False mean support
+        :return: True mean support lr/hr_is_const attrubute, False mean not support
         """
 
         # get rtt op info value
         info_val = self.secure_ops_infos[op_def_name.lower()]
-        return not info_val[self.SECURE_CONST_ATTR_IDX]
-
-
-    def _create_secure_op_with_attr(self, tf_op, secure_op, inputs, secure_name):
-        """
-        create Secure op with attrs
-
-        :param tf_op: the origin tensorflow operation
-        :param secure_op: secure op mapping to c++ layer secure op
-        :param inputs: the input of the operation
-        :param op_def_name: the origin name of tensorflow operation
-        :param secure_name: name of Secure operation, eg. SecureMatMul/SecureConv2D
-
-        :return: the new created Operation
-        """
-        
-        op_def_name = tf_op.op_def.name
-        rtt_op_name = op_def_name.lower()
-        if (rtt_op_name == 'rttmatmul'):
-            return self._create_secure_matmul_op_with_attr(tf_op, secure_op, inputs, secure_name)
-        elif (rtt_op_name == 'rttconv2d'):
-            return self._create_secure_conv2d_op_with_attr(tf_op, secure_op, inputs, secure_name)
-        elif (rtt_op_name == 'rttfusedbatchnorm'):
-            return self._create_secure_fusedbatchnorm_op_with_attr(tf_op, secure_op, inputs, secure_name)
-        elif (rtt_op_name == 'rttmaxpool'):
-            return self._create_secure_maxpool_op_with_attr(tf_op, secure_op, inputs, secure_name)
-        elif (rtt_op_name == 'rttavgpool'):
-            return self._create_secure_avgpool_op_with_attr(tf_op, secure_op, inputs, secure_name)
-        elif (rtt_op_name == 'rttreducesum' or rtt_op_name == 'rttreducemean' or 
-              rtt_op_name == 'rttreducemin' or rtt_op_name == 'rttreducemax'):
-            return self._create_secure_reduce_op_with_attr(tf_op, secure_op, inputs, secure_name)
-        else:
-            raise ValueError("the %s op maybe don't have attributes." %secure_name)
+        return info_val[self.SECURE_CONST_ATTR_IDX]
 
 
     def _create_secure_matmul_op_with_attr(self, tf_op, secure_op, inputs, secure_name):
@@ -1054,39 +863,66 @@ class StaticReplacePass():
         return secure_op(inputs[0], inputs[1], keep_dims=attrs_map['keep_dims'], name=secure_name).op
 
 
-    def _create_unsupport_const_attr_secure_op(self, tf_op, secure_op, inputs, input_nums, secure_name):
+    def _create_secure_op_without_const_attr(self, tf_op, secure_op_creator_with_attr, 
+                                    secure_op_creator_without_attr, inputs, input_nums, secure_name):
         """
-        create secure operation which is not supports const attribute
+        create an secure operation which is not supports const attribute
+        (Create an op without the const attribute)
 
         :param tf_op: the origin tensorflow operation
-        :param secure_op: secure op mapping to c++ layer secure op
+        :param secure_op_creator_with_attr: secure op creator with build-in attribute, eg: SecureMatmul's transpose_a and transpose_b attributes
+        :param secure_op_creator_without_attr: secure op creator without build-in attribute, eg:SecureMul
         :param inputs: the input of the operation
-        :param input_nums: tthe input numbers of the operation
+        :param input_nums: the input numbers of the operation
         :param secure_name: name of Secure operation, eg. rtt/SecureMatMul
 
-        :return: the new created Operation
+        :return: the new secure Operation
         """
         op_def_name = tf_op.op_def.name
         op_name = op_def_name.lower()
         new_op = None
-        if op_name in {'rttmatmul', 'rttconv2d', 'rttfusedbatchnorm', 'rttmaxpool', 'rttavgpool', 
-                       'rttreducesum', 'rttreducemean', 'rttreducemin', 'rttreducemax'}:
-            new_op = self._create_secure_op_with_attr(tf_op, secure_op, inputs, secure_name)
+
+        if secure_op_creator_with_attr != None:
+            new_op = secure_op_creator_with_attr(tf_op, secure_op_creator_without_attr, inputs, secure_name)
         else:
             if (input_nums == 1):
-                new_op = secure_op(inputs[0], name=secure_name).op
+                new_op = secure_op_creator_without_attr(inputs[0], name=secure_name).op
             elif (input_nums == 2):
-                new_op = secure_op(inputs[0], inputs[1], name=secure_name).op
+                new_op = secure_op_creator_without_attr(inputs[0], inputs[1], name=secure_name).op
             elif (input_nums == 3):
-                new_op = secure_op(inputs[0], inputs[1], inputs[2], name=secure_name).op
+                new_op = secure_op_creator_without_attr(inputs[0], inputs[1], inputs[2], name=secure_name).op
             elif (input_nums == 4):
-                new_op = secure_op(inputs[0], inputs[1], inputs[2], inputs[3], name=secure_name).op
+                new_op = secure_op_creator_without_attr(inputs[0], inputs[1], inputs[2], inputs[3], name=secure_name).op
             elif (input_nums == 5):
-                new_op = secure_op(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], name=secure_name).op
+                new_op = secure_op_creator_without_attr(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], name=secure_name).op
             elif (input_nums == 6):
-                new_op = secure_op(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5], name=secure_name).op
+                new_op = secure_op_creator_without_attr(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5], name=secure_name).op
             else:
-                raise ValueError("the %s op have %d input edges." %secure_name %input_nums)
+                raise ValueError("the %s op have %d input edges, and is not currently supported." %secure_name %input_nums)
+        
+        return new_op
+
+    
+    def _create_secure_op_with_const_attr(self, tf_op, secure_op_creator_with_attr, 
+                                    secure_op_creator_without_attr, inputs, input_nums, secure_name):
+        """
+        Create an op with the const attribute
+
+        :param tf_op: the origin tensorflow operation
+        :param secure_op_creator_with_attr: secure op creator with build-in attribute, eg: SecureMatmul's transpose_a and transpose_b attributes
+        :param secure_op_creator_without_attr: secure op creator without build-in attribute, eg:SecureMul
+        :param inputs: the input of the operation
+        :param input_nums: tthe input numbers of the operation
+        :param secure_name: name of Secure operation, eg. rtt/SecureMatMul
+
+        :return: the new secure Operation
+        """
+        if (input_nums == 2):
+            new_op = secure_op_creator_without_attr(inputs[0], inputs[1], name=secure_name,
+                            lh_is_const=self._secure_input_is_const(inputs[0]),
+                            rh_is_const=self._secure_input_is_const(inputs[1])).op
+        else:
+            raise ValueError("Only binary secure operation has support const attribute.")
         
         return new_op
 
@@ -1109,7 +945,6 @@ class StaticReplacePass():
                 break
 
         return dest_op
-
 
 
 def replace_tf_subgraph_with_secure_subgraph(fetch):
@@ -1140,4 +975,4 @@ def replace_tf_subgraph_with_secure_subgraph(fetch):
             fetch = PassObj.run(fetch)
 
     return fetch
-    
+

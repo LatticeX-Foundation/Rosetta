@@ -61,6 +61,12 @@ class RttTensor(object):
       "__ge__",
       "__eq__",
       "__ne__",
+      "__and__",
+      "__rand__",
+      "__or__",
+      "__ror__",
+      "__xor__",
+      "__rxor__",
       "__getitem__",
       "__pow__",
       "__rpow__",
@@ -68,6 +74,7 @@ class RttTensor(object):
       "__rmatmul__",
 
       # Unary.
+      "__invert__",
       "__neg__",
       "__abs__"
     }
@@ -93,7 +100,7 @@ class RttTensor(object):
     @property
     def name(self):
         return self._raw.name
-    
+
     @property
     def device(self):
         return self._raw.device
@@ -210,10 +217,8 @@ class RttTensor(object):
         return RttTensor(res)
 
     def __eq__(self, other):
-        """ self == other """
-        other = convert_to_rtttensor(other)
-        res = rtt_ops.rtt_equal(self._raw, other._raw)
-        return RttTensor(res)
+        # Necessary to support Python's collection membership operators
+        return self is other
     
     def __ne__(self, other):
         """ self != other """
@@ -226,17 +231,35 @@ class RttTensor(object):
         other = convert_to_rtttensor(other)
         res = rtt_ops.rtt_logical_and(self._raw, other._raw)
         return RttTensor(res)
+    
+    def __rand__(self, other):
+        """ other & self """
+        other = convert_to_rtttensor(other)
+        res = rtt_ops.rtt_logical_and(other._raw, self._raw)
+        return RttTensor(res)
 
     def __or__(self, other):
         """ self | other """
         other = convert_to_rtttensor(other)
         res = rtt_ops.rtt_logical_or(self._raw, other._raw)
         return RttTensor(res)
+
+    def __ror__(self, other):
+        """ other | self """
+        other = convert_to_rtttensor(other)
+        res = rtt_ops.rtt_logical_or(other._raw, self._raw)
+        return RttTensor(res)
     
     def __xor__(self, other):
         """ self ^ other """
         other = convert_to_rtttensor(other)
         res = rtt_ops.rtt_logical_xor(self._raw, other._raw)
+        return RttTensor(res)
+
+    def __rxor__(self, other):
+        """ other ^ self """
+        other = convert_to_rtttensor(other)
+        res = rtt_ops.rtt_logical_xor(other._raw, self._raw)
         return RttTensor(res)
 
     def __invert__(self):
