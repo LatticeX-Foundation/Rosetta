@@ -88,6 +88,7 @@ class StaticReplacePass():
             "rttsub" :        ["SecureSub",                         None,                   secure_ops.SecureSub,           2,  True],
             "rttmul" :        ["SecureMul",                         None,                   secure_ops.SecureMul,           2,  True],
             "rttdiv" :        ["SecureRealDiv",                     None,                   secure_ops.SecureTruediv,       2,  True],
+            "rttreciprocaldiv" : ["SecureReciprocalDiv",            None,                   secure_ops.SecureTruediv,       2,  True],
             "rtttruediv" :    ["SecureTruediv",                     None,                   secure_ops.SecureTruediv,       2,  True],
             "rttrealdiv" :    ["SecureRealDiv",                     None,                   secure_ops.SecureTruediv,       2,  True],
             "rttfloordiv":    ["SecureFloorDiv",                    None,                   secure_ops.SecureFloorDiv,      2,  True],
@@ -100,6 +101,10 @@ class StaticReplacePass():
             "rttlog" :        ["SecureLog",                         None,                   secure_ops.SecureLog,           1,  False],
             "rttlog1p" :      ["SecureLog1p",                       None,                   secure_ops.SecureLog1p,         1,  False],
             "rttabs" :        ["SecureAbs",                         None,                   secure_ops.SecureAbs,           1,  False],
+
+            "rttrsqrt" :     ["SecureRsqrt",                        None,                   secure_ops.SecureRsqrt,         1,  False],
+            "rttsqrt" :      ["SecureSqrt",                         None,                   secure_ops.SecureSqrt,          1,  False],
+            "rttexp" :       ["SecureExp",                          None,                   secure_ops.SecureExp,           1,  False],
 
             # relational operation
             "rttequal" :      ["SecureEqual",                       None,                   secure_ops.SecureEqual,         2,  True],
