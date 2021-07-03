@@ -1155,7 +1155,9 @@ dsets/
 │   ├── reg_test_x.csv
 │   ├── reg_test_y.csv
 │   ├── reg_train_x.csv
-│   └── reg_train_y.csv
+│   ├── reg_train_y.csv
+│   ├──	mnist_test_x.csv
+│   └──	mnist_test_y.csv
 ├── P0
 │   ├── cls_test_x.csv
 │   ├── cls_test_y.csv
@@ -1163,7 +1165,7 @@ dsets/
 │   ├── cls_train_y.csv
 │   ├── reg_test_x.csv
 │   ├── reg_train_x.csv
-│		└──	mnist_train_x.csv
+│   └──	mnist_train_x.csv
 ├── P1
 │   ├── cls_test_x.csv
 │   ├── cls_train_x.csv
@@ -1171,7 +1173,7 @@ dsets/
 │   ├── reg_test_y.csv
 │   ├── reg_train_x.csv
 │   ├── reg_train_y.csv
-│ 	└──	mnist_train_x.csv
+│   └──	mnist_train_x.csv
 └── P2
 ```
 
