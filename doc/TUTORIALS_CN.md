@@ -16,6 +16,8 @@
     - [模型加载与预测](#模型加载与预测)
   - [逻辑回归](#逻辑回归)
   - [支持超大数据集](#支持超大数据集)
+- 隐私深度学习
+  - [MLP神经网络](#MLP神经网络)
 - [结语](#结语)
 - [附加](#附加)
   - [数据集说明](#数据集说明)
@@ -869,6 +871,266 @@ Rosetta 完整代码参考 [rtt-ds-lr.py](../example/tutorials/code/rtt-ds-lr.py
         return fields
     ```
 
+## 隐私深度学习
+
+前面完成了两个`隐私`与`机器学习`结合的例子，下面要进行`隐私`与`深度学习（Deep Learning, DL）`结合的例子介绍。
+
+### MLP神经网络
+
+看完了[隐私机器学习](#隐私机器学习)的内容，相信大家对于`Rosetta`的基本用法以及`tensorflow`的基本语法有了一定了解。我们把MLP神经网络实现mnist手写数据集分类作为本节的例子。
+
+首先我们来看一下明文（tensorflow）版的代码。
+
+#### tensorflow版
+
+- 导入需要的包并加载数据集
+
+`tensorflow`版与`Rosetta`版的代码在数据的加载部分是非常不一样的，看完了前面的例子应该很清楚。
+
+```python
+from tensorflow.examples.tutorials.mnist import input_data
+import os
+import tensorflow as tf
+mnist_home = os.path.join("/tmp/data/", 'mnist')
+mnist = input_data.read_data_sets(mnist_home, one_hot=True)
+#将数据分割为训练数据与测试数据
+X_train = mnist.train.images
+X_test = mnist.test.images
+Y_train = mnist.train.labels
+Y_test = mnist.test.labels
+#构造数据迭代器
+train_dataset = tf.data.Dataset.from_tensor_slices((X_train, Y_train))
+train_dataset = train_dataset.batch(100).repeat()
+test_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test))
+test_dataset = test_dataset.batch(100).repeat()
+train_iterator = train_dataset.make_one_shot_iterator()
+train_next_iterator = train_iterator.get_next()
+test_iterator = test_dataset.make_one_shot_iterator()
+test_next_iterator = test_iterator.get_next()
+```
+
+- 设置超参数及构造MLP模型
+
+```python
+num_outputs = 10 
+num_inputs = 784
+w=[]
+b=[]
+
+def mlp(x, num_inputs, num_outputs, num_layers, num_neurons):
+    w = []
+    b = []
+    for i in range(num_layers):
+        # 权重
+        w.append(tf.Variable(tf.random_normal(
+            [num_inputs if i == 0 else num_neurons[i - 1],
+             num_neurons[i]], seed = 1, dtype=tf.float64),
+            name="w_{0:04d}".format(i), dtype=tf.float64
+        ))
+        # 偏差值
+        b.append(tf.Variable(tf.random_normal(
+            [num_neurons[i]], seed = 1, dtype=tf.float64),
+            name="b_{0:04d}".format(i), dtype=tf.float64
+        ))
+    w.append(tf.Variable(tf.random_normal(
+        [num_neurons[num_layers - 1] if num_layers > 0 else num_inputs,
+         num_outputs], seed = 1, dtype=tf.float64), name="w_out", dtype=tf.float64))
+    b.append(tf.Variable(tf.random_normal([num_outputs], seed = 1, dtype=tf.float64), name="b_out", dtype=tf.float64))
+
+    # x是输入层
+    layer = x
+    # 添加隐藏层
+    for i in range(num_layers):
+        layer = tf.nn.relu(tf.matmul(layer, w[i]) + b[i])
+    # 添加输出层
+    layer = tf.matmul(layer, w[num_layers]) + b[num_layers]
+
+    return layer
+```
+
+- 编写训练函数等相关操作，不作过多解释
+
+```python
+def mnist_batch_func(batch_size=100):
+    X_batch, Y_batch = mnist.train.next_batch(batch_size)
+    return [X_batch, Y_batch]
+  
+def tensorflow_classification(n_epochs, n_batches,
+                              batch_size,
+                              model, optimizer, loss, accuracy_function,
+                              X_test, Y_test):
+    with tf.Session() as tfs:
+        tfs.run(tf.global_variables_initializer())
+        for epoch in range(n_epochs):
+            epoch_loss = 0.0
+            for batch in range(n_batches):
+                X_batch, Y_batch = tfs.run(train_next_iterator)
+                feed_dict = {x: X_batch, y: Y_batch}
+                _, batch_loss = tfs.run([optimizer, loss], feed_dict)
+                epoch_loss += batch_loss
+        
+            average_loss = epoch_loss / n_batches
+            print("epoch: {0:04d} loss = {1:0.6f}".format(
+                epoch, average_loss))
+        feed_dict = {x: X_test, y: Y_test}
+        accuracy_score = tfs.run(accuracy_function, feed_dict=feed_dict)
+        print("accuracy={0:.8f}".format(accuracy_score))
+        
+# 构造输入
+x = tf.placeholder(dtype=tf.float64, name="x", 
+                    shape=[None, num_inputs])
+# 构造输出
+y = tf.placeholder(dtype=tf.float64, name="y", 
+                    shape=[None, 10])
+#目前设置隐藏层为0，可自己修改
+num_layers = 2
+num_neurons = [128, 256]
+learning_rate = 0.01
+n_epochs = 30
+batch_size = 100
+n_batches = int(mnist.train.num_examples/batch_size)
+
+model = mlp(x=x,
+            num_inputs=num_inputs,
+            num_outputs=num_outputs,
+            num_layers=num_layers,
+            num_neurons=num_neurons)
+
+loss = tf.reduce_mean(
+    tf.nn.sigmoid_cross_entropy_with_logits(logits=model, labels=y))
+optimizer = tf.train.GradientDescentOptimizer(
+    learning_rate=learning_rate).minimize(loss)
+
+predictions_check = tf.equal(tf.argmax(model, 1), tf.argmax(y, 1))
+accuracy_function = tf.reduce_mean(tf.cast(predictions_check, dtype=tf.float64))
+#训练
+tensorflow_classification(n_epochs=n_epochs, 
+   n_batches=n_batches, 
+   batch_size=batch_size, 
+   model = model, 
+   optimizer = optimizer, 
+   loss = loss, 
+   accuracy_function = accuracy_function, 
+   X_test = X_test, 
+   Y_test = Y_test
+   )
+```
+
+完整代码参考[tf-mlp_mnist.py](../example/tutorials/code/tf-mlp_mnist.py)
+
+执行以下命令即可运行
+
+```python
+python ./tf-mlp_mnist.py
+```
+
+输出如下：
+
+```python
+epoch: 0000 loss = 17.504000
+epoch: 0001 loss = 6.774922
+epoch: 0002 loss = 4.993065
+epoch: 0003 loss = 4.047511
+epoch: 0004 loss = 3.440471
+epoch: 0005 loss = 3.006049
+  ...
+epoch: 0027 loss = 0.874316
+epoch: 0028 loss = 0.847307
+epoch: 0029 loss = 0.821776
+accuracy=0.91100000
+```
+
+#### Rosetta版
+
+- 导包并激活协议
+
+```python
+import os
+import tensorflow as tf
+import latticex.rosetta as rtt
+import csv
+import numpy as np
+
+rtt.set_backend_loglevel(1)
+np.set_printoptions(suppress=True)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+np.random.seed(0)
+#激活协议
+rtt.activate("SecureNN")
+mpc_player_id = rtt.py_protocol_handler.get_party_id()
+```
+
+- 加载数据集
+
+这一部分数据集的加载与之前例子中的略有不同，之前加载时在`PrivateDataset`中使用了`load_data`方法，可同时加载特征数据与标签数据。但是，这种同时加载的方式仅支持一维的标签数据，`mnist`中的标签数据是使用`one-hot`编码的共有10维，所以此处使用了加载特征数据的方式加载了标签数据。关于`load_data`、`load_X`、`load_Y`的区别请查阅源代码。
+
+```python
+#加载数据集
+file_x = "./train_x.csv"
+file_y = "./train_y.csv"
+
+X_train = rtt.PrivateDataset(data_owner=(0, 1), label_owner=1).load_X(file_x, header=None)
+Y_train = rtt.PrivateDataset(data_owner=[1], label_owner=1).load_X(file_y, header=None)
+```
+
+- 这个例子中可以直接将训练的模型进行保存
+
+```python
+def tensorflow_classification(n_epochs, n_batches,
+                              batch_size,
+                              model, optimizer, loss
+                              ):
+    with tf.Session() as tfs:
+        tfs.run(tf.global_variables_initializer())
+        for epoch in range(n_epochs):
+            epoch_loss = 0.0
+            for i in range(n_batches):
+                X_batch = X_train[(i * batch_size):(i + 1) * batch_size]
+                Y_batch = Y_train[(i * batch_size):(i + 1) * batch_size]
+                feed_dict = {x: X_batch, y: Y_batch}
+                tfs.run([optimizer, loss], feed_dict)
+        saver.save(tfs, './log/ckpt'+str(mpc_player_id)+'/model')
+```
+
+其余部分与`tensorflow`版的基本相同，完整代码请参考[rtt-mlp_mnist.py](../example/tutorials/code/rtt-mlp_mnist.py)
+
+执行
+
+```python
+./tutorials.sh rtt mlp_mnist
+```
+
+明文模型会保存在`log/`文件夹下，可以继续执行
+
+```python
+python tf-test_mlp.py
+```
+
+来测试模型准确率。
+
+结果为：
+
+```python
+['w_out:0', 'b_out:0']
+[array([[ 0.24279785, -0.35299683, -0.83648682, ..., -1.71618652,
+         0.65466309, -0.75320435],
+       [ 0.16467285, -1.01171875,  0.07672119, ...,  2.43850708,
+        -0.34365845,  0.50970459],
+       [ 0.68637085,  0.59738159,  0.21426392, ..., -2.1026001 ,
+        -1.08334351, -0.51135254],
+       ...,
+       [ 1.18951416,  0.50506592, -0.19161987, ...,  0.31906128,
+        -0.21728516, -1.74258423],
+       [ 0.47128296, -1.10772705, -1.14147949, ..., -0.80792236,
+        -0.2272644 , -0.60620117],
+       [-1.35250854, -0.00039673, -1.37692261, ...,  0.28158569,
+        -1.86367798,  0.2359314 ]]), array([ 0.05230713, -0.48815918, -0.75996399, -0.41955566,  1.78201294,
+       -0.42456055, -0.03417969, -1.80670166,  0.40750122, -0.93180847])]
+accuracy=0.14000000
+```
+
+因为测试的模型没有包含隐藏层并且使用了缩小版数据集，所以准确率很低，如果有兴趣可以通过调整超参数以及数据集大小来提高准确率。
+
 ## 结语
 
 OK，你现在已经完全掌握了 `Rosetta` 的使用了，赶紧找一个真实场景玩玩。
@@ -900,27 +1162,30 @@ dsets/
 │   ├── cls_train_x.csv
 │   ├── cls_train_y.csv
 │   ├── reg_test_x.csv
-│   └── reg_train_x.csv
+│   ├── reg_train_x.csv
+│		└──	mnist_train_x.csv
 ├── P1
 │   ├── cls_test_x.csv
 │   ├── cls_train_x.csv
 │   ├── reg_test_x.csv
 │   ├── reg_test_y.csv
 │   ├── reg_train_x.csv
-│   └── reg_train_y.csv
+│   ├── reg_train_y.csv
+│ 	└──	mnist_train_x.csv
 └── P2
 ```
 
-|        |                                |
-| ------ | ------------------------------ |
-| ALL    | 数据集的原始数据               |
-| P*     | 表示各节点拥有的私有数据       |
-| cls*   | 表示二分类数据集，用于逻辑回归 |
-| reg*   | 表示回归数据集，用于线性回归   |
-| *train | 表示用于训练的数据集           |
-| *test  | 表示用于预测的数据集           |
-| *x     | 表示样本                       |
-| *y     | 表示标签                       |
+|        |                                          |
+| ------ | ---------------------------------------- |
+| ALL    | 数据集的原始数据                         |
+| P*     | 表示各节点拥有的私有数据                 |
+| cls*   | 表示二分类数据集，用于逻辑回归           |
+| reg*   | 表示回归数据集，用于线性回归             |
+| mnist* | 表示mnist数据的部分数据，用于MLP神经网络 |
+| *train | 表示用于训练的数据集                     |
+| *test  | 表示用于预测的数据集                     |
+| *x     | 表示样本                                 |
+| *y     | 表示标签                                 |
 
 说明：
 
