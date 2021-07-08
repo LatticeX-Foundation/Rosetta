@@ -1187,7 +1187,7 @@ dsets/
 │   ├── reg_test_y.csv
 │   ├── reg_train_x.csv
 │   ├── reg_train_y.csv
-│   └──	mnist_train_x.csv
+│   └── mnist_train_x.csv
 └── P2
 ```
 
