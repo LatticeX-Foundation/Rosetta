@@ -1062,15 +1062,30 @@ mpc_player_id = rtt.py_protocol_handler.get_party_id()
 
 - 加载数据集
 
-这一部分数据集的加载与之前例子中的略有不同，之前加载时在`PrivateDataset`中使用了`load_data`方法，可同时加载特征数据与标签数据。但是，这种同时加载的方式仅支持一维的标签数据，`mnist`中的标签数据是使用`one-hot`编码的共有10维，所以此处使用了加载特征数据的方式加载了标签数据。关于`load_data`、`load_X`、`load_Y`的区别请查阅源代码。
+这一部分数据集使用的是加载超大数据集的方法。具体介绍可参考[支持超大数据集](#支持超大数据集)。
 
 ```python
-#加载数据集
-file_x = "./train_x.csv"
-file_y = "./train_y.csv"
+# load data
+file_x = '../dsets/P' + str(mpc_player_id) + "/mnist_train_x.csv"
+file_y = '../dsets/P' + str(mpc_player_id) + "/mnist_train_y.csv"
+X_train_0 = rtt.PrivateTextLineDataset(file_x, data_owner=0)
+X_train_1 = rtt.PrivateTextLineDataset(file_x, data_owner=1)
+Y_train = rtt.PrivateTextLineDataset(file_y, data_owner=1)
 
-X_train = rtt.PrivateDataset(data_owner=(0, 1), label_owner=1).load_X(file_x, header=None)
-Y_train = rtt.PrivateDataset(data_owner=[1], label_owner=1).load_X(file_y, header=None)
+# dataset decode
+def decode_p0(line):
+    fields = tf.string_split([line], ',').values
+    fields = rtt.PrivateInput(fields, data_owner=0)
+    return fields
+def decode_p1(line):
+    fields = tf.string_split([line], ',').values
+    fields = rtt.PrivateInput(fields, data_owner=1)
+    return fields
+  
+# dataset pipeline
+X_train_0 = X_train_0.map(decode_p0).cache(f"{cache_dir}/cache_p0_x0").batch(BATCH_SIZE).repeat()
+X_train_1 = X_train_1.map(decode_p1).cache(f"{cache_dir}/cache_p1_x1").batch(BATCH_SIZE).repeat()
+Y_train = Y_train.map(decode_p1).cache(f"{cache_dir}/cache_p1_y").batch(BATCH_SIZE).repeat()
 ```
 
 - 这个例子中可以直接将训练的模型进行保存

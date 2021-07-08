@@ -11,14 +11,53 @@ np.random.seed(0)
 
 rtt.activate("SecureNN")
 mpc_player_id = rtt.py_protocol_handler.get_party_id()
+BATCH_SIZE = 100
+ROW_NUM = 5500
 
 # real data
 # ######################################## difference from tensorflow
 file_x = '../dsets/P' + str(mpc_player_id) + "/mnist_train_x.csv"
 file_y = '../dsets/P' + str(mpc_player_id) + "/mnist_train_y.csv"
-X_train = rtt.PrivateDataset(data_owner=(0, 1), label_owner=1).load_X(file_x, header=None)
-Y_train = rtt.PrivateDataset(data_owner=[1], label_owner=1).load_X(file_y, header=None)
+X_train_0 = rtt.PrivateTextLineDataset(file_x, data_owner=0)
+X_train_1 = rtt.PrivateTextLineDataset(file_x, data_owner=1)
+Y_train = rtt.PrivateTextLineDataset(file_y, data_owner=1)
 # ######################################## difference from tensorflow
+
+cache_dir = "./temp{}".format(mpc_player_id)
+if not os.path.exists(cache_dir):
+    os.makedirs(cache_dir, exist_ok=True)
+else:
+    # fix TF1.14 cache file bug
+    import shutil
+    shutil.rmtree(cache_dir)
+    os.makedirs(cache_dir, exist_ok=True)
+
+# dataset decode
+def decode_p0(line):
+    fields = tf.string_split([line], ',').values
+    fields = rtt.PrivateInput(fields, data_owner=0)
+    return fields
+def decode_p1(line):
+    fields = tf.string_split([line], ',').values
+    fields = rtt.PrivateInput(fields, data_owner=1)
+    return fields
+
+# dataset pipeline
+X_train_0 = X_train_0.map(decode_p0).cache(f"{cache_dir}/cache_p0_x0").batch(BATCH_SIZE).repeat()
+X_train_1 = X_train_1.map(decode_p1).cache(f"{cache_dir}/cache_p1_x1").batch(BATCH_SIZE).repeat()
+Y_train = Y_train.map(decode_p1).cache(f"{cache_dir}/cache_p1_y").batch(BATCH_SIZE).repeat()
+
+# make iterator
+iter_x0 = X_train_0.make_initializable_iterator()
+X0 = iter_x0.get_next()
+
+iter_x1 = X_train_1.make_initializable_iterator()
+X1 = iter_x1.get_next()
+
+iter_y = Y_train.make_initializable_iterator()
+Y = iter_y.get_next()
+# Join input X of P0 and P1, features splitted dataset
+X = tf.concat([X0, X1], axis=1)
 
 num_outputs = 10 
 num_inputs = 784 
@@ -62,42 +101,31 @@ def tensorflow_classification(n_epochs, n_batches,
                               ):
     with tf.Session() as tfs:
         tfs.run(tf.global_variables_initializer())
+        tfs.run([iter_x0.initializer, iter_x1.initializer, iter_y.initializer])
         for epoch in range(n_epochs):
             epoch_loss = 0.0
             for i in range(n_batches):
-                X_batch = X_train[(i * batch_size):(i + 1) * batch_size]
-                Y_batch = Y_train[(i * batch_size):(i + 1) * batch_size]
-                feed_dict = {x: X_batch, y: Y_batch}
-                tfs.run([optimizer, loss], feed_dict)
+                tfs.run([optimizer, loss])
         saver.save(tfs, './log/ckpt'+str(mpc_player_id)+'/model')
 
 if __name__ == "__main__":
-    # input images
-    x = tf.placeholder(dtype=tf.float64, name="x", 
-                        shape=[None, num_inputs]) 
-    # target output
-    y = tf.placeholder(dtype=tf.float64, name="y", 
-                        shape=[None, num_outputs])
     num_layers = 0
     num_neurons = []
     learning_rate = 0.01
     n_epochs = 20
     batch_size = 100
-    n_batches = int(len(X_train)/batch_size)
+    n_batches = int(ROW_NUM/batch_size)
 
-    model = mlp(x=x,
+    model = mlp(x=X,
                 num_inputs=num_inputs,
                 num_outputs=num_outputs,
                 num_layers=num_layers,
                 num_neurons=num_neurons)
 
     loss = tf.reduce_mean(
-        tf.nn.sigmoid_cross_entropy_with_logits(logits=model, labels=y))
+        tf.nn.sigmoid_cross_entropy_with_logits(logits=model, labels=Y))
     optimizer = tf.train.GradientDescentOptimizer(
         learning_rate=learning_rate).minimize(loss)
-
-    predictions_check = tf.equal(tf.argmax(model, 1), tf.argmax(y, 1))
-    accuracy_function = tf.reduce_mean(tf.cast(predictions_check, tf.float64))
 
     # save
     saver = tf.train.Saver(var_list=None, max_to_keep=5, name='v2')
@@ -110,7 +138,7 @@ if __name__ == "__main__":
     optimizer = optimizer, 
     loss = loss
     )
-    print("模型已保存")
+    print("model saved!")
 
     print(rtt.get_perf_stats(True))
     rtt.deactivate()
