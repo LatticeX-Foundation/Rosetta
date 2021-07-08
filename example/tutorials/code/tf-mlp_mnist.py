@@ -3,12 +3,12 @@ import os
 import tensorflow as tf
 mnist_home = os.path.join("/tmp/data/", 'mnist')
 mnist = input_data.read_data_sets(mnist_home, one_hot=True)
-#将数据分割为训练数据与测试数据
+# split the data into train and test
 X_train = mnist.train.images
 X_test = mnist.test.images
 Y_train = mnist.train.labels
 Y_test = mnist.test.labels
-#构造数据迭代器
+# make iterator
 train_dataset = tf.data.Dataset.from_tensor_slices((X_train, Y_train))
 train_dataset = train_dataset.batch(100).repeat()
 test_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test))
@@ -27,13 +27,13 @@ def mlp(x, num_inputs, num_outputs, num_layers, num_neurons):
     w = []
     b = []
     for i in range(num_layers):
-        # 权重
+        # weights
         w.append(tf.Variable(tf.random_normal(
             [num_inputs if i == 0 else num_neurons[i - 1],
              num_neurons[i]], seed = 1, dtype=tf.float64),
             name="w_{0:04d}".format(i), dtype=tf.float64
         ))
-        # 偏差值
+        # biases
         b.append(tf.Variable(tf.random_normal(
             [num_neurons[i]], seed = 1, dtype=tf.float64),
             name="b_{0:04d}".format(i), dtype=tf.float64
@@ -43,12 +43,12 @@ def mlp(x, num_inputs, num_outputs, num_layers, num_neurons):
          num_outputs], seed = 1, dtype=tf.float64), name="w_out", dtype=tf.float64))
     b.append(tf.Variable(tf.random_normal([num_outputs], seed = 1, dtype=tf.float64), name="b_out", dtype=tf.float64))
 
-    # x是输入层
+    # x is input layer
     layer = x
-    # 添加隐藏层
+    # add hidden layers
     for i in range(num_layers):
         layer = tf.nn.relu(tf.matmul(layer, w[i]) + b[i])
-    # 添加输出层
+    # add output layer
     layer = tf.matmul(layer, w[num_layers]) + b[num_layers]
 
     return layer
@@ -78,13 +78,13 @@ def tensorflow_classification(n_epochs, n_batches,
         accuracy_score = tfs.run(accuracy_function, feed_dict=feed_dict)
         print("accuracy={0:.8f}".format(accuracy_score))
         
-# 构造输入
+# construct input
 x = tf.placeholder(dtype=tf.float64, name="x", 
                     shape=[None, num_inputs])
-# 构造输出
+# construct output
 y = tf.placeholder(dtype=tf.float64, name="y", 
                     shape=[None, 10])
-#目前设置隐藏层为0，可自己修改
+# hidden layers' parameters
 num_layers = 2
 num_neurons = [128, 256]
 learning_rate = 0.01
@@ -105,7 +105,7 @@ optimizer = tf.train.GradientDescentOptimizer(
 
 predictions_check = tf.equal(tf.argmax(model, 1), tf.argmax(y, 1))
 accuracy_function = tf.reduce_mean(tf.cast(predictions_check, dtype=tf.float64))
-#训练
+# train
 tensorflow_classification(n_epochs=n_epochs, 
    n_batches=n_batches, 
    batch_size=batch_size, 
