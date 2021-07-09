@@ -17,12 +17,12 @@
     - [Model Loading and Prediction](#model-loading-and-prediction)
   - [Logistic Regression](#logistic-regression)
   - [Support big data sets](#support-big-data-sets)
-- [Privacy-Preserving Deep Learning](#Privacy-Preserving Deep Learning)
+- [Privacy-Preserving Deep Learning](#privacy-preserving-deep-learning)
 
-  - [MLP Neural Network](#MLP Neural Network)
+  - [MLP Neural Network](#MLP-neural-network)
 
-    - [Tensorflow version MLP](#Tensorflow Version MLP)
-    - [Rosetta Version MLP](#Rosetta Version MLP)
+    - [Tensorflow version MLP](#Tensorflow-version-MLP)
+    - [Rosetta Version MLP](#Rosetta -version-MLP)
 - [Conclusion](#conclusion)
 - [Additional Notes](#additional-notes)
   - [Dataset Description](#dataset-description)
