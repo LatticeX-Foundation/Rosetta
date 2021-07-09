@@ -22,7 +22,7 @@
   - [MLP Neural Network](#MLP-neural-network)
 
     - [Tensorflow version MLP](#Tensorflow-version-MLP)
-    - [Rosetta Version MLP](#Rosetta -version-MLP)
+    - [Rosetta Version MLP](#Rosetta-version-MLP)
 - [Conclusion](#conclusion)
 - [Additional Notes](#additional-notes)
   - [Dataset Description](#dataset-description)
