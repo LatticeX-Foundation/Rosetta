@@ -219,8 +219,9 @@ void PerfStats::start_perf_stats(bool sampling /* = false */) {
   do_memcpu_stats = true;
   timer.start();
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &process_cpu_time);
-  std::thread tt = std::thread(memcpu_stats_fn, this, sampling);
-  tt.detach();
+  // todo[ujnss]
+  // std::thread tt = std::thread(memcpu_stats_fn, this, sampling);
+  // tt.detach();
 }
 
 PerfStats::__stat PerfStats::get_perf_stats(bool stop /* = false */) {
