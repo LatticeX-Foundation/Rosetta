@@ -17,6 +17,12 @@
     - [Model Loading and Prediction](#model-loading-and-prediction)
   - [Logistic Regression](#logistic-regression)
   - [Support big data sets](#support-big-data-sets)
+- [Privacy-Preserving Deep Learning](#Privacy-Preserving Deep Learning)
+
+  - [MLP Neural Network](#MLP Neural Network)
+
+    - [Tensorflow version MLP](#Tensorflow Version MLP)
+    - [Rosetta Version MLP](#Rosetta Version MLP)
 - [Conclusion](#conclusion)
 - [Additional Notes](#additional-notes)
   - [Dataset Description](#dataset-description)
@@ -523,7 +529,7 @@ The following figure is about the absolute error comparison between the predicte
 
 ![linear_regression_stat-Y-diff](./_static/tutorials/linear_regression_stat-Y-diff.png)
 
- 
+
 The following figure is about the relative error comparison between the predicted values ​​of `tensorflow` and `rosetta`.
 
 ![linear_regression_stat-Y-diff4](./_static/tutorials/linear_regression_stat-Y-diff4.png)
@@ -870,6 +876,272 @@ Analysis of the code in tf-ds-lr.py and rtt-ds-lr.py reveals two main difference
         return fields
     ```
 
+## Privacy-Preserving Deep Learning
+
+### MLP Neural Network
+
+After reading the content of [Privacy-Preserving Machine Learning](#Privacy-Preserving Machine Learning), you must  have a certain understanding of Rosetta and Tensorflow 's grammar. So, in this section, we have offer an example of classification of mnist dataset by MLP Neural Network.
+
+Firstly, this is the Tensorflow version 
+
+#### Tensorflow Version MLP
+
+- Import related packages and load dataset
+
+```python
+from tensorflow.examples.tutorials.mnist import input_data
+import os
+import tensorflow as tf
+mnist_home = os.path.join("/tmp/data/", 'mnist')
+mnist = input_data.read_data_sets(mnist_home, one_hot=True)
+# split the data into train and test
+X_train = mnist.train.images
+X_test = mnist.test.images
+Y_train = mnist.train.labels
+Y_test = mnist.test.labels
+# make iterator
+train_dataset = tf.data.Dataset.from_tensor_slices((X_train, Y_train))
+train_dataset = train_dataset.batch(100).repeat()
+test_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test))
+test_dataset = test_dataset.batch(100).repeat()
+train_iterator = train_dataset.make_one_shot_iterator()
+train_next_iterator = train_iterator.get_next()
+test_iterator = test_dataset.make_one_shot_iterator()
+test_next_iterator = test_iterator.get_next()
+```
+
+- Set hyperparameters and construct MLP model
+
+```python
+num_outputs = 10 
+num_inputs = 784
+w=[]
+b=[]
+
+def mlp(x, num_inputs, num_outputs, num_layers, num_neurons):
+    w = []
+    b = []
+    for i in range(num_layers):
+        # weights
+        w.append(tf.Variable(tf.random_normal(
+            [num_inputs if i == 0 else num_neurons[i - 1],
+             num_neurons[i]], seed = 1, dtype=tf.float64),
+            name="w_{0:04d}".format(i), dtype=tf.float64
+        ))
+        # biases
+        b.append(tf.Variable(tf.random_normal(
+            [num_neurons[i]], seed = 1, dtype=tf.float64),
+            name="b_{0:04d}".format(i), dtype=tf.float64
+        ))
+    w.append(tf.Variable(tf.random_normal(
+        [num_neurons[num_layers - 1] if num_layers > 0 else num_inputs,
+         num_outputs], seed = 1, dtype=tf.float64), name="w_out", dtype=tf.float64))
+    b.append(tf.Variable(tf.random_normal([num_outputs], seed = 1, dtype=tf.float64), name="b_out", dtype=tf.float64))
+
+    # x is input layer
+    layer = x
+    # add hidden layers
+    for i in range(num_layers):
+        layer = tf.nn.relu(tf.matmul(layer, w[i]) + b[i])
+    # add output layer
+    layer = tf.matmul(layer, w[num_layers]) + b[num_layers]
+
+    return layer
+```
+
+- Implement training function and related functions
+
+```python
+def mnist_batch_func(batch_size=100):
+    X_batch, Y_batch = mnist.train.next_batch(batch_size)
+    return [X_batch, Y_batch]
+  
+def tensorflow_classification(n_epochs, n_batches,
+                              batch_size,
+                              model, optimizer, loss, accuracy_function,
+                              X_test, Y_test):
+    with tf.Session() as tfs:
+        tfs.run(tf.global_variables_initializer())
+        for epoch in range(n_epochs):
+            epoch_loss = 0.0
+            for batch in range(n_batches):
+                X_batch, Y_batch = tfs.run(train_next_iterator)
+                feed_dict = {x: X_batch, y: Y_batch}
+                _, batch_loss = tfs.run([optimizer, loss], feed_dict)
+                epoch_loss += batch_loss
+        
+            average_loss = epoch_loss / n_batches
+            print("epoch: {0:04d} loss = {1:0.6f}".format(
+                epoch, average_loss))
+        feed_dict = {x: X_test, y: Y_test}
+        accuracy_score = tfs.run(accuracy_function, feed_dict=feed_dict)
+        print("accuracy={0:.8f}".format(accuracy_score))
+        
+# construct input
+x = tf.placeholder(dtype=tf.float64, name="x", 
+                    shape=[None, num_inputs])
+# construct output
+y = tf.placeholder(dtype=tf.float64, name="y", 
+                    shape=[None, 10])
+# hidden layers' parameters
+num_layers = 2
+num_neurons = [128, 256]
+learning_rate = 0.01
+n_epochs = 30
+batch_size = 100
+n_batches = int(mnist.train.num_examples/batch_size)
+
+model = mlp(x=x,
+            num_inputs=num_inputs,
+            num_outputs=num_outputs,
+            num_layers=num_layers,
+            num_neurons=num_neurons)
+
+loss = tf.reduce_mean(
+    tf.nn.sigmoid_cross_entropy_with_logits(logits=model, labels=y))
+optimizer = tf.train.GradientDescentOptimizer(
+    learning_rate=learning_rate).minimize(loss)
+
+predictions_check = tf.equal(tf.argmax(model, 1), tf.argmax(y, 1))
+accuracy_function = tf.reduce_mean(tf.cast(predictions_check, dtype=tf.float64))
+# train
+tensorflow_classification(n_epochs=n_epochs, 
+   n_batches=n_batches, 
+   batch_size=batch_size, 
+   model = model, 
+   optimizer = optimizer, 
+   loss = loss, 
+   accuracy_function = accuracy_function, 
+   X_test = X_test, 
+   Y_test = Y_test
+   )
+```
+
+For the complete code, please refer to [tf-mlp_mnist.py](../example/tutorials/code/tf-mlp_mnist.py)
+
+Run it as follows:
+
+```python
+python ./tf-mlp_mnist.py
+```
+
+Output as follows:
+
+```python
+epoch: 0000 loss = 17.504000
+epoch: 0001 loss = 6.774922
+epoch: 0002 loss = 4.993065
+epoch: 0003 loss = 4.047511
+epoch: 0004 loss = 3.440471
+epoch: 0005 loss = 3.006049
+  ...
+epoch: 0027 loss = 0.874316
+epoch: 0028 loss = 0.847307
+epoch: 0029 loss = 0.821776
+accuracy=0.91100000
+```
+
+#### Rosetta Version MLP
+
+- Import packages and activate protocol
+
+```python
+import os
+import tensorflow as tf
+import latticex.rosetta as rtt
+import csv
+import numpy as np
+
+rtt.set_backend_loglevel(1)
+np.set_printoptions(suppress=True)
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+np.random.seed(0)
+rtt.activate("SecureNN")
+mpc_player_id = rtt.py_protocol_handler.get_party_id()
+```
+
+- Load dataset
+
+If you want to understand the method of loading dataset, please refer to [Support big data sets](#Support big data sets).
+
+```python
+# load data
+file_x = '../dsets/P' + str(mpc_player_id) + "/mnist_train_x.csv"
+file_y = '../dsets/P' + str(mpc_player_id) + "/mnist_train_y.csv"
+X_train_0 = rtt.PrivateTextLineDataset(file_x, data_owner=0)
+X_train_1 = rtt.PrivateTextLineDataset(file_x, data_owner=1)
+Y_train = rtt.PrivateTextLineDataset(file_y, data_owner=1)
+
+# dataset decode
+def decode_p0(line):
+    fields = tf.string_split([line], ',').values
+    fields = rtt.PrivateInput(fields, data_owner=0)
+    return fields
+def decode_p1(line):
+    fields = tf.string_split([line], ',').values
+    fields = rtt.PrivateInput(fields, data_owner=1)
+    return fields
+  
+# dataset pipeline
+X_train_0 = X_train_0.map(decode_p0).cache(f"{cache_dir}/cache_p0_x0").batch(BATCH_SIZE).repeat()
+X_train_1 = X_train_1.map(decode_p1).cache(f"{cache_dir}/cache_p1_x1").batch(BATCH_SIZE).repeat()
+Y_train = Y_train.map(decode_p1).cache(f"{cache_dir}/cache_p1_y").batch(BATCH_SIZE).repeat()
+```
+
+- The model can be saved in the folder `log/`
+
+```python
+def tensorflow_classification(n_epochs, n_batches,
+                              batch_size,
+                              model, optimizer, loss
+                              ):
+    with tf.Session() as tfs:
+        tfs.run(tf.global_variables_initializer())
+        tfs.run([iter_x0.initializer, iter_x1.initializer, iter_y.initializer])
+        for epoch in range(n_epochs):
+            epoch_loss = 0.0
+            for i in range(n_batches):
+                tfs.run([optimizer, loss])
+        saver.save(tfs, './log/ckpt'+str(mpc_player_id)+'/model')
+```
+
+The rest is the same as Tensorflow Version MLP, for the complete code, please refer to [rtt-mlp_mnist.py](../example/tutorials/code/rtt-mlp_mnist.py)
+
+Run it as follows:
+
+```python
+./tutorials.sh rtt mlp_mnist
+```
+
+Plaintext model can be saved at folder `log/`, you can the follow code to evaluate the mode
+
+```python
+python tf-test_mlp_acc.py
+```
+
+The example of results as follows:
+
+```python
+['w_out:0', 'b_out:0']
+[array([[ 0.24279785, -0.35299683, -0.83648682, ..., -1.71618652,
+         0.65466309, -0.75320435],
+       [ 0.16467285, -1.01171875,  0.07672119, ...,  2.43850708,
+        -0.34365845,  0.50970459],
+       [ 0.68637085,  0.59738159,  0.21426392, ..., -2.1026001 ,
+        -1.08334351, -0.51135254],
+       ...,
+       [ 1.18951416,  0.50506592, -0.19161987, ...,  0.31906128,
+        -0.21728516, -1.74258423],
+       [ 0.47128296, -1.10772705, -1.14147949, ..., -0.80792236,
+        -0.2272644 , -0.60620117],
+       [-1.35250854, -0.00039673, -1.37692261, ...,  0.28158569,
+        -1.86367798,  0.2359314 ]]), array([ 0.05230713, -0.48815918, -0.75996399, -0.41955566,  1.78201294,
+       -0.42456055, -0.03417969, -1.80670166,  0.40750122, -0.93180847])]
+accuracy=0.14000000
+```
+
+Due to the model did not add hidden layers and used the mini-datasets, the accuracy is very low. If you are interested in the model, you can adjust the structure of the model and size of the datasets to imporove the model accuracy.
+
 ## Conclusion
 
 That's all.
@@ -896,21 +1168,25 @@ dsets/
 │   ├── reg_test_x.csv
 │   ├── reg_test_y.csv
 │   ├── reg_train_x.csv
-│   └── reg_train_y.csv
+│   ├── reg_train_y.csv
+│   ├── mnist_test_x.csv
+│   └── mnist_test_y.csv
 ├── P0
 │   ├── cls_test_x.csv
 │   ├── cls_test_y.csv
 │   ├── cls_train_x.csv
 │   ├── cls_train_y.csv
 │   ├── reg_test_x.csv
-│   └── reg_train_x.csv
+│   ├── reg_train_x.csv
+│   └── mnist_train_x.csv
 ├── P1
 │   ├── cls_test_x.csv
 │   ├── cls_train_x.csv
 │   ├── reg_test_x.csv
 │   ├── reg_test_y.csv
 │   ├── reg_train_x.csv
-│   └── reg_train_y.csv
+│   ├── reg_train_y.csv
+│   └── mnist_train_x.csv
 └── P2
 ```
 

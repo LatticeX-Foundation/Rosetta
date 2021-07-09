@@ -1096,13 +1096,11 @@ def tensorflow_classification(n_epochs, n_batches,
                               ):
     with tf.Session() as tfs:
         tfs.run(tf.global_variables_initializer())
+        tfs.run([iter_x0.initializer, iter_x1.initializer, iter_y.initializer])
         for epoch in range(n_epochs):
             epoch_loss = 0.0
             for i in range(n_batches):
-                X_batch = X_train[(i * batch_size):(i + 1) * batch_size]
-                Y_batch = Y_train[(i * batch_size):(i + 1) * batch_size]
-                feed_dict = {x: X_batch, y: Y_batch}
-                tfs.run([optimizer, loss], feed_dict)
+                tfs.run([optimizer, loss])
         saver.save(tfs, './log/ckpt'+str(mpc_player_id)+'/model')
 ```
 
@@ -1179,7 +1177,7 @@ dsets/
 │   ├── cls_train_y.csv
 │   ├── reg_test_x.csv
 │   ├── reg_train_x.csv
-│   └──	mnist_train_x.csv
+│   └── mnist_train_x.csv
 ├── P1
 │   ├── cls_test_x.csv
 │   ├── cls_train_x.csv
