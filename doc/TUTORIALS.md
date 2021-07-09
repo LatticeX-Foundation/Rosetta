@@ -21,7 +21,7 @@
 
   - [MLP Neural Network](#MLP-neural-network)
 
-    - [Tensorflow version MLP](#Tensorflow-version-MLP)
+    - [TensorFlow version MLP](#Tensorflow-version-MLP)
     - [Rosetta Version MLP](#Rosetta-version-MLP)
 - [Conclusion](#conclusion)
 - [Additional Notes](#additional-notes)
@@ -884,7 +884,7 @@ After reading the content of [Privacy-Preserving Machine Learning](#Privacy-Pres
 
 Firstly, this is the Tensorflow version 
 
-#### Tensorflow Version MLP
+#### TensorFlow Version MLP
 
 - Import related packages and load dataset
 
