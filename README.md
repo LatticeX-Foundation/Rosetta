@@ -131,7 +131,7 @@ That's all, you can see Rosetta is so easy to use.
 
 For more details, please check [Tutorials](doc/TUTORIALS.md) and [Examples](./example).
 
-> Note: Currently Rosetta already supports 128-bit integer data type, which can be enabled by configuring the environment variable `export ROSETTA_MPC_128=ON`.
+> Note: Currently Rosetta already supports 128-bit integer data type, which can be enabled by configuring the environment variable `export ROSETTA_MPC_128=ON` and adding option `--enable-128bit` when compiling.
 
 ## Getting Started
 
