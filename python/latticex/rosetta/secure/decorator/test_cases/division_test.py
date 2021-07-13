@@ -81,47 +81,64 @@ rtt.activate("SecureNN")
 #### 2.1 first case
 case_id = 0
 rtt_case = TEST_CASES[case_id]
+rtt_res_1 = TEST_CASES[case_id]
 
 cipher_var_a = tf.Variable(rtt.private_input(0, rtt_case["input"][0]))
 cipher_var_b = tf.Variable(rtt.private_input(1, rtt_case["input"][1]))
 cipher_var_c = cipher_var_a / cipher_var_b
+cipher_var_c_1 = rtt.SecureReciprocaldiv(cipher_var_a,cipher_var_b)
 
 init = tf.compat.v1.global_variables_initializer() 
 with tf.compat.v1.Session() as rtt_sess:
     rtt_sess.run(init)
     rtt_res = rtt_sess.run(cipher_var_c)
+    rtt_res_1 = rtt_sess.run(cipher_var_c_1)
     # print("local cipher res:", rtt_res)
     # reveal to get the plaintext result
     rtt_res = rtt_sess.run(rtt.SecureReveal(rtt_res))
+    rtt_res_1 = rtt_sess.run(rtt.SecureReveal(rtt_res_1))
     rtt_case["rtt_res"] = np.array(rtt_res, dtype=np.float)
+    rtt_case["rtt_res_1"] = np.array(rtt_res_1, dtype=np.float)
 
 #### 2.2 second case
 case_id += 1
 rtt_case = TEST_CASES[case_id]
+rtt_res_1 = TEST_CASES[case_id]
 
 cipher_const_a = tf.constant(rtt_case["input"][0])
 cipher_var_b = tf.Variable(rtt.private_input(1, rtt_case["input"][1]))
 cipher_var_c = cipher_const_a / cipher_var_b
+cipher_var_c_1 = rtt.SecureReciprocaldiv(cipher_const_a,cipher_var_b,None,True)
 
 init = tf.compat.v1.global_variables_initializer() 
 with tf.compat.v1.Session() as rtt_sess:
     rtt_sess.run(init)
     rtt_res = rtt_sess.run(cipher_var_c)
+    rtt_res_1 = rtt_sess.run(cipher_var_c_1)
     # print("local cipher res:", rtt_res)
     # reveal to get the plaintext result
     rtt_res = rtt_sess.run(rtt.SecureReveal(rtt_res))
+    rtt_res_1 = rtt_sess.run(rtt.SecureReveal(rtt_res_1))
     rtt_case["rtt_res"] = np.array(rtt_res, dtype=np.float)
+    rtt_case["rtt_res_1"] = np.array(rtt_res_1, dtype=np.float)
 
 ######### 3. We check all the result are correct, with tolerence on precision 
 for i in range(len(TEST_CASES)): 
     curr_case = TEST_CASES[i]
     try:
+        np.testing.assert_allclose(curr_case["native_res"], curr_case["rtt_res_1"], rtol=1e-3, atol=0)
+        print("{}-th case(Reciprocaldiv--rtt_res_1) passed!".format(i))
+        
+    except Exception as e:
+        print("{}-th case(Reciprocaldiv--rtt_res_1) failed! And detailed context: 'rtt_res_1':{}".format(i, curr_case["rtt_res_1"]))
+
+    try:
         np.testing.assert_allclose(curr_case["native_res"], curr_case["rtt_res"], rtol=1e-3, atol=0)
-        print("{}-th case passed!".format(i))
+        print("{}-th case(Truediv--rtt_res) passed!".format(i))
         print(curr_case)
     
     except Exception as e:
-        print("{}-th case failed! And detailed context: {}".format(i, curr_case))
+        print("{}-th case(Truediv--rtt_res) failed! And detailed context: {}".format(i, curr_case))
 
 print("*" * 69)
 
