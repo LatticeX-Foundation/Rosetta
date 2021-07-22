@@ -5,8 +5,6 @@
   - [System requirements](#system-requirements)
   - [System software installation](#system-software-installation)
   - [Binary installation](#binary-installation)
-- [Optional, to depress the warning of tensorflow](#optional-to-depress-the-warning-of-tensorflow)
-- [install tensorflow](#install-tensorflow)
   - [Source code installation](#source-code-installation)
   - [Installation verification](#installation-verification)
 
@@ -25,11 +23,9 @@ This document serves as a reference for installing the TensorFlow environment, T
 ## System software installation
 
 - **Check ubuntu**
-
 ```bash
 lsb_release -r # e.g. Release: 18.04
 ````
-
 > ***If the output release is not 18.04, the corresponding version of the operating system needs to be installed and then perform the subsequent steps.***
 
 - **Check python3 & pip3**
@@ -69,7 +65,6 @@ pip3 install tensorflow==1.14.0 --user
 > TensorFlow source code is recommended to install more than 100GB of free disk space
 
 1. **Installing python dependency packages**
-
     ```bash
     pip3 install -U --user pip six wheel setuptools mock 'future>=0.17.1' 'numpy==1.16.4'
     pip3 install -U --user keras_applications --no-deps
@@ -89,13 +84,12 @@ pip3 install tensorflow==1.14.0 --user
     ./bazel-0.25.0-installer-linux-x86_64.sh --user
     # update the PATH environment variable
     export PATH="$PATH:$HOME/bin"
-    ```
+    ````
 
     > bazel installation reference [official documentation](https://docs.bazel.build/versions/master/install-ubuntu.html#install-with-installer-ubuntu)
 
 3. **TensorFlow source code compilation**
     > Installation time will be long (about 6 hours), it is recommended to configure 8G+ memory
-
     ```bash
     # clone TensorFlow github repository
     git clone https://github.com/tensorflow/tensorflow.git
@@ -109,9 +103,8 @@ pip3 install tensorflow==1.14.0 --user
     ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
     # install tensorflow
     pip3 install /tmp/tensorflow_pkg/*.whl --user
-    ```
-
-    > TensorFlow source code installation can be referenced to [official documentation][tensorflow-source-install]
+    ````
+    > TensorFlow source code installation can be referenced to [official documentation][tensorflow-source-install] 
 
 ## Installation verification
 

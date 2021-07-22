@@ -32,12 +32,15 @@ IF(ROSETTA_ENABLES_PROTOCOL_MPC_HELIX)
 list(APPEND LINKLIBS mpc-helix)
 ENDIF()
 list(APPEND LINKLIBS mpc-naive)
-
+IF(ROSETTA_ENABLES_PROTOCOL_ZK)
+list(APPEND LINKLIBS zkp-wolverine)
+ENDIF()
 
 # Library protocol-api
 add_library(protocol-api SHARED "${CMAKE_CURRENT_SOURCE_DIR}/protocol_manager.cpp")
 target_include_directories(protocol-api PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
-                        PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../mpc/helix/include")
+                        PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../mpc/helix/include"
+                        PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../zk/wolverine/include")
 target_link_libraries(protocol-api ${LINKLIBS})
 set_target_properties(protocol-api PROPERTIES FOLDER "protocol/api"
                     APPEND_STRING PROPERTY LINK_FLAGS " ${ADD_LINK_LIB_FLAGS}"

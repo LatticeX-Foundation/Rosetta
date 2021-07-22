@@ -7,7 +7,7 @@
     - [rosetta 版本](#rosetta-版本)
 - [隐私机器学习](#隐私机器学习)
   - [线性回归](#线性回归)
-    - [tensorflow 版本线性回归](#tensorflow-版本线性回归)
+    - [tensorflow 版本](#tensorflow-版本-1)
     - [rosetta 基础版](#rosetta-基础版)
     - [rosetta 版本-Reveal](#rosetta-版本-reveal)
     - [对比与评估 1](#对比与评估-1)
@@ -19,6 +19,7 @@
 - [结语](#结语)
 - [附加](#附加)
   - [数据集说明](#数据集说明)
+
 
 ## 概述
 
@@ -54,7 +55,9 @@ import latticex.rosetta as rtt
 ./tutorials.sh rtt quickstart
 ```
 
+
 或者，也可以在三个不同的终端（你可以理解为，这三个不同的终端，模拟了三个不同主机节点）下，分别运行如下：
+
 
 ```sh
 # node 0
@@ -74,15 +77,19 @@ python3 quickstart.py --party_id=2
 如果输出了 `DONE!`，那么表示 OK 了。
 
 > `--party_id` 这个是命令行选项，指定了当前脚本是执行的哪一方。
+
 > 为了节省文本，后文直接使用 `./tutorials.sh` 快速运行，不再以显示使用三个终端的形式运行。
 
 <br/>
 
 接下来的教程，就如同这个 `快速入门` 一样的轻松。
 
+
 ## 安全多方计算
 
+
 话说，有 `两个` `诚实的` 有钱人在讨论一件非常有趣的事情 — `谁的财富更多`，但是呢，谁都不愿意说出自己具体拥有多少财富。那怎么办，我是没有办法的，但 `Rosetta` 可以帮你。下面让我们一起来看看这个问题如何解决。
+
 
 ### 百万富翁
 
@@ -90,11 +97,13 @@ python3 quickstart.py --party_id=2
 
 假设两个富翁一个叫 `Alice`，一个叫 `Bob`，分别拥有 `2000001` 和 `2000000` 美元。你没有看错，两个人的财富只差 `1` 美元。
 
+
 #### tensorflow 版本
 
 我们先来看一下这种（假设的）情况：两个富翁把各自拥有多财富说出来。
 
 这种情况非常简单，心算即可以解决，但为了与 `rosetta` 进行对比，这里用 `tensorflow` 写一个比较程序。步骤如下：
+
 
 第一步，导入包。
 
@@ -122,7 +131,7 @@ with tf.Session() as sess:
 
 完整代码参考 [tf-millionaire.py](../example/tutorials/code/tf-millionaire.py)。
 
-执行
+执行 
 
 ```sh
 ./tutorials.sh tf millionaire
@@ -135,6 +144,7 @@ ret: True
 ```
 
 结果表示 `Alice` 的财富多于 `Bob` 的财富。
+
 
 很简单，不赘述。
 
@@ -149,11 +159,13 @@ import latticex.rosetta as rtt
 import tensorflow as tf
 ```
 
+
 第二步，激活协议。此处选择 `SecureNN` 协议。
 
 ```py
 rtt.rtt.activate("SecureNN")
 ```
+
 
 第三步，设置各有多少财富。
 
@@ -177,7 +189,9 @@ with tf.Session() as sess:
 
 上面的输出的 `res` 是一个 `sharing` 值。
 
+
 > `sharing` 值，即 `秘密分享` 值，一个原始值 x，随机拆分成两个 64bit 的值 x0, x1 （x = x0 + x1），分别由 P0 与 P1 执有。
+
 
 那如何知道明文值呢，我们提供了一个 `reveal` 接口，用来获取明文值。加在第四步的后面即可：
 
@@ -192,7 +206,7 @@ with tf.Session() as sess:
 
 脚本版本，完整代码参考 [rtt-millionaire.py](../example/tutorials/code/rtt-millionaire.py)。
 
-执行
+执行 
 
 ```sh
 ./tutorials.sh rtt millionaire
@@ -226,7 +240,7 @@ ret: 1.0
 
 我们首先来看看这个 `tensorflow` 版本。
 
-#### tensorflow 版本线性回归
+#### tensorflow 版本
 
 这里是一个简单的线性回归。
 
@@ -293,6 +307,7 @@ train = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
 init = tf.global_variables_initializer()
 ```
 
+
 - 模型训练。
 
 ```py
@@ -322,7 +337,8 @@ with tf.Session() as sess:
 
 完整代码参考 [tf-linear_regression.py](../example/tutorials/code/tf-linear_regression.py)。
 
-执行
+
+执行 
 
 ```sh
 ./tutorials.sh tf linear_regression
@@ -340,7 +356,10 @@ Y_pred: [[5.409453 ]
  [5.9929996]]
 ```
 
+
+
 #### rosetta 基础版
+
 
 如前文所述，如果你已经有了一个用 `tensorflow` 编写模型训练脚本(.py)，那么你要做的事情就是，只是在这个脚本文件的第一行，导入如下包即可：
 
@@ -350,6 +369,7 @@ import latticex.rosetta as rtt
 
 **是的，就是这么简单！** 你不需要修改任何已经写好的代码。即使你对 密码学 没有任何的知识，也可以使用。
 
+
 - 激活协议
 
 ```py
@@ -358,9 +378,11 @@ rtt.rtt.activate("SecureNN")
 
 > 注：在使用任何 `MPC` 相关 `API` 之前必须先激活协议。
 
+
 - 加载数据集
 
 数据集说明参考本文最后的附录。
+
 
 我们标识了不同于 `tensorflow` 的地方，对照着 `tensorflow` 版本，除了导入了 `rosetta` 包外，就只有这一处是不同的。
 
@@ -393,7 +415,7 @@ OK，简单总结一下与 `tensorflow` 版本的区别：
 
 还记得前面的 `百万富翁` 的问题吗，这里运行的方法是一样的。
 
-执行
+执行 
 
 ```sh
 ./tutorials.sh rtt linear_regression
@@ -412,6 +434,7 @@ Y_pred: [[1.22580022e+14]
 ```
 
 没错，你看到是 sharing 值。
+
 
 #### rosetta 版本-Reveal
 
@@ -454,7 +477,8 @@ with tf.Session() as sess:
 
 完整代码参考 [rtt-linear_regression_reveal.py](../example/tutorials/code/rtt-linear_regression_reveal.py)。
 
-执行
+
+执行 
 
 ```sh
 ./tutorials.sh rtt linear_regression_reveal
@@ -472,7 +496,10 @@ Y_pred: [[5.40625 ]
  [5.984375]]
 ```
 
+
 尝试着将这个输出与 `tensorflow` 版本的输出比对一下，看看误差有多少。
+
+
 
 #### 对比与评估 1
 
@@ -512,16 +539,21 @@ rosetta:
 
 我们看到了，`tensorflow` 与 `rosetta` 对比，其评分（误差对比）结果还是不错的。
 
+
 > R^2 比较低是因为这个数据集是逻辑回归模型，不是线性回归模型
+
 > 此处只需要关心两个版本之间的误差（是非常小的）
+
 
 下图是关于 `tensorflow` 与 `rosetta` 预测值的误差对比。
 
-![linear_regression_stat-Y-diff4](./_static/tutorials/linear_regression_stat-Y-diff4.png)
+![](./_static/tutorials/linear_regression_stat-Y-diff4.png)
+
 
 #### 对比与评估 2
 
 `对比与评估 1` 只列出了结果，这里补充说明一下，这里属于高级部分。可以跳过此节，不影响阅读。
+
 
 > 本节中，线性回归使用 R^2 进行评估，逻辑回归使用 AUC/ACC/F1 进行评估。
 
@@ -572,7 +604,8 @@ with tf.Session() as sess:
 
 完整代码参考 [rtt-linear_regression_stat.py](../example/tutorials/code/rtt-linear_regression_stat.py)。
 
-执行
+
+执行 
 
 ```sh
 ./tutorials.sh tf linear_regression_stat
@@ -580,11 +613,13 @@ with tf.Session() as sess:
 ./tutorials.sh stat linear_regression_stat linear
 ```
 
+
 #### 模型保存
 
 至此，我们只是将模型参数或预测值输出到了终端，那怎样保存训练好的模型呢？
 
 有人会问，我们是多方训练，`rosetta` 训练后得到的模型（应该）保存在哪里呢？怎样保存的？问得好，下面就来讲讲，模型的事儿。
+
 
 有几个约定：
 
@@ -598,7 +633,7 @@ with tf.Session() as sess:
 
 `SAVER_MODE` 是一按位组合的标志，其含义如下
 
-```sh
+```
 //  0: 保存密文。（下面的1~7分别将明文保存到哪些节点）
 //  1: P0,
 //  2: P1,
@@ -608,6 +643,7 @@ with tf.Session() as sess:
 //  6: P1 和 P2
 //  7: P0, P1 和 P2
 ```
+
 
 <br/>
 
@@ -633,7 +669,8 @@ saver.save(sess, './log/ckpt'+str(party_id)+'/model')
 
 具体加在什么位置，可以参考完整代码 [rtt-linear_regression_saver.py](../example/tutorials/code/rtt-linear_regression_saver.py)。
 
-执行
+
+执行 
 
 ```sh
 ./tutorials.sh rtt linear_regression_saver
@@ -645,9 +682,11 @@ saver.save(sess, './log/ckpt'+str(party_id)+'/model')
 ...
 ```
 
+
 #### 模型加载与预测
 
 上一步已经（根据配置文件）将模型保存到相应的节点了，现在直接使用 `tensorflow` 加载上一步保存的明文模型，进行预测。
+
 
 ```py
 # save
@@ -665,9 +704,10 @@ with tf.Session() as sess:
     print("Y_pred:", Y_pred)
 ```
 
+
 完整代码参考 [tf-linear_regression_restore.py](../example/tutorials/code/tf-linear_regression_restore.py)。
 
-执行
+执行 
 
 ```sh
 ./tutorials.sh tf linear_regression_restore
@@ -751,11 +791,15 @@ rosetta 版本
 | 模型(密文)加载与预测 | [rtt-logistic_regression_restore.py](../example/tutorials/code/rtt-logistic_regression_restore.py) |
 | 评估                 | [rtt-logistic_regression_stat.py](../example/tutorials/code/rtt-logistic_regression_stat.py)       |
 
+
+
 执行方式与 `线性回归` 是一样的。
+
 
 <br/>
 
 此处展示一下逻辑回归的评估对比。
+
 
 tensorflow:
 
@@ -771,7 +815,6 @@ tensorflow:
   "score_f1": 0.6419753086419753
 }
 ```
-
 rosetta:
 
 ```json
@@ -788,11 +831,13 @@ rosetta:
 ```
 
 > 此处只需要关心两个版本之间的误差（是非常小的）
+
 > rosetta 甚至比 tensorflow 稍微好一些
 
 下图是关于 `tensorflow` 与 `rosetta` 预测值的误差对比。
 
-![logistic_regression_stat-Y-diff4](./_static/tutorials/logistic_regression_stat-Y-diff4.png)
+![](./_static/tutorials/logistic_regression_stat-Y-diff4.png)
+
 
 ### 支持超大数据集
 
@@ -807,17 +852,13 @@ TensorFlow 完整代码参考 [tf-ds-lr.py](../example/tutorials/code/tf-ds-lr.p
 Rosetta 完整代码参考 [rtt-ds-lr.py](../example/tutorials/code/rtt-ds-lr.py)。
 
 仔细分析 tf-ds-lr.py 和 rtt-ds-lr.py 中的代码，主要有两个不同点：
-
 1. 创建文本行数据集，TensorFlow 中使用 TextLineDataset 类，而 Rosetta 中使用 PrivateTextLineDataset 类。
     TensorFlow 中代码如下：
-
     ```py
     dataset_x = tf.data.TextLineDataset(file_x)
     ...
     ```
-
     Rosetta 中代码如下：
-
     ```py
     dataset_x0 = rtt.PrivateTextLineDataset(
                     file_x, data_owner=0)  # P0 hold the file data
@@ -826,7 +867,6 @@ Rosetta 完整代码参考 [rtt-ds-lr.py](../example/tutorials/code/rtt-ds-lr.py
 
 2. Decode 函数实现不一样，TensorFlow 版本中 Decode 函数中把行筛分为对应的字段后，然后把筛分后的字段转换为数值，而 Rosetta 版本中的 Decode 函数首先也是把行筛分为对应的字段后，然后调用 `PrivateInput` 进行数据分享。
     TensorFlow 中代码如下：
-
     ```py
     # dataset decode
     def decode_x(line):
@@ -834,9 +874,7 @@ Rosetta 完整代码参考 [rtt-ds-lr.py](../example/tutorials/code/rtt-ds-lr.py
         fields = tf.string_to_number(fields, tf.float64)
         return fields
     ```
-
     Rosetta 中代码如下：
-
     ```py
     # dataset decode
     def decode_p0(line):
@@ -851,7 +889,9 @@ OK，你现在已经完全掌握了 `Rosetta` 的使用了，赶紧找一个真�
 
 欢迎!
 
+
 ## 附加
+
 
 ### 数据集说明
 
@@ -859,7 +899,7 @@ OK，你现在已经完全掌握了 `Rosetta` 的使用了，赶紧找一个真�
 
 我们将其做了简单的处理如下，存放路径在 `dsets/`，目录结构如下
 
-```sh
+```
 dsets/
 ├── ALL
 │   ├── cls_test_x.csv
@@ -906,3 +946,4 @@ dsets/
 2. P0/P1 各节点的私有数据存放在各自的节点上。
 3. P2 是没有数据的。
 4. 逻辑回归的标签由 P0 执有，线性回归的标签由 P1 执有。
+

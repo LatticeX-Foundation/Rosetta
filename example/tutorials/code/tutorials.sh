@@ -24,6 +24,19 @@ function run_tf() {
     sleep 0.5
 }
 
+function run_zk() {
+    name=$1
+    script_name=./rtt-${name}.py
+    if [ ! -f ${script_name} ]; then
+        echo "${script_name} not exist!"
+        return
+    fi
+    echo -e "\nrun ${script_name} ..."
+    python3 ${script_name} --party_id=1 >log/${name}-1.log 2>&1 &
+    python3 ${script_name} --party_id=0 >log/${name}-0.log 2>&1
+    sleep 0.5
+}
+
 function run_rtt() {
     name=$1
     script_name=./rtt-${name}.py
@@ -56,6 +69,8 @@ function run_x() {
     metr=$3
     if [ "$tttt" = "tf" ]; then
         run_tf $name
+    elif [ "$tttt" = "zk" ]; then
+        run_zk $name
     elif [ "$tttt" = "rtt" ]; then
         run_rtt $name
     elif [ "$tttt" = "stat" ]; then

@@ -396,14 +396,14 @@ struct BinaryOpState {
     in1_dims = in1.dims();
     out_dims = output_shape.dims();
 
-    log_debug << "               ndims:" << ndims;
+    log_debug << "    ndims:" << ndims << ", x_shape.size(): " << bcast.x_reshape().size() << ", y_shape.size(): " << bcast.y_reshape().size();
     log_debug << "      in0 dims shape:" << in0.dims() << " " << in0.shape();
     log_debug << "      in1 dims shape:" << in1.dims() << " " << in1.shape();
     log_debug << "      out dims shape:" << output_shape.dims() << " " << output_shape;
     log_debug << "    in0_num_elements:" << in0_num_elements;
     log_debug << "    in1_num_elements:" << in1_num_elements;
     log_debug << "    out_num_elements:" << out_num_elements;
-  }
+ }
 
   int verbose_ = 1;
 
@@ -439,40 +439,51 @@ void ASSIGN_TENSOR(
     auto _bcast0 = BCast::ToIndexArray<NDIMS>(bcast->x_bcast());
     auto _in1 = in1.template shaped<string, NDIMS>(bcast->y_reshape());
     auto _bcast1 = BCast::ToIndexArray<NDIMS>(bcast->y_bcast());
-    auto _lhs = _in0.broadcast(_bcast0);
-    auto _rhs = _in1.broadcast(_bcast1);
+    auto _lhs = _in0.broadcast(_bcast0);//BroadcastReshapeOp
+    auto _rhs = _in1.broadcast(_bcast1);//BroadcastReshapeOp
 
-    // log_info << "_bcast0.size():" << _bcast0.size() << endl;
-    // log_info << "_bcast1.size():" << _bcast1.size() << endl;
-    // log_info << "_lhs:\n" << _lhs << endl;
-    // log_info << "_rhs:\n" << _rhs << endl;
-    // log_info << "type:\n" << typeid(_rhs).name() << endl;
-    // log_info << "_lhs type:\n" << TYPENAME(typeid(_lhs).name()) << endl;
-    // log_info << "_rhs type:\n" << TYPENAME(typeid(_rhs).name()) << endl;
+    // get a bigger shape
+    bool use_in0 = true;
+    for (auto i = 0; i < bcast->x_bcast().size(); ++i) {
+      if (2 <= bcast->x_bcast()[i]) { // not 1
+        use_in0 = false;
+        break;
+      }
+    }
+    Eigen::DSizes<int64_t, NDIMS> _out_shape(use_in0 ? BCast::ToIndexArray<NDIMS>(bcast->x_reshape()) : BCast::ToIndexArray<NDIMS>(bcast->y_reshape()));
+
+    // log_debug << "dims: " << NDIMS << ", out_dims: " << out_dims << endl;
+    // log_debug << "_bcast0.size():" << _bcast0.size() << endl;
+    // log_debug << "_bcast1.size():" << _bcast1.size() << endl;
+    // log_debug << "type:\n" << typeid(_rhs).name() << endl;
+    // log_debug << "_lhs type:\n" << TYPENAME(typeid(_lhs).name()) << endl;
+    // log_debug << "_rhs type:\n" << TYPENAME(typeid(_rhs).name()) << endl;
     if (out_dims == 0) {
     } else if (out_dims == 1) {
-      auto _out = out->tensor<string, 1>();
-      Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      // auto _out = out->tensor<string, 1>();
+      // Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
       in0_tensor.tensor<string, 1>().reshape(_out_shape).device(eigen_device) = _lhs;
       in1_tensor.tensor<string, 1>().reshape(_out_shape).device(eigen_device) = _rhs;
     } else if (out_dims == 2) {
-      auto _out = out->tensor<string, 2>();
-      Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      // auto _out = out->tensor<string, 2>();
+      // Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
       in0_tensor.tensor<string, 2>().reshape(_out_shape).device(eigen_device) = _lhs;
       in1_tensor.tensor<string, 2>().reshape(_out_shape).device(eigen_device) = _rhs;
     } else if (out_dims == 3) {
-      auto _out = out->tensor<string, 3>();
-      Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      // auto _out = out->tensor<string, 3>();
+      // Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
       in0_tensor.tensor<string, 3>().reshape(_out_shape).device(eigen_device) = _lhs;
       in1_tensor.tensor<string, 3>().reshape(_out_shape).device(eigen_device) = _rhs;
     } else if (out_dims == 4) {
-      auto _out = out->tensor<string, 4>();
-      Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      // auto _out = out->tensor<string, 4>();
+      // Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      // in0_tensor.tensor<string, 4>().reshape(_out_shape).device(eigen_device) = _lhs;
+      // in1_tensor.tensor<string, 4>().reshape(_out_shape).device(eigen_device) = _rhs;
       in0_tensor.tensor<string, 4>().reshape(_out_shape).device(eigen_device) = _lhs;
       in1_tensor.tensor<string, 4>().reshape(_out_shape).device(eigen_device) = _rhs;
     } else if (out_dims == 5) {
-      auto _out = out->tensor<string, 5>();
-      Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      // auto _out = out->tensor<string, 5>();
+      // Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
       in0_tensor.tensor<string, 5>().reshape(_out_shape).device(eigen_device) = _lhs;
       in1_tensor.tensor<string, 5>().reshape(_out_shape).device(eigen_device) = _rhs;
     } else {
@@ -540,7 +551,7 @@ class SecureBinaryOp : public SecureOpKernel {
     vector<string> input0(size);
     vector<string> input1(size);
     vector<string> output(size);
-
+    
     if (ndims == 1) {
       ASSIGN_TENSOR<1>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
     } else if (ndims == 2) {

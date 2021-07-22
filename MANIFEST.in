@@ -1,3 +1,3 @@
-include python/latticex/*.so python/latticex/lib128/*.so
+include python/latticex/*.so* python/latticex/lib128/*.so*
 prune python/latticex/rosetta/mpc/*/test_cases
 global-exclude test_mpc*.py

@@ -41,6 +41,20 @@ set_target_properties(${LIBNAME} PROPERTIES FOLDER "io"
     APPEND_STRING PROPERTY LINK_FLAGS " ${ADD_LINK_LIB_FLAGS}")
 
 IF(ROSETTA_COMPILE_TESTS)
+# examples
+function(compile_examples projname)
+    set(proj ${LIBNAME}-examples-${projname})
+    add_executable(${proj} ./examples/${projname}.cpp) 
+    target_link_libraries(${proj} ${LIBNAME})
+endfunction()
+compile_examples(net_broadcast)
+compile_examples(net_interactive)
+compile_examples(net_multiclients)
+compile_examples(net_sync)
+compile_examples(net_msgid)
+#
+compile_examples(netio_ex)
+
 # tests
 function(compile_tests projname)
     set(proj ${LIBNAME}-tests-${projname})

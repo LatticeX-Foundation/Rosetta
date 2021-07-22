@@ -24,6 +24,9 @@
 #include "cc/modules/protocol/mpc/snn/src/snn_protocol.h"
 #endif
 #include "cc/modules/protocol/mpc/naive/include/naive_impl.h"
+#if ROSETTA_ENABLES_PROTOCOL_ZK
+#include "cc/modules/protocol/zk/wolverine/include/wolverine_impl.h"
+#endif
 
 #include <iostream>
 
@@ -157,5 +160,9 @@ REGISTER_SECURE_PROTOCOL(HelixImpl, "Helix");
 REGISTER_SECURE_PROTOCOL(SnnProtocol, "SecureNN");
 #endif
 REGISTER_SECURE_PROTOCOL(NaiveProtocol, "Naive");
+
+#if ROSETTA_ENABLES_PROTOCOL_ZK
+REGISTER_SECURE_PROTOCOL(WolverineProtocol, "Wolverine");
+#endif
 
 } // namespace rosetta

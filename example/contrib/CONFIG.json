@@ -1,5 +1,10 @@
 {
   "PARTY_ID": 0,
+  "PSI": {
+    "HOST": "127.0.0.1",
+    "PORT": 12345,
+    "RECV_PARTY": 2
+  },
   "MPC": {
     "FLOAT_PRECISION": 16,
     "P0": {

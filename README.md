@@ -14,7 +14,7 @@ Rosetta is a privacy-preserving framework based on [TensorFlow](https://www.tens
 import latticex.rosetta
 ```
 
-The current version integrates the secure multi-party computation protocols for 3 parties. The underlying protocol is [SecureNN](https://eprint.iacr.org/2018/442.pdf). It is secure in the semi-honest model with honest majority. And we are integrating more MPC protocols continuously.
+The current version integrates the secure multi-party computation protocols for 3 parties. The underlying protocol is [SecureNN](https://eprint.iacr.org/2018/442.pdf). It is secure in the semi-honest model with honest majority.
 
 ## Installation
 
@@ -35,7 +35,7 @@ And then build and install Rosetta with our all-in-one script as follows.
 # clone rosetta git repository
 git clone --recurse https://github.com/LatticeX-Foundation/Rosetta.git
 cd Rosetta
-# compile, install. You may check more compilation options by checking `rosetta.sh --help`
+# compile, install
 ./rosetta.sh compile --enable-protocol-mpc-securenn; ./rosetta.sh install
 ```
 
@@ -167,8 +167,6 @@ Rosetta is an open source project developed under the LPGLv3 license and maintai
 * [Rosetta Glossary](doc/GLOSSARY.md)
 
 * [Rosetta Release Notes](RELEASE.md)
-  
-* [FAQ](https://github.com/LatticeX-Foundation/Rosetta/wiki/FAQ)
 
 ## Contact
 

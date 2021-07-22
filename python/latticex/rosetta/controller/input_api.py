@@ -28,6 +28,13 @@ A simple way to cope private input.
 """
 
 
+class SecurePrivateInput(object):
+    """
+    Not implemented yet, please use the functional API now.
+    """
+    pass
+
+
 def __check():
     if not py_protocol_handler.is_activated():
         errmsg = "Protocol have not activated. See rtt.activate()."

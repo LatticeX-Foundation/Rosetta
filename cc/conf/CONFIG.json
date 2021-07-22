@@ -1,5 +1,35 @@
 {
   "PARTY_ID": 0,
+  "PSI": {
+    "P0": {
+      "DESC": "P0/ALICE, as Server-side.",
+      "NAME": "PartyA(P0)",
+      "HOST": "127.0.0.1",
+      "PORT": 15225
+    },
+    "P1": {
+      "DESC": "P1/BOB, as Client-side.",
+      "NAME": "PartyB(P1)",
+      "HOST": "127.0.0.1",
+      "PORT": 15225
+    },
+    "RECV_PARTY": 2
+  },
+  "ZK": {
+    "P0": {
+      "DESC": "P0/ALICE/Prover, internal PARTY_ID = 1, as Server-side.",
+      "NAME": "PartyA(P0)",
+      "HOST": "127.0.0.1",
+      "PORT": 16256
+    },
+    "P1": {
+      "DESC": "P1/BOB/Verifier, internal PARTY_ID = 2, as Client-side.",
+      "NAME": "PartyB(P1)",
+      "HOST": "127.0.0.1",
+      "PORT": 16256
+    },
+    "RESTORE_MODE": 1
+  },
   "MPC": {
     "FLOAT_PRECISION": 16,
     "P0": {

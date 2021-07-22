@@ -109,8 +109,8 @@ REGISTER_RTT_BINARY_CONST_OP(RttPow).Doc(R"doc(
 
 REGISTER_RTT_BINARY_OP(RttAdd).Doc(R"doc(
     RttAdd
-)doc");
-// .SetShapeFn(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn);
+)doc")
+.SetShapeFn(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn);
 
 REGISTER_RTT_BINARY_OP(RttSub).Doc(R"doc(
     RttSub
@@ -212,8 +212,8 @@ REGISTER_OP("RttMatmul")
   .Input("y: string")
   .Output("res: string")
   .Attr("transpose_a: bool = false")
-  .Attr("transpose_b: bool = false");
-  // .SetShapeFn(::tensorflow::shape_inference::MatMulShape);
+  .Attr("transpose_b: bool = false")
+  .SetShapeFn(::tensorflow::shape_inference::MatMulShape);
 
 REGISTER_OP("RttSquare").Input("x: string").Output("res: string");
 
@@ -223,38 +223,38 @@ REGISTER_OP("RttReduceMean")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
-  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("RttReduceSum")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
-  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("RttReduceMin")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
-  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("RttReduceMax")
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
-  // .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape);
 
 REGISTER_OP("RttArgMax")
     .Input("input: string")
     .Input("dimension: Tidx")
     .Output("output: output_type")
     .Attr("Tidx: {int32, int64} = DT_INT32")
-    .Attr("output_type: {string,} = DT_STRING");
-    // .SetShapeFn(ArgOpShape);
+    .Attr("output_type: {string,} = DT_STRING")
+    .SetShapeFn(ArgOpShape);
 
