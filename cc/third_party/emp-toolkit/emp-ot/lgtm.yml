@@ -1,0 +1,13 @@
+extraction:
+  cpp:
+    configure:    # Customizable step used only by C/C++ extraction.
+      command:
+        - export DEPS_BUILD_DIR=$LGTM_WORKSPACE/deps
+        - mkdir -p $DEPS_BUILD_DIR
+        - export DESTDIR=$DEPS_BUILD_DIR
+        - git clone https://github.com/emp-toolkit/emp-tool.git
+        - cd emp-tool
+        - cmake -DENABLE_FLOAT=True -DCMAKE_INSTALL_PREFIX=$DEPS_BUILD_DIR .
+        - make -j4
+        - make install
+

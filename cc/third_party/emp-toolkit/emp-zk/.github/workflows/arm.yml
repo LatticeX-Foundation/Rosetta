@@ -1,0 +1,25 @@
+name: arm
+on: [push, pull_request]
+
+jobs:
+  build_arm:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        build_type: [Debug, Release]
+    runs-on: [self-hosted]
+    env: 
+      BUILD_TYPE: ${{matrix.build_type}}
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v2
+    - name: install dependency
+      run: |
+        wget https://raw.githubusercontent.com/emp-toolkit/emp-readme/master/scripts/install.py
+        python3 install.py -install -tool -ot
+    - name: Create Build Environment
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE && make
+    - name: Test
+      shell: bash
+      run: |
+        make test
