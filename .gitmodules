@@ -1,9 +1,9 @@
 [submodule "cc/third_party/emp-toolkit/emp-tool"]
 	path = cc/third_party/emp-toolkit/emp-tool
 	url = https://github.com/emp-toolkit/emp-tool.git
-[submodule "cc/third_party/emp-toolkit/emp-ot"]
-	path = cc/third_party/emp-toolkit/emp-ot
-	url = git@github.com:emp-toolkit/emp-ot.git
 [submodule "cc/third_party/emp-toolkit/emp-zk"]
 	path = cc/third_party/emp-toolkit/emp-zk
 	url = git@github.com:emp-toolkit/emp-zk.git
+[submodule "cc/third_party/emp-toolkit/emp-ot"]
+	path = cc/third_party/emp-toolkit/emp-ot
+	url = git@github.com:emp-toolkit/emp-ot.git
