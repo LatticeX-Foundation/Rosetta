@@ -14,7 +14,11 @@ Rosetta is a privacy-preserving framework based on [TensorFlow](https://www.tens
 import latticex.rosetta
 ```
 
-The current version integrates the secure multi-party computation protocols for 3 parties. The underlying protocol is [SecureNN](https://eprint.iacr.org/2018/442.pdf). It is secure in the semi-honest model with honest majority.
+The current version integrates the secure multi-party computation protocols for 3 parties. The underlying protocols are [SecureNN](https://eprint.iacr.org/2018/442.pdf) and Helix. They are secure in the semi-honest model with honest majority.
+
+
+> Rosetta has integrated an efficient zero-knowledge proof protocol, [Mystique](https://eprint.iacr.org/2021/730), for secure inference tasks of sophisticated AI models, such as ResNet. Please refer to [wiki page](https://github.com/LatticeX-Foundation/Rosetta/wiki/Zero-knowledge-Proof-for-Machine-Learning-Inference) for its usage.
+
 
 ## Installation
 
