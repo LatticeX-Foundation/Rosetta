@@ -345,26 +345,10 @@ int ReciprocalDiv::ReciprocalDivfor2(
     vector<mpc_t> initial_temp(vec_size,0);
     vector<mpc_t> initial_exp(vec_size,0);
     /// compute the initial_value
-    vector<mpc_t> SHARED_Factorialof3(vec_size, 0);
-    if(partyNum == PARTY_A) {
-	SHARED_Factorialof3 = vector<mpc_t>(vec_size, FloatToMpcType(0.16667));
-	}
-	vector<mpc_t> SHARED_HALF(vec_size, 0);
-    if(partyNum == PARTY_A) {
-	SHARED_HALF = vector<mpc_t>(vec_size, FloatToMpcType(0.5));
-	}
-	vector<mpc_t> NUM_HALF(vec_size, 0);
-	NUM_HALF = vector<mpc_t>(vec_size, FloatToMpcType(0.5));
-
 	vector<mpc_t> NUM_0NE(vec_size, 0);
 	NUM_0NE = vector<mpc_t>(vec_size, FloatToMpcType(1));
 
-	vector<mpc_t> NUM_TWO(vec_size, 0);
-	NUM_TWO = vector<mpc_t>(vec_size, FloatToMpcType(2));
 
-	vector<mpc_t> NUM_Factorialof3(vec_size, 0);
-	NUM_Factorialof3 = vector<mpc_t>(vec_size, FloatToMpcType(0.16667));
-			
     if (PRIMARY) {
     for (int i = 0; i < vec_size; ++i) {
       initial_temp[i] = denominator_vec[i] << 1;
