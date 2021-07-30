@@ -19,8 +19,11 @@ import tensorflow as tf
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import sparse_tensor
 from tensorflow.python.client import session
+from latticex.rosetta.controller.protocol_api import mapping_id
+from latticex.rosetta.controller.protocol_api import unmapping_id
 from latticex.rosetta.controller.protocol_api import default_run
 from latticex.rosetta.secure.spass.static_replace_pass import replace_tf_subgraph_with_secure_subgraph
+from tensorflow.python.ops.gen_array_ops import unique
 
 
 # List of extensions supported to convert run arguments into actual 
@@ -62,11 +65,18 @@ class SecureSession(tf.compat.v1.Session):
       objects are executed, and `Tensor` or 'RttTensor' objects are evaluated.
     """
 
-    def __init__(self, target='', graph=None, config=None):
+    def __init__(self, target='', graph=None, config=None, task_id=None):
         """
         # Construct a new SecureSession object.
         """
         super().__init__(target, graph, config)
+        self._task_id = task_id
+
+        # Associate the task id with the device id
+        if (task_id != None):
+            list_dev = self.list_devices()
+            for the_dev in list_dev:
+                mapping_id(unique_id=the_dev.incarnation, task_id=task_id)
 
     
     def run(self, fetches, feed_dict=None, options=None, run_metadata=None):
@@ -74,7 +84,8 @@ class SecureSession(tf.compat.v1.Session):
         Runs operations and evaluates tensors in `fetches`.
         """
         # Init backend for compatible with previous versions
-        default_run()
+        if (self._task_id == None):
+            default_run()
 
         return super().run(fetches, feed_dict, options, run_metadata)
         
@@ -84,9 +95,27 @@ class SecureSession(tf.compat.v1.Session):
         Continues the execution with more feeds and fetches.
         """
         # Init backend for compatible with previous versions
-        default_run()
+        if (self._task_id == None):
+            default_run()
 
         return super().partial_run(handle, fetches, feed_dict)
+
+
+    def close(self):
+        """
+        Closes this session.
+        """
+        list_dev = []
+        if (self._task_id != None):
+            list_dev = self.list_devices()
+        
+        # close this session
+        super().close()
+        
+        # Disassociate the task id from the device id
+        for the_dev in list_dev:
+            unmapping_id(unique_id=the_dev.incarnation)
+        
 
 
 

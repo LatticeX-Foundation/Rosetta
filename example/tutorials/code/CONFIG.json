@@ -1,23 +1,37 @@
 {
-  "PARTY_ID": 0,
-  "MPC": {
-    "FLOAT_PRECISION": 16,
-    "P0": {
-      "NAME": "PartyA(P0)",
-      "HOST": "127.0.0.1",
-      "PORT": 11121
+    "NODE_INFO": [
+        {
+            "NAME": "PartyA(P0)",
+            "HOST": "127.0.0.1",
+            "PORT": 11121,
+            "NODE_ID": "P0"
+        },
+        {
+            "NAME": "PartyB(P1)",
+            "HOST": "127.0.0.1",
+            "PORT": 12144,
+            "NODE_ID": "P1"
+        },
+        {
+            "NAME": "PartyC(P2)",
+            "HOST": "127.0.0.1",
+            "PORT": 13169,
+            "NODE_ID": "P2"
+        }
+    ],
+    "DATA_NODES": [
+        "P0",
+        "P1",
+        "P2"
+    ],
+    "COMPUTATION_NODES": {
+        "P0": 0,
+        "P1": 1,
+        "P2": 2
     },
-    "P1": {
-      "NAME": "PartyB(P1)",
-      "HOST": "127.0.0.1",
-      "PORT": 12144
-    },
-    "P2": {
-      "NAME": "PartyC(P2)",
-      "HOST": "127.0.0.1",
-      "PORT": 13169
-    },
-    "SAVER_MODE": 7,
-    "RESTORE_MODE": 0
-  }
+    "RESULT_NODES": [
+        "P0",
+        "P1",
+        "P2"
+    ]
 }

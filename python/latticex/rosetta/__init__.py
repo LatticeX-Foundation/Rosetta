@@ -66,3 +66,4 @@ from latticex.rosetta.controller import *
 
 from latticex.rosetta.controller import backend_handler
 
+from latticex.rosetta.controller.controller_base_ import RttLogLevel as LogLevel

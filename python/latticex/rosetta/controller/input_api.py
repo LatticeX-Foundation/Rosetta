@@ -16,6 +16,10 @@
 # along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 # =============================================================================="
 from latticex.rosetta.controller.backend_handler import py_protocol_handler
+from latticex.rosetta.controller.backend_handler import py_io_handler
+from latticex.rosetta.controller.io_api import party_id_to_node_id
+from latticex.rosetta.controller.io_api import get_current_node_id
+from latticex.rosetta.controller.io_api import get_data_node_ids
 from latticex.rosetta.controller.common_util import rtt_get_logger
 from latticex.rosetta.controller.controller_base_ import _rtt
 
@@ -28,15 +32,22 @@ A simple way to cope private input.
 """
 
 
-def __check():
-    if not py_protocol_handler.is_activated():
+class SecurePrivateInput(object):
+    """
+    Not implemented yet, please use the functional API now.
+    """
+    pass
+
+
+def __check(task_id):
+    if not py_protocol_handler.is_activated(task_id):
         errmsg = "Protocol have not activated. See rtt.activate()."
         rtt_get_logger().error(errmsg)
         raise Exception(errmsg)
 
 
-def __input(is_private_input: bool, party_id: int, inp):
-    __check()
+def __input(task_id, is_private_input: bool, node_id: str, inp):
+    __check(task_id)
     is_single = False
     if isinstance(inp, float) or isinstance(inp, int):
         is_single = True
@@ -47,17 +58,20 @@ def __input(is_private_input: bool, party_id: int, inp):
         inp = np.array(inp)
     else:
         raise Exception("unsupported type~")
-
+    if isinstance(node_id, int):
+        node_id = party_id_to_node_id(node_id, task_id = task_id)
+    if node_id not in get_data_node_ids(task_id = task_id):
+        raise Exception("Node " + node_id + " is not valid data node!")
     if is_private_input:
-        ret = _rtt.input.PrivateInput().input(party_id, inp)
+        ret = _rtt.input.PrivateInput(task_id).input(node_id, inp)
     else:
-        ret = _rtt.input.PublicInput().input(party_id, inp)
+        ret = _rtt.input.PublicInput(task_id).input(node_id, inp)
     return ret
 
 
-def __console_input(is_private_input: bool, party_id: int, shape: tuple = None):
-    __check()
-    partyid = py_protocol_handler.get_party_id()
+def __console_input(task_id, is_private_input: bool, node_id: str, shape: tuple = None):
+    __check(task_id)
+    current_node_id = get_current_node_id(task_id = task_id)
 
     org_shape = shape
     if shape is None:
@@ -77,7 +91,7 @@ def __console_input(is_private_input: bool, party_id: int, shape: tuple = None):
             total_inputs)
 
     inp = []
-    if party_id == partyid:
+    if node_id == current_node_id:
         tries = 3
         while tries > 0:
             inp_ok = True
@@ -108,35 +122,39 @@ def __console_input(is_private_input: bool, party_id: int, shape: tuple = None):
     else:
         inp = [0] * total_inputs
 
-    arr = __input(is_private_input, party_id, inp)
+    arr = __input(task_id, is_private_input, node_id, inp)
     lst = arr.reshape(shape)
     # if org_shape is None:
     #    return lst[0]
     return lst
 
 
-def private_input(party_id: int, inp):
+def private_input(node_id: str, inp, task_id = None):
     """
     One party set its private input value to be shared among multi-parties.
 
     Args:
-        party_id: the input of which party_id will be shared.
-        inp: the input values. ONLY the inputs of the party that
-        has the same role as the `party_id` will be processed.
+        node_id: the input of which node_id will be shared.
+        input_value: the input values. ONLY the inputs of the party that
+        has the same role as the `node_id` will be processed.
 
     Return: 
         the local shared piece of the real value. 
         Note that each party will has different cipher value that returned.
     """
-    return __input(True, party_id, inp)
+    if task_id == None:
+        task_id = ''
+    if isinstance(node_id, int):
+        node_id = party_id_to_node_id(node_id, task_id = task_id)
+    return __input(task_id, True, node_id, inp)
 
 
-def private_console_input(party_id: int, shape: tuple = None):
+def private_console_input(node_id: str, shape: tuple = None, task_id = None):
     """
     Just the same as private_input while the values will be fetched from console.
 
     Args:
-        party_id: which party provide the private data
+        node_id: which party provide the private data
         shape: only supports None, (m,), (m,n), which m, n is integer and greater 0. row first.
 
     Usage:
@@ -147,15 +165,27 @@ def private_console_input(party_id: int, shape: tuple = None):
         >> 1e2 2 .3   4 5    6.6
         will return [[100.0, 2.0, 0.3], [4.0, 5.0, 6.6]]
     """
-    return __console_input(True, party_id, shape)
+    if task_id == None:
+        task_id = ''
+    if isinstance(node_id, int):
+        node_id = party_id_to_node_id(node_id, task_id = task_id)
+    return __console_input(task_id, True, node_id, shape)
 
 
-def public_input(party_id: int, inp):
-    return __input(False, party_id, inp)
+def public_input(node_id: str, inp, task_id = None):
+    if task_id == None:
+        task_id = ''
+    if isinstance(node_id, int):
+        node_id = party_id_to_node_id(node_id, task_id = task_id)
+    return __input(task_id, False, node_id, inp)
 
 
-def public_console_input(party_id: int, shape: tuple = None):
-    return __console_input(False, party_id, shape)
+def public_console_input(node_id: str, shape: tuple = None, task_id = None):
+    if task_id == None:
+        task_id = ''
+    if isinstance(node_id, int):
+        node_id = party_id_to_node_id(node_id, task_id = task_id)
+    return __console_input(task_id, False, node_id, shape)
 
 
 if __name__ == "__main__":

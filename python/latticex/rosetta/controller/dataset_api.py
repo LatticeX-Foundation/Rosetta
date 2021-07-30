@@ -21,6 +21,7 @@ import pandas as pd
 from enum import Enum, unique
 from latticex.rosetta.controller.controller_base_ import _rtt
 from latticex.rosetta.controller.common_util import rtt_get_logger
+from latticex.rosetta.controller.io_api import party_id_to_node_id
 import warnings
 
 
@@ -92,15 +93,25 @@ class PrivateDataset(object):
     """
 
     def __init__(self, data_owner: tuple or list, label_owner: int = -1,
-                 dataset_type: DatasetType = DatasetType.SampleAligned):
+                 dataset_type: DatasetType = DatasetType.SampleAligned, task_id: str = None):
         self.data_owner_ = list(data_owner)
         self.label_owner_ = label_owner
         self.dataset_type_ = dataset_type
         if self.dataset_type_ == DatasetType.FeatureAligned:
             self.label_owner_ = 0  # reset to a valid value
+        if task_id == None:
+            task_id = ''
+        self.task_id_ = task_id
+        
+
+        for i in range(len(self.data_owner_)):
+            if isinstance(self.data_owner_[i], int):
+                self.data_owner_[i] = party_id_to_node_id(self.data_owner_[i], task_id = self.task_id_)
+        if isinstance(self.label_owner_, int):
+            self.label_owner_ = party_id_to_node_id(self.label_owner_, task_id = self.task_id_)
 
         self.dataset_ = _rtt.dataset.DataSet(
-            self.data_owner_, self.label_owner_, self.dataset_type_.value)
+            self.data_owner_, self.label_owner_, self.dataset_type_.value, self.task_id_)
 
     def __get_numpy(self, file, *args, **kwargs):
         if not isinstance(file, str):

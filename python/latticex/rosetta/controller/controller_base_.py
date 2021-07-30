@@ -27,3 +27,4 @@ else:
     import latticex._rosetta as _rst
 
 _rtt = _rst
+RttLogLevel = _rtt.LogLevel

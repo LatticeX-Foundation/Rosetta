@@ -17,6 +17,7 @@
 # =============================================================================="
 import tensorflow as tf
 from latticex.rosetta.secure.decorator.secure_base_ import _secure_ops
+from latticex.rosetta.secure.decorator.secure_base_ import _encode_party_id
 import numpy as np
 
 # --------------------------------
@@ -143,7 +144,10 @@ SecureSaveV2 = _secure_ops.secure_save_v2
 SecureRestoreV2 = _secure_ops.secure_restore_v2
 SecureApplyGradientDescent = _secure_ops.secure_apply_gradient_descent
 SecureSigmoidCrossEntropy = _secure_ops.secure_sigmoid_cross_entropy
-SecureReveal = _secure_ops.secure_reveal
+
+def SecureReveal(x, receive_party = None):
+    receive_parties = _encode_party_id(receive_party)
+    return _secure_ops.secure_reveal(x, receive_parties)
 
 
 def SecureConv2D(input, filter, strides=None, padding=None, use_cudnn_on_gpu=False, 

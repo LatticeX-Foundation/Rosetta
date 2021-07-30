@@ -45,9 +45,7 @@ class StaticReplacePass():
            /      \
         Var:a    Var:b
     """
-
-    # class variable, rtt namespace static index
-    rtt_ns_idx = 0
+    
 
     # class variable, map tf native graph to secure rosetta graph
     tf_graph_mapto_secure_graph = {}
@@ -88,7 +86,7 @@ class StaticReplacePass():
             "rttsub" :        ["SecureSub",                         None,                   secure_ops.SecureSub,           2,  True],
             "rttmul" :        ["SecureMul",                         None,                   secure_ops.SecureMul,           2,  True],
             "rttdiv" :        ["SecureRealDiv",                     None,                   secure_ops.SecureTruediv,       2,  True],
-            "rttreciprocaldiv" : ["SecureReciprocalDiv",            None,                   secure_ops.SecureTruediv,       2,  True],
+            "rttreciprocaldiv" : ["SecureReciprocaldiv",            None,                   secure_ops.SecureTruediv,       2,  True],
             "rtttruediv" :    ["SecureTruediv",                     None,                   secure_ops.SecureTruediv,       2,  True],
             "rttrealdiv" :    ["SecureRealDiv",                     None,                   secure_ops.SecureTruediv,       2,  True],
             "rttfloordiv":    ["SecureFloorDiv",                    None,                   secure_ops.SecureFloorDiv,      2,  True],
@@ -152,11 +150,6 @@ class StaticReplacePass():
 
         # rtt secure namespace
         self.rtt_scope = rtt_scope
-
-        # Adjust rtt namespace index
-        if (StaticReplacePass.rtt_ns_idx != 0):
-            self.rtt_scope = self.rtt_scope + str(StaticReplacePass.rtt_ns_idx)
-        StaticReplacePass.rtt_ns_idx += 1
 
         # save deepcopy op info using dict
         self.dc_op_info = {}
@@ -653,10 +646,10 @@ class StaticReplacePass():
 
         # The name of the new instance
         if self.rtt_scope != '':
-            new_secure_name = self.rtt_scope + '/' + secure_op_name
+            new_secure_name = self.rtt_scope + '/' + secure_op_name + str(src_op._id)
             new_src_name = self.rtt_scope + '/' + src_op.name
         else:
-            new_secure_name = secure_op_name
+            new_secure_name = secure_op_name + str(src_op._id)
             new_src_name = src_op.name
 
         # If it has an original_op parameter, copy it

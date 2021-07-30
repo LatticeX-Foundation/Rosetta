@@ -19,6 +19,7 @@ import tensorflow as tf
 from tensorflow.python.ops import array_ops
 from tensorflow.python.framework import ops
 from latticex.rosetta.secure.decorator.secure_base_ import _secure_ops
+from latticex.rosetta.secure.decorator.secure_base_ import _encode_party_id
 
 
 # -----------------------------
@@ -26,6 +27,7 @@ from latticex.rosetta.secure.decorator.secure_base_ import _secure_ops
 # -----------------------------
 
 def PrivateInput(x, data_owner, name=None):
+    data_owner = _encode_party_id([data_owner])
     return _secure_ops.private_input(x, data_owner, name=name)
 
 

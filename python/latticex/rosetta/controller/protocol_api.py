@@ -24,15 +24,13 @@ import json
 from latticex.rosetta.controller.common_util import *
 from latticex.rosetta.controller import backend_handler
 from latticex.rosetta.controller.backend_handler import py_protocol_handler
-
-# temporary way in V0.2.0.
-_curr_config_json_str = ""
+from latticex.rosetta.controller.io_api import _check_io
 
 
 def get_supported_protocols():
     """ Get list of all the backend cryptographic protocols.
 
-    You can activte one of the protocols as your backend Ops.
+    You can activate one of the protocols as your backend Ops.
 
     If you are a protocol developer, you can implement and register
     your own protocols in the backend, and you will see and use them
@@ -49,11 +47,11 @@ def get_default_protocol_name():
     return py_protocol_handler.get_default_protocol_name()
 
 
-def activate(protocol_name=None, protocol_config_str=None):
+def activate(protocol_name=None, protocol_config_str=None, task_id=None):
     """ Activate the specific protocol to carry out your subsequent Tensorflow 
     Operations.
 
-    It is highly recomended that you use this interface explicitly to choose your
+    It is highly recommended that you use this interface explicitly to choose your
     backend protocol before calling `run` in the Tensorflow session.
     Besides, do NOT call this while the graph is running.
 
@@ -63,66 +61,51 @@ def activate(protocol_name=None, protocol_config_str=None):
         be used.
 
         protocol_config_str: the config JSON string that is compatible with your
-        protocol.
+        protocol.[deprecated]
     """
-    # if it is alrady been activated, we should deactivate it first, this action
+    # if it is already been activated, we should deactivate it first, this action
     # will be carried by PM internally.
     # step 1: fill all as default if parameter is none
-    global _curr_config_json_str
+    _check_io(task_id)
     if protocol_name is None:
         protocol_name = get_default_protocol_name()
-    if protocol_config_str is None:
-        config_json_str = None
-        try:
-            with open(backend_handler._cfgfile, 'r') as load_f:
-                load_dict = json.load(load_f)
-                rtt_get_logger().debug("original config file: %s" % str(load_dict))
-                party_id = load_dict["PARTY_ID"]
-                # cmdline 'party_id' option can override PARTY_ID in config file
-                if backend_handler._party_id != -1:
-                    party_id = backend_handler._party_id
-                load_dict["PARTY_ID"] = party_id
-                config_json_str = json.dumps(load_dict, indent=4)
-                protocol_config_str = config_json_str
-        except Exception as e:
-            rtt_get_logger().error("Fail to load or parse your config:[" + str(e) +
-                                   "]. Please make sure your provide the correct Config string parameter " +
-                                   "or CONFIG.json file in local directory.")
-            return
+
     # step 2: check parameter 'protocol_name'
     # TODO: check parameter 'protocol_config_str'
     legal_set = get_supported_protocols()
     if protocol_name not in legal_set:
         rtt_get_logger().error("Protocol, `" + protocol_name + "`, is not supported!")
-        return
-        # raise ValueError("Error! The protocol you chose,'" + \
-        #     protocol_name + "', is not supported yet!")
+        raise ValueError("The protocol you chose: '" + \
+            protocol_name + "', is not supported yet!")
 
     # step3: call backend entry, and then check result.
-    res = py_protocol_handler.activate(protocol_name, protocol_config_str)
+    if task_id == None:
+        task_id = ""
+    res = py_protocol_handler.activate(protocol_name, task_id)
     if res == 0:
         rtt_get_logger().info("Your protocol, `" + protocol_name +
                               "`, has been activated successfully!")
-        _curr_config_json_str = protocol_config_str
     else:
         rtt_get_logger().error("Your protocol, `" + protocol_name +
-                               "`, failed to be activated! Please check your config!")
+                               "`, failed to be activated!")
 
+def get_protocol_name(task_id=None):
+    """Get the name of the currently activated protocol."""
+    if task_id == None:
+        task_id = ""
+    return py_protocol_handler.get_protocol_name(task_id)
 
-def get_protocol_name():
-    """Get the protocol name currently are activated."""
-    return py_protocol_handler.get_protocol_name()
-
-
-def deactivate():
+def deactivate(task_id=None):
     """ Deactivate your current backend protocol.
 
     All the resources related, such as the network connections and local cache, will be released.
 
-    please DO NOT call this while your TF graph is runnning.
+    please DO NOT call this while your TF graph is running.
     """
-    prtc = get_protocol_name()
-    res = py_protocol_handler.deactivate()
+    if task_id == None:
+        task_id = ""
+    prtc = get_protocol_name(task_id)
+    res = py_protocol_handler.deactivate(task_id)
     if res == 0:
         rtt_get_logger().info("The current protocol, `" + prtc +
                               "`, has been deactivated successfully!")
@@ -130,104 +113,167 @@ def deactivate():
         rtt_get_logger().error("Your protocol, `" + prtc +
                                "`, failed to be deactivated! You may try again later.")
 
+def mapping_id(unique_id, task_id=None):
+    """ Create session unique id to task id.
+    """
+    if task_id == None:
+        task_id = ""
+    py_protocol_handler.mapping_id(unique_id=unique_id, task_id=task_id)
 
-def default_run():
+def unmapping_id(unique_id):
+    """ Remove session unique id to task id.
+    """
+    py_protocol_handler.unmapping_id(unique_id=unique_id)
+
+def query_mapping_id(unique_id):
+    """ Query task id with session unique id.
+    """
+    return py_protocol_handler.query_mapping_id(unique_id)
+    
+def default_run(task_id=None):
     """Used by the SPASS or other internal modules to adapt to ProtocolManager[PM]
 
         Note that this should NOT be used by user directly.
     """
-    # step 1: checkout whether the backend has been inited
-    curr_prtc_name = get_protocol_name()
+    if task_id == None:
+        task_id = ""
+    # step 1: check whether the backend has been inited
+    curr_prtc_name = get_protocol_name(task_id)
     if (curr_prtc_name is None) or (curr_prtc_name == ""):
         # step 2: use the default protocol to run.
-        activate()
+        activate(task_id=task_id)
     else:
         # arriving here means the PM has already been activated, so we do nothing.
         pass
 
 
-def get_protocol_config(keyword=""):
-    """Get all the config info you are using now.
-
-    Note that the parameter is not supported yet.
-    """
-    global _curr_config_json_str
-    if not py_protocol_handler.is_activated():
-        rtt_get_logger().error("This API can only be called after some protocol is activated!")
-        return -1
-    return _curr_config_json_str
-
-
-# def set_protocol_config():
-#     "TODO"
-#     pass
-
-
-# def set_protocol_config_item(keyword="", value=""):
-#     "TODO"
-#     pass
-
-
-def get_party_id():
+def get_party_id(task_id=None):
     """Get your party id."""
-    if not py_protocol_handler.is_activated():
+    if task_id == None:
+        task_id = ""
+    if not py_protocol_handler.is_activated(task_id):
         rtt_get_logger().error("This API can only be called after some protocol is activated!")
         return -1
-    return py_protocol_handler.get_party_id()
-
+    return py_protocol_handler.get_party_id(task_id)
 
 def backend_log_to_stdout(flag: bool):
     """ Set C++ log output to stdout or not"""
     py_protocol_handler.log_to_stdout(flag)
 
-
-def set_backend_logfile(logfile: str):
+def set_backend_logfile(logfile: str, task_id=None):
     """ Set C++ log output filepath"""
-    py_protocol_handler.set_logfile(logfile)
+    if task_id == None:
+        task_id = ""
+    py_protocol_handler.set_logfile(logfile, task_id)
 
+def set_backend_logpattern(pattern: str):
+    """ Set C++ log output filepath"""
+    py_protocol_handler.set_logpattern(pattern)
 
 def set_backend_loglevel(loglevel: int):
     """ Set C++ log output level.
 
     Args:
         loglevel should be as follows ('info' by default),
-        0: Trace;
-        1: Debug;
-        2: Info;
-        3: Warn; 
-        4: Error;
-        5: Fatal
+        0: all;
+        1: Trace;
+        2: Debug;
+        3: Info;
+        4: Warn; 
+        5: Error;
+        6: Fatal
     """
     py_protocol_handler.set_loglevel(loglevel)
 
+def set_backend_logpattern(pattern: str):
+    """ Set C++ log output filepath"""
+    py_protocol_handler.set_logpattern(pattern)
 
-def start_perf_stats():
-    py_protocol_handler.start_perf_stats()
+def set_float_precision(float_precision: int, task_id=None):
+    """ Set floating point precision.
+
+    Args:
+        float_precision:  number of floating point precision bits in fixed point representation, with default value is 13.
+        task_id: task ID for the specified protocol. 
+    """
+    if task_id == None:
+        task_id = ""
+    py_protocol_handler.set_float_precision(float_precision, task_id)
+
+def set_saver_model(model_nodes: list, task_id=None):
+    """ Specify which nodes act as model savers.
+
+    Args:
+        model_nodes:  model saver nodes.
+        task_id: task ID for the specified protocol.    
+    """
+    if task_id == None:
+        task_id = ""
+    py_protocol_handler.set_saver_model(model_nodes, task_id)
+
+def set_restore_model(model_nodes: list, task_id=None):
+    """ Set nodes to restore model.
+
+    Args:
+        model_nodes:  nodes to restore model.
+        task_id: task ID for the specified protocol.    
+    """
+    if task_id == None:
+        task_id = ""
+    py_protocol_handler.set_float_precision(model_nodes, task_id)
+
+def get_float_precision(task_id=None):
+    """ Get floating point precision. 
+    Args:
+        task_id: task ID for the specified protocol.    
+    """
+    if task_id == None:
+        task_id = ""
+    py_protocol_handler.set_float_precision(float_precision, task_id)
+
+def get_saver_model(task_id=None):
+    """ Get nodes that act as model savers.
+    Args:
+        task_id: task ID for the specified protocol.    
+    """
+    if task_id == None:
+        task_id = ""
+    py_protocol_handler.set_saver_model(model_nodes, task_id)
+
+def get_restore_model(model_nodes: list, task_id=None):
+    """ Get nodes to restore model.
+    Args:
+        task_id: task ID for the specified protocol.    
+    """
+    if task_id == None:
+        task_id = ""
+    py_protocol_handler.set_float_precision(model_nodes, task_id)
+
+def start_perf_stats(task_id=None):
+    if task_id == None:
+        task_id = ""
+    py_protocol_handler.start_perf_stats(task_id)
 
 
-def get_perf_stats(pretty: bool = False):
+def get_perf_stats(pretty: bool = False, task_id=None):
     """
     return the communications and elapsed between .activate()/.start_perf_stats() and this call.
     Return json string, eg:
     {
-      "name": "SecureNN P0",
+      "name": "default",
       "elapsed(s)": {
-        "cpu": 53.292554802,
-        "elapse": 24.195319822
+        "clock": 0.0,
+        "cpu": 0.0,
+        ""elapse": 1.785008878
       },
       "communication(B)": {
-        "bytes-sent": 199446560,
-        "bytes-recv": 247450828,
-        "msg-sent": 4964,
-        "msg-recv": 5417
-      },
-      "memory(kB)": {
-        "max-rss": 812468
-      },
-      "cpu": {
-        "cores": 8,
-        "max-usage(%)": 267.0
+        "bytes-sent": 968974,
+        "bytes-recv": 245330,
+        "msg-sent": 595,
+        "msg-recv": 432
       }
     }
     """
-    return py_protocol_handler.get_perf_stats(pretty)
+    if task_id == None:
+        task_id = ""
+    return py_protocol_handler.get_perf_stats(pretty, task_id)

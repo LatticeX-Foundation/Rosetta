@@ -63,14 +63,6 @@ def rtt_div(x, y, name=None):
     _result = rtt_ts.rtt_ops.rtt_div(x._raw, y._raw, name=name)
     return rtt_ts.RttTensor(_result)
 
-def rtt_reciprocaldiv(x, y, name=None):
-    """Divides x / y elementwise (using Python 2 division operator semantics."""
-    x = rtt_ts.convert_to_rtttensor(x)
-    y = rtt_ts.convert_to_rtttensor(y)
-    _result = rtt_ts.rtt_ops.rtt_reciprocaldiv(x._raw, y._raw, name=name)
-    return rtt_ts.RttTensor(_result)
-
-
 
 def rtt_floordiv(x, y, name=None):
     """Divides `x / y` elementwise, rounding toward the most negative integer."""
@@ -93,6 +85,14 @@ def rtt_realdiv(x, y, name=None):
     x = rtt_ts.convert_to_rtttensor(x)
     y = rtt_ts.convert_to_rtttensor(y)
     _result = rtt_ts.rtt_ops.rtt_realdiv(x._raw, y._raw, name=name)
+    return rtt_ts.RttTensor(_result)
+
+
+def rtt_reciprocaldiv(x, y, name=None):
+    """Divides x / y elementwise (using Python 2 division operator semantics."""
+    x = rtt_ts.convert_to_rtttensor(x)
+    y = rtt_ts.convert_to_rtttensor(y)
+    _result = rtt_ts.rtt_ops.rtt_reciprocaldiv(x._raw, y._raw, name=name)
     return rtt_ts.RttTensor(_result)
 
 
@@ -189,17 +189,6 @@ def rtt_square(x, name=None):
     _result = rtt_ts.rtt_ops.rtt_square(x._raw, name=name)
     return rtt_ts.RttTensor(_result)
 
-def rtt_rsqrt(x, name=None):
-    """Computes 1/sqrt(x) of x element-wise."""
-    x = rtt_ts.convert_to_rtttensor(x)
-    _result = rtt_ts.rtt_ops.rtt_rsqrt(x._raw, name=name)
-    return rtt_ts.RttTensor(_result)
-    
-def rtt_sqrt(x, name=None):
-    """Computes square of x element-wise."""
-    x = rtt_ts.convert_to_rtttensor(x)
-    _result = rtt_ts.rtt_ops.rtt_sqrt(x._raw, name=name)
-    return rtt_ts.RttTensor(_result)
 
 def rtt_exp(x, name=None):
     """Computes square of x element-wise."""
@@ -207,6 +196,19 @@ def rtt_exp(x, name=None):
     _result = rtt_ts.rtt_ops.rtt_exp(x._raw, name=name)
     return rtt_ts.RttTensor(_result)
 
+
+def rtt_rsqrt(x, name=None):
+    """Computes 1/sqrt(x) of x element-wise."""
+    x = rtt_ts.convert_to_rtttensor(x)
+    _result = rtt_ts.rtt_ops.rtt_rsqrt(x._raw, name=name)
+    return rtt_ts.RttTensor(_result)
+
+
+def rtt_sqrt(x, name=None):
+    """Computes square of x element-wise."""
+    x = rtt_ts.convert_to_rtttensor(x)
+    _result = rtt_ts.rtt_ops.rtt_sqrt(x._raw, name=name)
+    return rtt_ts.RttTensor(_result)
 
 
 def rtt_pow(x, y, name=None): 
@@ -381,10 +383,10 @@ def static_override_tf_ops_to_rtt_ops():
     tf.logical_not = rtt_logical_not
     tf.matmul = rtt_matmul
     tf.square = rtt_square
-    tf.pow = rtt_pow
+    tf.exp = rtt_exp
     tf.sqrt = rtt_sqrt
     tf.rsqrt = rtt_rsqrt
-    tf.exp = rtt_exp
+    tf.pow = rtt_pow
     tf.log = rtt_log
     tf.log1p = rtt_log1p
     tf.abs = rtt_abs

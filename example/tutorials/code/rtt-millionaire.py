@@ -8,7 +8,6 @@ res = tf.greater(Alice, Bob)
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     res = sess.run(res)
-    print('res:', res)  # res: b'\x90\xa3\xff\x14\x87f\x95\xc3#'
     print('ret:', sess.run(rtt.SecureReveal(res)))  # ret: 1.0
 
 rtt.deactivate()

@@ -25,17 +25,24 @@ import argparse
 import os
 
 _parser = argparse.ArgumentParser(description="LatticeX Rosetta")
+#_parser.add_argument('--party_id', type=int, help="Party ID",
+#                     required=False, default=-1, choices=[0, 1, 2])
 _parser.add_argument('--party_id', type=int, help="Party ID",
-                     required=False, default=-1, choices=[0, 1, 2])
+                     required=False, default=-1)
+_parser.add_argument('--node_id', type=str, help="Node ID",
+                     required=False, default='')
 _parser.add_argument('--cfgfile', type=str, help="Config File",
                      default=os.path.abspath('.') + "/CONFIG.json")
 _args, _unparsed = _parser.parse_known_args()
 # ###########################
-# the party id can also be configed in CONFIG.json file.
+# the party id can also be configured in CONFIG.json file.
 # If you config it by commandline, this will override the one in config file.
 _party_id = _args.party_id
+_node_id = _args.node_id
 _cfgfile = _args.cfgfile
 
 rtt_get_logger().info('party id: {} with config json file: {}'.format(_party_id, _cfgfile))
 
 py_protocol_handler = _rtt.protocol.ProtocolHandler()
+py_io_handler = _rtt.io.IOHandler()
+

@@ -45,6 +45,9 @@ from latticex.rosetta.secure.grads_ops.secure_matmul_grad import *
 from latticex.rosetta.secure.grads_ops.secure_neg_grad import *
 from latticex.rosetta.secure.grads_ops.secure_abs_grad import *
 from latticex.rosetta.secure.grads_ops.secure_square_grad import *
+from latticex.rosetta.secure.grads_ops.secure_exp_grad import *
+from latticex.rosetta.secure.grads_ops.secure_sqrt_grad import *
+from latticex.rosetta.secure.grads_ops.secure_rsqrt_grad import *
 from latticex.rosetta.secure.grads_ops.secure_log_grad import *
 from latticex.rosetta.secure.grads_ops.secure_log1p_grad import *
 from latticex.rosetta.secure.grads_ops.secure_sigmoid_grad import *

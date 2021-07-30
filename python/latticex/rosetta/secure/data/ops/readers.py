@@ -30,6 +30,8 @@ from tensorflow.python.ops import gen_experimental_dataset_ops as ged_ops
 from tensorflow.python.util.tf_export import tf_export
 
 from latticex.rosetta.secure.decorator.secure_base_ import _secure_ops
+from latticex.rosetta.secure.decorator.secure_base_ import _encode_party_id
+from latticex.rosetta.controller.io_api import party_id_to_node_id
 
 # TODO(b/64974358): Increase default buffer size to 256 MB.
 _DEFAULT_READER_BUFFER_SIZE_BYTES = 256 * 1024  # 256 KB
@@ -136,7 +138,8 @@ class _PrivateTextLineDataset(dataset_ops.DatasetSource):
     self._data_owner = convert.optional_param_to_tensor(
         "data_owner",
         data_owner,
-        argument_default=0)
+        argument_default="",
+        argument_dtype=dtypes.string)
     variant_tensor = _secure_text_line_dataset(
         self._filenames, self._compression_type, self._buffer_size, self._data_owner)
     super(_PrivateTextLineDataset, self).__init__(variant_tensor)
@@ -171,6 +174,7 @@ class PrivateTextLineDatasetV2(dataset_ops.DatasetSource):
         read sequentially.
     """
     filenames = _secure_create_or_validate_filenames_dataset(filenames)
+    data_owner = _encode_party_id([data_owner])
     self._filenames = filenames
     self._compression_type = compression_type
     self._buffer_size = buffer_size
