@@ -3,13 +3,13 @@
 - [快速入门](#快速入门)
 - [安全多方计算](#安全多方计算)
   - [百万富翁](#百万富翁)
-    - [tensorflow 版本](#tensorflow-版本)
-    - [rosetta 版本](#rosetta-版本)
+    - [TensorFlow 版本](#tensorflow-版本)
+    - [Rosetta 版本](#rosetta-版本)
 - [隐私机器学习](#隐私机器学习)
   - [线性回归](#线性回归)
-    - [tensorflow 版本线性回归](#tensorflow-版本线性回归)
-    - [rosetta 基础版](#rosetta-基础版)
-    - [rosetta 版本-Reveal](#rosetta-版本-reveal)
+    - [TensorFlow 版本线性回归](#tensorflow-版本线性回归)
+    - [Rosetta 基础版](#rosetta-基础版)
+    - [Rosetta 版本-Reveal](#rosetta-版本-reveal)
     - [对比与评估 1](#对比与评估-1)
     - [对比与评估 2](#对比与评估-2)
     - [模型保存](#模型保存)
@@ -19,7 +19,7 @@
   - [支持随时停止 Rosetta 的执行](#支持随时停止-rosetta-的执行)
 - [隐私深度学习](#隐私深度学习)
   - [MLP神经网络](#mlp神经网络)
-    - [tensorflow版](#tensorflow版)
+    - [TensorFlow版](#tensorflow版)
     - [Rosetta版](#rosetta版)
 - [支持多任务并发](#支持多任务并发)
 - [结语](#结语)
@@ -30,7 +30,7 @@
 
 ## 安装部署
 
-如果你还没有搭建 `rosetta` 环境，请参考[部署文档](./DEPLOYMENT_CN.md)。
+如果你还没有搭建 `Rosetta` 环境，请参考[部署文档](./DEPLOYMENT_CN.md)。
 
 为了方便展开教程，这里的示例是 `单机多节点` 的，请你参考 `部署文档` 以此种方式进行部署。
 
@@ -42,15 +42,15 @@
 
 <br/>
 
-接下来，让我们一起进入激动时刻，如何以`最快的速度`使用 `rosetta` 呢？
+接下来，让我们一起进入激动时刻，如何以`最快的速度`使用 `Rosetta` 呢？
 
-方法很简单，在任何你需要使用 `rosetta` 的地方（`Python` 脚本文件），导入我们的 `rosetta` 包即可，如下：
+方法很简单，在任何你需要使用 `Rosetta` 的地方（`Python` 脚本文件），导入我们的 `Rosetta` 包即可，如下：
 
 ```python
 import latticex.rosetta as rtt
 ```
 
-<font style="color:green">注：</font> `rtt` 对应于 `rosetta`，就如同 `tf` 之 `tensorflow`，`np` 之 `numpy`，`pd` 之 `pandas`，是一个约定。
+<font style="color:green">注：</font> `rtt` 对应于 `Rosetta`，就如同 `tf` 之 `TensorFlow`，`np` 之 `numpy`，`pd` 之 `pandas`，是一个约定。
 
 <br/>
 
@@ -96,11 +96,11 @@ python3 rtt-quickstart.py --party_id=2
 
 假设两个富翁一个叫 `Alice`，一个叫 `Bob`，分别拥有 `2000001` 和 `2000000` 美元。你没有看错，两个人的财富只差 `1` 美元。
 
-#### tensorflow 版本
+#### TensorFlow 版本
 
 我们先来看一下这种（假设的）情况：两个富翁把各自拥有多财富说出来。
 
-这种情况非常简单，心算即可以解决，但为了与 `rosetta` 进行对比，这里用 `tensorflow` 写一个比较程序。步骤如下：
+这种情况非常简单，心算即可以解决，但为了与 `Rosetta` 进行对比，这里用 `TensorFlow` 写一个比较程序。步骤如下：
 
 第一步，导入包。
 
@@ -144,11 +144,11 @@ ret: True
 
 很简单，不赘述。
 
-#### rosetta 版本
+#### Rosetta 版本
 
-上面是一种假设的情况，那么在真实情况下，如何使用 `rosetta` 解决百万富翁的的问题呢，让我们一起来看看吧。非常简单！
+上面是一种假设的情况，那么在真实情况下，如何使用 `Rosetta` 解决百万富翁的的问题呢，让我们一起来看看吧。非常简单！
 
-第一步，导入 `rosetta` 包。
+第一步，导入 `Rosetta` 包。
 
 ```py
 import latticex.rosetta as rtt
@@ -170,7 +170,7 @@ Alice = tf.Variable(rtt.private_console_input(0))
 Bob = tf.Variable(rtt.private_console_input(1))
 ```
 
-第四步，与 `tensorflow` 完全一样。
+第四步，与 `TensorFlow` 完全一样。
 
 ```py
 res = tf.greater(Alice, Bob)
@@ -214,11 +214,11 @@ ret: 1.0
 
 <br/>
 
-> 包括 `SecureReveal` 在内的所有 `rosetta` 支持的算子的说明，参考[AIP 文档](./API_DOC_CN.md)。
+> 包括 `SecureReveal` 在内的所有 `Rosetta` 支持的算子的说明，参考[AIP 文档](./API_DOC_CN.md)。
 
 <br/>
 
-当然，`rosetta` 不仅仅只能用来解决如 `百万富翁` 这样简单的应用，下面我们来看看 `rosetta` 与 `机器学习（Meachine Learning）` 的结合。
+当然，`Rosetta` 不仅仅只能用来解决如 `百万富翁` 这样简单的应用，下面我们来看看 `Rosetta` 与 `机器学习（Meachine Learning）` 的结合。
 
 ## 隐私机器学习
 
@@ -226,13 +226,13 @@ ret: 1.0
 
 ### 线性回归
 
-本节从 `数据处理`/`训练与模型保存`/`模型加载与预测`/`评估` 这几个方面介绍如何使用 `rosetta` 进行`线性回归`。
+本节从 `数据处理`/`训练与模型保存`/`模型加载与预测`/`评估` 这几个方面介绍如何使用 `Rosetta` 进行`线性回归`。
 
-在使用 `rosetta` 进行机器学习之前，为了与 `rosetta` 版本对比，这里先引入一个 `完全对等` 的 `tensorflow` 版本。
+在使用 `Rosetta` 进行机器学习之前，为了与 `Rosetta` 版本对比，这里先引入一个 `完全对等` 的 `TensorFlow` 版本。
 
-我们首先来看看这个 `tensorflow` 版本。
+我们首先来看看这个 `TensorFlow` 版本。
 
-#### tensorflow 版本线性回归
+#### TensorFlow 版本线性回归
 
 这里是一个简单的线性回归。
 
@@ -262,7 +262,7 @@ learning_rate = 0.0002
 
 数据集说明参考本文最后的附录。
 
-我们标识了不同于 `rosetta` 的地方，后文可更多地关注一些。
+我们标识了不同于 `Rosetta` 的地方，后文可更多地关注一些。
 
 ```py
 # real data
@@ -346,9 +346,9 @@ Y_pred: [[4.8402567]
  [6.157756 ]]
 ```
 
-#### rosetta 基础版
+#### Rosetta 基础版
 
-如前文所述，如果你已经有了一个用 `tensorflow` 编写模型训练脚本(.py)，那么你要做的事情就是，只是在这个脚本文件的第一行，导入如下包即可：
+如前文所述，如果你已经有了一个用 `TensorFlow` 编写模型训练脚本(.py)，那么你要做的事情就是，只是在这个脚本文件的第一行，导入如下包即可：
 
 ```python
 import latticex.rosetta as rtt
@@ -368,18 +368,18 @@ rtt.rtt.activate("SecureNN")
 
 数据集说明参考本文最后的附录。
 
-我们标识了不同于 `tensorflow` 的地方，对照着 `tensorflow` 版本，除了导入了 `rosetta` 包外，就只有这一处是不同的。
+我们标识了不同于 `TensorFlow` 的地方，对照着 `TensorFlow` 版本，除了导入了 `Rosetta` 包外，就只有这一处是不同的。
 
-`rosetta` 提供了一个专门于处理私有数据集的类，`PrivateDataset`。详情查阅相关源代码。
+`Rosetta` 提供了一个专门于处理私有数据集的类，`PrivateDataset`。详情查阅相关源代码。
 
 ```py
 # real data
-# ######################################## difference from tensorflow
+# ######################################## difference from TensorFlow
 file_x = '../dsets/P' + str(rtt.mpc_player.id) + "/reg_train_x.csv"
 file_y = '../dsets/P' + str(rtt.mpc_player.id) + "/reg_train_y.csv"
 real_X, real_Y = rtt.PrivateDataset(data_owner=(
     0, 1), label_owner=1).load_data(file_x, file_y, header=None)
-# ######################################## difference from tensorflow
+# ######################################## difference from TensorFlow
 DIM_NUM = real_X.shape[1]
 ```
 
@@ -387,9 +387,9 @@ DIM_NUM = real_X.shape[1]
 
 <br/>
 
-OK，简单总结一下与 `tensorflow` 版本的区别：
+OK，简单总结一下与 `TensorFlow` 版本的区别：
 
-- 导入 `rosetta` 包。
+- 导入 `Rosetta` 包。
 - 激活协议。
 - 数据集的加载。
 
@@ -419,7 +419,7 @@ Y_pred: [[b'\x9f\xf5\n\xc2\x81\x06\x00\x00#']
 
 没错，你看到是 sharing 值。
 
-#### rosetta 版本-Reveal
+#### Rosetta 版本-Reveal
 
 上一节输出的 `sharing` 值，根本无法阅读！为了测试/调试，或与明文比对，或其他高级操作，我们提供了一个 `reveal` 接口，用要获取明文值。
 
@@ -478,17 +478,17 @@ Y_pred: [[b'4.844925']
  [b'6.159866']]
 ```
 
-尝试着将这个输出与 `tensorflow` 版本的输出比对一下，看看误差有多少。
+尝试着将这个输出与 `TensorFlow` 版本的输出比对一下，看看误差有多少。
 
 #### 对比与评估 1
 
-教程进行到这里，已经可以得到 `tensorflow` 版本与 `rosetta` 版本的预测值与权重值。
+教程进行到这里，已经可以得到 `TensorFlow` 版本与 `Rosetta` 版本的预测值与权重值。
 
 对于参数较少的模型，（上一节的误差）肉眼还可以勉强识别，可如果参数非常多，数据集非常大，这时就需要辅助工具了。
 
 这里只列出对比结果，详情参考 `对比与评估 2`。
 
-下面是 `tensorflow` 与 `rosetta` 的评分对比。
+下面是 `TensorFlow` 与 `Rosetta` 的评分对比。
 
 TensorFlow:
 
@@ -516,7 +516,7 @@ Rosetta:
 }
 ```
 
-我们看到了，`tensorflow` 与 `rosetta` 对比，其评分（误差对比）结果还是不错的。
+我们看到了，`TensorFlow` 与 `osetta` 对比，其评分（误差对比）结果还是不错的。
 
 > R^2 比较低是因为这个数据集是逻辑回归模型，不是线性回归模型
 > 此处只需要关心两个版本之间的误差（是非常小的）
@@ -525,12 +525,12 @@ Rosetta:
   <summary><mark><font color=darkred>误差对比(线性回归)</font></mark></summary>
 
 
-下图是关于 `tensorflow` 与 `rosetta` 预测值的绝对误差对比。
+下图是关于 `TensorFlow` 与 `Rosetta` 预测值的绝对误差对比。
 
 ![linear_regression_stat-Y-diff](./_static/tutorials/linear_regression_stat-Y-diff.png)
 
 
-下图是关于 `tensorflow` 与 `rosetta` 预测值的相对误差对比。
+下图是关于 `TensorFlow` 与 `Rosetta` 预测值的相对误差对比。
 
 ![linear_regression_stat-Y-diff4](./_static/tutorials/linear_regression_stat-Y-diff4.png)
 
@@ -545,7 +545,7 @@ Rosetta:
 
 <br/>
 
-下面，我们修改一下程序的最后一部分，加入统计代码（此修改对 `tesnorflow` 版本与 `rosetta` 版本是一样的）
+下面，我们修改一下程序的最后一部分，加入统计代码（此修改对 `TensorFlow` 版本与 `Rosetta` 版本是一样的）
 
 ```py
 # #############################################################
@@ -602,13 +602,13 @@ with tf.Session() as sess:
 
 至此，我们只是将模型参数或预测值输出到了终端，那怎样保存训练好的模型呢？
 
-有人会问，我们是多方训练，`rosetta` 训练后得到的模型（应该）保存在哪里呢？怎样保存的？问得好，下面就来讲讲，模型的事儿。
+有人会问，我们是多方训练，`Rosetta` 训练后得到的模型（应该）保存在哪里呢？怎样保存的？问得好，下面就来讲讲，模型的事儿。
 
 有几个约定：
 
-- 如果要用 `rosetta` 进行预测，请将模型保存为密文。
+- 如果要用 `Rosetta` 进行预测，请将模型保存为密文。
 
-- 如果将模型保存为明文，但又要用此模型进行预测，请直接使用 `tensorflow` 进行预测。
+- 如果将模型保存为明文，但又要用此模型进行预测，请直接使用 `TensorFlow` 进行预测。
 
 关于明文的保存，你可以选择保存在 节点0，节点1，节点2，或者三个节点都各自保存一份。这个设置在配置文件中。
 
@@ -629,11 +629,11 @@ with tf.Session() as sess:
 
 <br/>
 
-本节教程中，我们使用 `rosetta` 进行模型的训练，然后将模型保存为`明文`，接着将这个`明文模型`加载到 `tensorflow` 版本进行预测，最后看看与直接使用 `tensorflow` 进行明文训练然后预测之间的误差如何。
+本节教程中，我们使用 `Rosetta` 进行模型的训练，然后将模型保存为`明文`，接着将这个`明文模型`加载到 `TensorFlow` 版本进行预测，最后看看与直接使用 `TensorFlow` 进行明文训练然后预测之间的误差如何。
 
 <br/>
 
-我们在之前写的 `rosetta` 版本的基础上，加入一些 `save` 相关的代码。
+我们在之前写的 `Rosetta` 版本的基础上，加入一些 `save` 相关的代码。
 
 在训练开始之前
 
@@ -659,7 +659,7 @@ saver.save(sess, './log/ckpt'+str(party_id)+'/model')
 
 #### 模型加载与预测
 
-上一步已经（根据配置文件）将模型保存到相应的节点了，现在直接使用 `tensorflow` 加载上一步保存的明文模型，进行预测。
+上一步已经（根据配置文件）将模型保存到相应的节点了，现在直接使用 `TensorFlow` 加载上一步保存的明文模型，进行预测。
 
 ```py
 # save
@@ -703,7 +703,7 @@ Y_pred: [[6.17608922]
 
 完整代码列表参考
 
-tensorflow 版本
+TensorFlow 版本
 
 |                |                                                                                          |
 | -------------- | ---------------------------------------------------------------------------------------- |
@@ -711,7 +711,7 @@ tensorflow 版本
 | 模型加载与预测 | [tf-linear_regression_saver.py](../example/tutorials/code/tf-linear_regression_saver.py) |
 | 评估           | [tf-linear_regression_stat.py](../example/tutorials/code/tf-linear_regression_stat.py)   |
 
-rosetta 版本
+Rosetta 版本
 
 |                  |                                                                                              |
 | ---------------- | -------------------------------------------------------------------------------------------- |
@@ -726,7 +726,7 @@ rosetta 版本
 
 在线性回归的基础上，我们使用 `sigmoid` 做为二分类器，使用`交叉熵`做为损失函数，构建一个逻辑回归的模型。
 
-无论是 `tensorflow` 版本，还是 `rosetta` 版本，改动的地方是一样的，对比 `线性回归` 版本，只需要改动模型的构建，即仅仅只需要进行如下改动即可：
+无论是 `TensorFlow` 版本，还是 `Rosetta` 版本，改动的地方是一样的，对比 `线性回归` 版本，只需要改动模型的构建，即仅仅只需要进行如下改动即可：
 
 - 预测值，加上 `sigmoid`
 
@@ -744,7 +744,7 @@ loss = tf.reduce_mean(loss)
 
 完整代码列表参考
 
-tensorflow 版本
+TensorFlow 版本
 
 |                |                                                                                                  |
 | -------------- | ------------------------------------------------------------------------------------------------ |
@@ -753,7 +753,7 @@ tensorflow 版本
 | 模型加载与预测 | [tf-logistic_regression_restore.py](../example/tutorials/code/tf-logistic_regression_restore.py) |
 | 评估           | [tf-logistic_regression_stat.py](../example/tutorials/code/tf-logistic_regression_stat.py)       |
 
-rosetta 版本
+Rosetta 版本
 
 |                      |                                                                                                    |
 | -------------------- | -------------------------------------------------------------------------------------------------- |
@@ -800,19 +800,19 @@ Rosetta:
 ```
 
 > 此处只需要关心两个版本之间的误差（是非常小的）
-> rosetta 甚至比 tensorflow 稍微好一些
+> Rosetta 甚至比 TensorFlow 稍微好一些
 
 
 <details>
   <summary><mark><font color=darkred>误差对比(逻辑回归)</font></mark></summary>
 
-下图是关于 `tensorflow` 与 `rosetta` 预测值的绝对误差对比。
+下图是关于 `TensorFlow` 与 `Rosetta` 预测值的绝对误差对比。
 
 ![logistic_regression_stat-Y-diff](./_static/tutorials/logistic_regression_stat-Y-diff.png)
 
 
 
-下图是关于 `tensorflow` 与 `rosetta` 预测值的相对误差对比。
+下图是关于 `TensorFlow` 与 `Rosetta` 预测值的相对误差对比。
 
 ![logistic_regression_stat-Y-diff4](./_static/tutorials/logistic_regression_stat-Y-diff4.png)
 
@@ -884,18 +884,18 @@ Rosetta 完整代码参考 [rtt-ds-lr.py](../example/tutorials/code/rtt-ds-lr.py
 
 ### MLP神经网络
 
-看完了[隐私机器学习](#隐私机器学习)的内容，相信大家对于`Rosetta`的基本用法以及`tensorflow`的基本语法有了一定了解。我们把MLP神经网络实现mnist手写数据集分类作为本节的例子。
+看完了[隐私机器学习](#隐私机器学习)的内容，相信大家对于`Rosetta`的基本用法以及`TensorFlow`的基本语法有了一定了解。我们把MLP神经网络实现mnist手写数据集分类作为本节的例子。
 
-首先我们来看一下明文（tensorflow）版的代码。
+首先我们来看一下明文（TensorFlow）版的代码。
 
-#### tensorflow版
+#### TensorFlow版
 
 - 导入需要的包并加载数据集
 
-`tensorflow`版与`Rosetta`版的代码在数据的加载部分是非常不一样的，看完了前面的例子应该很清楚。
+`TensorFlow`版与`Rosetta`版的代码在数据的加载部分是非常不一样的，看完了前面的例子应该很清楚。
 
 ```python
-from tensorflow.examples.tutorials.mnist import input_data
+from TensorFlow.examples.tutorials.mnist import input_data
 import os
 import tensorflow as tf
 mnist_home = os.path.join("/tmp/data/", 'mnist')
@@ -1111,7 +1111,7 @@ def tensorflow_classification(n_epochs, n_batches,
         saver.save(tfs, './log/ckpt'+str(mpc_player_id)+'/model')
 ```
 
-其余部分与`tensorflow`版的基本相同，完整代码请参考[rtt-mlp_mnist.py](../example/tutorials/code/rtt-mlp_mnist.py)
+其余部分与`TensorFlow`版的基本相同，完整代码请参考[rtt-mlp_mnist.py](../example/tutorials/code/rtt-mlp_mnist.py)
 
 执行
 
@@ -1290,9 +1290,9 @@ dsets/
 
 说明：
 
-为了与明文（tensorflow 版本）对比，我们把原始数据集按垂直方向切分成两份，一份当做是 `P0` 的私有数据，另一分当做是 `P1` 的私有数据。
+为了与明文（TensorFlow 版本）对比，我们把原始数据集按垂直方向切分成两份，一份当做是 `P0` 的私有数据，另一分当做是 `P1` 的私有数据。
 
-1. ALL 下的数据用于 tensorflow 版本。
+1. ALL 下的数据用于 TensorFlow 版本。
 2. P0/P1 各节点的私有数据存放在各自的节点上。
 3. P2 是没有数据的。
 4. 逻辑回归的标签由 P0 执有，线性回归的标签由 P1 执有。

@@ -13,7 +13,7 @@ if [ ! -d log ]; then
 fi
 
 
-echo "\n***  UnitTest of SecureNN   ***\n"
+echo -e "\n***  UnitTest of SecureNN   ***\n"
 export ROSETTA_TEST_PROTOCOL=SecureNN
 
 python3 ./utests/unittest_all.py > log/securenn.utest.log 2>&1

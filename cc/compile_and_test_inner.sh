@@ -85,6 +85,8 @@ function install_emptoolkit() {
     echo "install emp-tool ok."
     #fi
 
+    ## TODO: [HGF] emp-ot is not required at present !!!
+    return
     # install emp-ot
     #if [ ! -e ${builddir}/include/emp-otl ]; then
     #echo "emp-ot not exist"
