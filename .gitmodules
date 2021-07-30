@@ -1,3 +1,9 @@
 [submodule "cc/third_party/emp-toolkit/emp-tool"]
 	path = cc/third_party/emp-toolkit/emp-tool
 	url = https://github.com/emp-toolkit/emp-tool.git
+[submodule "cc/third_party/io"]
+	path = cc/third_party/io
+	url = https://github.com/LatticeX-Foundation/Rosetta-IO.git
+[submodule "cc/third_party/spdlog"]
+	path = cc/third_party/spdlog
+	url = https://github.com/LatticeX-Foundation/Rosetta-Log.git
