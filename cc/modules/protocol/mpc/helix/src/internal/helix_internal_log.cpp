@@ -44,6 +44,8 @@ void HelixInternal::PowV2(
 void HelixInternal::PowV2(const vector<Share>& X, const int& k,
                           vector<Share>& Y) {
   // cout << "vector HelixInternal::PowV3" << endl;
+  AUDIT("id:{}, P{} PowV2 input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} PowV2 input K: {}", msgid.get_hex(), player, k);
 
   // init curr_Y to '1'
   int vec_size = X.size();
@@ -52,10 +54,14 @@ void HelixInternal::PowV2(const vector<Share>& X, const int& k,
   Add(curr_Y, DOUBLE_ONE);
   if (k == 0) {
     Y = curr_Y;
+    AUDIT("id:{}, P{} PowV2 output Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+
     return;  
   }
   if (k == 1) {
     Y = X;
+    AUDIT("id:{}, P{} PowV2 output Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+
     return;
   }
 
@@ -89,6 +95,8 @@ void HelixInternal::PowV2(const vector<Share>& X, const int& k,
     curr_p++;
   }
   Y = curr_Y;
+  AUDIT("id:{}, P{} PowV2 output Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+
   return;
 }
 
@@ -120,6 +128,9 @@ void HelixInternal::UniPolynomial(
   const vector<mpc_t>& common_power_list,
   const vector<mpc_t>& common_coff_list,
   Share& shared_Y) {
+  AUDIT("id:{}, P{} UniPolynomial input X(Share): {}", msgid.get_hex(), player, shared_X);
+  AUDIT("id:{}, P{} UniPolynomial input power(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(common_power_list));
+  AUDIT("id:{}, P{} UniPolynomial input coff(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(common_coff_list));
   vector<Share> curr_value(1);
   vector<Share> x_vec(1, shared_X);
   for (auto i = 0; i < common_power_list.size(); ++i) {
@@ -143,6 +154,7 @@ void HelixInternal::UniPolynomial(
     }
   }
   shared_Y = curr_value[0];
+  AUDIT("id:{}, P{} UniPolynomial output Y(Share): {}", msgid.get_hex(), player, shared_Y);
 }
 
 // for continuous common_power_list with max order be N, round complexity is N. 
@@ -151,6 +163,9 @@ void HelixInternal::UniPolynomial(
   const vector<mpc_t>& common_power_list,
   const vector<mpc_t>& common_coff_list,
   vector<Share>& shared_Y) {
+  AUDIT("id:{}, P{} UniPolynomial_batch input X(Share){}", msgid.get_hex(), player, Vector<Share>(shared_X));
+  AUDIT("id:{}, P{} UniPolynomial_batch input power(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(common_power_list));
+  AUDIT("id:{}, P{} UniPolynomial_batch input coff(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(common_coff_list));
   int vec_size = shared_X.size();
   // this cache is for reduce calling Mul operation.
   // It works for continuous common_power_list.
@@ -184,8 +199,9 @@ void HelixInternal::UniPolynomial(
       Add(prod_res, tmp_prod);
     }
   }
-  Trunc(prod_res, vec_size);
+  Trunc(prod_res, vec_size, GetMpcContext()->FLOAT_PRECISION);
   Add(prod_res, curr_value, shared_Y);
+  AUDIT("id:{}, P{} UniPolynomial_batch output Y(Share){}", msgid.get_hex(), player, Vector<Share>(shared_Y));
 }
 
 void HelixInternal::LogV2(const vector<Share>& X, vector<Share>& Z) {
@@ -196,15 +212,18 @@ void HelixInternal::LogV2(const vector<Share>& X, vector<Share>& Z) {
   vector<ConstPolynomial>* log_v2_p = NULL;
   if (!PolyConfFactory::get_func_polys(my_func, &log_v2_p)) {
     // TODO: throw exception
-    cout << "ERROR! can not find polynomials for func " << my_func << endl;
+    tlog_error<< "ERROR! can not find polynomials for func " << my_func ;
+
     return;
   }
   auto seg_size = log_v2_p->size();
   if (seg_size == 0) {
     // TODO: throw exception
-    cout << "ERROR! empty polynomials in log_v2." << endl;
+    tlog_error << "ERROR! empty polynomials in log_v2." ;
     return;
   }
+
+  AUDIT("id:{}, P{} LogV2 input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
   /** 
 	* In this version, we use the optimized style for piecewise function.
 	F(x) = f_0(x) + (x>=c_1)(f_1(x)-f_0(x)) + ...+(x>=C_k)(f_k(x)-f_{k-1}(x))
@@ -215,15 +234,16 @@ void HelixInternal::LogV2(const vector<Share>& X, vector<Share>& Z) {
   vector<mpc_t> curr_power_list;
   vector<mpc_t> curr_coff_list;
   vector<Share> last_seg_res(vec_size);
+  int float_precision = GetMpcContext()->FLOAT_PRECISION;
   for (int i = 0; i < seg_size; ++i) {
     ConstPolynomial curr_seg = log_v2_p->at(i);
-    mpc_t seg_init = curr_seg.get_start();
-    mpc_t seg_end = curr_seg.get_end();
+    mpc_t seg_init = curr_seg.get_start(float_precision);
+    mpc_t seg_end = curr_seg.get_end(float_precision);
 
     curr_seg.get_power_list(curr_power_list);
-    curr_seg.get_coff_list(curr_coff_list);
+    curr_seg.get_coff_list(curr_coff_list, float_precision);
 
-    vector<double> curr_seg_start(vec_size, MpcTypeToFloat(seg_init));
+    vector<double> curr_seg_start(vec_size, MpcTypeToFloat(seg_init, float_precision));
     vector<Share> curr_compare_res(vec_size);
     GreaterEqual(X, curr_seg_start, curr_compare_res);
     for (auto j = 0; j < vec_size; ++j) {
@@ -242,9 +262,12 @@ void HelixInternal::LogV2(const vector<Share>& X, vector<Share>& Z) {
     last_seg_res = curr_seg_res;
   }
   InnerProducts(compare_res, seg_res, Z, false);
+
+  AUDIT("id:{}, P{} LogV2 output Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 void HelixInternal::HLog(const vector<Share>& X, vector<Share>& Z) {
+  AUDIT("id:{}, P{} HLog input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
   int vec_size = X.size();
   // Note this is actually a constant: 64
   int LEN = 8 * sizeof(mpc_t); 
@@ -261,9 +284,10 @@ void HelixInternal::HLog(const vector<Share>& X, vector<Share>& Z) {
 	vector<Share> shared_power_adder(vec_size);
 	auto curr_x = X;
 	vector<Share> curr_power(vec_size);
+  int float_precision = GetMpcContext()->FLOAT_PRECISION;
   // step 1: express x as 2^{m} * {r/2} where r \in [1, 2)
 	// 1.1 scale down integer part
-	for(int i = 0; i < LEN - FLOAT_PRECISION_M; ++i) {
+	for(int i = 0; i < LEN - float_precision; ++i) {
 	  auto curr_x_minus_one = curr_x;
 		vector<Share> shared_cmp(vec_size);
 		Sub(curr_x, DOUBLE_ONE, curr_x_minus_one);
@@ -276,7 +300,7 @@ void HelixInternal::HLog(const vector<Share>& X, vector<Share>& Z) {
     Add(curr_power, shared_power_adder);
   }
 	// 1.2 scale up fractional part
-  for(int i = 0; i < FLOAT_PRECISION_M; ++i) {
+  for(int i = 0; i < float_precision; ++i) {
 		auto curr_x_minus_half = curr_x;
 		vector<Share> shared_cmp(vec_size);
     Sub(curr_x, DOUBLE_HALF, curr_x_minus_half);
@@ -300,7 +324,7 @@ void HelixInternal::HLog(const vector<Share>& X, vector<Share>& Z) {
   }
 	// we know that this is a one-segment polynomial
   log_hd_p->at(0).get_power_list(power_list);
-	log_hd_p->at(0).get_coff_list(coff_list);	
+	log_hd_p->at(0).get_coff_list(coff_list, float_precision);	
 	// for (auto i = 0; i< power_list.size(); i++) {
 	// 		cout << MpcTypeToFloat(CoffDown(coff_list[i])) << "*X^" << power_list[i] << " + ";
 	// }
@@ -310,6 +334,8 @@ void HelixInternal::HLog(const vector<Share>& X, vector<Share>& Z) {
   vector<Share> high_part(vec_size);
   Mul(curr_power, DOUBLE_LN_2, high_part);
   Add(basic_val, high_part, Z);
+
+  AUDIT("id:{}, P{} HLog output Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 } // namespace helix

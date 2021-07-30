@@ -81,7 +81,7 @@ void helix_double_to_plain_string(const std::vector<double>& a, std::vector<std:
  * operator overloading
  */
 template <typename T>
-inline vector<T> operator+(const vector<T>& v1, const vector<T>& v2) {
+vector<T> operator+(const vector<T>& v1, const vector<T>& v2) {
   assert(v1.size() == v2.size());
   vector<T> v(v1.size());
   for (int i = 0; i < v.size(); i++) {
@@ -89,6 +89,9 @@ inline vector<T> operator+(const vector<T>& v1, const vector<T>& v2) {
   }
   return v;
 }
+extern template std::vector<mpc_t> operator+(const std::vector<mpc_t>&, const std::vector<mpc_t>&);
+extern template std::vector<double> operator+(const std::vector<double>&, const std::vector<double>&);
+
 template <>
 inline vector<bit_t> operator+(const vector<bit_t>& v1, const vector<bit_t>& v2) {
   assert(v1.size() == v2.size());
@@ -100,7 +103,7 @@ inline vector<bit_t> operator+(const vector<bit_t>& v1, const vector<bit_t>& v2)
 }
 
 template <typename T>
-inline vector<T> operator-(const vector<T>& v1, const vector<T>& v2) {
+vector<T> operator-(const vector<T>& v1, const vector<T>& v2) {
   assert(v1.size() == v2.size());
   vector<T> v(v1.size());
   for (int i = 0; i < v.size(); i++) {
@@ -108,6 +111,9 @@ inline vector<T> operator-(const vector<T>& v1, const vector<T>& v2) {
   }
   return v;
 }
+extern template std::vector<mpc_t> operator-(const std::vector<mpc_t>&, const std::vector<mpc_t>&);
+extern template std::vector<double> operator-(const std::vector<double>&, const std::vector<double>&);
+
 template <>
 inline vector<bit_t> operator-(const vector<bit_t>& v1, const vector<bit_t>& v2) {
   assert(v1.size() == v2.size());
@@ -119,13 +125,16 @@ inline vector<bit_t> operator-(const vector<bit_t>& v1, const vector<bit_t>& v2)
 }
 
 template <typename T>
-inline vector<T> operator/(const vector<T>& v1, const int N) {
+vector<T> operator/(const vector<T>& v1, const int N) {
   vector<T> v(v1.size());
   for (int i = 0; i < v.size(); i++) {
     v[i] = v1[i] / N;
   }
   return v;
 }
+extern template std::vector<mpc_t> operator/(const std::vector<mpc_t>&, const int);
+extern template std::vector<double> operator/(const std::vector<double>&, const int);
+extern template std::vector<bit_t> operator/(const std::vector<bit_t>&, const int);
 
 vector<mpc_t> operator-(const vector<bit_t>& v1, const vector<mpc_t>& v2);
 BitShare operator^(const BitShare& v1, const BitShare& v2);
@@ -158,7 +167,7 @@ inline size_t get_m_n(const vector<vector<T>>& v, int& m, int& n) {
  * (m, n) ---> vector with size m*n
  */
 template <typename T>
-inline void flatten(const vector<vector<T>>& vv, vector<T>& v) {
+void flatten(const vector<vector<T>>& vv, vector<T>& v) {
   int m, n;
   size_t size = get_m_n(vv, m, n);
   v.resize(size);
@@ -168,8 +177,10 @@ inline void flatten(const vector<vector<T>>& vv, vector<T>& v) {
     }
   }
 }
+extern template void flatten<double>(const std::vector<std::vector<double>>&, std::vector<double>&);
+
 template <typename T>
-inline void flatten_r(vector<vector<T>>& vv, const vector<T>& v, int m, int n) {
+void flatten_r(vector<vector<T>>& vv, const vector<T>& v, int m, int n) {
   if (m <= 0)
     return;
   if (n <= 0)
@@ -182,6 +193,7 @@ inline void flatten_r(vector<vector<T>>& vv, const vector<T>& v, int m, int n) {
     }
   }
 }
+extern template void flatten_r<Share>(std::vector<std::vector<Share>>&, const std::vector<Share>&, int, int);
 
 template <typename T>
 inline void print_shape_(vector<vector<T>>& v, string name = "") {

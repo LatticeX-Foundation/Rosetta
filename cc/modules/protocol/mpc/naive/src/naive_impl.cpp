@@ -17,7 +17,6 @@
 // ==============================================================================
 #include "cc/modules/protocol/mpc/naive/include/naive_impl.h"
 #include "cc/modules/protocol/mpc/naive/include/naive_ops_impl.h"
-#include "cc/modules/io/include/net_io.h"
 
 #include <stdexcept>
 #include <string>
@@ -27,12 +26,11 @@ using namespace std;
 namespace rosetta {
 
 shared_ptr<ProtocolOps> NaiveProtocol::GetOps(const msg_id_t& msgid) {
-  auto naive_ops_ptr = make_shared<NaiveOpsImpl>(msgid);
+  auto naive_ops_ptr = make_shared<NaiveOpsImpl>(msgid, context_);
   // In this insecure naive protocol, we pass the party role ID to inner NaiveOpsImpl directly
   // in this inelegant way. For production protocol, please refer to SecureNN implementation.
-  naive_ops_ptr->op_config_map["PID"] = "P" + to_string(my_party_id);
   naive_ops_ptr->io = GetNetHandler();
-  return std::dynamic_pointer_cast<ProtocolOps>(naive_ops_ptr);
+  return naive_ops_ptr;
 }
 
 } // namespace rosetta

@@ -22,8 +22,12 @@ namespace rosetta {
 int HelixOpsImpl::Relu(const vector<string>& a, vector<string>& c, const attr_type* attr_info) {
   vector<Share> shareA, shareC;
   helix_convert_string_to_share(a, shareA);
+  AUDIT("id:{}, Relu input X(Share){}", _op_msg_id.get_hex(), Vector<Share>(shareA));
+
   hi->ReLU(shareA, shareC);
   helix_convert_share_to_string(shareC, c);
+  AUDIT("id:{}, Relu output(Share){}", _op_msg_id.get_hex(), Vector<Share>(shareC));
+
   return 0;
 }
 
@@ -33,17 +37,25 @@ int HelixOpsImpl::ReluPrime(
   const attr_type* attr_info) {
   vector<Share> shareA, shareC;
   helix_convert_string_to_share(a, shareA);
+  AUDIT("id:{}, ReluPrime input X(Share){}", _op_msg_id.get_hex(), Vector<Share>(shareA));
+
   hi->DReLU(shareA, shareC);
-  hi->Scale(shareC);
+  hi->Scale(shareC, context_->FLOAT_PRECISION);
   helix_convert_share_to_string(shareC, c);
+  AUDIT("id:{}, ReluPrime output(Share){}", _op_msg_id.get_hex(), Vector<Share>(shareC));
+
   return 0;
 }
 
 int HelixOpsImpl::Sigmoid(const vector<string>& a, vector<string>& c, const attr_type* attr_info) {
   vector<Share> shareA, shareC;
   helix_convert_string_to_share(a, shareA);
+  AUDIT("id:{}, Sigmoid input X(Share){}", _op_msg_id.get_hex(), Vector<Share>(shareA));
+
   hi->Sigmoid(shareA, shareC);
   helix_convert_share_to_string(shareC, c);
+  AUDIT("id:{}, Sigmoid output(Share){}", _op_msg_id.get_hex(), Vector<Share>(shareC));
+
   return 0;
 }
 
@@ -54,10 +66,16 @@ int HelixOpsImpl::SigmoidCrossEntropy(
   const attr_type* attr_info) {
   vector<Share> shareA, shareB, shareC;
   helix_convert_string_to_share(a, shareA);
+  AUDIT("id:{}, SigmoidCrossEntropy input X(Share){}", _op_msg_id.get_hex(), Vector<Share>(shareA));
+
   helix_convert_string_to_share(b, shareB);
+  AUDIT("id:{}, SigmoidCrossEntropy input Y(Share){}", _op_msg_id.get_hex(), Vector<Share>(shareB));
+
   // hi->SigmoidCrossEntropy(shareA, shareB, shareC);
   hi->SigmoidCrossEntropy_batch(shareA, shareB, shareC);
   helix_convert_share_to_string(shareC, c);
+  AUDIT("id:{}, SigmoidCrossEntropy output(Share){}", _op_msg_id.get_hex(),  Vector<Share>(shareC));
+
   return 0;
 }
 } // namespace rosetta

@@ -14,8 +14,8 @@ void run(int partyid) {
     vector<double> cond_2 = {-1.0, 1.0, -1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0};
 
     vector<Share> shareX, shareY;
-    hi->Input(2, XX, shareX);
-    hi->Input(2, YY, shareY);
+    hi->Input(node_id_2, XX, shareX);
+    hi->Input(node_id_2, YY, shareY);
     vector<Share> shareZ;
     
     // pre-case: inner utils
@@ -26,8 +26,8 @@ void run(int partyid) {
     //we expect -1. and -1.
     hi->RevealAndPrint(share_cond, "Select1Of2 share_cond:");
     
-    hi->Input(2, XX, shareX);
-    hi->Input(2, YY, shareY);
+    hi->Input(node_id_2, XX, shareX);
+    hi->Input(node_id_2, YY, shareY);
     print_vec(expected_result, 10, "expected:");
     
     // case 1 : SSS
@@ -67,8 +67,8 @@ void run(int partyid) {
     random_vector(Y, size);
 
     vector<Share> shareX, shareY;
-    hi->Input(2, X, shareX);
-    hi->Input(2, Y, shareY);
+    hi->Input(node_id_2, X, shareX);
+    hi->Input(node_id_2, Y, shareY);
 
     vector<Share> shareZ;
     int J = 9;

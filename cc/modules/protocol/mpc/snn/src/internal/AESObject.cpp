@@ -23,7 +23,7 @@ using namespace std;
 #include "cc/modules/protocol/mpc/snn/src/internal/TedKrovetzAesNiWrapperC.h"
 #include "cc/modules/protocol/mpc/snn/src/internal/AESObject.h"
 
-#include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
 
 AESObject::AESObject(const char* filename) {
   ifstream f(filename);
@@ -33,7 +33,7 @@ AESObject::AESObject(const char* filename) {
   log_info << "aes file:" << filename << " key:" << str << "\n";
   string fname(filename);
   if ((fname.find("null") == string::npos) && str.empty()) {
-    log_error << filename << " is not exist!" << endl;
+    log_error << filename << " is not exist!" ;
   }
   Init(str);
 }

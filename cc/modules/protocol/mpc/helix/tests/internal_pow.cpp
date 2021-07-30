@@ -9,7 +9,7 @@ void run(int partyid) {
     //vector<double> X = {-2, -1, 0, 1, 2};
     vector<double> X = {-2, -1.1};
     vector<Share> shareX;
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
 
     vector<vector<Share>> shareY;
     size_t N = 6;
@@ -29,7 +29,7 @@ void run(int partyid) {
 
     vector<double> X;
     vector<Share> shareX;
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
 
     vector<vector<Share>> shareY;
     size_t N = 6;
@@ -43,7 +43,7 @@ void run(int partyid) {
 
     vector<double> X;
     vector<Share> shareX;
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
 
     vector<vector<Share>> shareY;
     size_t N = 11;

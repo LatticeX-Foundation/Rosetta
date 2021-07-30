@@ -10,8 +10,8 @@ void run(int partyid) {
     vector<double> X = {-1.01, -2.0, 2.3, 2, 0.01, 0, -0.03, 0.031};
     vector<double> Y = {-1.01, -2.0, 2.3, 2, 0.01, 0, -0.03, 0.031};
     vector<Share> shareX, shareY;
-    hi->Input(2, X, shareX);
-    hi->Input(2, Y, shareY);
+    hi->Input(node_id_2, X, shareX);
+    hi->Input(node_id_2, Y, shareY);
 
     vector<Share> shareZ;
     int J = 2;
@@ -34,8 +34,8 @@ void run(int partyid) {
     random_vector(Y, size);
 
     vector<Share> shareX, shareY;
-    hi->Input(2, X, shareX);
-    hi->Input(2, Y, shareY);
+    hi->Input(node_id_2, X, shareX);
+    hi->Input(node_id_2, Y, shareY);
 
     vector<Share> shareZ;
     int J = 9;

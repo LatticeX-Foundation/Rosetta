@@ -24,20 +24,28 @@
 using namespace std;
 namespace rosetta {
 int HelixOpsImpl::Reveal(const vector<string>& a, vector<string>& c, const attr_type* attr_info) {
-  int p = get_attr_value(attr_info, "receive_party", 7);
+  string nodes = get_attr_value(attr_info, "receive_parties", "");
   vector<Share> shareA;
   helix_convert_string_to_share(a, shareA);
+  AUDIT("id:{}, P{} Reveal input X(Share){}", _op_msg_id.get_hex(),  hi->party_id(), Vector<Share>(shareA));
+
   vector<double> fc;
-  hi->Reveal(shareA, fc, p);
+  hi->Reveal(shareA, fc, nodes);
   helix_double_to_plain_string(fc, c);
+  AUDIT("id:{}, P{} Reveal output(double, plain){}", _op_msg_id.get_hex(), hi->party_id(), Vector<double>(fc));
+
   return 0;
 }
 
 int HelixOpsImpl::Reveal(const vector<string>& a, vector<double>& c, const attr_type* attr_info) {
-  int p = get_attr_value(attr_info, "receive_party", 7);
+  string nodes = get_attr_value(attr_info, "receive_parties", "");
   vector<Share> shareA;
   helix_convert_string_to_share(a, shareA);
-  hi->Reveal(shareA, c, p);
+  AUDIT("id:{}, P{} Reveal input X(Share){}", _op_msg_id.get_hex(),  hi->party_id(), Vector<Share>(shareA));
+
+  hi->Reveal(shareA, c, nodes);
+  AUDIT("id:{}, P{} Reveal output(double, plain){}", _op_msg_id.get_hex(), hi->party_id(), Vector<double>(c));
+
   return 0;
 }
 
@@ -49,13 +57,10 @@ int HelixOpsImpl::ConditionalReveal(
   vector<string>& out_cipher_vec,
   vector<double>& out_plain_vec) {
   // not to reveal plaintext by default
-  int save_mode = 0;
-  if (op_config_map.find("save_mode") != op_config_map.end()) {
-    log_debug << op_config_map["save_mode"] << endl;
-    save_mode = stoi(op_config_map["save_mode"]);
-  }
+  const vector<string>& save_mode = context_->SAVER_MODE;
+
   // all ciphertext
-  if (0 == save_mode) {
+  if (save_mode.empty()) {
     out_cipher_vec = in_vec;
     out_plain_vec.clear();
     return 0;
@@ -63,17 +68,20 @@ int HelixOpsImpl::ConditionalReveal(
   // only plaintext for selected parties
   vector<Share> shareA;
   helix_convert_string_to_share(in_vec, shareA);
+  AUDIT("id:{}, P{} Reveal, input(Share){}", _op_msg_id.get_hex(), hi->party_id(),  Vector<Share>(shareA));
+
   vector<double> c;
   hi->Reveal(shareA, c, save_mode);
-  int my_party_id = hi->party_id();
-  if (
-    ((save_mode & 1) && my_party_id == 0) || ((save_mode & 2) && my_party_id == 1) ||
-    ((save_mode & 4) && my_party_id == 2)) {
+  string current_node_id = io->GetCurrentNodeId();
+  if (std::find(save_mode.begin(), save_mode.end(), current_node_id) != save_mode.end()) {
     out_plain_vec.swap(c);
   } else {
-    out_plain_vec.clear();
+    out_plain_vec.resize(in_vec.size());
   }
   out_cipher_vec.clear();
+
+  AUDIT("id:{}, P{} Reveal, output(double, plain){}", _op_msg_id.get_hex(), hi->party_id(),  Vector<double>(out_plain_vec));
+  //AUDIT("id:{}, Reveal nodes:{}, output{}", _op_msg_id.get_hex(), nodes, Vector<Share>(shareC));
 
   return 0;
 }

@@ -32,11 +32,14 @@ namespace rosetta {
 namespace helix {
 // do some inner Ops in batch-style to reduce communication cost [but bad for code readability compared to 'SigmoidCrossEntropy'] 
 void HelixInternal::SigmoidCrossEntropy_batch(const vector<Share>& logits, const vector<Share>& labels, vector<Share>& Z) {
-  // log_debug << "DEBUG HelixOpsImpl::SigmoidCrossEntropy_batch" << endl;
+  // tlog_debug << "DEBUG HelixOpsImpl::SigmoidCrossEntropy_batch" ;
+  AUDIT("id:{}, P{} SigmoidCrossEntropy_batch compute: Z=max(logit,0)-logit*label+log(1+exp(-abs(logits)), input logit(Share){}", msgid.get_hex(), player, Vector<Share>(logits));
+  AUDIT("id:{}, P{} SigmoidCrossEntropy_batch compute: Z=max(logit,0)-logit*label+log(1+exp(-abs(logits)), input labels(Share){}", msgid.get_hex(), player, Vector<Share>(labels));
   int vec_size = logits.size();
   ///********************1. prepare all data for batch-MSB. 
   vector<Share> batch_comp_X;
   batch_comp_X.insert(batch_comp_X.end(), logits.begin(), logits.end());
+  int float_precision = GetMpcContext()->FLOAT_PRECISION;
 
   vector<Share> log_part(vec_size);
   string my_func = "LOG_CE";
@@ -45,13 +48,14 @@ void HelixInternal::SigmoidCrossEntropy_batch(const vector<Share>& logits, const
   vector<ConstPolynomial>* log_ce_p = NULL;
   if (!PolyConfFactory::get_func_polys(my_func, &log_ce_p)) {
     // TODO: throw exception
-    log_error << "ERROR! can not find polynomials for func " << my_func <<endl;
+    tlog_error << "ERROR! can not find polynomials for func " << my_func;
+    //ERROR("ERROR! can not find polynomials for func {}", my_func);
     return;
   }
 	// we know that this is a one-segment polynomial
   log_ce_p->at(0).get_power_list(power_list);
-	log_ce_p->at(0).get_coff_list(coff_list);	
-  mpc_t end_v = log_ce_p->at(0).get_end();
+  log_ce_p->at(0).get_coff_list(coff_list, float_precision);	
+  mpc_t end_v = log_ce_p->at(0).get_end(float_precision);
   vector<mpc_t> upper_bound_v(vec_size, end_v);
   vector<Share> UPPER_V(vec_size);
   ConstCommonInput(upper_bound_v, UPPER_V);
@@ -98,7 +102,8 @@ void HelixInternal::SigmoidCrossEntropy_batch(const vector<Share>& logits, const
   
   // 3.1 max(logits, 0) by Relu
   // ToDo: pack BMA with the following B2A etc to reduce communication round further.
-  BMA(logits_sign_bit, logits, max_part);
+  BMA(logits_sign_bit, logits, max_part); // BMA equals to B2A, Mul
+
   // 3.2 abs(logits) by DRelu and Select
   vector<Share> logits_sign_arith(vec_size);
   B2A(logits_sign_bit, logits_sign_arith);
@@ -163,13 +168,18 @@ void HelixInternal::SigmoidCrossEntropy_batch(const vector<Share>& logits, const
   // 7. collect all parts
   Sub(max_part, prod_part, Z);
   Add(Z, log_part);
+
+  AUDIT("id:{}, P{} SigmoidCrossEntropy_batch compute: Z=max(logit,0)-logit*label+log(1+exp(-abs(logits)), output Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 /*
     max(logit, 0) - logit * label + log(1 + exp(-abs(logits)))
 */
 void HelixInternal::SigmoidCrossEntropy(const vector<Share>& logits, const vector<Share>& labels, vector<Share>& Z) {
+  AUDIT("id:{}, P{} SigmoidCrossEntropy compute: Z=max(logit,0)-logit*label+log(1+exp(-abs(logits)), input logit(Share){}", msgid.get_hex(), player, Vector<Share>(logits));
+  AUDIT("id:{}, P{} SigmoidCrossEntropy compute: Z=max(logit,0)-logit*label+log(1+exp(-abs(logits)), input labels(Share){}", msgid.get_hex(), player, Vector<Share>(labels));
   int vec_size = logits.size();
+  int float_precision = GetMpcContext()->FLOAT_PRECISION;
   // 1. max(logit, 0)
   vector<Share> max_part(vec_size);
   ReLU(logits, max_part);
@@ -193,18 +203,18 @@ void HelixInternal::SigmoidCrossEntropy(const vector<Share>& logits, const vecto
   vector<ConstPolynomial>* log_ce_p = NULL;
   if (!PolyConfFactory::get_func_polys(my_func, &log_ce_p)) {
     // TODO: throw exception
-    log_error << "ERROR! can not find polynomials for func " << my_func <<endl;
+    tlog_error << "ERROR! can not find polynomials for func " << my_func ;
     return;
   }
 	// we know that this is a one-segment polynomial
   log_ce_p->at(0).get_power_list(power_list);
-	log_ce_p->at(0).get_coff_list(coff_list);
+  log_ce_p->at(0).get_coff_list(coff_list, float_precision);
   // for (auto i = 0; i< power_list.size(); i++) {
 	//  	cout << MpcTypeToFloat(CoffDown(coff_list[i])) << "*X^" << power_list[i] << " + ";
 	// }
   // cout << endl;
   // caped input
-  mpc_t end_v = log_ce_p->at(0).get_end();
+  mpc_t end_v = log_ce_p->at(0).get_end(float_precision);
   vector<mpc_t> upper_bound_v(vec_size, end_v);
   vector<Share> UPPER_V(vec_size);
   // Input(0, upper_bound_v, UPPER_V);
@@ -228,6 +238,8 @@ void HelixInternal::SigmoidCrossEntropy(const vector<Share>& logits, const vecto
   // 5. collect all parts
   Sub(max_part, prod_part, Z);
   Add(Z, log_part);
+
+  AUDIT("id:{}, P{} SigmoidCrossEntropy compute: Z=max(logit,0)-logit*label+log(1+exp(-abs(logits)), output Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 } // namespace helix

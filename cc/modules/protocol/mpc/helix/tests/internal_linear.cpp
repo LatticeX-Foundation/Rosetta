@@ -10,7 +10,7 @@ void run(int partyid) {
     vector<bit_t> X = {0, 1, 0, 1, 1, 1, 0};
     vector<bit_t> C = {1, 0, 1, 1, 1, 0, 0, 1};
     vector<BitShare> shareX(X.size());
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
 
     BitShare Y;
 
@@ -25,7 +25,7 @@ void run(int partyid) {
     // float version
     vector<double> X = {-1.2, 0.1, 0, 3.3};
     vector<Share> shareX(X.size());
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
 
     vector<double> C = {2.2, 0.2, -1.1, 3, -0.5};
     Share Y;

@@ -22,8 +22,8 @@ void run(int partyid) {
     random_vector(Y, size);                                                                    \
                                                                                                \
     vector<Share> shareX, shareY, shareZ(size);                                                \
-    hi->Input(0, X, shareX);                                                                   \
-    hi->Input(1, Y, shareY);                                                                   \
+    hi->Input(node_id_0, X, shareX);                                                                   \
+    hi->Input(node_id_1, Y, shareY);                                                                   \
                                                                                                \
     string tag(#op);                                                                           \
     hi->beg_statistics();                                                                      \

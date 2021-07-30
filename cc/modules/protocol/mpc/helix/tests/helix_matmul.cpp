@@ -12,8 +12,8 @@ void run(int partyid) {
     vector<double> a = {1, 2, 3, 4.0};
     vector<double> b = {5, 6, 7, 8.0};
     vector<string> outa, outb;
-    helix0.GetOps(msgid)->PrivateInput(0, a, outa);
-    helix0.GetOps(msgid)->PrivateInput(1, b, outb);
+    helix0.GetOps(msgid)->PrivateInput(node_id_0, a, outa);
+    helix0.GetOps(msgid)->PrivateInput(node_id_1, b, outb);
     print_vec(outa, 10, "outa");
     print_vec(outb, 10, "outb");
 
@@ -28,7 +28,7 @@ void run(int partyid) {
 
     // reveal c
     vector<double> c;
-    helix0.GetOps(msgid)->Reveal(outc, c);
+    helix0.GetOps(msgid)->Reveal(outc, c, &reveal_attr);
     print_vec(c, 10, "c");
   }
 

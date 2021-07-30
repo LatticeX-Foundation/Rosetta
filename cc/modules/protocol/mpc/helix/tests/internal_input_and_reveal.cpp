@@ -9,21 +9,21 @@ void run(int partyid) {
   vector<Share> shareX(X.size());
   {
     hi->beg_statistics();
-    hi->Input(0, X, shareX);
+    hi->Input(node_id_0, X, shareX);
     hi->end_statistics("RTT Input-0(k=" + to_string(X.size()) + "):");
 
     hi->RevealAndPrint(shareX, "Input-0:");
   }
   {
     hi->beg_statistics();
-    hi->Input(1, X, shareX);
+    hi->Input(node_id_1, X, shareX);
     hi->end_statistics("RTT Input-1(k=" + to_string(X.size()) + "):");
 
     hi->RevealAndPrint(shareX, "Input-1:");
   }
   {
     hi->beg_statistics();
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
     hi->end_statistics("RTT Input-2(k=" + to_string(X.size()) + "):");
 
     hi->RevealAndPrint(shareX, "Input-2:");

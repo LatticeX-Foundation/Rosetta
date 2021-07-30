@@ -6,7 +6,7 @@ void run(int partyid) {
   // input a b
   vector<double> x = {-10.0, -3.0, 10.0, 3.0, 0.003, -0.02};
   vector<string> input_str, out_str;
-  helix0.GetOps(msgid)->PrivateInput(0, x, input_str);
+  helix0.GetOps(msgid)->PrivateInput(node_id_0, x, input_str);
   print_vec(input_str, 10, "X:");
   attr_type attr;
   
@@ -15,14 +15,14 @@ void run(int partyid) {
   print_vec(out_str, 10, "Abs output cipher");
   // reveal c
   vector<double> c;
-  helix0.GetOps(msgid)->Reveal(out_str, c);
+  helix0.GetOps(msgid)->Reveal(out_str, c, &reveal_attr);
   print_vec(c, 10, "Abs result plain:");
 
   // case 2: AbsPrime
   helix0.GetOps(msgid)->AbsPrime(input_str, out_str, &attr);
   print_vec(out_str, 10, "AbsPrime output cipher");
   // reveal c
-  helix0.GetOps(msgid)->Reveal(out_str, c);
+  helix0.GetOps(msgid)->Reveal(out_str, c, &reveal_attr);
   print_vec(c, 10, "AbsPrime result plain:");
 
   HELIX_PROTOCOL_TEST_UNINIT(partyid);

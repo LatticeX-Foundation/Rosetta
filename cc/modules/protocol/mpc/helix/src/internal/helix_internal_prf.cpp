@@ -18,6 +18,7 @@
 #include "cc/modules/common/include/utils/generate_key.h"
 #include "cc/modules/protocol/mpc/helix/include/helix_internal.h"
 #include "cc/modules/protocol/utility/include/prg.h"
+#include "cc/modules/protocol/mpc/comm/include/mpc_prg_controller.h"
 
 #include <iostream>
 #include <vector>
@@ -109,9 +110,11 @@ void HelixInternal::PRF2(vector<mpc_t>& A, size_t size) { _PRF(player, PARTY_2, 
 void HelixInternal::PRF2(vector<bit_t>& A, size_t size) { _PRF(player, PARTY_2, A, size, prgobjs->prg2); }
 void HelixInternal::PRF(vector<mpc_t>& A, size_t size) { _PRF(A, size, prgobjs->prg); }
 void HelixInternal::PRF(vector<bit_t>& A, size_t size) { _PRF(A, size, prgobjs->prg); }
+void HelixInternal::PRF_PRIVATE(vector<mpc_t>& A, size_t size) { _PRF(A, size, prgobjs->prg_private); }
+void HelixInternal::PRF_PRIVATE(vector<bit_t>& A, size_t size) { _PRF(A, size, prgobjs->prg_private); }
 // clang-format on
 
-void HelixInternal::SyncPRGKey() {
+void HelixInternal::SyncPRGKeyV1() {
 #if MPC_DEBUG_USE_FIXED_AESKEY
   //return;
 #endif
@@ -121,10 +124,13 @@ void HelixInternal::SyncPRGKey() {
   MpcPRGKeys::keys.reset();
   if (player == PARTY_0) {
     MpcPRGKeys::keys.key_prg0 = gen_key_str();
+    AUDIT("id:{}, P{} locally generate P{}'s PRG key:{}", msgid.get_hex(), player, player, MpcPRGKeys::keys.key_prg0);
   } else if (player == PARTY_1) {
     MpcPRGKeys::keys.key_prg1 = gen_key_str();
+    AUDIT("id:{}, P{} locally generate P{}'s PRG key:{}", msgid.get_hex(), player, player, MpcPRGKeys::keys.key_prg1);
   } else if (player == PARTY_2) {
     MpcPRGKeys::keys.key_prg2 = gen_key_str();
+    AUDIT("id:{}, P{} locally generate P{}'s PRG key:{}", msgid.get_hex(), player, player, MpcPRGKeys::keys.key_prg2);
   }
 
   // common or public key
@@ -156,16 +162,80 @@ void HelixInternal::SyncPRGKey() {
  * A's send to B
  * key_send.length() ==== key_recv.length() > 0
  */
-void HelixInternal::SyncPRGKey(
+void HelixInternal::SyncPRGKeyV1(
   int partyA,
   int partyB,
   std::string& key_send,
   std::string& key_recv) {
+  AUDIT("id:{}, P{} locally generates and sysnc k{}{}:{}", msgid.get_hex(), player, partyA, partyB, key_send);
   if (player == partyA) {
     send(partyB, key_send.data(), key_send.length());
+    AUDIT("id:{}, P{} SyncPRGKeyV1 SEND to P{}, key_send{}", msgid.get_hex(), player, partyA, key_send);
   }
   if (player == partyB) {
     recv(partyA, (char*)key_recv.data(), key_recv.length());
+    AUDIT("id:{}, P{} SyncPRGKeyV1 RECV from P{}, key_send{}", msgid.get_hex(), player, partyB, key_send);
+  }
+
+}
+
+shared_ptr<MpcKeyPrgController> HelixInternal::SyncPRGKey() {
+  MpcPRGKeysV2 keys;
+  if (player == PARTY_0) {
+    keys.key_prg0 = gen_key_str();
+  } else if (player == PARTY_1) {
+    keys.key_prg1 = gen_key_str();
+  } else if (player == PARTY_2) {
+    keys.key_prg2 = gen_key_str();
+  }
+  keys.key_private = gen_key_str();
+
+  // common or public key
+  string k01, k02, k12, k0;
+  k0 = gen_key_str();
+  k01 = gen_key_str();
+  k02 = gen_key_str();
+  k12 = gen_key_str();
+
+  SyncPRGKey(PARTY_0, PARTY_1, k01, k01);
+  SyncPRGKey(PARTY_0, PARTY_2, k02, k02);
+  SyncPRGKey(PARTY_1, PARTY_2, k12, k12);
+  SyncPRGKey(PARTY_2, PARTY_0, k0, k0);
+  SyncPRGKey(PARTY_2, PARTY_1, k0, k0);
+  keys.key_prg = k0;
+  keys.key_prg01 = k01;
+  keys.key_prg02 = k02;
+  keys.key_prg12 = k12;
+  //keys.fmt_print();
+
+  //! set gseed, different from k0, simply
+  string kgseed(k0);
+  kgseed[0] = '\x44';
+  gseed->reseed(kgseed);
+  //cout << "KGS " << kgseed << endl;
+
+  auto prg_controller = std::make_shared<MpcKeyPrgController>();
+  prg_controller->Init(keys);
+  tlog_info << "helix SyncPRGKey ok.";
+  return prg_controller;
+}
+
+/**
+ * A's send to B
+ * key_send.length() ==== key_recv.length() > 0
+ */
+void HelixInternal::SyncPRGKey(
+  int partyA,
+  int partyB,
+  const std::string& key_send,
+  std::string& key_recv) {
+  if (player == partyA) {
+    send(partyB, key_send.data(), key_send.length());
+    AUDIT("id:{}, P{} send SyncPRGKey to P{}: {}", msgid.get_hex(), player, partyB, key_send);
+  }
+  if (player == partyB) {
+    recv(partyA, (char*)key_recv.data(), key_recv.length());
+    AUDIT("id:{}, P{} recv SyncPRGKey from P{}: {}", msgid.get_hex(), player, partyA, key_recv);
   }
 }
 
@@ -175,6 +245,7 @@ void HelixInternal::SyncPRGKey(
 void HelixInternal::RandSeed(vector<uint64_t>& seeds, size_t size) {
   resize_vector(seeds, size);
   _PRF(gseed, (char*)seeds.data(), size * sizeof(uint64_t));
+  AUDIT("id:{}, P0, P1 and P2 generate common random number{}", msgid.get_hex(), Vector<uint64_t>(seeds));
 }
 
 } // namespace helix

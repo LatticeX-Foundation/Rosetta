@@ -18,7 +18,7 @@ void run(int partyid) {
     print_vec(X, 10, "X");
 
     vector<string> strX, strY, strZ;
-    helix0.GetOps(msgid)->PrivateInput(0, X, strX);
+    helix0.GetOps(msgid)->PrivateInput(node_id_0, X, strX);
     print_vec(strX, 10, "strX");
 
     vector<string> literalX;
@@ -32,14 +32,14 @@ void run(int partyid) {
       helix0.GetOps(msgid)->op(strX, strY);            \
       print_vec(strY, 10, tag + "(strX)");             \
       vector<double> Y;                                \
-      helix0.GetOps(msgid)->Reveal(strY, Y);           \
+      helix0.GetOps(msgid)->Reveal(strY, Y, &reveal_attr);           \
       print_vec(Y, 10, tag + " strX -> Y");            \
     }                                                  \
     {                                                  \
       helix0.GetOps(msgid)->op(literalX, strY);        \
       print_vec(strY, 10, tag + "(literalX)");         \
       vector<double> Y;                                \
-      helix0.GetOps(msgid)->Reveal(strY, Y);           \
+      helix0.GetOps(msgid)->Reveal(strY, Y, &reveal_attr);           \
       print_vec(Y, 10, tag + " literalX -> Y");        \
     }                                                  \
     attr_type attr;                                    \
@@ -49,14 +49,14 @@ void run(int partyid) {
       helix0.GetOps(msgid)->op(strX, strY, &attr);     \
       print_vec(strY, 10, tag + "(strX)");             \
       vector<double> Y;                                \
-      helix0.GetOps(msgid)->Reveal(strY, Y);           \
+      helix0.GetOps(msgid)->Reveal(strY, Y, &reveal_attr);           \
       print_vec(Y, 10, tag + " strX -> Y");            \
     }                                                  \
     {                                                  \
       helix0.GetOps(msgid)->op(literalX, strY, &attr); \
       print_vec(strY, 10, tag + "(literalX)");         \
       vector<double> Y;                                \
-      helix0.GetOps(msgid)->Reveal(strY, Y);           \
+      helix0.GetOps(msgid)->Reveal(strY, Y, &reveal_attr);           \
       print_vec(Y, 10, tag + " literalX -> Y");        \
     }                                                  \
   } while (0)

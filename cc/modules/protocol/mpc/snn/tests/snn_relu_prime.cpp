@@ -23,25 +23,28 @@ void run(int partyid) {
   //////////////////////////////////////////////////////////////////
 
   vector<double> X = {-1.5, -2, 0, 2, 3, 1.2, 10, 2.71828};
-  vector<double> EXPECT = {0, 0, 1, 1, 1, 1,   1, 1};
+  vector<double> EXPECT = {0, 0, 1, 1, 1, 1, 1, 1};
   size_t size = X.size();
   print_vec(X, size, "X");
+
+  attr_type attr;
+  vector<string> receivers = {"P0", "P1", "P2"};
+  attr["receive_parties"] = receiver_parties_pack(receivers);
 
   msg_id_t msgid("relu-prime OP(s) (share,share)");
   cout << __FUNCTION__ << " " << msgid << endl;
 
-  vector<string> strX, strZ, plainX(X.size());
-  snn0.GetOps(msgid)->PrivateInput(0, X, strX);
-  snn0.GetOps(msgid)->Reveal(strX, plainX);
+  vector<string> strX, strZ;
+  snn0.GetOps(msgid)->PrivateInput(node_id_0, X, strX);
   snn0.GetOps(msgid)->ReluPrime(strX, strZ);
   for (auto i = 0; i < strZ.size(); ++i) {
     cout << "z binary-" << i <<": " << to_hex(strZ[i].data(), strZ[i].size()-1) << endl;
   }
 
-  vector<string> zZ(strZ.size());
-  snn0.GetOps(msgid)->Reveal(strZ, zZ);
-  print_vec(plainX, size, "SNN PrivateInput Reveal: ");
-  print_vec(zZ, size, "SNN ReluPrime plaintext:");
+  vector<double> reveal_x(strX.size()), plain_z(strZ.size());
+  snn0.GetOps(msgid)->Reveal(strZ, reveal_x, &attr);
+  // print_vec(reveal_x, size, "SNN PrivateInput Reveal: ");
+  print_vec(reveal_x, size, "SNN ReluPrime reveal:");
   print_vec(EXPECT, size, "ReluPrime expected:");
   
   //////////////////////////////////////////////////////////////////

@@ -30,17 +30,21 @@ namespace helix {
  */
 void HelixInternal::RevealAndPrint(const vector<Share>& X, std::string msg) {
   vector<double> plain(X.size());
-  Reveal(X, plain);
-  print_vec(plain, 16, msg);
+  Reveal(X, plain, encode_reveal_mask(7));
+  if (party_id() == PARTY_0)
+    print_vec(plain, 16, msg);
 }
 void HelixInternal::RevealAndPrint2(const vector<Share>& X, std::string msg) {
   vector<mpc_t> plain(X.size());
-  Reveal(X, plain);
-  print_vec(plain, 16, msg);
+  Reveal(X, plain, encode_reveal_mask(7));
+  if (party_id() == PARTY_0)
+    print_vec(plain, 16, msg);
 }
 void HelixInternal::RevealAndPrint(const vector<BitShare>& X, std::string msg) {
   vector<bit_t> plain(X.size());
-  Reveal(X, plain);
+  Reveal(X, plain, encode_reveal_mask(7));
+  if (party_id() != PARTY_0)
+    return;
   cout << msg << " ";
   for (int i = 0; i < 80; i++) {
     if (i == plain.size())
@@ -57,12 +61,12 @@ void HelixInternal::RevealAndPrint(const vector<BitShare>& X, std::string msg) {
 }
 void HelixInternal::RevealAndPrint(const Share& X, std::string msg) {
   vector<mpc_t> plain(1);
-  Reveal({X}, plain);
+  Reveal({X}, plain, encode_reveal_mask(7));
   cout << msg << " " << to_readable_dec(plain[0]) << endl;
 }
 void HelixInternal::RevealAndPrint(const BitShare& X, std::string msg) {
   vector<bit_t> plain(1);
-  Reveal({X}, plain);
+  Reveal({X}, plain, encode_reveal_mask(7));
   cout << msg << " " << to_string(plain[0]) << endl;
 }
 

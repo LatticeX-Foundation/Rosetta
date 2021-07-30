@@ -16,52 +16,57 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #pragma once
+
 #include "cc/modules/protocol/public/include/protocol_base.h"
 #include "cc/modules/protocol/utility/include/prg.h"
 #include "cc/modules/common/include/utils/perf_stats.h"
-
+#include "cc/modules/protocol/mpc/comm/include/mpc_prg_controller.h"
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-extern int FLOAT_PRECISION_M;
 
 namespace rosetta {
-class RosettaConfig;
+
 class MpcProtocol : public ProtocolBase {
   using ProtocolBase::ProtocolBase;
 
  public:
+  MpcProtocol(const string& protocol, int parties=3, const string& task_id="");
   virtual ~MpcProtocol() = default;
 
  public:
-  virtual int Init(std::string config_json_str = "");
+  virtual int Init();
   virtual int Uninit();
 
   //! @attention! internal use, for cpp test cases
-  virtual int Init(int partyid, std::string config_json_str, std::string logfile);
+  virtual int Init(std::string logfile);
 
   virtual PerfStats GetPerfStats();
   virtual void StartPerfStats();
 
  public:
-  virtual shared_ptr<ProtocolOps> GetOps(const msg_id_t& msgid) = 0;
-  virtual shared_ptr<NET_IO> GetNetHandler() { return _net_io; }
+  // virtual shared_ptr<ProtocolOps> GetOps(const msg_id_t& msgid) = 0;
+  virtual shared_ptr<NET_IO> GetNetHandler() { return net_io_; }
 
  protected:
-  virtual int _init_config(int partyid, const std::string& config_json);
-  virtual int _init_config(const std::string& config_json);
-  virtual int _init_with_config();
-  virtual int _init_aeskeys();
+  //virtual int _init_config(int partyid, const std::string& config_json);
+  //virtual int _init_config(const std::string& config_json);
+  //virtual int _init_with_config();
+  virtual int InitAesKeys();
+
+  virtual int OfflinePreprocess() {
+    tlog_debug << "MPCProtocol: do nothing during offline preprocess.";
+    return 0; 
+  }
 
   //! @attention! now, only for snn, will remove in the future
-  virtual void _initialize_mpc_environment() {}
+  virtual void InitMpcEnvironment() {}
 
  protected:
-  std::shared_ptr<RttPRG> gseed = nullptr; // for global random seed
-  std::string seed_msg_id = "[MPC] This msg id for global RandomSeed.";
-  std::string pri_input_msg_id = "[MPC] This msg id for global PrivateInput.";
-  shared_ptr<RosettaConfig> config = nullptr;
+  std::shared_ptr<RttPRG> gseed_ = nullptr; // for global random seed
+  std::shared_ptr<MpcKeyPrgController> key_prg_controller_ = nullptr;
+  std::string seed_msg_id_ = "[MPC] This msg id for global RandomSeed.";
 };
 } // namespace rosetta

@@ -17,8 +17,8 @@ void run(int partyid) {
     vector<double> Y = {-1.00, -2.01, -3.01, 0, 1.3, 2.03, 3.12, -2, +0.01};
     size_t size = X.size();
     vector<Share> shareX, shareY;
-    hi->Input(0, X, shareX);
-    hi->Input(1, Y, shareY);
+    hi->Input(node_id_0, X, shareX);
+    hi->Input(node_id_1, Y, shareY);
 
 #define helix_binary_f(op)                                                  \
   do {                                                                      \

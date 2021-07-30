@@ -24,7 +24,7 @@ void run(int partyid) {
   print_vec(expected_pow, 10, "expected:");
 
   vector<string> strX, strK, strZ;
-  helix0.GetOps(msgid)->PrivateInput(0, X, strX);
+  helix0.GetOps(msgid)->PrivateInput(node_id_0, X, strX);
   // print_vec(strX, 10, "strX");
   helix_double_to_plain_string(K, strK);
   // print_vec(strK, 10, "strK");
@@ -35,7 +35,7 @@ void run(int partyid) {
   cout << "Pow perf stat:" << perf.to_json(true) << endl;
 
   vector<double> Z;
-  helix0.GetOps(msgid)->Reveal(strZ, Z);
+  helix0.GetOps(msgid)->Reveal(strZ, Z, &reveal_attr);
   print_vec(Z, 10, "Z");
 
   // case 2: vectorization speedup
@@ -45,7 +45,7 @@ void run(int partyid) {
   print_vec(X, 10, "X");
   print_vec(K, 10, "K");
 
-  helix0.GetOps(msgid)->PrivateInput(0, X, strX);
+  helix0.GetOps(msgid)->PrivateInput(node_id_0, X, strX);
   
   print_vec(strX, 10, "strX");
   helix_double_to_plain_string(K, strK);
@@ -54,7 +54,7 @@ void run(int partyid) {
   helix0.GetOps(msgid)->Pow(strX, strK, strZ);
   print_vec(strZ, 10, "strZ");
 
-  helix0.GetOps(msgid)->Reveal(strZ, Z);
+  helix0.GetOps(msgid)->Reveal(strZ, Z, &reveal_attr);
   print_vec(Z, 10, "revealed Z:");  
 
   //////////////////////////////////////////////////////////////////

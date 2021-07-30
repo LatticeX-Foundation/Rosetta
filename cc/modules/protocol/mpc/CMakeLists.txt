@@ -3,7 +3,7 @@ project(mpc)
 
 # public common link libraries
 list(APPEND LINKLIBS common)
-list(APPEND LINKLIBS mpc-io)
+#list(APPEND LINKLIBS mpc-io)
 
 SET(ADD_LINK_LIB_FLAGS "-Wl,--rpath=$ORIGIN../:$ORIGIN")
 SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${ADD_LINK_LIB_FLAGS}")

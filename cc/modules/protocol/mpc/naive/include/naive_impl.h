@@ -22,9 +22,18 @@ namespace rosetta {
 
 class NaiveProtocol : public MpcProtocol {
  public:
-  NaiveProtocol() : MpcProtocol("Naive") {}
+  NaiveProtocol(const string& task_id="") : MpcProtocol("Naive") {}
 
   shared_ptr<ProtocolOps> GetOps(const msg_id_t& msgid);
 };
+
+class NaiveProtocolFactory : public IProtocolFactory {
+ public:
+  NaiveProtocolFactory() {}
+
+ public:
+  shared_ptr<ProtocolBase> Create(const string& task_id="") { return std::make_shared<NaiveProtocol>(task_id); }
+};
+
 
 } // namespace rosetta

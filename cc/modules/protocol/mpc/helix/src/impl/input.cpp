@@ -18,21 +18,37 @@
 #include "helix_impl_util.h"
 
 namespace rosetta {
-int HelixOpsImpl::PrivateInput(int party_id, const vector<double>& in_x, vector<string>& out_x) {
+int HelixOpsImpl::PrivateInput(const string& node_id, const vector<double>& in_x, vector<string>& out_x) {
+  AUDIT("id:{}, PrivateInput node_id:{} input(double, plain){}", _op_msg_id.get_hex(), node_id, Vector<double>(in_x));
+
   vector<Share> shareX(in_x.size());
-  hi->Input(party_id, in_x, shareX);
+  hi->Input(node_id, in_x, shareX);
+  helix_convert_share_to_string(shareX, out_x);
+  AUDIT("id:{}, PrivateInput node_id:{} input(Share){}", _op_msg_id.get_hex(), node_id, Vector<Share>(shareX));
+
+  return 0;
+}
+
+
+int HelixOpsImpl::PublicInput(
+    const string& node_id,
+    const vector<double>& in_x,
+    vector<string>& out_x) {
+  AUDIT("id:{}, PublicInput node_id:{} input(double, plain){}", _op_msg_id.get_hex(), node_id, Vector<double>(in_x));
+  vector<Share> shareX(in_x.size());
+  hi->ConstCommonInput(in_x, shareX);
   helix_convert_share_to_string(shareX, out_x);
   return 0;
 }
 
 
-int HelixOpsImpl::Broadcast(int from_party, const string& msg, string& result) {
-  hi->Broadcast(from_party, msg, result);
+int HelixOpsImpl::Broadcast(const string& from_node, const string& msg, string& result) {
+  hi->Broadcast(from_node, msg, result);
   return 0;
 }
 
-int HelixOpsImpl::Broadcast(int from_party, const char* msg, char* result, size_t size) {
-  hi->Broadcast(from_party, msg, result, size);
+int HelixOpsImpl::Broadcast(const string& from_node, const char* msg, char* result, size_t size) {
+  hi->Broadcast(from_node, msg, result, size);
   return 0;
 }
 

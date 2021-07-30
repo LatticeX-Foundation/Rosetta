@@ -8,12 +8,12 @@ void run(int partyid) {
   {
     vector<double> X = {-1, 3, 0.3, -2.1};
     vector<Share> shareX(X.size());
-    hi->Input(0, X, shareX);
+    hi->Input(node_id_0, X, shareX);
     hi->RevealAndPrint(shareX, "shareX:");
 
     vector<double> Y = {-2.1, 0.098, -0.5, 2, -1.5, 1.2};
     vector<Share> shareY(Y.size());
-    hi->Input(1, Y, shareY);
+    hi->Input(node_id_1, Y, shareY);
     hi->RevealAndPrint(shareY, "shareY:");
 
     // MatMul
@@ -34,8 +34,8 @@ void run(int partyid) {
     int m = 10, n = 3, k = 1;
     vector<double> X(m * n, 1.0), Y(n * k, 2.0);
     vector<Share> shareX(X.size()), shareY(Y.size()), shareZ(m * k);
-    hi->Input(0, X, shareX);
-    hi->Input(1, Y, shareY);
+    hi->Input(node_id_0, X, shareX);
+    hi->Input(node_id_1, Y, shareY);
 
     hi->beg_statistics();
     hi->MatMul(shareX, shareY, shareZ, m, n, k, false, false);
@@ -51,8 +51,8 @@ void run(int partyid) {
   random_vector(X, m * n);
   random_vector(Y, n * k);
   vector<Share> shareX(X.size()), shareY(Y.size()), shareZ(m * k);
-  hi->Input(0, X, shareX);
-  hi->Input(1, Y, shareY);
+  hi->Input(node_id_0, X, shareX);
+  hi->Input(node_id_1, Y, shareY);
 
   hi->beg_statistics();
   hi->MatMul(shareX, shareY, shareZ, m, n, k, false, false);
@@ -67,8 +67,8 @@ void run(int partyid) {
     random_vector(X, m * n);
     random_vector(Y, n * k);
     vector<Share> shareX(X.size()), shareY(Y.size()), shareZ(m * k);
-    hi->Input(0, X, shareX);
-    hi->Input(1, Y, shareY);
+    hi->Input(node_id_0, X, shareX);
+    hi->Input(node_id_1, Y, shareY);
 
     int64_t all = 0;
     int NX = 100;

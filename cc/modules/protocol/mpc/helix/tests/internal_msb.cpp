@@ -9,7 +9,7 @@ void run(int partyid) {
   {
     vector<double> X = {-1, 3, 0.3, -2.1, 0, -0.001, 0.098};
     vector<Share> shareX(X.size());
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
     hi->RevealAndPrint(shareX, "shareX:");
 
     vector<BitShare> shareC;
@@ -28,7 +28,7 @@ void run(int partyid) {
     random_vector(X, size);
 
     vector<Share> shareX;
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
 
     vector<BitShare> shareC;
 

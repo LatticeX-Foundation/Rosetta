@@ -6,7 +6,7 @@ void run(int partyid) {
   //////////////////////////////////////////////////////////////////
   vector<double> X = {-3.0, 1.4201, 3.04, 0.2, 0, -1.2223};
   vector<Share> shareX;
-  hi->Input(2, X, shareX);
+  hi->Input(node_id_2, X, shareX);
 
 #define helix_reduce_f(op)                           \
   do {                                               \

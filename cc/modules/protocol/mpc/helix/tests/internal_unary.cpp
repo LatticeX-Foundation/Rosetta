@@ -10,7 +10,7 @@ void run(int partyid) {
 
   vector<double> X = {-1.01, -2.0, 2.3, 2, 0.01, 0, -0.03, 0.031};
   vector<Share> shareX, shareY;
-  hi->Input(2, X, shareX);
+  hi->Input(node_id_2, X, shareX);
 #define helix_unary_f(op)                                                    \
   do {                                                                       \
     string tag(#op);                                                         \

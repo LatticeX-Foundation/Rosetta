@@ -12,13 +12,19 @@ target_link_libraries(mpc-helix PUBLIC ${LINKLIBS} mpc-comm)
 set_target_properties(mpc-helix PROPERTIES FOLDER "protocol/helix"
                     APPEND_STRING PROPERTY LINK_FLAGS " ${ADD_LINK_LIB_FLAGS}"
 )
-install_libraries(mpc-helix)
 
+if(COMMAND target_precompile_headers AND ROSETTA_ENABLE_PCH)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pch.h.in ${PROJECT_BINARY_DIR}/mpc_helix_pch.h @ONLY)
+  target_precompile_headers(mpc-helix PRIVATE ${PROJECT_BINARY_DIR}/mpc_helix_pch.h)
+  message(STATUS "set PCH with mpc-helix path: ${PROJECT_BINARY_DIR}/mpc_helix_pch.h")
+endif()
+
+install_libraries(mpc-helix)
 
 IF(ROSETTA_COMPILE_TESTS)
 # examples & tests
 function(compile_ex_helix category)
-file(GLOB EXAMPLE_SOURCE_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/${category}" "${category}/*.cpp")
+  file(GLOB EXAMPLE_SOURCE_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/${category}" "${category}/*.cpp")
   foreach(EXAMPLE_SOURCE_FILE ${EXAMPLE_SOURCE_FILES})
     string(REGEX REPLACE "(.*)\\.cpp" "\\1" EXAMPLE_NAME ${EXAMPLE_SOURCE_FILE})
     set(EXAMPLE_TARGET "protocol_mpc_helix_${category}_${EXAMPLE_NAME}")

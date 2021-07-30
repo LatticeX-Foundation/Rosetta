@@ -26,12 +26,13 @@
 namespace rosetta {
 class NaiveOpsImpl : public ProtocolOps {
 public:
-  NaiveOpsImpl(const msg_id_t& msg_id) : ProtocolOps(msg_id) {}
+  NaiveOpsImpl(const msg_id_t& msg_id, shared_ptr<ProtocolContext> context) : ProtocolOps(msg_id, context) {}
   ~NaiveOpsImpl() = default;
 
-  virtual int PrivateInput(int party_id,
-                            const vector<double>& in_x,
-                            vector<string>& out_x);
+  int PrivateInput(
+    const string& node_id,
+    const vector<double>& in_vec,
+    vector<string>& out_str_vec);
 
   int Add(const vector<string>& a,
           const vector<string>& b,
@@ -52,8 +53,11 @@ public:
               vector<string>& output,
               const attr_type* attr_info = nullptr);
 
-public:
-  shared_ptr<NET_IO> io = nullptr;
+  int Reveal(const vector<string>& a, 
+              vector<double>& output, 
+              const attr_type* attr_info = nullptr);
+
+    public : shared_ptr<NET_IO> io = nullptr;
 };
 
 } // namespace rosetta

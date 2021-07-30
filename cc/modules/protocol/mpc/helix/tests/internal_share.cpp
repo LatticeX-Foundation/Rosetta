@@ -9,20 +9,20 @@ void run(int partyid) {
     vector<double> X = {-12.23, -4.51, -3.05, -0.01, 1.05, 0.002, 3.33, 12.5};
     vector<mpc_t> XF;
 
-    FLOAT_PRECISION_M = 13;
-    convert_plain_to_fixpoint(X, XF);
+    helix0.GetMpcContext()->FLOAT_PRECISION = 13;
+    convert_plain_to_fixpoint(X, XF, helix0.GetMpcContext()->FLOAT_PRECISION);
     print_vec(XF, 32, "13 bits:");
 
-    FLOAT_PRECISION_M = 18;
-    convert_plain_to_fixpoint(X, XF);
+    helix0.GetMpcContext()->FLOAT_PRECISION = 18;
+    convert_plain_to_fixpoint(X, XF, helix0.GetMpcContext()->FLOAT_PRECISION);
     print_vec(XF, 32, "18 bits:");
   }
-  FLOAT_PRECISION_M = 13;
+  helix0.GetMpcContext()->FLOAT_PRECISION = 13;
   cout << "use 13 bits:" << endl;
   {
     vector<double> X = {-12.23, -4.51, -3.05, -0.01, 1.05, 0.002, 3.33, 12.5};
     vector<Share> shareX;
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
     hi->RevealAndPrint(shareX, "ShareX:");
     cout << "X shareX:" << shareX << endl;
 
@@ -49,12 +49,12 @@ void run(int partyid) {
       hi->RevealAndPrint(shareR, "shareR2:");
     }
   }
-  FLOAT_PRECISION_M = 18;
+  helix0.GetMpcContext()->FLOAT_PRECISION = 18;
   cout << "use 18 bits:" << endl;
   {
     vector<double> X = {-12.23, -4.51, -3.05, -0.01, 1.05, 0.002, 3.33, 12.5};
     vector<Share> shareX;
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
     hi->RevealAndPrint(shareX, "ShareX:");
 
     cout << "1. convert to binary-string, and covert to back." << endl;

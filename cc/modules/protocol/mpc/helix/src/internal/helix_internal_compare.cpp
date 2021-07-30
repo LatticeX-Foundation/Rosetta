@@ -32,14 +32,26 @@ void HelixInternal::_RandomShareAB(vector<Share>& aX, vector<vector<BitShare>>& 
   // for mpc_t, this should be 8*8 = 64
   int LEN = sizeof(mpc_t) * 8;
 
+  AUDIT("id:{}, P{} _RandomShareAB, compute: get shares aX, bX for uniformly random b in(0,1)", msgid.get_hex(), player);
+
   vector<mpc_t> r_0(size, 0), r_1(size, 0), r(size, 0);
   // XOR bit-share in compact format
   vector<mpc_t> r_0_b(size, 0), r_1_b(size, 0);
 
   PRF02(r_0, size);
+  if ((player == PARTY_0) || (player == PARTY_2)) {
+    AUDIT("id:{}, P{} _RandomShareAB, compute: get shares aX, bX for uniformly random b in(0,1), P0 and P2 generate r0(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(r_0));
+  }
+
   PRF12(r_1, size);
+  if ((player == PARTY_1) || (player == PARTY_2)) {
+    AUDIT("id:{}, P{} _RandomShareAB, compute: get shares aX, bX for uniformly random b in(0,1), P1 and P2 generate r1(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(r_1));
+  }
 
   PRF02(r_0_b, size);
+  if ((player == PARTY_0) || (player == PARTY_2)) {
+    AUDIT("id:{}, P{} _RandomShareAB, compute: get shares aX, bX for uniformly random b in(0,1), P0 and P2 generate r0b(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(r_0_b));
+  }
   
   // fixed for debuging
   // r_0 = vector<mpc_t>(size, 2 << FLOAT_PRECISION_M);
@@ -54,11 +66,15 @@ void HelixInternal::_RandomShareAB(vector<Share>& aX, vector<vector<BitShare>>& 
       for (int i = 0; i < size; ++i) {
         r_1_b[i] = r[i] ^ r_0_b[i];
       }
+
       send(PARTY_1, r_1_b, size);
+      AUDIT("id:{}, P{} _RandomShareAB, compute: get shares aX, bX for uniformly random b in(0,1), P{} locally compute r1b(=(r0+r1)^r0b) and SEND to P1, r1b(mpc_t){}", msgid.get_hex(), player, player, Vector<mpc_t>(r_1_b));
     } else {
       recv(PARTY_2, r_1_b, size);
+      AUDIT("id:{}, P{} _RandomShareAB, compute: get shares aX, bX for uniformly random b in(0,1), P{} RECV from P2 r1b(mpc_t){}", msgid.get_hex(), player, player, Vector<mpc_t>(r_1_b));
     }
   }
+
 
   // Local repackage values in Share format.
   for (int i = 0; i < size; i++) {
@@ -73,6 +89,7 @@ void HelixInternal::_RandomShareAB(vector<Share>& aX, vector<vector<BitShare>>& 
         aX[i].s1.A1 = r_1[i];
     }
   }
+  AUDIT("id:{}, P{} _RandomShareAB, compute: get shares aX, bX for uniformly random b in(0,1), output aX(Share){}", msgid.get_hex(), player, Vector<Share>(aX));
 
   // Local repackage values in BitShare format.
   for (int i = 0; i < size; i++) {
@@ -91,6 +108,7 @@ void HelixInternal::_RandomShareAB(vector<Share>& aX, vector<vector<BitShare>>& 
     }
   }
 
+  AUDIT("id:{}, P{} _RandomShareAB, compute: get shares aX, bX for uniformly random b in(0,1), output bX(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(bX[0]));
 }
 
 void HelixInternal::FanInBitAdd(const vector<vector<BitShare>>& a,
@@ -99,6 +117,10 @@ void HelixInternal::FanInBitAdd(const vector<vector<BitShare>>& a,
   //    the inner vector must have the same size 
   // normally, the LEN should be sizeof(mpc_t) * 8
   // cout << "FanInBitAdd size:" << a.size() << " of inner:" << a[0].size() << endl;
+  for (int i=0; i<a.size(); ++i) {
+    AUDIT("id:{}, P{} FanInBitAdd input a(BitShare)[{}]{}", msgid.get_hex(), player, i, Vector<BitShare>(a[i]));
+  }
+
   int LEN = a[0].size();
   for (int i = 0; i < vec_size; ++i) {
     assert(a[i].size() == LEN);
@@ -146,6 +168,8 @@ void HelixInternal::FanInBitAdd(const vector<vector<BitShare>>& a,
     // cout << "check[" << i << "]:" << all_bits[i].size() << ":" << all_bits[i][0] << std::endl; 
     c[i] = all_bits[i][0];
   }
+
+  AUDIT("id:{}, P{} FanInBitAdd output(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(c));
 }
 /**
  * internal used by Equal
@@ -156,6 +180,8 @@ void HelixInternal::IsZero(
   int eq) {
   size_t size = shareZ.size();
 
+  AUDIT("id:{}, P{} _IsZero compute: B=iszero(Z) by checking share Z is zero or not, input(Share){}", msgid.get_hex(), player, Vector<Share>(shareZ));
+
   // step 1
   vector<Share> r;
   vector<vector<BitShare>> b;
@@ -163,9 +189,11 @@ void HelixInternal::IsZero(
 
   vector<Share> masked_z = shareZ;
   Add(shareZ, r, masked_z);
+  AUDIT("id:{}, P{} _IsZero compute: masked_z=shareZ+r, masked_z(Share){}", msgid.get_hex(), player, Vector<Share>(masked_z));
+
   vector<mpc_t> plain_masked_z(size, 0);
   // P0 and P1 reveal plaintext (z + r)
-  Reveal_(masked_z, plain_masked_z, 3);
+  Reveal_(masked_z, plain_masked_z, encode_reveal_mask(3));
 
   // tmp debuging:
   // RevealAndPrint(shareZ, " input z:");
@@ -206,6 +234,8 @@ void HelixInternal::IsZero(
     }
   }
   B2A(res, B);
+
+  AUDIT("id:{}, P{} _IsZero compute: B=iszero(Z) by checking share Z is zero or not, output(Share){}", msgid.get_hex(), player, Vector<Share>(B));
 }
 
 /**
@@ -216,6 +246,9 @@ void HelixInternal::Equal_(
   const vector<Share>& shareY_X,
   vector<Share>& Z,
   int eq) {
+  AUDIT("id:{}, P{} Equal if(X==Y, bitZ=1, bitZ= 1^ bitX_Y ^ bitY_X) input X_Y(Share){}", msgid.get_hex(), player, Vector<Share>(shareX_Y));
+  AUDIT("id:{}, P{} Equal if(X==Y, bitZ=1, bitZ= 1^ bitX_Y ^ bitY_X) input Y_X(Share){}", msgid.get_hex(), player, Vector<Share>(shareY_X));
+
   size_t size = shareX_Y.size();
 
   // step 1
@@ -233,24 +266,34 @@ void HelixInternal::Equal_(
 
   // step 2
   B2A(bitZ, Z);
+
+  AUDIT("id:{}, P{} Equal if(X==Y, bitZ=1, bitZ= 1^ bitX_Y ^ bitY_X) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 /**
  * Z = (X != Y) ? 1 : 0 ---> (X >= Y && Y >= X) ? 0 : 1
  */
 void HelixInternal::NotEqual(const vector<Share>& X, const vector<Share>& Y, vector<Share>& Z) {
+  AUDIT("id:{}, P{} NotEqual if(X!=Y, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} NotEqual if(X!=Y, 1, 0) input Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+
   size_t size = X.size();
   resize_vector(Z, size);
 
   vector<Share> shareX_Y(size);
   Sub(X, Y, shareX_Y);
   IsZero(shareX_Y, Z, 0);
+
+  AUDIT("id:{}, P{} NotEqual if(X!=Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 /**
  * Z = (X == Y) ? 1 : 0 ---> (X >= Y && Y >= X) ? 1 : 0
  */
 void HelixInternal::Equal(const vector<Share>& X, const vector<Share>& Y, vector<Share>& Z) {
+  AUDIT("id:{}, P{} Equal if(X==Y, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} Equal if(X==Y, 1, 0) input Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+
   size_t size = X.size();
   resize_vector(Z, size);
 
@@ -258,6 +301,8 @@ void HelixInternal::Equal(const vector<Share>& X, const vector<Share>& Y, vector
   Sub(X, Y, shareX_Y);
 
   IsZero(shareX_Y, Z, 1);
+
+  AUDIT("id:{}, P{} Equal if(X==Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 /**
@@ -270,6 +315,8 @@ void HelixInternal::Equal(const vector<Share>& X, const vector<Share>& Y, vector
  * 
  */
 void HelixInternal::LessDReLU_(const vector<Share>& X, vector<Share>& Y) {
+  AUDIT("id:{}, P{} LessDReLU_ if(X < 0, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+
   size_t size = X.size();
   resize_vector(Y, size);
 
@@ -279,40 +326,65 @@ void HelixInternal::LessDReLU_(const vector<Share>& X, vector<Share>& Y) {
 
   // step 2
   B2A(bitX, Y);
+
+  AUDIT("id:{}, P{} LessDReLU_ if(X < 0, 1, 0) outout Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
 }
 /**
  * Z = (X < Y) ? 1 : 0
  */
 void HelixInternal::Less(const vector<Share>& X, const vector<Share>& Y, vector<Share>& Z) {
+  AUDIT("id:{}, P{} Less if(X<Y, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} Less if(X<Y, 1, 0) input Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+
   vector<Share> shareXY;
   Sub(X, Y, shareXY);
   LessDReLU_(shareXY, Z);
+
+  AUDIT("id:{}, P{} Less if(X<Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 /**
  * Z = (X <= Y) ? 1 : 0
  */
 void HelixInternal::LessEqual(const vector<Share>& X, const vector<Share>& Y, vector<Share>& Z) {
+  AUDIT("id:{}, P{} LessEqual if(X<=Y, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} LessEqual if(X<=Y, 1, 0) input Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+
   GreaterEqual(Y, X, Z);
+
+  AUDIT("id:{}, P{} LessEqual if(X<=Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 /**
  * Z = (X > Y) ? 1 : 0
  */
 void HelixInternal::Greater(const vector<Share>& X, const vector<Share>& Y, vector<Share>& Z) {
+  AUDIT("id:{}, P{} Greater if(X>Y, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} Greater if(X>Y, 1, 0) input Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+
   Less(Y, X, Z);
+
+  AUDIT("id:{}, P{} Greater if(X>Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 /**
  * Z = (X >= Y) ? 1 : 0
  */
 void HelixInternal::GreaterEqual(const vector<Share>& X, const vector<Share>& Y, vector<Share>& Z) {
+  AUDIT("id:{}, P{} GreaterEqual if(X>=Y, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} GreaterEqual if(X>=Y, 1, 0) input Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+
   vector<Share> shareXY;
   Sub(X, Y, shareXY);
   DReLU(shareXY, Z);
+
+  AUDIT("id:{}, P{} GreaterEqual if(X>=Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 /**
  * sharing and constant version
  */
 void HelixInternal::NotEqual(const vector<Share>& X, const vector<double>& C, vector<Share>& Z) {
+  AUDIT("id:{}, P{} NotEqual if(X!=Y, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} NotEqual if(X!=Y, 1, 0) input Y(double){}", msgid.get_hex(), player, Vector<double>(C));
+
   size_t size = X.size();
   resize_vector(Z, size);
 
@@ -320,11 +392,23 @@ void HelixInternal::NotEqual(const vector<Share>& X, const vector<double>& C, ve
   Sub(X, C, shareX_Y);
 
   IsZero(shareX_Y, Z, 0);
+
+  AUDIT("id:{}, P{} NotEqual if(X!=Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
+
 void HelixInternal::NotEqual(const vector<double>& C, const vector<Share>& X, vector<Share>& Z) {
+  AUDIT("id:{}, P{} NotEqual if(X!=Y, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} NotEqual if(X!=Y, 1, 0) input Y(double){}", msgid.get_hex(), player, Vector<double>(C));
+
   NotEqual(X, C, Z);
+
+  AUDIT("id:{}, P{} NotEqual if(X!=Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
+
 void HelixInternal::Equal(const vector<Share>& X, const vector<double>& C, vector<Share>& Z) {
+  AUDIT("id:{}, P{} NotEqual if(X!=Y, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} NotEqual if(X!=Y, 1, 0) input Y(double){}", msgid.get_hex(), player, Vector<double>(C));
+
   size_t size = X.size();
   resize_vector(Z, size);
 
@@ -332,20 +416,34 @@ void HelixInternal::Equal(const vector<Share>& X, const vector<double>& C, vecto
   Sub(X, C, shareX_Y);
 
   IsZero(shareX_Y, Z, 1);
+
+  AUDIT("id:{}, P{} NotEqual if(X!=Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
+
 void HelixInternal::Equal(const vector<double>& C, const vector<Share>& X, vector<Share>& Z) {
   Equal(X, C, Z);
 }
 
 void HelixInternal::Less(const vector<Share>& X, const vector<double>& C, vector<Share>& Z) {
+  AUDIT("id:{}, P{} Less if(X<Y, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} Less if(X<Y, 1, 0) input Y(double){}", msgid.get_hex(), player, Vector<double>(C));
+
   vector<Share> sC;
   Sub(X, C, sC);
   LessDReLU_(sC, Z);
+
+  AUDIT("id:{}, P{} Less if(X<Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
+
 void HelixInternal::Less(const vector<double>& C, const vector<Share>& X, vector<Share>& Z) {
+  AUDIT("id:{}, P{} Less if(X<Y, 1, 0) input X(double){}", msgid.get_hex(), player, Vector<double>(C));
+  AUDIT("id:{}, P{} Less if(X<Y, 1, 0) input Y(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+
   vector<Share> sC;
   Sub(C, X, sC);
   LessDReLU_(sC, Z);
+
+  AUDIT("id:{}, P{} Less if(X<Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 void HelixInternal::LessEqual(const vector<Share>& X, const vector<double>& C, vector<Share>& Z) {
   GreaterEqual(C, X, Z);
@@ -359,21 +457,33 @@ void HelixInternal::Greater(const vector<Share>& X, const vector<double>& C, vec
 void HelixInternal::Greater(const vector<double>& C, const vector<Share>& X, vector<Share>& Z) {
   Less(X, C, Z);
 }
+
 void HelixInternal::GreaterEqual(
   const vector<Share>& X,
   const vector<double>& C,
   vector<Share>& Z) {
+  AUDIT("id:{}, P{} GreaterEqual if(X>=Y, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} GreaterEqual if(X>=Y, 1, 0) input Y(double){}", msgid.get_hex(), player, Vector<double>(C));
+
   vector<Share> sC;
   Sub(X, C, sC);
   DReLU(sC, Z);
+
+  AUDIT("id:{}, P{} GreaterEqual if(X>=Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
+
 void HelixInternal::GreaterEqual(
   const vector<double>& C,
   const vector<Share>& X,
   vector<Share>& Z) {
+  AUDIT("id:{}, P{} GreaterEqual if(X>=Y, 1, 0) input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} GreaterEqual if(X>=Y, 1, 0) input Y(double){}", msgid.get_hex(), player, Vector<double>(C));
+
   vector<Share> sC;
   Sub(C, X, sC);
   DReLU(sC, Z);
+
+  AUDIT("id:{}, P{} GreaterEqual if(X>=Y, 1, 0) outout Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 } // namespace helix

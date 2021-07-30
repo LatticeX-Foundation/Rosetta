@@ -45,12 +45,10 @@ typedef __m128i superLongType;
 #define USE_OPENMP 0
 #endif
 
-
-// globals for parties
-extern int NUM_OF_PARTIES;
-#define STANDALONE (NUM_OF_PARTIES == 1)
-#define THREE_PC (NUM_OF_PARTIES == 3)
-#define FOUR_PC (NUM_OF_PARTIES == 4)
+// 3PC helper macro for roles
+#define STANDALONE (num_of_parties == 1)
+#define THREE_PC (num_of_parties == 3)
+#define FOUR_PC (num_of_parties == 4)
 #define PARTY_A 0
 #define PARTY_B 1
 #define PARTY_C 2
@@ -63,6 +61,26 @@ extern int NUM_OF_PARTIES;
 #define HELPER (partyNum == PARTY_C)
 #define MPC (FOUR_PC || THREE_PC)
 
+
+static inline bool is_primary(int role_id) {
+  return role_id == PARTY_A && role_id == PARTY_B;
+}
+
+static inline bool is_party_a(int role_id) {
+  return role_id == PARTY_A;
+}
+
+static inline bool is_party_b(int role_id) {
+  return role_id == PARTY_B;
+}
+
+static inline bool is_party_c(int role_id) {
+  return role_id == PARTY_C;
+}
+
+static inline bool is_helper(int role_id) {
+  return role_id == PARTY_C;
+}
 
 // helper macros
 #define _aligned_malloc(size, alignment) aligned_alloc(alignment, size)
@@ -119,7 +137,7 @@ const __m128i BIT128 = _mm_setr_epi8(128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 
 // for use IO with msg_id_t
 #define USE_NETIO_WITH_MESSAGEID 1
-
+ 
 /*
 // If there are some large values during its computation process,
 // the probability of the error in MPC arithematic truncation will NOT be negligible any more.
@@ -134,13 +152,12 @@ const __m128i BIT128 = _mm_setr_epi8(128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 #define FIX_SHARE_TRUNCATION_PROBABILISTIC_ERROR 0
 
 // some flags
-#define MPC_LOG_DEBUG 		0
+#define MPC_LOG_DEBUG 		  0
 #define MPC_CHECK_OVERFLOW	0
 #define MPC_HAS_OPENMP		USE_OPENMP
 #define MPC_USE_INIT_KEYS2	1
 
-// clang-format on
-
 //for reciprocal division method
-#define iteration_time     10
+#define ITERATION_TIME     10
 
+// clang-format on

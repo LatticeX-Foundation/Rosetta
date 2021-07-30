@@ -25,12 +25,18 @@
 #include <Eigen/Dense> // for matmul
 using namespace Eigen;
 
-int FLOAT_PRECISION_M = -1;
-
 using namespace std;
 using namespace rosetta;
 
 namespace rosetta {
+template mpc_t FloatToMpcType<double>(double, int);
+template mpc_t FloatToMpcType<int>(int, int);
+template mpc_t FloatToMpcType<mpc_t>(mpc_t, int);
+template mpc_t FloatToMpcType<small_mpc_t>(small_mpc_t, int);
+
+template double MpcTypeToFloat<mpc_t>(mpc_t, int);
+
+template mpc_t CoffUp<double>(double, int);
 
 ConstPolynomial::ConstPolynomial(
   double init_start,
@@ -52,11 +58,11 @@ bool ConstPolynomial::get_power_list(vector<mpc_t>& out_vec) {
   return true;
 }
 
-bool ConstPolynomial::get_coff_list(vector<mpc_t>& out_vec) {
+bool ConstPolynomial::get_coff_list(vector<mpc_t>& out_vec, int precision) {
   out_vec.clear();
   for (auto i = 0; i < __inner_poly.size(); ++i) {
     // using CoffUp for more precision, remember to CoffDown!
-    out_vec.push_back(CoffUp(__inner_poly[i][1]));
+    out_vec.push_back(CoffUp(__inner_poly[i][1], precision));
   }
   return true;
 }

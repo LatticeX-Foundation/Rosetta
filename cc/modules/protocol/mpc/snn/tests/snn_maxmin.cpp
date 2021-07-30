@@ -14,6 +14,10 @@ void run(int partyid) {
   vector<double> MAX_EXPECT = {3.3, 2.8, 3.4};
   vector<double> MIN_EXPECT = {2.2, 2.4, 2.5};
 
+  attr_type attr;
+  vector<string> receivers = {"P0", "P1", "P2"};
+  attr["receive_parties"] = receiver_parties_pack(receivers);
+
   size_t size = X.size();
   print_vec(X, 10, "Input X");
 
@@ -23,24 +27,22 @@ void run(int partyid) {
   vector<string> strX(X.size()), strZ(X.size());
   vector<string> zZ(strZ.size());
 
-  snn0.GetOps(msgid)->PrivateInput(0, X, strX);
-  snn0.GetOps(msgid)->Reveal(strX, zZ);
+  snn0.GetOps(msgid)->PrivateInput(node_id_0, X, strX);
+  snn0.GetOps(msgid)->Reveal(strX, zZ, &attr);
   print_vec(zZ, 10, "check PrivateInput plaintext:");
 
   cout << __FUNCTION__ << " " << msgid << endl;  
   
-
-  attr_type attr;
   attr["rows"] = "3";
   attr["cols"] = "3";
 
   snn0.GetOps(msgid)->Max(strX, strZ, &attr);
-  snn0.GetOps(msgid)->Reveal(strZ, zZ);
+  snn0.GetOps(msgid)->Reveal(strZ, zZ, &attr);
   print_vec(zZ, 10, "Max plaintext:");
   print_vec(MAX_EXPECT, 10, "Max expected:");
 
   snn0.GetOps(msgid)->Min(strX, strZ, &attr);
-  snn0.GetOps(msgid)->Reveal(strZ, zZ);
+  snn0.GetOps(msgid)->Reveal(strZ, zZ, &attr);
   print_vec(zZ, 10, "SNN Min plaintext:");
   print_vec(MIN_EXPECT, 10, "Min expected:");
 

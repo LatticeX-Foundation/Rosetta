@@ -20,9 +20,9 @@
 #define PROTOCOL_MPC_TEST_SNN 1
 #endif
 
-#include "test.h"
+#include "cc/modules/protocol/mpc/tests/test.h"
 
-void run(int partyid) {
+static void run(int partyid) {
   PROTOCOL_MPC_TEST_INIT(partyid);
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
@@ -186,8 +186,8 @@ void run(int partyid) {
       positiveCY[i] = std::to_string(abs(CY[i]));
     }
   }
-  mpc_proto->GetOps(msgid)->PrivateInput(0, X, strX);
-  mpc_proto->GetOps(msgid)->PrivateInput(1, Y, strY);
+  mpc_proto->GetOps(msgid)->PrivateInput(net_io->GetNodeId(0), X, strX);
+  mpc_proto->GetOps(msgid)->PrivateInput(net_io->GetNodeId(1), Y, strY);
 
   SimpleTimer all_tests_timer;
 

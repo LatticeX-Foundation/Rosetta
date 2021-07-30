@@ -144,7 +144,7 @@ void HelixInternal::Add(const vector<Share>& X, const vector<double>& C, vector<
 }
 void HelixInternal::Add(vector<Share>& X, const vector<double>& C) {
   vector<mpc_t> fpC;
-  convert_plain_to_fixpoint(C, fpC);
+  convert_plain_to_fixpoint(C, fpC, GetMpcContext()->FLOAT_PRECISION);
   Add(X, fpC);
 }
 
@@ -183,7 +183,7 @@ void HelixInternal::Sub(const vector<Share>& X, const vector<double>& C, vector<
 }
 void HelixInternal::Sub(vector<Share>& X, const vector<double>& C) {
   vector<mpc_t> fpC;
-  convert_plain_to_fixpoint(C, fpC);
+  convert_plain_to_fixpoint(C, fpC, GetMpcContext()->FLOAT_PRECISION);
   Sub(X, fpC);
 }
 
@@ -272,7 +272,7 @@ void HelixInternal::Add(const vector<mpc_t>& C, const vector<Share>& X, vector<S
 }
 void HelixInternal::Add(const vector<double>& C, const vector<Share>& X, vector<Share>& Z) {
   vector<mpc_t> fpC;
-  convert_plain_to_fixpoint(C, fpC);
+  convert_plain_to_fixpoint(C, fpC, GetMpcContext()->FLOAT_PRECISION);
   Add(fpC, X, Z);
 }
 void HelixInternal::Sub(const vector<mpc_t>& C, const vector<Share>& X, vector<Share>& Z) {
@@ -288,7 +288,7 @@ void HelixInternal::Sub(const vector<mpc_t>& C, const vector<Share>& X, vector<S
 }
 void HelixInternal::Sub(const vector<double>& C, const vector<Share>& X, vector<Share>& Z) {
   vector<mpc_t> fpC;
-  convert_plain_to_fixpoint(C, fpC);
+  convert_plain_to_fixpoint(C, fpC, GetMpcContext()->FLOAT_PRECISION);
   Sub(fpC, X, Z);
 }
 

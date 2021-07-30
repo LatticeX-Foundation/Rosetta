@@ -29,8 +29,12 @@ namespace rosetta {
 int HelixOpsImpl::NOT(const vector<string>& a, vector<string>& c, const attr_type* attr_info) {
   vector<Share> shareA, shareB, shareC;
   helix_convert_string_to_share(a, shareA);
+  AUDIT("id:{}, NOT P{} input{}", _op_msg_id.get_hex(), hi->party_id(), Vector<Share>(shareA));
+
   hi->NOT(shareA, shareC);
   helix_convert_share_to_string(shareC, c);
+  AUDIT("id:{}, NOT P{} output{}", _op_msg_id.get_hex(), hi->party_id(), Vector<Share>(shareC));
+
   return 0;
 }
 } // namespace rosetta

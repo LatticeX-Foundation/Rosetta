@@ -17,6 +17,7 @@
 // ==============================================================================
 #pragma once
 #include "cc/modules/protocol/mpc/comm/include/mpc_common.h"
+#include "cc/modules/common/include/utils/helper.h"
 
 #include <vector>
 #include <string>

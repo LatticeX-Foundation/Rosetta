@@ -24,7 +24,7 @@
  *
  */
 
-#include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
 #include "cc/modules/common/include/utils/helper.h"
 #include "cc/modules/common/include/utils/rtt_exceptions.h"
 #include "cc/modules/protocol/mpc/snn/src/internal/tools.h"
@@ -214,7 +214,7 @@ string sha256hash(char* input, int length) {
 }
 
 void printError(string error) {
-  log_error << error << endl;
+  log_error << error ;
   throw other_exp("printError error:" + error);
 }
 
@@ -257,7 +257,7 @@ string __m128i_toString(__m128i var) {
 
 __m128i stringTo__m128i(string str) {
   if (str.length() != 16)
-    log_error << "Error: Length of input to stringTo__m128i is " << str.length() << endl;
+    log_error << "Error: Length of input to stringTo__m128i is " << str.length() ;
 
   __m128i output;
   char* val = (char*)&output;
@@ -351,7 +351,7 @@ void print_usage(const char* bin) {
 
 void start_time() {
   if (alreadyMeasuringTime) {
-    log_error << "Nested timing measurements" << endl;
+    log_error << "Nested timing measurements" ;
     throw other_exp("Nested timing measurements!");
   }
 
@@ -362,22 +362,22 @@ void start_time() {
 
 void end_time(string str) {
   if (!alreadyMeasuringTime) {
-    log_error << "start_time() never called" << endl;
+    log_error << "start_time() never called" ;
     throw other_exp("start_time() never called!");
   }
 
   clock_gettime(CLOCK_REALTIME, &requestEnd);
-  log_info << "------------------------------------" << endl;
+  log_info << "------------------------------------" ;
   log_info << "Wall Clock time for " << str << ": " << diff(requestStart, requestEnd) << " sec\n";
   log_info << "CPU time for " << str << ": " << (double)(clock() - tStart) / CLOCKS_PER_SEC
            << " sec\n";
-  log_info << "------------------------------------" << endl;
+  log_info << "------------------------------------" ;
   alreadyMeasuringTime = false;
 }
 
 void start_rounds() {
   if (alreadyMeasuringRounds) {
-    log_error << "Nested round measurements" << endl;
+    log_error << "Nested round measurements" ;
     throw other_exp("Nested round measurements!");
   }
 
@@ -388,34 +388,34 @@ void start_rounds() {
 
 void end_rounds(string str) {
   if (!alreadyMeasuringTime) {
-    log_error << "start_rounds() never called" << endl;
+    log_error << "start_rounds() never called" ;
     throw other_exp("start_rounds() never called!");
   }
 
-  log_info << "------------------------------------" << endl;
-  log_info << "Send Round Complexity of " << str << ": " << roundComplexitySend << endl;
-  log_info << "Recv Round Complexity of " << str << ": " << roundComplexityRecv << endl;
-  log_info << "------------------------------------" << endl;
+  log_info << "------------------------------------" ;
+  log_info << "Send Round Complexity of " << str << ": " << roundComplexitySend ;
+  log_info << "Recv Round Complexity of " << str << ": " << roundComplexityRecv ;
+  log_info << "------------------------------------" ;
   alreadyMeasuringRounds = false;
 }
 
-void print_myType(mpc_t var, string message, string type) {
+void print_myType(mpc_t var, string message, string type, int float_precision) {
   if (type == "BITS")
-    log_info << message << ": " << bitset<64>(var) << endl;
+    log_info << message << ": " << bitset<64>(var) ;
   else if (type == "FLOAT")
-    log_info << message << ": " << (static_cast<int64_t>(var)) / (float)(1 << FLOAT_PRECISION_M)
-             << endl;
+    log_info << message << ": " << (static_cast<int64_t>(var)) / (float)(1 << float_precision)
+             ;
   else if (type == "SIGNED")
-    log_info << message << ": " << static_cast<int64_t>(var) << endl;
+    log_info << message << ": " << static_cast<int64_t>(var) ;
   else if (type == "UNSIGNED")
-    log_info << message << ": " << to_readable_dec(var) << endl;
+    log_info << message << ": " << to_readable_dec(var) ;
 }
 
-void print_linear(mpc_t var, string type) {
+void print_linear(mpc_t var, string type, int float_precision) {
   if (type == "BITS")
     log_info << bitset<64>(var) << " ";
   else if (type == "FLOAT")
-    log_info << (static_cast<int64_t>(var)) / (float)(1 << FLOAT_PRECISION_M) << " ";
+    log_info << (static_cast<int64_t>(var)) / (float)(1 << float_precision) << " ";
   else if (type == "SIGNED")
     log_info << static_cast<int64_t>(var) << " ";
   else if (type == "UNSIGNED")
@@ -485,22 +485,22 @@ void checkOverflow(
 #endif
 }
 
-void sigmoidSA(const vector<mpc_t>& input, vector<mpc_t>& output, size_t rows, size_t cols) {
+void sigmoidSA(const vector<mpc_t>& input, vector<mpc_t>& output, size_t rows, size_t cols, int float_precision) {
   for (size_t i = 0; i < rows; ++i) {
     for (size_t j = 0; j < cols; ++j) {
       size_t index = i * cols + j;
-      auto x = MpcTypeToFloat(input[index]);
-      output[index] = FloatToMpcType(1.0 / (1.0 + exp(-x)));
+      auto x = MpcTypeToFloat(input[index], float_precision);
+      output[index] = FloatToMpcType(1.0 / (1.0 + exp(-x)), float_precision);
     }
   }
 }
 
 
-mpc_t divideMyTypeSA(mpc_t a, mpc_t b) {
+mpc_t divideMyTypeSA(mpc_t a, mpc_t b, int float_precision/*=FLOAT_PRECISION_DEFAULT*/) {
   // assert((sizeof(double) == sizeof(mpc_t)) && "sizeof(double) !=
   // sizeof(mpc_t)");
   assert((b != 0) && "Cannot divide by 0");
-  return FloatToMpcType((double)((signed_mpc_t)a) / (double)((signed_mpc_t)b));
+  return FloatToMpcType((double)((signed_mpc_t)a) / (double)((signed_mpc_t)b), float_precision);
 }
 
 mpc_t dividePlainSA(mpc_t a, int b) {
@@ -574,7 +574,7 @@ small_mpc_t subtractModPrime(small_mpc_t a, small_mpc_t b) {
     return a;
   else {
     b = (PRIME_NUMBER - b);
-    return additionModPrime[a][b];
+    return kAdditionModPrime[a][b];
   }
 }
 
@@ -642,22 +642,21 @@ mpc_t multiplyMyTypes(mpc_t a, mpc_t b, size_t shift) {
   if (CPP_ASSEMBLY)
     return (mpc_t)mulshift_assembly((int64_t)a, (int64_t)b, shift);
   else {
-    log_warn << "This multiplication function has bugs" << endl;
+    log_warn << "This multiplication function has bugs" ;
     return mulshift(a, b, shift);
   }
 }
 
-#include "logger.h"
 void log_print(string str) {
 #if (MPC_LOG_DEBUG)
-  LOGD("%s", str.data());
+  TDEB("{}", str.data());
 #else
-  LOGI("%s", str.data());
+  TINFO("{}", str.data());
 #endif
 }
 
 void error(string str) {
-  log_error << "Error: " << str << endl;
+  log_error << "Error: " << str ;
   throw other_exp("error Error: " + str);
 }
 

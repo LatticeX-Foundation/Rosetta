@@ -11,7 +11,7 @@ void run(int partyid) {
   vector<double> LOG1P_A = {0.693, 1.099, 1.386, 1.609, 0.916, 0.01, 0.001, 0.00013, 2.398, 1.313};
   
   vector<string> input_str, out_str;
-  helix0.GetOps(msgid)->PrivateInput(0, a, input_str);
+  helix0.GetOps(msgid)->PrivateInput(node_id_0, a, input_str);
   print_vec(input_str, 10, "input_str");
   attr_type attr;
   vector<double> c;
@@ -20,25 +20,25 @@ void run(int partyid) {
   vector<string> CONS_STR = {"1.1", "4.0"};
   vector<double> LOG_CONST = {0.095, 1.386};
   helix0.GetOps(msgid)->Log(CONS_STR, out_str, &attr);
-  helix0.GetOps(msgid)->Reveal(out_str, c);
+  helix0.GetOps(msgid)->Reveal(out_str, c, &reveal_attr);
   print_vec(c, 10, "Log CONST result plain:"); 
   print_vec(LOG_CONST, 10, "LOG const expected:");
   // case 1: Log
   helix0.GetOps(msgid)->Log(input_str, out_str, &attr);
-  helix0.GetOps(msgid)->Reveal(out_str, c);
+  helix0.GetOps(msgid)->Reveal(out_str, c, &reveal_attr);
   print_vec(c, 10, "Log result plain:");
   print_vec(LOG_A, 10, "Log expected:");
 
   // case 2: HLog
   helix0.GetOps(msgid)->HLog(input_str, out_str, &attr);
-  helix0.GetOps(msgid)->Reveal(out_str, c);
+  helix0.GetOps(msgid)->Reveal(out_str, c, &reveal_attr);
   print_vec(c, 10, "HLog result plain:");  
   print_vec(LOG_A, 10, "Log expected:");
 
 
   // case 3: Log1p
   helix0.GetOps(msgid)->Log1p(input_str, out_str, &attr);
-  helix0.GetOps(msgid)->Reveal(out_str, c);
+  helix0.GetOps(msgid)->Reveal(out_str, c, &reveal_attr);
   print_vec(c, 10, "Log1p result plain:");  
   print_vec(LOG1P_A, 10, "Log1p expected:");
 

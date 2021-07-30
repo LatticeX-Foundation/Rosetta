@@ -21,9 +21,8 @@
 #include <string>
 #include <cstdint>
 
-extern int FLOAT_PRECISION_M; // todo, will rename to FLOAT_PRECISION in the future
+const static int FLOAT_PRECISION_DEFAULT = 16;
 
-//#define ROSETTA_MPC_128 1 // define ROSETTA_MPC_128 macro from cmake
 #if ROSETTA_MPC_128
 #if __SIZEOF_INT128__
 typedef unsigned __int128 uint128_t;
@@ -48,11 +47,29 @@ namespace rosetta {
 // Attention! Note that the FLOAT_PRECISION_M will be initialized AFTER
 //      initializing protocol, so DO NOT use it or its related functions before
 //      initializing protocol with config!
-#define FloatToMpcType(a)                        \
-  ((mpc_t)(                                      \
-    (((signed_mpc_t)(a)) << FLOAT_PRECISION_M) + \
-    (signed_mpc_t)(((a) - (signed_mpc_t)(a)) * (1L << FLOAT_PRECISION_M))))
-#define MpcTypeToFloat(a) ((double((signed_mpc_t)(a))) / (1L << FLOAT_PRECISION_M))
+// #define FloatToMpcType(a)                        
+//   ((mpc_t)(                                      
+//     (((signed_mpc_t)(a)) << FLOAT_PRECISION_M) + 
+//     (signed_mpc_t)(((a) - (signed_mpc_t)(a)) * (1L << FLOAT_PRECISION_M))))
+
+template<typename T>
+mpc_t FloatToMpcType(T a, int precision) {
+  return ((mpc_t)(
+    (((signed_mpc_t)(a)) << precision) + 
+    (signed_mpc_t)(((a) - (signed_mpc_t)(a)) * (1L << precision))));
+}
+extern template mpc_t FloatToMpcType<double>(double, int);
+extern template mpc_t FloatToMpcType<int>(int, int);
+extern template mpc_t FloatToMpcType<mpc_t>(mpc_t, int);
+extern template mpc_t FloatToMpcType<small_mpc_t>(small_mpc_t, int);
+  
+// #define MpcTypeToFloat(a) ((double((signed_mpc_t)(a))) / (1L << FLOAT_PRECISION_M))
+template<typename T>
+double MpcTypeToFloat(T a, int precision) {
+  return ((double((signed_mpc_t)(a))) / (1L << precision));
+}
+extern template double MpcTypeToFloat<mpc_t>(mpc_t, int);
+
 // TODO(george): to re-implement this
 /* 
     @brief: Customized for polynomial interpolation coefficients so that 
@@ -61,10 +78,13 @@ namespace rosetta {
 */
 // #define CoffUp(a)
 //  ((mpc_t)(signed_mpc_t)(double(a) * (1L << (FLOAT_PRECISION_M + FLOAT_PRECISION_M))))
-#define CoffUp(a)                                \
-  ((mpc_t)(                                      \
-    (((signed_mpc_t)(a)) << FLOAT_PRECISION_M) + \
-    (signed_mpc_t)(((a) - (signed_mpc_t)(a)) * (1L << FLOAT_PRECISION_M))))
+template<typename T>
+mpc_t CoffUp(T a, int precision) {
+  return ((mpc_t)(
+    (((signed_mpc_t)(a)) << precision) + 
+    (signed_mpc_t)(((a) - (signed_mpc_t)(a)) * (1L << precision))));
+}
+extern template mpc_t CoffUp<double>(double, int);
 // only used in protocol SecureNN currenlty. please use 'trunc' (and Scale) in protocol Helix.
 // #define CoffDown(a) ((double((signed_mpc_t)(a))) / (1L << FLOAT_PRECISION_M))
 #define CoffDown(a) a
@@ -80,7 +100,9 @@ namespace rosetta {
 		get_start --> 0
 		get_end --> 4
 */
-using namespace std;
+
+using std::vector;
+using std::string;
 
 class ConstPolynomial {
  public:
@@ -88,18 +110,18 @@ class ConstPolynomial {
   explicit ConstPolynomial(
     double init_start,
     double init_end,
-    const std::vector<std::vector<double>>& init_poly);
+    const vector<vector<double>>& init_poly);
 
   bool get_power_list(vector<mpc_t>& out_vec);
-  bool get_coff_list(vector<mpc_t>& out_vec);
+  bool get_coff_list(vector<mpc_t>& out_vec, int precision);
 
-  mpc_t get_start() { return FloatToMpcType(__start); };
-  mpc_t get_end() { return FloatToMpcType(__end); };
+  mpc_t get_start(int precision) { return FloatToMpcType(__start, precision); };
+  mpc_t get_end(int precision) { return FloatToMpcType(__end, precision); };
   string to_string();
 
  private:
   // internal presentation for initialization
-  std::vector<std::vector<double>> __inner_poly;
+  vector<vector<double>> __inner_poly;
   // Note: if __end == __start, this function is for all X, [-\inf, +\inf].
   double __start = 0.0; // >=
   double __end = 0.0; // <
@@ -107,7 +129,7 @@ class ConstPolynomial {
 
 /*
 	@brief: function approximation registering entry for mapping from func_name to its
-	segemental polynomials.
+	segmental polynomials.
 	// TODO: make this as singleton
 */
 struct PolyConfFactory {
@@ -116,14 +138,14 @@ struct PolyConfFactory {
   // TODO: add mutex_lock or RW lock
  public:
   static void func_register(
-    const std::string& func_name,
-    std::vector<ConstPolynomial>* approx_polys);
+    const string& func_name,
+    vector<ConstPolynomial>* approx_polys);
 
   static bool get_func_polys(
-    const std::string& func_name,
-    std::vector<ConstPolynomial>** approx_polys);
+    const string& func_name,
+    vector<ConstPolynomial>** approx_polys);
   //private:
-  //	static unordered_map<std::string, vector<ConstPolynomial>> FUNC_POLY_MAP;
+  //	static unordered_map<string, vector<ConstPolynomial>> FUNC_POLY_MAP;
 };
 
 /**

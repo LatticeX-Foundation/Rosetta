@@ -20,7 +20,7 @@
 #define PROTOCOL_MPC_TEST_SNN 1
 #endif
 
-#include "test.h"
+#include "cc/modules/protocol/mpc/tests/test.h"
 
 void run(int partyid) {
   PROTOCOL_MPC_TEST_INIT(partyid);
@@ -47,7 +47,7 @@ void run(int partyid) {
     mpc_proto->GetOps(msgid)->op(strX, strY, strZ, &attr);                        \
     if_print_vec(strZ, 10, "strX " + tag + " strY = strZ");                       \
     vector<double> Z;                                                             \
-    mpc_proto->GetOps(msgid)->Reveal(strZ, Z);                                    \
+    mpc_proto->GetOps(msgid)->Reveal(strZ, Z, &reveal_attr);                      \
     if_print_vec(Z, 10, tag + " Z");                                              \
     if (partyid == 2)                                                             \
       check_func(X, Y, Z);                                                        \
@@ -78,8 +78,8 @@ void run(int partyid) {
         strCY[i] = std::to_string(CY[i]);
       }
     }
-    mpc_proto->GetOps(msgid)->PrivateInput(2, X, strX);
-    mpc_proto->GetOps(msgid)->PrivateInput(2, Y, strY);
+    mpc_proto->GetOps(msgid)->PrivateInput(net_io->GetNodeId(2), X, strX);
+    mpc_proto->GetOps(msgid)->PrivateInput(net_io->GetNodeId(2), Y, strY);
 
     //
     //  general random tests and check (VV)
@@ -129,8 +129,8 @@ void run(int partyid) {
       vector<double> X = {-1.01, -2.00, -3.01, 0, 1.3, 2.02, 3.14, +2, -0.01};
       vector<double> Y = {-1.00, -2.01, -3.01, 0, 1.3, 2.03, 3.12, -2, +0.01};
       vector<string> strX, strY;
-      mpc_proto->GetOps(msgid)->PrivateInput(2, X, strX);
-      mpc_proto->GetOps(msgid)->PrivateInput(2, Y, strY);
+      mpc_proto->GetOps(msgid)->PrivateInput(net_io->GetNodeId(2), X, strX);
+      mpc_proto->GetOps(msgid)->PrivateInput(net_io->GetNodeId(2), Y, strY);
 
       helix_binary_f(0, 0, Add, strX, strY, add_check_func, X, Y);
       helix_binary_f(0, 0, Sub, strX, strY, sub_check_func, X, Y);
@@ -185,7 +185,7 @@ void run(int partyid) {
     mpc_proto->GetOps(msgid)->op(strX, strY, &attr); \
     if_print_vec(strY, 10, tag + " strX = strY");    \
     vector<double> Y;                                \
-    mpc_proto->GetOps(msgid)->Reveal(strY, Y);       \
+    mpc_proto->GetOps(msgid)->Reveal(strY, Y, &reveal_attr);       \
     if_print_vec(Y, 10, tag + " Y");                 \
     if (partyid == 2)                                \
       check_func(X, Y);                              \
@@ -197,7 +197,7 @@ void run(int partyid) {
 
     int k = 10;
     random_vector(X, k, -3, 3);
-    mpc_proto->GetOps(msgid)->PrivateInput(2, X, strX);
+    mpc_proto->GetOps(msgid)->PrivateInput(net_io->GetNodeId(2), X, strX);
 
     //
     //  general random tests and check
@@ -233,7 +233,7 @@ void run(int partyid) {
     mpc_proto->GetOps(msgid)->op(strX, strY, &attr);  \
     if_print_vec(strY, 10, tag + " strX = strY");     \
     vector<double> Y;                                 \
-    mpc_proto->GetOps(msgid)->Reveal(strY, Y);        \
+    mpc_proto->GetOps(msgid)->Reveal(strY, Y, &reveal_attr);        \
     if_print_vec(Y, 10, tag + " Y");                  \
     if (partyid == 2)                                 \
       check_func(X, Y, r, c);                         \
@@ -246,7 +246,7 @@ void run(int partyid) {
     int r = 3, c = 4;
     int k = r * c;
     random_vector(X, k, -3, 3);
-    mpc_proto->GetOps(msgid)->PrivateInput(2, X, strX);
+    mpc_proto->GetOps(msgid)->PrivateInput(net_io->GetNodeId(2), X, strX);
 
     //
     //  general random tests and check
@@ -279,7 +279,7 @@ void run(int partyid) {
     mpc_proto->GetOps(msgid)->op(strX, strY, strZ, &attr);        \
     if_print_vec(strZ, 10, "strX " + tag + " strY = strZ");       \
     vector<double> Z;                                             \
-    mpc_proto->GetOps(msgid)->Reveal(strZ, Z);                    \
+    mpc_proto->GetOps(msgid)->Reveal(strZ, Z, &reveal_attr);      \
     if_print_vec(Z, 10, tag + " Z");                              \
     if (partyid == 2)                                             \
       check_func(X, Y, Z, m, K, n);                               \
@@ -292,8 +292,8 @@ void run(int partyid) {
     random_vector(X, m * K, -3, 3);
     random_vector(Y, K * n, -3, 3);
 
-    mpc_proto->GetOps(msgid)->PrivateInput(2, X, strX);
-    mpc_proto->GetOps(msgid)->PrivateInput(2, Y, strY);
+    mpc_proto->GetOps(msgid)->PrivateInput(net_io->GetNodeId(2), X, strX);
+    mpc_proto->GetOps(msgid)->PrivateInput(net_io->GetNodeId(2), Y, strY);
 
     //
     // general random tests and check

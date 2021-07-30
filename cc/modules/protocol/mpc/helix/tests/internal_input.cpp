@@ -41,9 +41,9 @@ void run(int partyid) {
   if (dA > 0) { // if P0 owns data
     if (partyid != PARTY_0) {
       vector<vector<double>> tmpX(nA, vector<double>(dA, 0));
-      hi->Input(0, tmpX, shareX0);
+      hi->Input(node_id_0, tmpX, shareX0);
     } else {
-      hi->Input(0, X, shareX0);
+      hi->Input(node_id_0, X, shareX0);
     }
   }
   {
@@ -51,16 +51,16 @@ void run(int partyid) {
     flatten(shareX0, shareX);
 
     vector<double> plain(shareX.size());
-    hi->Reveal(shareX, plain);
+    hi->Reveal(shareX, plain, reveal_attr["receive_parties"]);
     print_vec(plain, 7, "shareX0-double");
   }
 
   if (dB > 0) { // if P1 owns data
     if (partyid != PARTY_1) {
       vector<vector<double>> tmpX(nB, vector<double>(dB, 0));
-      hi->Input(1, tmpX, shareX1);
+      hi->Input(node_id_1, tmpX, shareX1);
     } else {
-      hi->Input(1, X, shareX1);
+      hi->Input(node_id_1, X, shareX1);
     }
   }
 
@@ -69,16 +69,16 @@ void run(int partyid) {
     flatten(shareX1, shareX);
 
     vector<double> plain(shareX.size());
-    hi->Reveal(shareX, plain);
+    hi->Reveal(shareX, plain, reveal_attr["receive_parities"]);
     print_vec(plain, 7, "shareX1-double");
   }
 
   if (dC > 0) { // if P2 owns data
     if (partyid != PARTY_2) {
       vector<vector<double>> tmpX(nC, vector<double>(dC, 0));
-      hi->Input(2, tmpX, shareX2);
+      hi->Input(node_id_2, tmpX, shareX2);
     } else {
-      hi->Input(2, X, shareX2);
+      hi->Input(node_id_2, X, shareX2);
     }
   }
 
@@ -87,7 +87,7 @@ void run(int partyid) {
     flatten(shareX2, shareX);
 
     vector<double> plain(shareX.size());
-    hi->Reveal(shareX, plain);
+    hi->Reveal(shareX, plain, reveal_attr["receive_parties"]);
     print_vec(plain, 7, "shareX2-double");
   }
 

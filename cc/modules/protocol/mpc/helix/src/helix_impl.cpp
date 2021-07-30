@@ -18,7 +18,6 @@
 #include "cc/modules/protocol/mpc/helix/include/helix_impl.h"
 #include "cc/modules/protocol/mpc/helix/include/helix_ops_impl.h"
 #include "cc/modules/protocol/mpc/helix/include/helix_internal.h"
-#include "cc/modules/io/include/net_io.h"
 
 #include <stdexcept>
 #include <string>
@@ -28,28 +27,29 @@ using namespace std;
 namespace rosetta {
 using namespace rosetta::helix;
 
-int HelixImpl::_init_aeskeys() {
-  msg_id_t msg__seed_msg_id(seed_msg_id);
-  auto hi = GetHelixInternel(msg__seed_msg_id);
-  gseed = make_shared<RttPRG>();
-  hi->gseed = gseed;
-  hi->SyncPRGKey();
+int HelixImpl::InitAesKeys() {
+  msg_id_t msg__seed_msg_id(GetMpcContext()->TASK_ID + "=" + seed_msg_id_);
+  auto hi = GetInternal(msg__seed_msg_id);
+  gseed_ = make_shared<RttPRG>();
+  hi->gseed = gseed_;
+  key_prg_controller_ = hi->SyncPRGKey();
   return 0;
 }
 
 shared_ptr<ProtocolOps> HelixImpl::GetOps(const msg_id_t& msgid) {
   //! @todo optimized
-  auto helix_ops_ptr = make_shared<HelixOpsImpl>(msgid);
+  auto helix_ops_ptr = make_shared<HelixOpsImpl>(msgid, context_);
   helix_ops_ptr->io = GetNetHandler();
-  helix_ops_ptr->hi = GetHelixInternel(msgid);
-  helix_ops_ptr->op_config_map = config_map;
-  return std::dynamic_pointer_cast<ProtocolOps>(helix_ops_ptr);
+  helix_ops_ptr->hi = GetInternal(msgid);
+  
+  return helix_ops_ptr;
 }
 
-shared_ptr<helix::HelixInternal> HelixImpl::GetHelixInternel(const msg_id_t& msgid) {
-  auto o = make_shared<HelixInternal>(my_party_id, GetNetHandler(), msgid);
-  if (gseed != nullptr)
-    o->gseed = gseed; //! @todo use api
+shared_ptr<helix::HelixInternal> HelixImpl::GetInternal(const msg_id_t& msgid) {
+  auto o = make_shared<HelixInternal>(
+    context_->ROLE_ID, GetNetHandler(), msgid, context_, key_prg_controller_);
+  if (gseed_ != nullptr)
+    o->gseed = gseed_; //! @todo use api
   return o;
 }
 } // namespace rosetta

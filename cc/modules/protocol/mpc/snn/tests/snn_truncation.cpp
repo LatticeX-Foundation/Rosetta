@@ -15,6 +15,10 @@ void run(int partyid) {
   print_vec(X, 10, "X");
   print_vec(Y, 10, "Y");
 
+  attr_type attr;
+  vector<string> receivers = {"P0", "P1", "P2"};
+  attr["receive_parties"] = receiver_parties_pack(receivers);
+
   msg_id_t msgid("Mul OP(s) (share,share)");
   cout << __FUNCTION__ << " " << msgid << endl;
   
@@ -26,10 +30,10 @@ void run(int partyid) {
   int wrong_cnt = 0;
   int ITER = 10;
   for(int kkk = 0;  kkk < ITER; ++kkk) {
-      snn0.GetOps(msgid)->PrivateInput(0, X, strX);
-      snn0.GetOps(msgid)->PrivateInput(0, Y, strY);
+      snn0.GetOps(msgid)->PrivateInput(node_id_0, X, strX);
+      snn0.GetOps(msgid)->PrivateInput(node_id_0, Y, strY);
       snn0.GetOps(msgid)->Mul(strX, strY, strZ);
-      snn0.GetOps(msgid)->Reveal(strZ, zZ);
+      snn0.GetOps(msgid)->Reveal(strZ, zZ, &attr);
       print_vec(zZ, 10, "SNN Mul plaintext:");
       print_vec(EXPECT, 10, "Mul expected:");
       for(int i = 0; i < size; ++i) {

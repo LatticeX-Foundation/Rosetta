@@ -18,4 +18,4 @@
 #pragma once
 
 #include "cc/modules/protocol/mpc/comm/include/mpc_helper.h"
-void initializeMPC();
+void init_mod_prime_tables();

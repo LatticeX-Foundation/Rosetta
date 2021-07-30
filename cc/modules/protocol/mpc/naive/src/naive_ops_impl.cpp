@@ -23,21 +23,25 @@
 // #include <any>
 
 #include "cc/modules/protocol/mpc/naive/include/naive_ops_impl.h"
-#include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
 #include "cc/modules/protocol/utility/include/util.h"
-#include "cc/modules/protocol/utility/include/config.h"
-#include "cc/modules/io/include/net_io.h"
+#include "cc/modules/iowrapper/include/io_wrapper.h"
 
 using namespace std;
 
 namespace rosetta {
 
-int NaiveOpsImpl::PrivateInput(int party_id, const vector<double>& in_x, vector<string>& out_x) {
-  log_info << "calling NaiveOpsImpl::PrivateInput" << endl;
+int NaiveOpsImpl::PrivateInput(
+  const string& node_id,
+  const vector<double>& in_x,
+  vector<string>& out_x) {
+  tlog_info << "calling NaiveOpsImpl::PrivateInput" ;
+  int party_id = io->GetPartyId(node_id);
+  AUDIT("id:{}, PrivateInput P{} input(double, plain){}", _op_msg_id.get_hex(), party_id, Vector<double>(in_x));
   int vec_size = in_x.size(); 
   out_x.clear();
   out_x.resize(vec_size);
-  string my_role = op_config_map["PID"];
+  string my_role = string("P") + std::to_string(context_->GetMyRole());
 
   // In this insecure naive protocol, we just half the input as local share.
   vector<double> half_share(vec_size, 0.0);
@@ -47,26 +51,32 @@ int NaiveOpsImpl::PrivateInput(int party_id, const vector<double>& in_x, vector<
 
   // In this inscure naive protocol, only private data from P0 or P1 is supported for now. 
   if (party_id == 2) {
-    log_error << "Not supported yet!";
+    tlog_error << "Not supported yet!";
     return -1;   
   }
   msg_id_t msgid(_op_msg_id);
   if (my_role == "P0") {
     if (party_id == 0) {
       io->send(1, half_share, vec_size, msgid);
+      AUDIT("id:{}, PrivateInput P0 SEND to P1{}", _op_msg_id.get_hex(), Vector<double>(half_share));
     } else if (party_id == 1) {
       io->recv(1, half_share, vec_size, msgid);
+      AUDIT("id:{}, PrivateInput P0 RECV from P1{}", _op_msg_id.get_hex(), Vector<double>(half_share));
     }
   } else if (my_role == "P1") {
     if (party_id == 0) {
       io->recv(0, half_share, vec_size, msgid);
+      AUDIT("id:{}, PrivateInput P1 RECV from P0{}", _op_msg_id.get_hex(), Vector<double>(half_share));
     } else if (party_id == 1) {
       io->send(0, half_share, vec_size, msgid);
+      AUDIT("id:{}, PrivateInput P1 SEND to P0{}", _op_msg_id.get_hex(), Vector<double>(half_share));
     }
   }
   for(auto i = 0; i < vec_size; ++i) {
     out_x[i] = std::to_string(half_share[i]);
   }
+  AUDIT("id:{}, PrivateInput P{} output(double, plain){}", _op_msg_id.get_hex(), party_id, Vector<double>(half_share));
+
   return 0;
 }
 
@@ -74,12 +84,16 @@ int NaiveOpsImpl::Add(const vector<string>& a,
                       const vector<string>& b,
                       vector<string>& output,
                       const attr_type* attr_info) {
-  log_info << "calling NaiveOpsImpl::Add" << endl;
+  tlog_info << "calling NaiveOpsImpl::Add" ;
+  AUDIT("id:{}, P{} Add, input X{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<std::string>(a));
+  AUDIT("id:{}, P{} Add, input Y{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<std::string>(b));
   int vec_size = a.size();
   output.resize(vec_size);
   for (auto i = 0; i < vec_size; ++i) {
     output[i] = std::to_string(std::stof(a[i]) + std::stof(b[i]));
   } 
+
+  AUDIT("id:{}, P{} Add, output{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<std::string>(output));
   return 0;
 }
 
@@ -87,12 +101,16 @@ int NaiveOpsImpl::Sub(const vector<string>& a,
                       const vector<string>& b,
                       vector<string>& output,
                       const attr_type* attr_info) {
-  log_info << "calling NaiveOpsImpl::Sub" << endl;
+  tlog_info << "calling NaiveOpsImpl::Sub" ;
+  AUDIT("id:{}, P{} Sub, input X{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<std::string>(a));
+  AUDIT("id:{}, P{} Sub, input Y{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<std::string>(b));
   int vec_size = a.size();
   output.resize(vec_size);
   for (auto i = 0; i < vec_size; ++i) {
     output[i] = std::to_string(std::stof(a[i]) - std::stof(b[i]));
   } 
+  AUDIT("id:{}, P{} Sub, output{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<std::string>(output));
+
   return 0;
 }
 
@@ -101,24 +119,49 @@ int NaiveOpsImpl::Mul(const vector<string>& a,
                       const vector<string>& b,
                       vector<string>& output,
                       const attr_type* attr_info) {
-  log_info << "calling NaiveOpsImpl::Mul" << endl;
+  tlog_info << "calling NaiveOpsImpl::Mul" ;
+  AUDIT("id:{}, P{} Mul, input X{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<std::string>(a));
+  AUDIT("id:{}, P{} Mul, input Y{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<std::string>(b));
   int vec_size = a.size();
   output.resize(vec_size);
   for (auto i = 0; i < vec_size; ++i) {
     output[i] = std::to_string((2 * std::stof(a[i])) * (2 * std::stof(b[i])) / 2.0);
   }
+
+  AUDIT("id:{}, P{} Mul, output{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<std::string>(output));
   return 0;
 }
 
 int NaiveOpsImpl::Reveal(const vector<string>& a,
                           vector<string>& output,
                           const attr_type* attr_info) {
-  log_info << "calling NaiveOpsImpl::Reveal" << endl;
+  tlog_info << "-----> calling NaiveOpsImpl::Reveal" ;
+  AUDIT("id:{}, P{} Reveal, input X{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<std::string>(a));
   int vec_size = a.size();
   output.resize(vec_size);
   for (auto i = 0; i < vec_size; ++i) {
     output[i] = std::to_string(2 * std::stof(a[i]));
-  } 
+  }
+  AUDIT("id:{}, P{} Reveal, output{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<std::string>(output));
+  tlog_info << "<----- calling NaiveOpsImpl::Reveal" ;
+
+  return 0;
+}
+
+int NaiveOpsImpl::Reveal(
+  const vector<string>& a,
+  vector<double>& output,
+  const attr_type* attr_info) {
+  tlog_info << "-------> calling NaiveOpsImpl::Reveal double";
+  AUDIT("id:{}, P{} Reveal, input X{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<std::string>(a));
+  int vec_size = a.size();
+  output.resize(vec_size);
+  for (auto i = 0; i < vec_size; ++i) {
+    output[i] = 2 * std::stof(a[i]);
+  }
+  AUDIT("id:{}, P{} Reveal, output{}", _op_msg_id.get_hex(), context_->GetMyRole(), Vector<double>(output));
+
+  tlog_info << "<----- calling NaiveOpsImpl::Reveal double ok";
   return 0;
 }
 

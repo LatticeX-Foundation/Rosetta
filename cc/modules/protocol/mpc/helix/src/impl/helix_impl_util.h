@@ -18,6 +18,7 @@
 #pragma once
 #include "cc/modules/protocol/mpc/helix/include/helix_ops_impl.h"
 #include "cc/modules/protocol/utility/include/prg.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
 
 #include <string>
 #include <unordered_map>

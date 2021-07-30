@@ -25,13 +25,21 @@ class HelixInternal;
 
 class HelixImpl : public MpcProtocol {
  public:
-  HelixImpl() : MpcProtocol("Helix") {}
+  HelixImpl(const string& task_id="") : MpcProtocol("Helix", 3, task_id) {}
 
-  int _init_aeskeys();
+  int InitAesKeys();
 
  public:
   shared_ptr<ProtocolOps> GetOps(const msg_id_t& msgid);
-  shared_ptr<helix::HelixInternal> GetHelixInternel(const msg_id_t& msgid);
+  shared_ptr<helix::HelixInternal> GetInternal(const msg_id_t& msgid);
+};
+
+class HelixProtocolFactory : public IProtocolFactory {
+ public:
+  HelixProtocolFactory() {}
+
+ public:
+  shared_ptr<ProtocolBase> Create(const string& task_id) { return std::make_shared<HelixImpl>(task_id); }
 };
 
 } // namespace rosetta

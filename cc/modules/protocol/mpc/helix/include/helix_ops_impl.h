@@ -37,7 +37,7 @@ class HelixOpsImpl : public ProtocolOps {
  public:
   shared_ptr<NET_IO> io = nullptr;
   shared_ptr<HelixInternal> hi = nullptr;
-  HelixOpsImpl(const msg_id_t& msg_id) : ProtocolOps(msg_id) {}
+  HelixOpsImpl(const msg_id_t& msg_id, shared_ptr<ProtocolContext> context) : ProtocolOps(msg_id, context) {}
   ~HelixOpsImpl() = default;
 
   int TfToSecure(
@@ -58,10 +58,11 @@ class HelixOpsImpl : public ProtocolOps {
   uint64_t RandSeed();
   uint64_t RandSeed(vector<uint64_t>& seed);
 
-  virtual int PrivateInput(int party_id, const vector<double>& in_x, vector<string>& out_x);
+  virtual int PrivateInput(const string& node_id, const vector<double>& in_x, vector<string>& out_x);
+  int PublicInput(const string& node_id, const vector<double>& in_x, vector<string>& out_x);
 
-  virtual int Broadcast(int from_party, const string& msg, string& result);
-  virtual int Broadcast(int from_party, const char* msg, char* result, size_t size);
+  virtual int Broadcast(const string& node_id, const string& msg, string& result);
+  virtual int Broadcast(const string& node_id, const char* msg, char* result, size_t size);
 
   //////////////////////////////////    math ops   //////////////////////////////////
   int Add(
@@ -141,6 +142,18 @@ class HelixOpsImpl : public ProtocolOps {
     vector<string>& output,
     const attr_type* attr_info = nullptr);
   int Square(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
+
+  int Reciprocaldiv(
+    const vector<string>& a,
+    const vector<string>& b,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr);
+  int Exp(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
+  
+  int Rsqrt(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
+
+  int Sqrt(const vector<string>& a, vector<string>& output, const attr_type* attr_info = nullptr);
+
   int Negative(
     const vector<string>& a,
     vector<string>& output,

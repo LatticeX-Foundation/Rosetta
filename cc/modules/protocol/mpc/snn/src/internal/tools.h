@@ -24,14 +24,11 @@
 #include <wmmintrin.h>
 #include <emmintrin.h>
 #include <smmintrin.h>
-
 #include <iostream>
 #include <sstream>
 #include <vector>
 #include <string>
-
 #include <openssl/sha.h>
-
 #include "cc/modules/protocol/mpc/snn/src/internal/Config.h"
 #include "cc/modules/protocol/mpc/snn/src/internal/TedKrovetzAesNiWrapperC.h"
 #include "cc/modules/protocol/mpc/snn/src/internal/secCompMultiParty.h"
@@ -40,10 +37,9 @@
 #include "cc/modules/protocol/mpc/snn/src/internal/ParallelAESObject.h"
 #include "cc/modules/protocol/mpc/snn/src/internal/snn_helper.h"
 
-extern int partyNum;
 
-extern small_mpc_t additionModPrime[PRIME_NUMBER][PRIME_NUMBER];
-extern small_mpc_t multiplicationModPrime[PRIME_NUMBER][PRIME_NUMBER];
+extern small_mpc_t kAdditionModPrime[PRIME_NUMBER][PRIME_NUMBER];
+extern small_mpc_t kMultiplicationModPrime[PRIME_NUMBER][PRIME_NUMBER];
 
 #if MULTIPLICATION_TYPE == 0
 #define MUL(x, y) gfmul(x, y)
@@ -122,8 +118,6 @@ extern const __m128i ONE;
 // zero in the field
 extern const __m128i ZERO;
 
-extern int testCounter;
-
 typedef struct polynomial {
   int deg;
   __m128i* coefficients;
@@ -164,4 +158,4 @@ void end_rounds(string str);
 void print_myType(mpc_t var, string message, string type);
 void print_linear(mpc_t var, string type);
 
-#include "cc/modules/protocol/mpc/snn/include/mpc_tools.h"
+#include "cc/modules/protocol/mpc/snn/include/snn_tools.h"

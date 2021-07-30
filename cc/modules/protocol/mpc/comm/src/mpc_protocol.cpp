@@ -17,8 +17,8 @@
 // ==============================================================================
 #include "cc/modules/protocol/mpc/comm/include/mpc_protocol.h"
 #include "cc/modules/protocol/utility/include/util.h"
-#include "cc/modules/protocol/utility/include/config.h"
-#include "cc/modules/io/include/net_io.h"
+#include "cc/modules/iowrapper/include/io_manager.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
 
 #include <stdexcept>
 #include <string>
@@ -26,115 +26,78 @@
 using namespace std;
 
 namespace rosetta {
-int MpcProtocol::Init(std::string config_json_str) { return Init(-1, config_json_str, ""); }
 
-int MpcProtocol::Init(int partyid, string config_json_str, string logfile) {
-  if (logfile != "")
-    rosetta::redirect_stdout(logfile);
+MpcProtocol::MpcProtocol(const string& protocol, int parties, const string& task_id) : ProtocolBase(protocol, parties, task_id) {
+}
+
+int MpcProtocol::Init() { return Init(""); }
+
+int MpcProtocol::Init(string logfile) {
+// #if NDEBUG
+//   if (logfile != "")
+//     rosetta::redirect_stdout(logfile);
+// #endif
 
   //! @todo optimized
-  log_debug << "MpcProtocol::Init with config:" << config_json_str << endl;
-  if (!_is_inited) {
-    std::unique_lock<std::mutex> lck(_status_mtx);
-    if (!_is_inited) {
-      if (partyid < 0) {
-        _init_config(config_json_str);
-      } else {
-        _init_config(partyid, config_json_str);
-      }
-      my_party_id = config->PARTY;
-      config->fmt_print();
-      _initialize_mpc_environment();
-      _init_with_config();
-      _init_aeskeys();
-      _is_inited = true;
+  if (!is_inited_) {
+    std::unique_lock<std::mutex> lck(status_mtx_);
+    if (!is_inited_) {
+      net_io_ = IOManager::Instance()->GetIOWrapper(context_->TASK_ID);
+      // init mpc context
+      context_->FLOAT_PRECISION = FLOAT_PRECISION_DEFAULT;
+      context_->NODE_ID = net_io_->GetCurrentNodeId();
+      context_->ROLE_ID = net_io_->GetPartyId(context_->NODE_ID);
+      context_->NODE_ROLE_MAPPING = net_io_->GetComputationNodes();
+      context_->SAVER_MODE.clear();
+      context_->RESTORE_MODE.clear();
+
+      InitMpcEnvironment();
+      InitAesKeys();
+      
+      // todo: for offline triple generation.
+      OfflinePreprocess();
+
+      is_inited_ = true;
       StartPerfStats();
     }
   }
-  log_info << "Rosetta: Protocol [" << _protocol_name << "] backend initialization succeeded!"
-           << endl;
+
+  tlog_info << "Rosetta: Protocol [" << protocol_name_ << "] backend initialization succeeded! task: " 
+           << context_->TASK_ID << ", node id: " << context_->NODE_ID;
   return 0;
 }
 
-int MpcProtocol::_init_config(int partyid, const std::string& config_json) {
-  config = make_shared<RosettaConfig>(partyid, config_json);
-  return 0;
-}
-int MpcProtocol::_init_config(const std::string& config_json) {
-  config = make_shared<RosettaConfig>(config_json);
-  return 0;
-}
-int MpcProtocol::_init_aeskeys() {
-  //
-  return 0;
-}
-int MpcProtocol::_init_with_config() {
-  FLOAT_PRECISION_M = config->mpc.FLOAT_PRECISION_M;
-  log_debug << "MpcProtocol::_init_with_config FLOAT_PRECISION_M:" << FLOAT_PRECISION_M
-            << ", my_party_id: " << my_party_id << endl;
-
-  int parties = 3;
-  vector<int> ports;
-  vector<string> ips;
-  for (int i = 0; i < parties; i++) {
-    ports.push_back(config->mpc.P[i].PORT);
-    ips.push_back(config->mpc.P[i].HOST);
-  }
-
-#if USE_SSL_SOCKET // (USE_GMTASSL || USE_OPENSSL)
-  if (netutil::is_enable_ssl_socket()) {
-    _net_io = make_shared<rosetta::io::SSLParallelNetIO>(parties, my_party_id, 1, ports, ips);
-  } else {
-    _net_io = make_shared<rosetta::io::ParallelNetIO>(parties, my_party_id, 1, ports, ips);
-  }
-#else
-  _net_io = make_shared<rosetta::io::ParallelNetIO>(parties, my_party_id, 1, ports, ips);
-#endif
-
-  //_net_io->set_server_cert(config->mpc.SERVER_CERT);
-  //_net_io->set_server_prikey(config->mpc.SERVER_PRIKEY);
-  if (!_net_io->init()) {
-    log_error << "can not init io success! will release io soon." << endl;
-    _net_io->close();
-    return -1;
-  }
-
-  config_map["save_mode"] = to_string(config->mpc.SAVER_MODE);
-  config_map["restore_mode"] = to_string(config->mpc.RESTORE_MODE);
-
-  msg_id_t msgid("this message id for synchronize P0/P1/P2 init");
-  log_debug << __FUNCTION__ << " beg sync :" << time(0) << endl;
-  _net_io->sync_with(msgid);
-  log_debug << __FUNCTION__ << " end sync :" << time(0) << endl;
-
+int MpcProtocol::InitAesKeys() {
+  // please implements in subclass !!!
   return 0;
 }
 
 int MpcProtocol::Uninit() {
-  log_debug << "MpcProtocol::Uninit()" << endl;
-  std::unique_lock<std::mutex> lck(_status_mtx);
-  if (_is_inited) {
-    _net_io->statistics();
+  tlog_debug << "MpcProtocol Uninit..." ;
+  std::unique_lock<std::mutex> lck(status_mtx_);
+  if (is_inited_) {
+    net_io_->statistics();
 
-    msg_id_t msgid("this message id for synchronize P0/P1/P2 uninit");
+    msg_id_t msgid(context_->TASK_ID + "_this message id for synchronize P0/P1/P2 uninit");
 
     // the following time(0) will show the sync beg/end
-    log_debug << __FUNCTION__ << " beg sync :" << time(0) << endl;
-    _net_io->sync_with(msgid);
-    log_debug << __FUNCTION__ << " end sync :" << time(0) << endl;
-
-    _net_io->close();
-    _net_io.reset();
+    tlog_debug << __FUNCTION__ << " beg sync :" << time(0) ;
+    net_io_->sync_with(msgid);
+    tlog_debug << __FUNCTION__ << " end sync :" << time(0) ;
+    //IOManager::Instance()->DestroyIO();
+    net_io_.reset();
     rosetta::restore_stdout();
-    log_info << "Rosetta: Protocol [" << _protocol_name << "] backend has been released." << endl;
-    _is_inited = false;
+    tlog_info << "Rosetta: Protocol [" << protocol_name_ << "] backend has been released." ;
+    is_inited_ = false;
   }
+   IOManager::Instance()->DestroyChannel(context_->TASK_ID);// [HGF] why should we destroy channel here ? channel creation and destory should be outside 
+  tlog_debug << "MpcProtocol Uninit ok." ;
   return 0;
 }
 
 PerfStats MpcProtocol::GetPerfStats() {
   PerfStats perf_stats;
-  if (!_is_inited) {
+  if (!is_inited_) {
     return perf_stats;
   }
 
@@ -142,10 +105,10 @@ PerfStats MpcProtocol::GetPerfStats() {
   perf_stats.s = perf_stats_.get_perf_stats();
 
   //! Name
-  perf_stats.name = Name() + " P" + to_string(GetPartyId());
+  perf_stats.name = Name() + " " + net_io_->GetCurrentNodeId();
 
   //! Network
-  io::NetStat net_stat = _net_io->net_stat();
+  auto net_stat = net_io_->net_stat();
   perf_stats.s.bytes_sent = net_stat.bytes_sent();
   perf_stats.s.bytes_recv = net_stat.bytes_received();
   perf_stats.s.msg_sent = net_stat.message_sent();
@@ -154,7 +117,7 @@ PerfStats MpcProtocol::GetPerfStats() {
   return perf_stats;
 }
 void MpcProtocol::StartPerfStats() {
-  if (!_is_inited) {
+  if (!is_inited_) {
     return;
   }
 

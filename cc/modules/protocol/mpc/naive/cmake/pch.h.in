@@ -1,0 +1,19 @@
+#pragma once
+#if defined __cplusplus
+
+#include "cc/modules/protocol/mpc/comm/include/mpc_protocol.h"
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include "cc/modules/protocol/public/include/protocol_base.h"
+#include "cc/modules/protocol/public/include/protocol_ops.h"
+#include "cc/modules/protocol/mpc/naive/include/naive_impl.h"
+#include <stdexcept>
+#include <unordered_map>
+//#include <iostream>
+//#include <any>
+#include "cc/modules/protocol/mpc/naive/include/naive_ops_impl.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
+//#include "cc/modules/protocol/utility/include/util.h"
+//#include "cc/modules/iowrapper/include/io_wrapper.h"
+#endif

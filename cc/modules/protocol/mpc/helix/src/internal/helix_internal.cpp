@@ -21,12 +21,31 @@
 #include <vector>
 #include <cassert>
 #include <cmath>
+#include <thread>
 
 using namespace std;
 
 namespace rosetta {
 namespace helix {
-
+// send
+template int HelixInternal::send<mpc_t>(int, const std::vector<mpc_t>&, size_t); 
+template int HelixInternal::send<unsigned char>(int, const std::vector<unsigned char>&, size_t); 
+template int HelixInternal::send<unsigned char>(const std::string&, const std::vector<unsigned char>&, size_t); 
+// recv
+template int HelixInternal::recv<mpc_t>(int, std::vector<mpc_t>&, size_t); 
+template int HelixInternal::recv<unsigned char>(int, std::vector<unsigned char>&, size_t); 
+template int HelixInternal::recv<unsigned char>(const std::string&, std::vector<unsigned char>&, size_t); 
+// Reveal_
+template void HelixInternal::Reveal_<Share, mpc_t>(const std::vector<Share>&, vector<mpc_t>& , const std::vector<std::string>&); 
+template void HelixInternal::Reveal_<Share, mpc_t>(const std::vector<Share>&, vector<mpc_t>& , const std::string&); 
+template void HelixInternal::Reveal_<BitShare, mpc_t>(const std::vector<BitShare>&, vector<mpc_t>& , const std::vector<std::string>&); 
+template void HelixInternal::Reveal_<BitShare, mpc_t>(const std::vector<BitShare>&, vector<mpc_t>& , const std::string&); 
+// Input 
+template void HelixInternal::Input_<mpc_t, Share>(const std::string& , const std::vector<mpc_t>& X, std::vector<Share>&);
+template void HelixInternal::Input_<bit_t, BitShare>(const std::string& , const std::vector<bit_t>& X, std::vector<BitShare>&);
+// Mul_
+template void HelixInternal::Mul_<bit_t, BitShare>(const std::vector<BitShare>& , const std::vector<BitShare>&, std::vector<BitShare>& , int , bool); 
+template void HelixInternal::Mul_<mpc_t, Share>(const std::vector<Share>& , const std::vector<Share>&, std::vector<Share>& , int , bool); 
 /**
  * Trunc, locally
  */
@@ -40,6 +59,7 @@ void HelixInternal::Trunc(vector<mpc_t>& X, size_t size, size_t power) {
     for (size_t i = 0; i < size; ++i)
       X[i] = -static_cast<mpc_t>(static_cast<signed_mpc_t>(-X[i]) >> power);
   }
+  AUDIT("id:{}, P{} Trunc output(mpc_t){}",       msgid.get_hex(), player, Vector<mpc_t>(X));
 }
 
 void HelixInternal::Trunc_many(vector<mpc_t>& X, size_t size, vector<size_t> power_list) {
@@ -53,6 +73,7 @@ void HelixInternal::Trunc_many(vector<mpc_t>& X, size_t size, vector<size_t> pow
     for (size_t i = 0; i < size; ++i)
       X[i] = -static_cast<mpc_t>(static_cast<signed_mpc_t>(-X[i]) >> power_list[i]);
   }
+  AUDIT("id:{}, P{} Trunc_many output(mpc_t){}",       msgid.get_hex(), player, Vector<mpc_t>(X));
 }
 
 /**
@@ -74,9 +95,11 @@ void HelixInternal::Trunc_many(vector<Share>& X, size_t size, vector<size_t> pow
   vector<mpc_t> Z0(size, 0), Z1(size, 0);
   if (is_helper()) {
     PRF2(tmp_rand_share, size);
+    AUDIT("id:{}, P{} Trunc_many PRF2, tmp_rand_share(mpc_t){}",       msgid.get_hex(), player, Vector<mpc_t>(tmp_rand_share));
     PRF12(Z1, size);
+    AUDIT("id:{}, P{} Trunc_many, P1 and P2 generat Z1(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(Z1));
     vector<mpc_t> A0_minus_r(size, 0);
-    for(int i = 0; i < size; ++i) {
+    for (int i = 0; i < size; ++i) {
       // make sure r \in [2^{-62}, 2^{62}
       tmp_rand_share[i] = (mpc_t)((signed_mpc_t)tmp_rand_share[i] >> 1);
       A0_minus_r[i] = X[i].s0.A0 - tmp_rand_share[i];
@@ -89,7 +112,10 @@ void HelixInternal::Trunc_many(vector<Share>& X, size_t size, vector<size_t> pow
       tmp_rand_share[i] = static_cast<mpc_t>(static_cast<signed_mpc_t>(tmp_rand_share[i]) >> power_list[i]);
     }
     Z0 = tmp_rand_share - Z1;
+    AUDIT("id:{}, P{} Trunc_many compute Z0=tmp_rand_share-Z1, Z0(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(Z0));
+
     send(PARTY_0, Z0, size);
+    AUDIT("id:{}, P{} Trunc_many SEND to P{}, Z0(mpc_t){}", msgid.get_hex(), player, PARTY_0, Vector<mpc_t>(Z0));
     for (int i = 0; i < size; i++) {
       X[i].s0.A0 = Z0[i];
       X[i].s1.A1 = Z1[i];
@@ -98,7 +124,11 @@ void HelixInternal::Trunc_many(vector<Share>& X, size_t size, vector<size_t> pow
   
   if (player == PARTY_1) {
     PRF12(Z1, size);
+    AUDIT("id:{}, P{} Trunc_many generat Z1(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(Z1));
+
     recv(PARTY_2, tmp_rand_share, size);
+    AUDIT("id:{}, P{} Trunc_many RECV from P{}, tmp_rand_share(mpc_t){}", msgid.get_hex(), player, PARTY_2, Vector<mpc_t>(tmp_rand_share));
+
     vector<mpc_t> X_minus_rand(size, 0);
     for (size_t i = 0; i < size; ++i) {
       X_minus_rand[i] = X[i].s0.delta + X[i].s1.A1;
@@ -110,6 +140,7 @@ void HelixInternal::Trunc_many(vector<Share>& X, size_t size, vector<size_t> pow
       X_minus_rand[i] = -static_cast<mpc_t>(static_cast<signed_mpc_t>(-X_minus_rand[i]) >> power_list[i]);
     }
     send(PARTY_0, X_minus_rand, size);
+    AUDIT("id:{}, P{} Trunc_many SEND to P{}, X_minus_rand(mpc_t){}", msgid.get_hex(), player, PARTY_2, Vector<mpc_t>(X_minus_rand));
 
     for (int i = 0; i < size; i++) {
       X[i].s0.delta = X_minus_rand[i];
@@ -119,7 +150,10 @@ void HelixInternal::Trunc_many(vector<Share>& X, size_t size, vector<size_t> pow
 
   if (player == PARTY_0) {
     recv(PARTY_1, tmp_rand_share, size);
+    AUDIT("id:{}, P{} Trunc_many RECV from P{}, tmp_rand_share(mpc_t){}", msgid.get_hex(), player, PARTY_1, Vector<mpc_t>(tmp_rand_share));
+
     recv(PARTY_2, Z0, size);
+    AUDIT("id:{}, P{} Trunc_many RECV from P{}, Z0(mpc_t){}", msgid.get_hex(), player, PARTY_2, Vector<mpc_t>(Z0));
     for (int i = 0; i < size; i++) {
       X[i].s0.delta = tmp_rand_share[i];
       X[i].s1.A0 = Z0[i];
@@ -145,18 +179,30 @@ void HelixInternal::Trunc_many(vector<Share>& X, size_t size, vector<size_t> pow
   // Zi
   vector<mpc_t> Z0(size, 0), Z1(size, 0);
   PRF02(Z0, size);
+  if ((player == PARTY_0) || (player == PARTY_2)) {
+    AUDIT("id:{}, P{} Trunc_many, P0 and P2 generat Z0(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(Z0));
+  }
   PRF12(Z1, size);
+  if ((player == PARTY_1) || (player == PARTY_2)) {
+    AUDIT("id:{}, P{} Trunc_many, P1 and P2 generat Z1(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(Z1));
+  }
 
   vector<mpc_t> X0(size, 0), X1(size, 0);
   if (is_primary()) {
     if (player == PARTY_0) {
       X0 = T0 - Z0;
       send(PARTY_1, X0, size);
+      AUDIT("id:{}, P{} Trunc_many SEND to P{}, X0(mpc_t){}", msgid.get_hex(), player, PARTY_1, Vector<mpc_t>(X0));
+
       recv(PARTY_1, X1, size);
+      AUDIT("id:{}, P{} Trunc_many RECV from P{}, X1(mpc_t){}", msgid.get_hex(), player, PARTY_1, Vector<mpc_t>(X1));
     } else {
       X1 = T1 - Z1;
       recv(PARTY_0, X0, size);
+      AUDIT("id:{}, P{} Trunc_many RECV from P{}, X0(mpc_t){}", msgid.get_hex(), player, PARTY_0, Vector<mpc_t>(X0));
+
       send(PARTY_0, X1, size);
+      AUDIT("id:{}, P{} Trunc_many RECV from P{}, X1(mpc_t){}", msgid.get_hex(), player, PARTY_0, Vector<mpc_t>(X1));
     }
   }
 
@@ -174,6 +220,7 @@ void HelixInternal::Trunc_many(vector<Share>& X, size_t size, vector<size_t> pow
     }
   }
 #endif
+  AUDIT("id:{}, P{} Trunc_many output(Share){}",       msgid.get_hex(), player, Vector<Share>(X));
 }
 
 /**
@@ -194,33 +241,52 @@ void HelixInternal::Trunc(vector<Share>& X, size_t size, size_t power) {
 /**
  * dummy, for template use
  */
-void HelixInternal::Trunc(vector<bit_t>& X, size_t size) {}
-void HelixInternal::Trunc(vector<BitShare>& X, size_t size) {}
+void HelixInternal::Trunc(vector<bit_t>& X, size_t size, size_t d) {}
+void HelixInternal::Trunc(vector<BitShare>& X, size_t size, size_t d) {}
 
 /**
  * Reveal, arithmetic
  */
-void HelixInternal::Reveal(const vector<Share>& X, vector<mpc_t>& plain, int p) {
-  Reveal_(X, plain, p);
+void HelixInternal::Reveal(const vector<Share>& X, vector<mpc_t>& plain, const string& nodes) {
+  AUDIT("id:{}, P{} Reveal, input(Share){}",       msgid.get_hex(), player, Vector<Share>(X));
+  Reveal_(X, plain, nodes);
+  AUDIT("id:{}, P{} Reveal, output(mpc_t, plain){}", msgid.get_hex(), player, Vector<mpc_t>(plain));
 }
-void HelixInternal::Reveal(const vector<Share>& X, vector<double>& plain, int p) {
+void HelixInternal::Reveal(const vector<Share>& X, vector<double>& plain, const string& nodes) {
+  AUDIT("id:{}, P{} Reveal, input(Share){}",                 msgid.get_hex(), player, Vector<Share>(X));
   vector<mpc_t> mpc_plain;
-  Reveal_(X, mpc_plain, p);
-  convert_fixpoint_to_plain(mpc_plain, plain);
+  Reveal_(X, mpc_plain, nodes);
+  convert_fixpoint_to_plain(mpc_plain, plain, GetMpcContext()->FLOAT_PRECISION);
+  AUDIT("id:{}, P{} Reveal, output(double, plain){}", msgid.get_hex(), player, Vector<double>(plain));
+}
+void HelixInternal::Reveal(const vector<Share>& X, vector<mpc_t>& plain, const vector<string>& nodes) {
+  AUDIT("id:{}, P{} Reveal, input(Share){}",                 msgid.get_hex(), player, Vector<Share>(X));
+  Reveal_(X, plain, nodes);
+  AUDIT("id:{}, P{} Reveal, output(mpc_t, plain){}", msgid.get_hex(), player, Vector<mpc_t>(plain));
+}
+
+void HelixInternal::Reveal(const vector<Share>& X, vector<double>& plain, const vector<string>& nodes) {
+  AUDIT("id:{}, P{} Reveal, input(Share){}",                 msgid.get_hex(), player, Vector<Share>(X));
+  vector<mpc_t> mpc_plain;
+  Reveal_(X, mpc_plain, nodes);
+  convert_fixpoint_to_plain(mpc_plain, plain, GetMpcContext()->FLOAT_PRECISION);
+  AUDIT("id:{}, P{} Reveal, output(double, plain){}", msgid.get_hex(), player, Vector<double>(plain));
 }
 
 /**
  * Reveal, binary
  */
-void HelixInternal::Reveal(const vector<BitShare>& X, vector<bit_t>& plain, int p) {
-  Reveal_(X, plain, p);
+void HelixInternal::Reveal(const vector<BitShare>& X, vector<bit_t>& plain, const string& nodes) {
+  AUDIT("id:{}, P{} Reveal, input(BitShare){}",         msgid.get_hex(), player, Vector<BitShare>(X));
+  Reveal_(X, plain, nodes);
+  AUDIT("id:{}, P{} Reveal, output(bit_t){}", msgid.get_hex(), player, Vector<bit_t>(plain));
 }
 
 /**
  * Input, binary
  */
-void HelixInternal::Input(int p, const vector<bit_t>& X, vector<BitShare>& shareX) {
-  Input_(p, X, shareX);
+void HelixInternal::Input(const string& node_id,  const vector<bit_t>& X, vector<BitShare>& shareX) {
+  Input_(node_id, X, shareX);
 }
 
 /**
@@ -228,13 +294,13 @@ void HelixInternal::Input(int p, const vector<bit_t>& X, vector<BitShare>& share
  *
  * @see Input_
  */
-void HelixInternal::Input(int p, const vector<mpc_t>& X, vector<Share>& shareX) {
-  Input_(p, X, shareX);
+void HelixInternal::Input(const string& node_id, const vector<mpc_t>& X, vector<Share>& shareX) {
+  Input_(node_id, X, shareX);
 }
-void HelixInternal::Input(int p, const vector<double>& X, vector<Share>& shareX) {
+void HelixInternal::Input(const string& node_id, const vector<double>& X, vector<Share>& shareX) {
   vector<mpc_t> mpcX;
-  convert_plain_to_fixpoint(X, mpcX);
-  Input(p, mpcX, shareX);
+  convert_plain_to_fixpoint(X, mpcX, GetMpcContext()->FLOAT_PRECISION);
+  Input(node_id, mpcX, shareX);
 }
 
 /** 
@@ -246,6 +312,7 @@ void HelixInternal::Input(int p, const vector<double>& X, vector<Share>& shareX)
  * P2: (0, 0) 
  */
 void HelixInternal::ConstCommonInput(const vector<mpc_t>& X, vector<Share>& shareX) {
+  AUDIT("id:{}, P{} ConstCommonInput input X(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(X));
   int ele_size = X.size();
   shareX.resize(ele_size);
   // each party sets his share
@@ -261,46 +328,59 @@ void HelixInternal::ConstCommonInput(const vector<mpc_t>& X, vector<Share>& shar
         shareX[i].s1.A1 = 0;
     }
   }
+
+  AUDIT("id:{}, P{} ConstCommonInput output shareX(Share){}", msgid.get_hex(), player, Vector<Share>(shareX));
 }
 
 void HelixInternal::ConstCommonInput(const vector<double>& X, vector<Share>& shareX) {
+  AUDIT("id:{}, P{} ConstCommonInput input X(double){}", msgid.get_hex(), player, Vector<double>(X));
   vector<mpc_t> mpcX;
   // print_vec(X, 10, "debug calling ConstCommonInput");
-  convert_plain_to_fixpoint(X, mpcX);
+  convert_plain_to_fixpoint(X, mpcX, GetMpcContext()->FLOAT_PRECISION);
   ConstCommonInput(mpcX, shareX);
+
+  AUDIT("id:{}, P{} ConstCommonInput output shareX(Share){}", msgid.get_hex(), player, Vector<Share>(shareX));
 }
 
 /**
  * Broadcast: broadcast public values to peers
  * now, only supports P0 or P1 hold the msg
  */
-void HelixInternal::Broadcast(int from_party, const string& msg, string& result) {
-  log_debug << "helix public input msg, size: " << msg.size();
+void HelixInternal::Broadcast(const string& from_node, const string& msg, string& result) {
+  DEB("helix public input msg, size: {}", msg.size());
   
-  result.clear();
-  vector<int> peers = get_mpc_peers(from_party);
-  if (from_party == player) {
-    //send msg to peers
-    for (size_t i = 0; i < peers.size(); ++i)
-      send(peers[i], msg.data(), msg.size());
-  } else {
-    // receive msg
+  if (msg.size() != result.size())
     result.resize(msg.size());
-    recv(from_party, (char*)result.data(), msg.size());
-  }
-  // log_info << "bmsgid:" << msgid << ",player: "<<player << ", from_party:" << from_party 
-  // << " msg:" << get_hex_buffer(msg.data(), msg.size())
-  // << " res:" << get_hex_buffer(result.data(), msg.size());
-
-  log_debug << "helix public input msg ok.";
+  Broadcast(from_node, msg.data(), &result[0], msg.size());
 }
-void HelixInternal::Broadcast(int from_party, const char* msg, char* result, size_t size) {
-  vector<int> peers = get_mpc_peers(from_party);
-  if (from_party == player) {
-    for (size_t i = 0; i < peers.size(); ++i)
-      send(peers[i], msg, size);
-  } else {
-    recv(from_party, (char*)result, size);
+void HelixInternal::Broadcast(const string& from_node, const char* msg, char* result, size_t size) {
+  map<string, int> computation_nodes = io->GetComputationNodes();
+  vector<string> non_computation_nodes = io->GetNonComputationNodes();
+  string current_node = io->GetCurrentNodeId();
+  string node_c = io->GetNodeId(PARTY_2);
+  if (from_node == current_node) {
+    for (auto iter = computation_nodes.begin(); iter != computation_nodes.end(); iter++) {
+      if (current_node != iter->first) {
+        send(iter->first, msg, size);
+        memcpy(result, msg, size);
+        AUDIT("id:{}, P{} Broadcast SEND to P{}{}", msgid.get_hex(), player, iter->first, CStr(msg, size));
+      }
+    }
+  } else if (computation_nodes.find(current_node) != computation_nodes.end()) {
+    recv(from_node, result, size);
+    AUDIT("id:{}, P{} Broadcast RECV from P{}{}", msgid.get_hex(), player, from_node, CStr(result, size));
+  } else if (std::find(non_computation_nodes.begin(), non_computation_nodes.end(), current_node) != non_computation_nodes.end()) {
+    recv(node_c, result, size);
+    AUDIT("id:{}, P{} Broadcast RECV from P{}{}", msgid.get_hex(), player, node_c, CStr(result, size));
+  }
+
+  if (current_node == node_c) {
+    for (auto iter = non_computation_nodes.begin(); iter != non_computation_nodes.end(); iter++) {
+      if (*iter != from_node) {
+        send(*iter, result, size);
+        AUDIT("id:{}, P{} Broadcast SEND to P{}{}", msgid.get_hex(), player, *iter, CStr(msg, size));
+      }
+    }
   }
 }
 
@@ -310,7 +390,7 @@ void HelixInternal::Broadcast(int from_party, const char* msg, char* result, siz
  *
  * @see Input_
  */
-void HelixInternal::Input(int p, const vector<vector<double>>& X, vector<vector<Share>>& shareX) {
+void HelixInternal::Input(const string& node_id, const vector<vector<double>>& X, vector<vector<Share>>& shareX) {
   int m, n;
   size_t size = get_m_n(X, m, n);
 
@@ -320,11 +400,11 @@ void HelixInternal::Input(int p, const vector<vector<double>>& X, vector<vector<
 
   // 2. double --> fixpoint
   vector<mpc_t> fixpointX;
-  convert_plain_to_fixpoint(flattenX, fixpointX);
+  convert_plain_to_fixpoint(flattenX, fixpointX, GetMpcContext()->FLOAT_PRECISION);
 
   // 3. get input
   vector<Share> flattenShareX;
-  Input(p, fixpointX, flattenShareX);
+  Input(node_id, fixpointX, flattenShareX);
 
   // 4. back to (m,n)
   flatten_r(shareX, flattenShareX, m, n);
@@ -374,6 +454,17 @@ void HelixInternal::CombineInputInHorizontal(
   const vector<vector<Share>>& shareX1,
   const vector<vector<Share>>& shareX2,
   vector<vector<Share>>& shareX) {
+  for (int i=0; i<shareX0.size(); ++i) {
+    AUDIT("id:{}, P{} CombineInputInHorizontal, input shareX0[{}](Share){}", msgid.get_hex(), player, i, Vector<Share>(shareX0[i]));
+  }
+
+  for (int i=0; i<shareX1.size(); ++i) {
+    AUDIT("id:{}, P{} CombineInputInHorizontal, input shareX1[{}](Share){}", msgid.get_hex(), player, i, Vector<Share>(shareX1[i]));
+  }
+
+  for (int i=0; i<shareX0.size(); ++i) {
+    AUDIT("id:{}, P{} CombineInputInHorizontal, input shareX2[{}](Share){}", msgid.get_hex(), player, i, Vector<Share>(shareX2[i]));
+  }
   // valid check
   int m0, n0, m1, n1, m2, n2;
   get_m_n(shareX0, m0, n0);
@@ -400,6 +491,10 @@ void HelixInternal::CombineInputInHorizontal(
       shareX[index++][j] = shareX2[i][j];
     }
   }
+
+  for (int i=0; i<shareX.size(); ++i) {
+    AUDIT("id:{}, P{} CombineInputInHorizontal, input shareX[{}](Share){}", msgid.get_hex(), player, i, Vector<Share>(shareX[i]));
+  }
 }
 
 /**
@@ -415,6 +510,8 @@ void HelixInternal::Mul(
   const vector<mpc_t>& C,
   vector<Share>& Z,
   bool c_has_scaled) {
+  AUDIT("id:{}, P{} Mul(S, M), input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} Mul(S, M), input Y(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(C));
   assert(X.size() == C.size());
   size_t size = X.size();
   resize_vector(Z, size);
@@ -425,7 +522,9 @@ void HelixInternal::Mul(
   }
 
   if (c_has_scaled)
-    Trunc(Z, size);
+    Trunc(Z, size, GetMpcContext()->FLOAT_PRECISION);
+
+  AUDIT("id:{}, P{} Mul(S, M), output Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 /**
@@ -437,7 +536,7 @@ void HelixInternal::Mul(
  */
 void HelixInternal::Mul(const vector<Share>& X, const vector<double>& C, vector<Share>& Z) {
   vector<mpc_t> fpC;
-  convert_plain_to_fixpoint(C, fpC);
+  convert_plain_to_fixpoint(C, fpC, GetMpcContext()->FLOAT_PRECISION);
   Mul(X, fpC, Z, true);
 }
 void HelixInternal::Mul(const vector<double>& C, const vector<Share>& X, vector<Share>& Z) {
@@ -450,11 +549,11 @@ void HelixInternal::Mul(
   const vector<Share>& Y,
   vector<Share>& Z,
   bool need_trunc) {
-  Mul_<mpc_t, Share>(X, Y, Z, need_trunc);
+  Mul_<mpc_t, Share>(X, Y, Z, GetMpcContext()->FLOAT_PRECISION, need_trunc);
 }
 
 void HelixInternal::Mul(const vector<BitShare>& X, const vector<BitShare>& Y, vector<BitShare>& Z) {
-  Mul_<bit_t, BitShare>(X, Y, Z);
+  Mul_<bit_t, BitShare>(X, Y, Z, GetMpcContext()->FLOAT_PRECISION);
 }
 
 /**
@@ -467,6 +566,7 @@ void HelixInternal::Mean(const vector<Share>& X, vector<Share>& Y, int rows, int
   if (rows == 0)
     return;
 
+  AUDIT("id:{}, Mean({},{}), P{} input X(Share){}", msgid.get_hex(), rows, cols, player, Vector<Share>(X));
   vector<Share> sumY(rows);
   for (int i = 0; i < rows; i++) {
     vector<Share> rowX(X.begin() + i * cols, X.begin() + (i + 1) * cols);
@@ -474,6 +574,7 @@ void HelixInternal::Mean(const vector<Share>& X, vector<Share>& Y, int rows, int
   }
   vector<double> vfscale(rows, 1.0 / cols);
   Mul(sumY, vfscale, Y);
+  AUDIT("id:{}, Mean({},{}), P{} output(Share){}", msgid.get_hex(), rows, cols, player, Vector<Share>(Y));
 }
 
 void HelixInternal::Sum(const vector<Share>& X, vector<Share>& Y, int rows, int cols) {
@@ -481,17 +582,21 @@ void HelixInternal::Sum(const vector<Share>& X, vector<Share>& Y, int rows, int 
   if (rows == 0)
     return;
 
+  AUDIT("id:{}, Sum({},{}), P{} input X(Share){}", msgid.get_hex(), rows, cols, player, Vector<Share>(X));
   resize_vector(Y, rows);
   for (int i = 0; i < rows; i++) {
     vector<Share> rowX(X.begin() + i * cols, X.begin() + (i + 1) * cols);
     Sum(rowX, Y[i]);
   }
+  AUDIT("id:{}, Sum({},{}), P{} output(Share){}", msgid.get_hex(), rows, cols, player, Vector<Share>(Y));
 }
 
 void HelixInternal::Max(const vector<Share>& X, vector<Share>& Y, int rows, int cols) {
   assert(X.size() == rows * cols);
   if (rows == 0)
     return;
+
+  AUDIT("id:{}, Max({},{}), P{} input X(Share){}", msgid.get_hex(), rows, cols, player, Vector<Share>(X));
   resize_vector(Y, rows);
   // initiate
   for (size_t i = 0; i < rows; ++i) {
@@ -555,12 +660,15 @@ void HelixInternal::Max(const vector<Share>& X, vector<Share>& Y, int rows, int 
     curr_L = next_L;
   }
   max = level_data;
+  AUDIT("id:{}, Max({},{}), P{} output(Share){}", msgid.get_hex(), rows, cols, player, Vector<Share>(Y));
 }
 
 void HelixInternal::Min(const vector<Share>& X, vector<Share>& Y, int rows, int cols) {
   assert(X.size() == rows * cols);
   if (rows == 0)
     return;
+
+  AUDIT("id:{}, Min({},{}), P{} input X(Share){}", msgid.get_hex(), rows, cols, player, Vector<Share>(X));
   resize_vector(Y, rows);
   // initiate
   for (size_t i = 0; i < rows; ++i) {
@@ -623,10 +731,12 @@ void HelixInternal::Min(const vector<Share>& X, vector<Share>& Y, int rows, int 
     curr_L = next_L;
   }
   min = level_data;
+  AUDIT("id:{}, Min({},{}), P{} output(Share){}", msgid.get_hex(), rows, cols, player, Vector<Share>(Y));
 }
 
 void HelixInternal::AddN(const vector<Share>& X, vector<Share>& Y, int rows, int cols) {
   assert(X.size() == rows * cols && "rows*cols not equal to vector size");
+  AUDIT("id:{}, AddN({},{}), P{} input X(Share){}", msgid.get_hex(), rows, cols, player, Vector<Share>(X));
 
   if (rows == 0 || cols == 0)
     return;
@@ -636,6 +746,7 @@ void HelixInternal::AddN(const vector<Share>& X, vector<Share>& Y, int rows, int
   }
 
   resize_vector(Y, cols);
+  memset(Y.data(), 0, sizeof(Y[0])*Y.size());
   for (int i = 0; i < cols; i++) {
     for (int j = 0; j < rows; j++) {
       auto index = j * cols + i;
@@ -643,6 +754,7 @@ void HelixInternal::AddN(const vector<Share>& X, vector<Share>& Y, int rows, int
       Y[i].s1.A1 += X[index].s1.A1;
     }
   }
+  AUDIT("id:{}, AddN({},{}), P{} output(Share){}", msgid.get_hex(), rows, cols, player, Vector<Share>(Y));
 }
 
 /**
@@ -677,9 +789,15 @@ void HelixInternal::MatMul(
   assert(size_c > 0);
   resize_vector(Z, size_c);
 
+  AUDIT("id:{}, MatMul({},{},{}), P{} input X(Share){}", msgid.get_hex(), m, n, k, player, Vector<Share>(X));
+  AUDIT("id:{}, MatMul({},{},{}), P{} input Y(Share){}", msgid.get_hex(), m, n, k, player, Vector<Share>(Y));
+
   // step 2 Ci
   vector<mpc_t> C0(size_c, 0), C1(size_c, 0);
   PRF02(C0, size_c);
+  if ((player == PARTY_0) || (player == PARTY_2)) {
+    AUDIT("id:{}, MatMul({},{},{}), P{} generator C0(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(C0));
+  }
 
   if ((player == PARTY_1) || (player == PARTY_2)) {
     if (player == PARTY_2) {
@@ -694,17 +812,27 @@ void HelixInternal::MatMul(
 
       EigenMatMul(A, B, C, m, n, k, t_a, t_b);
       C1 = C - C0;
+      AUDIT("id:{}, MatMul({},{},{}), P{} locally computes C1(=(A0+A1)*(B0+b1)-C0)(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(C1));
 
       send(PARTY_1, C1, size_c); // size_c == m*k*sizeof(mpc_t)
+      AUDIT("id:{}, MatMul({},{},{}), P{} SEND to P{} C1(mpc_t){}", msgid.get_hex(), m, n, k, player, PARTY_1, Vector<mpc_t>(C1));
     } else {
       recv(PARTY_2, C1, size_c);
+      AUDIT("id:{}, MatMul({},{},{}), P{} RECV from P{} C1(mpc)t{}", msgid.get_hex(), m, n, k, player, PARTY_2, Vector<mpc_t>(C1));
     }
   }
 
   // step 4 Zi
   vector<mpc_t> Z0(size_c, 0), Z1(size_c, 0);
   PRF02(Z0, size_c);
+  if ((player == PARTY_0) || (player == PARTY_2)) {
+    AUDIT("id:{}, Mul({},{},{}), P0 and P2 generat Z0(mpc_t){}", msgid.get_hex(), m, n, k, Vector<mpc_t>(Z0));
+  }
+
   PRF12(Z1, size_c);
+  if ((player == PARTY_1) || (player == PARTY_2)) {
+    AUDIT("id:{}, Mul({},{},{}), P1 and P2 generat Z1(mpc_t){}", msgid.get_hex(), m, n, k, Vector<mpc_t>(Z1));
+  }
 
   vector<mpc_t> tildeZ(size_c, 0), tildeZ0(size_c, 0), tildeZ1(size_c, 0);
   vector<mpc_t> hatZ(size_c, 0), hatZ0(size_c, 0), hatZ1(size_c, 0);
@@ -729,14 +857,20 @@ void HelixInternal::MatMul(
       EigenMatMul(A, B, tildeZ1, m, n, k, t_a, t_b);
 
       tildeZ0 = tildeZ0 + tildeZ1 + C0;
+      AUDIT("id:{}, MatMul({},{},{}), P{} locally computes tildeZ0(=deltaX*B0+A0*deltaY+C0)(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(tildeZ0));
 
       // step 6,7
-      Trunc(tildeZ0, size_c);
+      Trunc(tildeZ0, size_c, GetMpcContext()->FLOAT_PRECISION);
+      AUDIT("id:{}, MatMul({},{},{}), P{} locally tuncates tildeZ0(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(tildeZ0));
 
       hatZ0 = tildeZ0 - Z0;
+      AUDIT("id:{}, MatMul({},{},{}), P{} locally computes hatZ0(=tildeZ0-Z0)(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(hatZ0));
 
       send(PARTY_1, hatZ0, size_c);
+      AUDIT("id:{}, MatMul({},{},{}), P{} SEND to P{} hatZ0(mpc_t){}", msgid.get_hex(), m, n, k, player, PARTY_1, Vector<mpc_t>(hatZ0));
+
       recv(PARTY_1, hatZ1, size_c);
+      AUDIT("id:{}, MatMul({},{},{}), P{} RECV from P{} hatZ1(mpc_t){}", msgid.get_hex(), m, n, k, player, PARTY_1, Vector<mpc_t>(hatZ1));
     } else {
       // step 5 deltaX*deltaY + deltaX*B1 + A1*deltaY + C1
       vector<mpc_t> A(size_a, 0), B(size_b, 0), AB(size_c, 0);
@@ -765,18 +899,25 @@ void HelixInternal::MatMul(
       EigenMatMul(A, B, tildeZ1, m, n, k, t_a, t_b);
 
       tildeZ1 = AB + tildeZ0 + tildeZ1 + C1;
+      AUDIT("id:{}, MatMul({},{},{}), P{} locally compute tildeZ1(tildwZ1=deltaX*deltaY+deltaX*B1+A1*deltaY+C1)(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(tildeZ1));
 
       // step 6,7
-      Trunc(tildeZ1, size_c);
+      Trunc(tildeZ1, size_c, GetMpcContext()->FLOAT_PRECISION);
+      AUDIT("id:{}, MatMul({},{},{}), P{} locally tuncates tildeZ1(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(tildeZ1));
 
       hatZ1 = tildeZ1 - Z1;
+      AUDIT("id:{}, MatMul({},{},{}), P{} locally compute hatZ1(=tildeZ1-Z1)(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(hatZ1));
 
       recv(PARTY_0, hatZ0, size_c);
+      AUDIT("id:{}, MatMul({},{},{}), P{} RECV from P{} hatZ0(mpc_t){}", msgid.get_hex(), m, n, k, player, PARTY_0, Vector<mpc_t>(hatZ0));
+
       send(PARTY_0, hatZ1, size_c);
+      AUDIT("id:{}, MatMul({},{},{}), P{} SEND to P{} hatZ1(mpc_t){}", msgid.get_hex(), m, n, k, player, PARTY_0, Vector<mpc_t>(hatZ1));
     }
 
     // step 8 reveal hatZ
     hatZ = hatZ0 + hatZ1;
+    AUDIT("id:{}, MatMul({},{},{}), P{} locally compute hatZ(=hatZ0+hatZ1)(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(hatZ));
   }
 
   // each party sets the share
@@ -792,6 +933,8 @@ void HelixInternal::MatMul(
         Z[i].s1.A1 = Z1[i];
     }
   }
+
+  AUDIT("id:{}, MatMul({},{},{}), P{} output(Share){}", msgid.get_hex(), m, n, k, player, Vector<Share>(Z));
 }
 
 void HelixInternal::MatMul2(
@@ -811,9 +954,15 @@ void HelixInternal::MatMul2(
   assert(size_c > 0);
   resize_vector(Z, size_c);
 
+  AUDIT("id:{}, MatMul2({},{},{}), P{} input X(Share){}", msgid.get_hex(), m, n, k, player, Vector<Share>(X));
+  AUDIT("id:{}, MatMul2({},{},{}), P{} input Y(Share){}", msgid.get_hex(), m, n, k, player, Vector<Share>(Y));
+
   // step 2 Ci
   vector<mpc_t> C0(size_c, 0), C1(size_c, 0);
   PRF02(C0, size_c);
+  if ((player == PARTY_0) || (player == PARTY_2)) {
+    AUDIT("id:{}, MatMul2({},{},{}), P{} generator C0(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(C0));
+  }
 
   if ((player == PARTY_1) || (player == PARTY_2)) {
     if (player == PARTY_2) {
@@ -828,17 +977,27 @@ void HelixInternal::MatMul2(
 
       EigenMatMul(A, B, C, m, n, k, t_a, t_b);
       Sub(C, C0, C1);
+      AUDIT("id:{}, MatMul2({},{},{}), P{} locally computes C1((A0+A1)*(B0+b1)-C0)(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(C1));
 
       send(PARTY_1, C1, size_c); // size_c == m*k*sizeof(mpc_t)
+      AUDIT("id:{}, MatMul2({},{},{}), P{} SEND to P{} C1(mpc_t){}", msgid.get_hex(), m, n, k, player, PARTY_1, Vector<mpc_t>(C1));
     } else {
       recv(PARTY_2, C1, size_c);
+      AUDIT("id:{}, MatMul2({},{},{}), P{} RECV from P{} C1(mpc_t){}", msgid.get_hex(), m, n, k, player, PARTY_2, Vector<mpc_t>(C1));
     }
   }
 
   // step 4 Zi
   vector<mpc_t> Z0(size_c, 0), Z1(size_c, 0);
   PRF02(Z0, size_c);
+  if ((player == PARTY_0) || (player == PARTY_2)) {
+    AUDIT("id:{}, MatMul2({},{},{}), P0 and P2 generat Z0(mpc_t){}", msgid.get_hex(), m, n, k, Vector<mpc_t>(Z0));
+  }
+
   PRF12(Z1, size_c);
+  if ((player == PARTY_1) || (player == PARTY_2)) {
+    AUDIT("id:{}, MatMul2({},{},{}), P1 and P2 generat Z1(mpc_t){}", msgid.get_hex(), m, n, k, Vector<mpc_t>(Z1));
+  }
 
   vector<mpc_t> tildeZ(size_c, 0), tildeZ0(size_c, 0), tildeZ1(size_c, 0);
   vector<mpc_t> hatZ(size_c, 0), hatZ0(size_c, 0), hatZ1(size_c, 0);
@@ -878,15 +1037,21 @@ void HelixInternal::MatMul2(
       // tildeZ0 = tildeZ0 + tildeZ1 + C0;
       Add(tildeZ0, tildeZ1);
       Add(tildeZ0, C0);
+      AUDIT("id:{}, MatMul2({},{},{}), P{} locally computes tildeZ0(=deltaX*B0+A0*deltaY+C0)(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(tildeZ0));
 
       // step 6,7
-      Trunc(tildeZ0, size_c);
+      Trunc(tildeZ0, size_c, GetMpcContext()->FLOAT_PRECISION);
+      AUDIT("id:{}, MatMul2({},{},{}), P{} locally tuncates tildeZ0(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(tildeZ0));
 
       //hatZ0 = tildeZ0 - Z0;
       Sub(tildeZ0, Z0, hatZ0);
+      AUDIT("id:{}, MatMul2({},{},{}), P{} locally computes hatZ0(=tildeZ0-Z0)(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(hatZ0));
 
       send(PARTY_1, hatZ0, size_c);
+      AUDIT("id:{}, MatMul2({},{},{}), P{} SEND to P{} hatZ0(mpc_t){}", msgid.get_hex(), m, n, k, player, PARTY_1, Vector<mpc_t>(hatZ0));
+
       recv(PARTY_1, hatZ1, size_c);
+      AUDIT("id:{}, MatMul2({},{},{}), P{} RECV from P{} hatZ1(mpc_t){}", msgid.get_hex(), m, n, k, player, PARTY_1, Vector<mpc_t>(hatZ1));
     } else {
       // step 5 deltaX*deltaY + deltaX*B1 + A1*deltaY + C1
       vector<mpc_t> AB(size_c, 0);
@@ -937,20 +1102,27 @@ void HelixInternal::MatMul2(
       Add(tildeZ1, AB);
       Add(tildeZ1, tildeZ1);
       Add(tildeZ1, C1);
+      AUDIT("id:{}, MatMul2({},{},{}), P{} locally compute tildeZ1(=deltaX*deltaY+deltaX*B1+A1*deltaY+C1)(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(tildeZ1));
 
       // step 6,7
-      Trunc(tildeZ1, size_c);
+      Trunc(tildeZ1, size_c, GetMpcContext()->FLOAT_PRECISION);
+      AUDIT("id:{}, MatMul2({},{},{}), P{} locally tuncates tildeZ1(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(tildeZ1));
 
       // hatZ1 = tildeZ1 - Z1;
       Sub(tildeZ1, Z1, hatZ1);
+      AUDIT("id:{}, MatMul2({},{},{}), P{} locally compute hatZ1(hatZ1=tildeZ1 - Z1){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(hatZ1));
 
       recv(PARTY_0, hatZ0, size_c);
+      AUDIT("id:{}, MatMul2({},{},{}), P{} RECV from P{} hatZ0(mpc_t){}", msgid.get_hex(), m, n, k, player, PARTY_0, Vector<mpc_t>(hatZ0));
+
       send(PARTY_0, hatZ1, size_c);
+      AUDIT("id:{}, MatMul2({},{},{}), P{} SEND to P{} hatZ1(mpc_t){}", msgid.get_hex(), m, n, k, player, PARTY_0, Vector<mpc_t>(hatZ1));
     }
 
     // step 8 reveal hatZ
     //hatZ = hatZ0 + hatZ1;
     Add(hatZ0, hatZ1, hatZ);
+    AUDIT("id:{}, MatMul2({},{},{}), P{} locally compute hatZ(=hatZ0+hatZ1)(mpc_t){}", msgid.get_hex(), m, n, k, player, Vector<mpc_t>(hatZ));
   }
 
   // each party sets the share
@@ -966,6 +1138,8 @@ void HelixInternal::MatMul2(
         Z[i].s1.A1 = Z1[i];
     }
   }
+
+  AUDIT("id:{}, MatMul2({},{},{}), P{} output(Share){}", msgid.get_hex(), m, n, k, player, Vector<Share>(Z));
 }
 
 /**
@@ -978,6 +1152,8 @@ void HelixInternal::BitAdder(
   const vector<BitShare>& X,
   const vector<BitShare>& Y,
   vector<BitShare>& C) {
+  AUDIT("id:{}, P{} AdderCircuitL, input X(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(X));
+  AUDIT("id:{}, P{} AdderCircuitL, input Y(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(Y));
   size_t size = X.size();
   assert(X.size() == Y.size());
   assert(C.size() >= size);
@@ -1005,6 +1181,7 @@ void HelixInternal::BitAdder(
     C[i].s0.delta = xy[i].s0.delta ^ C[i].s0.delta;
     C[i].s1.A0 = xy[i].s1.A0 ^ C[i].s1.A0;
   }
+  AUDIT("id:{}, P{} AdderCircuitL, output(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(C));
 }
 
 /**
@@ -1019,6 +1196,13 @@ void HelixInternal::AdderCircuitL(
   const vector<vector<BitShare>>& X,
   const vector<vector<BitShare>>& Y,
   vector<BitShare>& C) {
+  for (int i=0; i<X.size(); ++i) {
+    AUDIT("id:{}, P{} AdderCircuitL, input X[{}](BitShare){}", msgid.get_hex(), player, i, Vector<BitShare>(X[i]));
+  }
+
+  for (int i=0; i<Y.size(); ++i) {
+    AUDIT("id:{}, P{} AdderCircuitL, input Y[{}](BitShare){}", msgid.get_hex(), player, i, Vector<BitShare>(Y[i]));
+  }
   // X.size() == how many X == C.size()
   // X[i].size() == bitlen
   size_t size = X.size(); // k, how many X
@@ -1040,6 +1224,7 @@ void HelixInternal::AdderCircuitL(
       }
     }
   }
+  AUDIT("id:{}, P{} AdderCircuitL, output(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(C));
 }
 
 #define _print_adder_level_info 0
@@ -1097,6 +1282,8 @@ void HelixInternal::AdderCircuitW(
   // you can set `_print_adder_level_info` to 1, See how does AdderCircuitW work
   print_adder_level_info();
 #endif
+  AUDIT("id:{}, P{} AdderCircuitW, input X(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(X));
+  AUDIT("id:{}, P{} AdderCircuitW, input Y(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(Y));
   size_t bitlen = sizeof(mpc_t) * 8; // \ell, in general == 64
   size_t size = X.size() / bitlen; // k, how many X
   resize_vector(C, size);
@@ -1279,6 +1466,7 @@ void HelixInternal::AdderCircuitW(
   }
 
   C = P63 ^ G62;
+  AUDIT("id:{}, P{} AdderCircuitW, output(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(C));
 }
 
 /**
@@ -1288,6 +1476,7 @@ void HelixInternal::AdderCircuitW(
  *
  */
 void HelixInternal::MSB(const vector<Share>& X, vector<BitShare>& C) {
+  AUDIT("id:{}, P{} MSB, input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
   size_t size = X.size();
   size_t bitlen = sizeof(mpc_t) * 8;
 
@@ -1313,6 +1502,8 @@ void HelixInternal::MSB(const vector<Share>& X, vector<BitShare>& C) {
       bitY[i] = X[i].s1.A1;
     }
   }
+  AUDIT("id:{}, P{} MSB, compute bitX=X.s0.delta + X.s1.A0, bitX(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(bitX));
+  AUDIT("id:{}, P{} MSB, compute bitY=X.s1.A1, bitY(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(bitY));
 
   // 1. Flatten (expand) all bits
   vector<bit_t> bitsXs(bitlen * size, 0);
@@ -1334,11 +1525,12 @@ void HelixInternal::MSB(const vector<Share>& X, vector<BitShare>& C) {
       }
     }
   }
+  AUDIT("id:{}, P{} MSB, bitsShareYs(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(bitsShareYs));
 
   // get inputs on each bit
-  Input(0, bitsXs, bitsShareXs); // k*\ell
+  Input(io->GetNodeId(0), bitsXs, bitsShareXs); // k*\ell
   // Input(1, bitsYs, bitsShareYs); // k*\ell
-
+  AUDIT("id:{}, P{} MSB, bitsShareXs(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(bitsShareXs));
 
 #define use_adder_circuit_L 0
 #if use_adder_circuit_L
@@ -1358,6 +1550,7 @@ void HelixInternal::MSB(const vector<Share>& X, vector<BitShare>& C) {
   // AdderCircuit
   AdderCircuitW(bitsShareXs, bitsShareYs, C);
 #endif
+  AUDIT("id:{}, P{} MSB, output(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(C));
 
   return;
 }
@@ -1377,8 +1570,17 @@ void HelixInternal::PreTuple(vector<Share>& aX, vector<BitShare>& bX, size_t siz
 
   // step 1,2
   PRF02(S0, size);
+  if (player == PARTY_0 || player == PARTY_2) {
+    AUDIT("id:{}, P{} PreTuple PRF02, S0(bit_t){}", msgid.get_hex(), player, Vector<bit_t>(S0));
+  }
   PRF02(R0, size);
+  if (player == PARTY_0 || player == PARTY_2) {
+    AUDIT("id:{}, P{} PreTuple PRF02, R0(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(R0));
+  }
   PRF12(S1, size);
+  if (player == PARTY_1 || player == PARTY_2) {
+    AUDIT("id:{}, P{} PreTuple PRF12, S1(bit_t){}", msgid.get_hex(), player, Vector<bit_t>(S1));
+  }
 
   // step 4
   if ((player == PARTY_1) || (player == PARTY_2)) {
@@ -1388,8 +1590,10 @@ void HelixInternal::PreTuple(vector<Share>& aX, vector<BitShare>& bX, size_t siz
       R1 = B0 - R0; // r1 = b - r0
 
       send(PARTY_1, R1, size);
+      AUDIT("id:{}, P{} PreTuple SENT to P{}, R1(=B0-R0=S0+S1-R0)(bit_t){}", msgid.get_hex(), player, PARTY_1, Vector<mpc_t>(R1));
     } else {
       recv(PARTY_2, R1, size);
+      AUDIT("id:{}, P{} PreTuple RECV from P{}, R1(=B0-R0=S0+S1-R0)(bit_t){}", msgid.get_hex(), player, PARTY_2, Vector<mpc_t>(R1));
     }
   }
 
@@ -1419,6 +1623,9 @@ void HelixInternal::PreTuple(vector<Share>& aX, vector<BitShare>& bX, size_t siz
         bX[i].s1.A1 = S1[i];
     }
   }
+
+  AUDIT("id:{}, P{} PreTuple compute: get shares Ax, Bx for uniformly random b in [0,1], output aX(Share){}", msgid.get_hex(), player, Vector<Share>(aX));
+  AUDIT("id:{}, P{} PreTuple compute: get shares Ax, Bx for uniformly random b in [0,1], output bX(bit){}", msgid.get_hex(), player, Vector<BitShare>(bX));
 }
 
 /**
@@ -1429,6 +1636,7 @@ void HelixInternal::PreTuple(vector<Share>& aX, vector<BitShare>& bX, size_t siz
  * \param[out] bX binary share, bY
  */
 void HelixInternal::PreTupleA(const vector<Share>& Y, vector<Share>& aX, vector<BitShare>& bX) {
+  AUDIT("id:{}, P{} PreTupleA compute: get shares Ax, Bx for uniformly random b in [0,1], input Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
   size_t size = Y.size();
   resize_vector(aX, size);
   resize_vector(bX, size);
@@ -1439,12 +1647,27 @@ void HelixInternal::PreTupleA(const vector<Share>& Y, vector<Share>& aX, vector<
   vector<mpc_t> Z0(size, 0), Z1(size, 0);
 
   // step 1,2
-  PRF02(S0, size);
-  PRF02(R0, size);
-  PRF02(T0, size);
-  PRF02(Z0, size);
-  PRF12(S1, size);
-  PRF12(Z1, size);
+  if (player == PARTY_0 || player == PARTY_2) {
+    PRF02(S0, size);
+    AUDIT("id:{}, P{} PreTupleA PRF02, P0 and P2 generater S0(bit_t){}", msgid.get_hex(), player, Vector<bit_t>(S0));
+
+    PRF02(R0, size);
+    AUDIT("id:{}, P{} PreTupleA PRF02, P0 and P2 generater R0(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(R0));
+
+    PRF02(T0, size);
+    AUDIT("id:{}, P{} PreTupleA PRF02, P0 and P2 generater T0(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(T0));
+
+    PRF02(Z0, size);
+    AUDIT("id:{}, P{} PreTupleA PRF02, P0 and P2 generater Z0(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(Z0));
+  }
+
+  if (player == PARTY_1 || player == PARTY_2) {
+    PRF12(S1, size);
+    AUDIT("id:{}, P{} PreTupleA PRF12, P1 and P2 generater S1(bit_t){}", msgid.get_hex(), player, Vector<bit_t>(S1));
+
+    PRF12(Z1, size);
+    AUDIT("id:{}, P{} PreTupleA PRF12, P1 and P2 generater Z1(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(Z1));
+  }
 
   // step 4
   if ((player == PARTY_1) || (player == PARTY_2)) {
@@ -1460,10 +1683,14 @@ void HelixInternal::PreTupleA(const vector<Share>& Y, vector<Share>& aX, vector<
       // send(PARTY_1, R1, size);
       // send(PARTY_1, T1, size);
       sendTwoVec(PARTY_1, R1, T1, size, size);
+      AUDIT("id:{}, P{} PreTupleA SEND to P{}, R1(mpc_t){}", msgid.get_hex(), player, PARTY_1, Vector<mpc_t>(R1));
+      AUDIT("id:{}, P{} PreTupleA SEND to P{}, T1(mpc_t){}", msgid.get_hex(), player, PARTY_1, Vector<mpc_t>(T1));
     } else {
       // recv(PARTY_2, R1, size);
       // recv(PARTY_2, T1, size);
       recvTwoVec(PARTY_2, R1, T1, size, size);
+      AUDIT("id:{}, P{} PreTupleA RECV from P{}, R1(mpc_t){}", msgid.get_hex(), player, PARTY_2, Vector<mpc_t>(R1));
+      AUDIT("id:{}, P{} PreTupleA RECV from P{}, T1(mpc_t){}", msgid.get_hex(), player, PARTY_2, Vector<mpc_t>(T1));
     }
   }
 
@@ -1475,15 +1702,22 @@ void HelixInternal::PreTupleA(const vector<Share>& Y, vector<Share>& aX, vector<
         dY0[i] = Y[i].s0.delta * R0[i] + T0[i] - Z0[i];
       }
       send(PARTY_1, dY0, size);
+      AUDIT("id:{}, P{} PreTupleA SEND to P{}, dY0(mpc_t){}", msgid.get_hex(), player, PARTY_1, Vector<mpc_t>(dY0));
+
       recv(PARTY_1, dY1, size);
+      AUDIT("id:{}, P{} PreTupleA RECV from P{}, dY1(mpc_t){}", msgid.get_hex(), player, PARTY_1, Vector<mpc_t>(dY1));
     } else {
       for (int i = 0; i < size; i++) {
         dY1[i] = Y[i].s0.delta * R1[i] + T1[i] - Z1[i];
       }
-      recv(PARTY_0, dY0, size);
       send(PARTY_0, dY1, size);
+      AUDIT("id:{}, P{} PreTupleA SEND to P{}, dY1(mpc_t){}", msgid.get_hex(), player, PARTY_0, Vector<mpc_t>(dY1));
+
+      recv(PARTY_0, dY0, size);
+      AUDIT("id:{}, P{} PreTupleA RECV from P{}, dY0(mpc_t){}", msgid.get_hex(), player, PARTY_0, Vector<mpc_t>(dY0));
     }
     dY0 = dY0 + dY1;
+    AUDIT("id:{}, P{} PreTupleA compute dY0=dY0+dY1, dY0(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(dY0));
   }
   vector<mpc_t>& dbY = dY0;
 
@@ -1513,6 +1747,9 @@ void HelixInternal::PreTupleA(const vector<Share>& Y, vector<Share>& aX, vector<
         bX[i].s1.A1 = S1[i];
     }
   }
+  
+  AUDIT("id:{}, P{} PreTupleA compute: get shares aX, bX for uniformly random b in [0,1], output aX(Share){}", msgid.get_hex(), player, Vector<Share>(aX));
+  AUDIT("id:{}, P{} PreTupleA compute: get shares Ax, Bx for uniformly random b in [0,1], output bX(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(bX));
 }
 
 /**
@@ -1537,9 +1774,13 @@ void HelixInternal::Linear(
   const vector<mpc_t>& C,
   Share& Y,
   bool c_has_scaled) {
+  AUDIT("id:{}, P{} linear compute Y = C0 + SUM(C*X), input ShareX(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} linear compute Y = C0 + SUM(C*X), input C(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(C));
   assert(X.size() + 1 == C.size());
   size_t size = X.size();
+  int float_precision = GetMpcContext()->FLOAT_PRECISION;
 
+  memset(&Y, 0, sizeof(Y));
   for (int i = 0; i < size; i++) {
     if (is_helper()) {
       Y.s0.A0 += X[i].s0.A0 * C[i + 1];
@@ -1552,7 +1793,7 @@ void HelixInternal::Linear(
 
   if (is_primary()) {
     if (c_has_scaled) {
-      Y.s0.delta += (C[0] << FLOAT_PRECISION_M);
+      Y.s0.delta += (C[0] << float_precision);
     } else {
       Y.s0.delta += C[0];
     }
@@ -1560,9 +1801,11 @@ void HelixInternal::Linear(
 
   if (c_has_scaled) {
     vector<Share> vY = {Y};
-    Trunc(vY, 1);
+    Trunc(vY, 1, float_precision);
     Y = vY[0];
   }
+
+  AUDIT("id:{}, P{} linear compute Y = C0 + SUM(C*X), output Y(Share){}", msgid.get_hex(), player, Y);
 }
 
 void HelixInternal::Linear(const vector<double>& C, const vector<Share>& X, Share& Y) {
@@ -1570,7 +1813,7 @@ void HelixInternal::Linear(const vector<double>& C, const vector<Share>& X, Shar
 }
 void HelixInternal::Linear(const vector<Share>& X, const vector<double>& C, Share& Y) {
   vector<mpc_t> fpC;
-  convert_plain_to_fixpoint(C, fpC);
+  convert_plain_to_fixpoint(C, fpC, GetMpcContext()->FLOAT_PRECISION);
   Linear(X, fpC, Y);
 }
 
@@ -1586,9 +1829,12 @@ void HelixInternal::Linear(const vector<bit_t>& C, const vector<BitShare>& X, Bi
   Linear(X, C, Y);
 }
 void HelixInternal::Linear(const vector<BitShare>& X, const vector<bit_t>& C, BitShare& Y) {
+  AUDIT("id:{}, P{} linear compute Y = C0 + SUM(C*X), input bitX{}", msgid.get_hex(), player, Vector<bit_t>(C));
+  AUDIT("id:{}, P{} linear compute Y = C0 + SUM(C*X), input X{}", msgid.get_hex(), player, Vector<BitShare>(X));
   assert(X.size() + 1 == C.size());
   size_t size = X.size();
 
+  memset(&Y, 0, sizeof(Y));
   for (int i = 0; i < size; i++) {
     if (is_helper()) {
       Y.s0.A0 ^= X[i].s0.A0 & C[i + 1];
@@ -1601,6 +1847,8 @@ void HelixInternal::Linear(const vector<BitShare>& X, const vector<bit_t>& C, Bi
   if (is_primary()) {
     Y.s0.delta ^= C[0];
   }
+
+  AUDIT("id:{}, P{} linear compute Y = C0 + SUM(C*X), output Y(BitShare): {}", msgid.get_hex(), player, Y);
 }
 
 /**
@@ -1608,6 +1856,7 @@ void HelixInternal::Linear(const vector<BitShare>& X, const vector<bit_t>& C, Bi
  *
  */
 void HelixInternal::B2A(const vector<BitShare>& bitX, vector<Share>& X) {
+  AUDIT("id:{}, P{} B2A compute the arithmetic, input bitX(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(bitX));
   size_t size = bitX.size();
 
   // 1
@@ -1623,13 +1872,15 @@ void HelixInternal::B2A(const vector<BitShare>& bitX, vector<Share>& X) {
 
   // 3 Reveal for all parties
   vector<bit_t> pC(size);
-  Reveal(bC, pC, 0x7);
+  Reveal(bC, pC, encode_reveal_mask(7));
 
   // 4 Linear, locally
   for (int i = 0; i < size; i++) {
     vector<mpc_t> vc = {pC[i], (mpc_t)(1 - 2 * pC[i])};
     Linear({aX[i]}, vc, X[i], false);
   }
+
+  AUDIT("id:{}, P{} B2A compute the arithmetic, output shareX(Share){}", msgid.get_hex(), player, Vector<Share>(X));
 }
 
 /**
@@ -1640,6 +1891,8 @@ void HelixInternal::B2A(const vector<BitShare>& bitX, vector<Share>& X) {
  *
  */
 void HelixInternal::BMA(const vector<BitShare>& bitX, const vector<Share>& Y, vector<Share>& X) {
+  AUDIT("id:{}, P{} BMA compute X = bitX * Y, input bitX(BitShare){}", msgid.get_hex(), player, Vector<BitShare>(bitX));
+  AUDIT("id:{}, P{} BMA compute X = bitX * Y, input Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
   size_t size = bitX.size();
   assert(size == Y.size());
 
@@ -1656,13 +1909,15 @@ void HelixInternal::BMA(const vector<BitShare>& bitX, const vector<Share>& Y, ve
 
   // 3
   vector<bit_t> pC(size);
-  Reveal(bC, pC);
+  Reveal(bC, pC, encode_reveal_mask(7));
 
   // 4 Linear, locally
   for (int i = 0; i < size; i++) {
     vector<mpc_t> vc = {0, pC[i], (mpc_t)(1 - 2 * pC[i])};
     Linear({Y[i], aX[i]}, vc, X[i], false);
   }
+
+  AUDIT("id:{}, P{} BMA compute X = bitX * Y, output shareX(Share){}", msgid.get_hex(), player, Vector<Share>(X));
 }
 
 /**
@@ -1673,6 +1928,7 @@ void HelixInternal::BMA(const vector<BitShare>& bitX, const vector<Share>& Y, ve
  *
  */
 void HelixInternal::DReLU(const vector<Share>& X, vector<Share>& Y) {
+  AUDIT("id:{}, P{} ReLU compute Y = ReLu(X), if(X < 0, 0, 1), input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
   size_t size = X.size();
   resize_vector(Y, size);
 
@@ -1688,6 +1944,8 @@ void HelixInternal::DReLU(const vector<Share>& X, vector<Share>& Y) {
 
   // step 2
   B2A(bitX, Y);
+
+  AUDIT("id:{}, P{} ReLU compute Y = ReLu(X), if(X < 0, 0, 1), output Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
 }
 
 /**
@@ -1698,6 +1956,8 @@ void HelixInternal::DReLU(const vector<Share>& X, vector<Share>& Y) {
  *
  */
 void HelixInternal::ReLU(const vector<Share>& X, vector<Share>& Y) {
+  AUDIT("id:{}, P{} Helix ReLU compute Y = ReLu(X), if(X < 0, 0, X), input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  
   size_t size = X.size();
   resize_vector(Y, size);
 
@@ -1712,7 +1972,9 @@ void HelixInternal::ReLU(const vector<Share>& X, vector<Share>& Y) {
   }
 
   // step 2
-  BMA(bitX, X, Y);
+  BMA(bitX, X, Y); // BMA equals to B2A, Mul
+
+  AUDIT("id:{}, P{} Helix ReLU compute Y = ReLu(X), if(X < 0, 0, X), output Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
 }
 
 /**
@@ -1734,9 +1996,20 @@ void HelixInternal::InnerProducts(
   assert(size > 0);
   int J = X[0].size();
 
+  for (int i=0; i<X.size(); ++i) {
+    AUDIT("id:{}, P{} InnerProductsV input X[{}](Share){}", msgid.get_hex(), player, i, Vector<Share>(X[i]));
+  }
+
+  for (int i=0; i<Y.size(); ++i) {
+    AUDIT("id:{}, P{} InnerProductsV input Y[{}](Share){}", msgid.get_hex(), player, i, Vector<Share>(Y[i]));
+  }
+
   // step 2 Ci
   vector<mpc_t> C0(size, 0), C1(size, 0);
   PRF02(C0, size);
+  if (player == PARTY_0 || player == PARTY_2) {
+    AUDIT("id:{}, P{} InnerProductsV PRF02, P0 and P2 generater C0(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(C0));
+  }
   if ((player == PARTY_1) || (player == PARTY_2)) {
     if (player == PARTY_2) {
       // step 3 SUM( (A0+A1)*(B0+B1) ) - C0
@@ -1748,15 +2021,23 @@ void HelixInternal::InnerProducts(
       }
 
       send(PARTY_1, C1, size);
+      AUDIT("id:{}, P{} InnerProductsV SEND to P{}, C1(mpc_t){}", msgid.get_hex(), player, PARTY_1, Vector<mpc_t>(C1));
     } else {
       recv(PARTY_2, C1, size);
+      AUDIT("id:{}, P{} InnerProductsV RECV from P{}, C1(mpc_t){}", msgid.get_hex(), player, PARTY_2, Vector<mpc_t>(C1));
     }
   }
 
   // step 4 Zi
   vector<mpc_t> Z0(size, 0), Z1(size, 0);
   PRF02(Z0, size);
+  if (player == PARTY_0 || player == PARTY_2) {
+    AUDIT("id:{}, P{} InnerProductsV PRF02, P0 and P2 generater Z0(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(Z0));
+  }
   PRF12(Z1, size);
+  if (player == PARTY_1 || player == PARTY_2) {
+    AUDIT("id:{}, P{} InnerProductsV PRF12, P1 and P2 generater Z1(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(Z1));
+  }
 
   vector<mpc_t> tildeZ(size, 0), tildeZ0(size, 0), tildeZ1(size, 0);
   vector<mpc_t> hatZ(size, 0), hatZ0(size, 0), hatZ1(size, 0);
@@ -1769,15 +2050,20 @@ void HelixInternal::InnerProducts(
         }
         tildeZ0[i] = tildeZ0[i] + C0[i];
       }
+      AUDIT("id:{}, P{} InnerProductsV, compute tildeZ0=tildeZ0+C0, tildeZ0(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(tildeZ0));
 
       // step 6,7
       if (trunc)
-        Trunc(tildeZ0, size);
+        Trunc(tildeZ0, size, GetMpcContext()->FLOAT_PRECISION);
 
       hatZ0 = tildeZ0 - Z0;
+      AUDIT("id:{}, P{} InnerProductsV, compute hatZ0=tildeZ0-Z0, hatZ0(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(hatZ0));
 
       send(PARTY_1, hatZ0, size);
+      AUDIT("id:{}, P{} InnerProductsV SEND to P{}, hatZ0(mpc_t){}", msgid.get_hex(), player, PARTY_1, Vector<mpc_t>(hatZ0));
+
       recv(PARTY_1, hatZ1, size);
+      AUDIT("id:{}, P{} InnerProductsV RECV from P{}, hatZ1(mpc_t){}", msgid.get_hex(), player, PARTY_1, Vector<mpc_t>(hatZ1));
     } else {
       // step 5 SUM(deltaX*deltaY + deltaX*B1 + A1*deltaY) + C1
       for (int i = 0; i < size; i++) {
@@ -1787,19 +2073,24 @@ void HelixInternal::InnerProducts(
         }
         tildeZ1[i] = tildeZ1[i] + C1[i];
       }
+      AUDIT("id:{}, P{} InnerProductsV, compute tildeZ1=tildeZ1+C1, tildeZ1(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(tildeZ1));
 
       // step 6,7
       if (trunc)
-        Trunc(tildeZ1, size);
+        Trunc(tildeZ1, size, GetMpcContext()->FLOAT_PRECISION);
 
       hatZ1 = tildeZ1 - Z1;
+      AUDIT("id:{}, P{} InnerProductsV, compute hatZ1=tildeZ1-Z1, hatZ1(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(hatZ1));
 
       recv(PARTY_0, hatZ0, size);
+      AUDIT("id:{}, P{} InnerProductsV RECV from P{}, hatZ0(mpc_t){}", msgid.get_hex(), player, PARTY_1, Vector<mpc_t>(hatZ0));
       send(PARTY_0, hatZ1, size);
+      AUDIT("id:{}, P{} InnerProductsV SEND to P{}, hatZ1(mpc_t){}", msgid.get_hex(), player, PARTY_0, Vector<mpc_t>(hatZ1));
     }
 
     // step 8 reveal hatZ
     hatZ = hatZ0 + hatZ1;
+    AUDIT("id:{}, P{} InnerProductsV, compute hatZ=hatZ0+hatZ1, hatZ(mpc_t){}", msgid.get_hex(), player, Vector<mpc_t>(hatZ));
   }
 
   // 4. each party sets the share
@@ -1815,6 +2106,8 @@ void HelixInternal::InnerProducts(
         Z[i].s1.A1 = Z1[i];
     }
   }
+
+  AUDIT("id:{}, P{} InnerProductsV, output Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 /**
@@ -1836,6 +2129,8 @@ void HelixInternal::InnerProducts(
   vector<Share>& Z,
   size_t J,
   bool trunc) {
+  AUDIT("id:{}, P{} InnerProducts, input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} InnerProducts, input Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
   assert(J > 0);
   int I = X.size() / J;
   assert(I > 0);
@@ -1851,6 +2146,7 @@ void HelixInternal::InnerProducts(
     }
   }
   InnerProducts(XX, YY, Z, trunc);
+  AUDIT("id:{}, P{} InnerProducts, output(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 void HelixInternal::InnerProducts(
@@ -1899,6 +2195,7 @@ void HelixInternal::InnerProducts(
  * 1  8  9
  */
 void HelixInternal::Pow(const vector<Share>& X, size_t N, vector<vector<Share>>& Y) {
+  AUDIT("id:{}, P{} Pow, input X{}", msgid.get_hex(), player, Vector<Share>(X));
   size_t size = X.size();
   assert(size > 0);
 
@@ -1931,11 +2228,15 @@ void HelixInternal::Pow(const vector<Share>& X, size_t N, vector<vector<Share>>&
       }
     }
   }
+  for (int i=0; i<Y.size(); ++i) {
+    AUDIT("id:{}, P{} Pow, output Y[{}](Share){}", msgid.get_hex(), player, i, Vector<Share>(Y[i]));
+  }
 }
 /**
  * Rounds: 2*(N-1)
  */
 void HelixInternal::Pow_original(const vector<Share>& X, size_t N, vector<vector<Share>>& Y) {
+  AUDIT("id:{}, P{} Pow_original, input X{}", msgid.get_hex(), player, Vector<Share>(X));
   size_t size = X.size();
   assert(size > 0);
   assert(N > 1);
@@ -1954,6 +2255,9 @@ void HelixInternal::Pow_original(const vector<Share>& X, size_t N, vector<vector
       }
       Mul(Y[a - 1], Y[b - 1], Y[c - 1]); // x^a * x^b = x^(a+b) = x^c
     }
+  }
+  for (int i=0; i<Y.size(); ++i) {
+    AUDIT("id:{}, P{} Pow_original, output Y[{}](Share){}", msgid.get_hex(), player, i, Vector<Share>(Y[i]));
   }
 }
 
@@ -2005,6 +2309,7 @@ void HelixInternal::Pow(const vector<Share>& X, const vector<size_t>& N, vector<
  * @see SigmoidPiceWise6
  */
 void HelixInternal::SigmoidPiceWise6(const vector<Share>& X, vector<Share>& Y) {
+  AUDIT("id:{}, P{} SigmoidPiceWise6, input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
   size_t size = X.size();
   resize_vector(Y, size);
 
@@ -2062,6 +2367,7 @@ void HelixInternal::SigmoidPiceWise6(const vector<Share>& X, vector<Share>& Y) {
     vector<Share> negTmpY(2 * size);
     Negative(TmpY, negTmpY);
 
+	  int float_precision = GetMpcContext()->FLOAT_PRECISION;
     // YY = [[TmpY, 0, -TmpY],[TmpY, 0, -TmpY],...]
     for (int i = 0; i < size; i++) {
       YY[i][0] = TmpY[i + 0 * size];
@@ -2070,17 +2376,18 @@ void HelixInternal::SigmoidPiceWise6(const vector<Share>& X, vector<Share>& Y) {
       YY[i][4] = negTmpY[i + 0 * size];
 
       if (is_primary()) {
-        YY[i][0].s0.delta += FloatToMpcType(0.1998976);
-        YY[i][1].s0.delta += FloatToMpcType(0.2762375);
-        YY[i][2].s0.delta += FloatToMpcType(0.0477298);
-        YY[i][3].s0.delta += FloatToMpcType(0.2762375);
-        YY[i][4].s0.delta += FloatToMpcType(0.1998976);
+        YY[i][0].s0.delta += FloatToMpcType(0.1998976, float_precision);
+        YY[i][1].s0.delta += FloatToMpcType(0.2762375, float_precision);
+        YY[i][2].s0.delta += FloatToMpcType(0.0477298, float_precision);
+        YY[i][3].s0.delta += FloatToMpcType(0.2762375, float_precision);
+        YY[i][4].s0.delta += FloatToMpcType(0.1998976, float_precision);
       }
     }
   }
 
   // 3. InnerProducts, 1 times, size: k
   InnerProducts(CMP, YY, Y, false);
+  AUDIT("id:{}, P{} SigmoidPiceWise6, output(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
 }
 
 /**
@@ -2091,6 +2398,7 @@ void HelixInternal::SigmoidPiceWise6(const vector<Share>& X, vector<Share>& Y) {
 void HelixInternal::SigmoidPiceWise6_original_not_optimized(
   const vector<Share>& X,
   vector<Share>& Y) {
+  AUDIT("id:{}, P{} SigmoidPiceWise6_original_not_optimized, input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
   size_t size = X.size();
   resize_vector(Y, size);
 
@@ -2136,12 +2444,14 @@ void HelixInternal::SigmoidPiceWise6_original_not_optimized(
     vector<Share> y = {Y1[i], Y2[i], Y3[i], Y4[i], Y5[i]};
     InnerProducts(x, y, Y[i], false);
   }
+  AUDIT("id:{}, P{} SigmoidPiceWise6_original_not_optimized, output(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
 }
 
 /**
  * y = 0.5 + 0.2159198015 * x -0.0082176259 * x^3 + 0.0001825597 * x^5 - 0.0000018848 * x^7 + 0.0000000072 * x^9
  */
 void HelixInternal::SigmoidChebyshev(const vector<Share>& X, vector<Share>& Y) {
+  AUDIT("id:{}, P{} SigmoidChebyshev, input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
   size_t size = X.size();
   resize_vector(Y, size);
 
@@ -2169,14 +2479,123 @@ void HelixInternal::SigmoidChebyshev(const vector<Share>& X, vector<Share>& Y) {
   Add(Y, _X7);
   Add(Y, _X9);
   Add(Y, A0);
+  AUDIT("id:{}, P{} SigmoidChebyshev, output(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
 }
 
 void HelixInternal::Sigmoid(const vector<Share>& X, vector<Share>& Y) {
+  AUDIT("id:{}, P{} Sigmoid compute Y=sigmode(X), input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
 #if 0
   SigmoidChebyshev(X, Y);
 #else
   SigmoidPiceWise6(X, Y);
 #endif
+  AUDIT("id:{}, P{} Sigmoid compute Y=sigmode(X), output Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+}
+
+void HelixInternal::Exp(const vector<Share>& X, vector<Share>& Y) {
+  //// version1: exp(x) = (1 + x / n) ^ n, n can be 8, or 16
+  //// actually we expect: exp(x) = (1 + x*0.002) ^ 500
+  log_debug << "Exp ...";
+  AUDIT("id:{}, P{} Exp(S), compute: Y=Exp(X), input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+
+  size_t size = X.size();
+  size_t n = 500;
+  const vector<double_t> n_reciprocal(size, 0.002);
+  vector<Share> m(size);
+  vector<Share> result(size);
+
+  Mul(n_reciprocal, X, m);
+  
+  vector<Share> ones(size);
+  const vector<double> float_ones(size, 1.0);
+  ConstCommonInput(float_ones, ones);
+
+  vector<Share> temp(size);
+  Add(m, ones, temp);
+  PowV2(temp, n, Y);
+
+  AUDIT("id:{}, P{} Exp(S), compute: Y=Sqrt(X), output Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+  log_debug << "Exp ok."; 
+}
+
+void HelixInternal::Sqrt(const vector<Share>& X, vector<Share>& Y) {
+  // Sqrt(x) = Rsqrt(x) * x
+  log_debug << "Sqrt ...";
+  AUDIT("id:{}, P{} Sqrt(S), compute: Y=Sqrt(X), input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+
+  vector<Share> rsqrt(X.size());
+  Rsqrt(X, rsqrt);
+  Mul(rsqrt, X, Y);
+
+  AUDIT("id:{}, P{} Sqrt(S), compute: Y=Sqrt(X), output Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+  log_debug << "Sqrt ok.";
+}
+
+void HelixInternal::Rsqrt(const vector<Share>& X, vector<Share>& Y) {
+  log_debug << "Helix Rsqrt ...";
+  AUDIT("id:{}, P{} Rsqrt(S), compute: Y=1/sqrt(X), input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  
+  /*
+    y = exp(self.div(2).add(0.2).neg()).mul(2.2).add(0.2)
+    y -= self.div(1024)
+    for _ in range(config.sqrt_nr_iters):
+        y = y.mul_(3 - self * y.square()).div_(2)
+    return y
+  */
+  const vector<Share>& a = X;
+  const int sqrt_nr_iters = 3;
+  vector<Share> rsqrt_nr_initial = a;
+  size_t size = a.size();
+
+  const vector<double> float_half(size, 0.5);
+  const vector<double> float_two_ten(size, 0.2);
+  const vector<double> float_two_dot_two(size, 2.2);
+  const vector<double> float_milli(size, 0.0009765625);
+  const vector<double> float_three(size, 3);
+
+  vector<Share> inter_Number(size);
+
+  Mul(a, float_half, rsqrt_nr_initial);
+
+  Add(rsqrt_nr_initial, float_two_ten, inter_Number); //x/2+0.2
+
+  Negative(inter_Number, rsqrt_nr_initial); // negative
+
+  Exp(rsqrt_nr_initial, inter_Number); //exp(-(x/2+0.2))
+
+  Mul(inter_Number, float_two_dot_two, rsqrt_nr_initial); // mul 2.2
+
+  Add(rsqrt_nr_initial, float_two_ten, inter_Number);//add 0.2
+
+  vector<Share> temp(a.size());
+  Mul(a, float_milli, temp); //compute a/1024
+  Sub(inter_Number, temp, rsqrt_nr_initial); //rsqrt_nr_initial -=a/1024
+
+  vector<Share> temp_number0(size), temp_number1(size), temp_number2(size);
+  for (int i = 0; i < sqrt_nr_iters; i++)
+  {
+    // y.mul_(3 - self * y.square()).div_(2)
+    Mul(rsqrt_nr_initial, rsqrt_nr_initial, temp_number1);
+    Mul(temp_number1, a, temp_number0); //temp_number0 = a * rsqrt_nr_initial^2
+    Negative(temp_number0, temp_number1);
+
+    Add(temp_number1, float_three, temp_number0);
+    
+    Mul(temp_number0, rsqrt_nr_initial, temp_number2); 
+    Mul(temp_number2, float_half, temp_number0);
+    rsqrt_nr_initial = temp_number0;
+  }     
+
+  // Y = rsqrt_nr_initial;
+  // ABS(Y)
+  auto& a_sign = temp_number0;
+  auto& sign_multiplier = temp_number1;
+  DReLU(rsqrt_nr_initial, a_sign);
+  Select1Of2(vector<double>(size, 1.0), vector<double>(size, -1.0), a_sign, sign_multiplier);
+  Mul(sign_multiplier, rsqrt_nr_initial, Y);
+
+  AUDIT("id:{}, P{} Rsqrt(S), compute: Y=1/sqrt(X), output Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
+  log_debug << "helix Rsqrt ok.";
 }
 
 } // namespace helix

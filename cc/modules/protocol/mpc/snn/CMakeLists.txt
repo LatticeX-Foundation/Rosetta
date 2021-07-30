@@ -2,17 +2,23 @@ cmake_minimum_required(VERSION 2.8)
 project(mpc-snn)
 
 # SecureNN Operations
-file(GLOB_RECURSE MPC_SNN_SOURCES_FILES "src/*.cpp")
+file(GLOB MPC_SNN_SOURCES_FILES "src/impl/core/*.cpp" "src/internal/*.cpp" "src/internal/ops/*.cpp")
 
 # Library mpc-snn
 add_library(mpc-snn SHARED  ${MPC_SNN_SOURCES_FILES})
 target_include_directories(mpc-snn PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/snn"
-    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/snn/io/include")
+    PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/snn")
 target_link_libraries(mpc-snn PUBLIC ${LINKLIBS} mpc-comm)
 set_target_properties(mpc-snn PROPERTIES FOLDER "protocol/snn"
                     APPEND_STRING PROPERTY LINK_FLAGS " ${ADD_LINK_LIB_FLAGS}"
 )
+
+if(COMMAND target_precompile_headers AND ROSETTA_ENABLE_PCH)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pch.h.in ${PROJECT_BINARY_DIR}/mpc_snn_pch.h @ONLY)
+  target_precompile_headers(mpc-snn PRIVATE ${PROJECT_BINARY_DIR}/mpc_snn_pch.h)
+  message(STATUS "set PCH with mpc-snn path: ${PROJECT_BINARY_DIR}/mpc_snn_pch.h")
+endif()
+
 install_libraries(mpc-snn)
 
 IF(ROSETTA_COMPILE_TESTS)

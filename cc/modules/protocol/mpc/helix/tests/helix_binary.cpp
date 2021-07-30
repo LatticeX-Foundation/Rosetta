@@ -19,9 +19,9 @@ void run(int partyid) {
     print_vec(Y, 20, "Y");
 
     vector<string> strX, strY, strZ;
-    helix0.GetOps(msgid)->PrivateInput(0, X, strX);
+    helix0.GetOps(msgid)->PrivateInput(node_id_0, X, strX);
     print_vec(strX, 20, "strX");
-    helix0.GetOps(msgid)->PrivateInput(1, Y, strY);
+    helix0.GetOps(msgid)->PrivateInput(node_id_1, Y, strY);
     print_vec(strY, 20, "strY");
 
     vector<string> literalX, literalY;
@@ -37,21 +37,21 @@ void run(int partyid) {
       helix0.GetOps(msgid)->op(strX, strY, strZ);                 \
       print_vec(strZ, 20, "strX " + tag + " strY = strZ");        \
       vector<double> Z;                                           \
-      helix0.GetOps(msgid)->Reveal(strZ, Z);                      \
+      helix0.GetOps(msgid)->Reveal(strZ, Z, &reveal_attr);                      \
       print_vec(Z, 20, tag + " Z");                               \
     }                                                             \
     {                                                             \
       helix0.GetOps(msgid)->op(literalX, strY, strZ);             \
       print_vec(strZ, 20, "literalX " + tag + " strY = strZ");    \
       vector<double> Z;                                           \
-      helix0.GetOps(msgid)->Reveal(strZ, Z);                      \
+      helix0.GetOps(msgid)->Reveal(strZ, Z, &reveal_attr);                      \
       print_vec(Z, 20, tag + " Z");                               \
     }                                                             \
     {                                                             \
       helix0.GetOps(msgid)->op(strY, literalX, strZ);             \
       print_vec(strZ, 20, "strY " + tag + " literalX = strZ");    \
       vector<double> Z;                                           \
-      helix0.GetOps(msgid)->Reveal(strZ, Z);                      \
+      helix0.GetOps(msgid)->Reveal(strZ, Z, &reveal_attr);                      \
       print_vec(Z, 20, tag + " Z");                               \
     }                                                             \
     {                                                             \
@@ -60,7 +60,7 @@ void run(int partyid) {
       helix0.GetOps(msgid)->op(strY, literalX, strZ, &attr);      \
       print_vec(strZ, 20, "strY " + tag + " literalX(c) = strZ"); \
       vector<double> Z;                                           \
-      helix0.GetOps(msgid)->Reveal(strZ, Z);                      \
+      helix0.GetOps(msgid)->Reveal(strZ, Z, &reveal_attr);                      \
       print_vec(Z, 20, tag + " Z");                               \
     }                                                             \
     {                                                             \
@@ -69,7 +69,7 @@ void run(int partyid) {
       helix0.GetOps(msgid)->op(literalX, strY, strZ, &attr);      \
       print_vec(strZ, 20, "literalX(c) " + tag + " strY = strZ"); \
       vector<double> Z;                                           \
-      helix0.GetOps(msgid)->Reveal(strZ, Z);                      \
+      helix0.GetOps(msgid)->Reveal(strZ, Z, &reveal_attr);                      \
       print_vec(Z, 20, tag + " Z");                               \
     }                                                             \
   } while (0)

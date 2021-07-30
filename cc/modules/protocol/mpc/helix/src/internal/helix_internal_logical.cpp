@@ -41,46 +41,70 @@ void HelixInternal::AND(
   const vector<Share>& Y,
   vector<Share>& Z,
   bool scaled) {
+  tlog_audit << "AND(S,S) compute: Z=X*Y";
+  AUDIT("id:{}, P{} AND compute: Z=X*Y, input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} AND compute: Z=X*Y, input Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
   assert(X.size() == Y.size());
   Mul(X, Y, Z, scaled);
+  AUDIT("id:{}, P{} AND compute: Z=X*Y, output Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
+
+// OR  (x or y)  = x + y - x*y
 void HelixInternal::OR(
   const vector<Share>& X,
   const vector<Share>& Y,
   vector<Share>& Z,
   bool scaled) {
+  tlog_audit << " OR(S,S) compute: Z=X+Y-X*Y";
+  AUDIT("id:{}, P{} OR compute: Z=X+Y-X*Y, input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} OR compute: Z=X+Y-X*Y, input Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
   assert(X.size() == Y.size());
   int size = X.size();
   vector<Share> sum, prod;
   Add(X, Y, sum);
+  AUDIT("id:{}, P{} OR X+Y, sum(=X+Y)(Share){}", msgid.get_hex(), player, Vector<Share>(sum));
   Mul(X, Y, prod, scaled);
+  AUDIT("id:{}, P{} OR X*Y, prod(=X*Y)(Share){}", msgid.get_hex(), player, Vector<Share>(prod));
   Sub(sum, prod, Z);
+  AUDIT("id:{}, P{} OR compute: Z=X+Y-X*Y, output Z(=sum-prod=X+Y-X*Y)(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
+// XOR (x xor y) = x + y - 2*x*y
 void HelixInternal::XOR(
   const vector<Share>& X,
   const vector<Share>& Y,
   vector<Share>& Z,
   bool scaled) {
+  tlog_audit << "XOR(S,S) compute: Z=X+Y-2X*Y";
+  AUDIT("id:{}, P{} XOR compute: Z=X+Y-2*X*Y, input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} XOR compute: Z=X+Y-2*X*Y, input Y(Share){}", msgid.get_hex(), player, Vector<Share>(Y));
   assert(X.size() == Y.size());
   int size = X.size();
   vector<Share> sum, prod, tmp;
   vector<mpc_t> two(size, 2);
   Add(X, Y, sum);
+  AUDIT("id:{}, P{} XOR compute: Z=X+Y-2*X*Y, sum(=X+Y)(Share){}", msgid.get_hex(), player, Vector<Share>(sum));
   Mul(X, Y, prod, scaled);
+  AUDIT("id:{}, P{} XOR compute: Z=X+Y-2*X*Y, prod(=X*Y)(Share){}", msgid.get_hex(), player, Vector<Share>(prod));
   Mul(prod, two, tmp, false);
+  AUDIT("id:{}, P{} XOR compute: Z=X+Y-2*X*Y, prod(=2*prod)(Share){}", msgid.get_hex(), player, Vector<Share>(tmp));
   Sub(sum, tmp, Z);
+  AUDIT("id:{}, P{} XOR compute: Z=X+Y-2*X*Y, output Z(=sum-2*prod=X+Y-2*X*Y)(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
+// NOT (not x)   = 1 - x
 void HelixInternal::NOT(const vector<Share>& X, vector<Share>& Z, bool scaled) {
+  tlog_audit << "NOT(S) compute: Z=1-X";
+  AUDIT("id:{}, P{} NOT compute: Z=1-X, input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
   int size = X.size();
   if (scaled) {
-    vector<mpc_t> one(size, 1 << FLOAT_PRECISION_M);
+    vector<mpc_t> one(size, 1 << GetMpcContext()->FLOAT_PRECISION);
     Sub(one, X, Z);
   } else {
     vector<mpc_t> one(size, 1);
     Sub(one, X, Z);
   }
+  AUDIT("id:{}, P{} NOT compute: Z=1-X, output Z(=1-X)(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 /////////////////
@@ -92,48 +116,65 @@ void HelixInternal::AND(
   vector<Share>& Z,
   bool scaled) {
   assert(X.size() == C.size());
+  AUDIT("id:{}, P{} AND compute: Z=X*C, input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} AND compute: Z=X*C, input Y(double){}", msgid.get_hex(), player, Vector<double>(C));
   vector<Share> scaledX = X;
   if (!scaled) {
-    Scale(scaledX);
+    Scale(scaledX, GetMpcContext()->FLOAT_PRECISION);
   }
   Mul(scaledX, C, Z);
+  AUDIT("id:{}, P{} AND compute: Z=X*C, output Z(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
+
 void HelixInternal::OR(
   const vector<Share>& X,
   const vector<double>& C,
   vector<Share>& Z,
   bool scaled) {
   assert(X.size() == C.size());
+  AUDIT("id:{}, P{} OR compute: Z=X+C-X*C, input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} OR compute: Z=X+C-X*C, input C(double){}", msgid.get_hex(), player, Vector<double>(C));
   vector<Share> scaledX = X;
   if (!scaled) {
-    Scale(scaledX);
+    Scale(scaledX, GetMpcContext()->FLOAT_PRECISION);
   }
 
   int size = X.size();
   vector<Share> sum, prod;
   Add(X, C, sum);
+  AUDIT("id:{}, P{} OR compute: Z=X+C-X*C, sum(=X+C)(Share){}", msgid.get_hex(), player, Vector<Share>(sum));
   Mul(X, C, prod);
+  AUDIT("id:{}, P{} OR compute: Z=X+C-X*C, prod(=X*C)(Share){}", msgid.get_hex(), player, Vector<Share>(prod));
   Sub(sum, prod, Z);
+  AUDIT("id:{}, P{} OR compute: Z=X+C-X*C, output Z(=sum-prod=X+C-X*C)(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
+
 void HelixInternal::XOR(
   const vector<Share>& X,
   const vector<double>& C,
   vector<Share>& Z,
   bool scaled) {
+  AUDIT("id:{}, P{} XOR compute: Z=X+C-2*X*C, input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
+  AUDIT("id:{}, P{} XOR compute: Z=X+C-2*X*C, input C(double){}", msgid.get_hex(), player, Vector<double>(C));
   assert(X.size() == C.size());
   vector<Share> scaledX = X;
   if (!scaled) {
-    Scale(scaledX);
+    Scale(scaledX, GetMpcContext()->FLOAT_PRECISION);
   }
 
   int size = X.size();
   vector<Share> sum, prod, tmp;
   vector<double> two(size, 2.0);
   Add(X, C, sum);
+  AUDIT("id:{}, P{} XOR compute: Z=X+C-2*X*C, sum(=X+C)(Share){}", msgid.get_hex(), player, Vector<Share>(sum));
   Mul(X, C, prod);
+  AUDIT("id:{}, P{} XOR compute: Z=X+C-2*X*C, prod(=X*C)(Share){}", msgid.get_hex(), player, Vector<Share>(prod));
   Mul(prod, two, tmp);
+  AUDIT("id:{}, P{} XOR compute: Z=X+C-2*X*C, prod(=2*X*C)(Share){}", msgid.get_hex(), player, Vector<Share>(tmp));
   Sub(sum, tmp, Z);
+  AUDIT("id:{}, P{} XOR compute: Z=X+C-2*X*C, output Z(=sum-prod=X+C-2*X*C)(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
+
 void HelixInternal::AND(
   const vector<double>& C,
   const vector<Share>& Y,
@@ -141,6 +182,7 @@ void HelixInternal::AND(
   bool scaled) {
   AND(Y, C, Z, scaled);
 }
+
 void HelixInternal::OR(
   const vector<double>& C,
   const vector<Share>& Y,
@@ -148,6 +190,7 @@ void HelixInternal::OR(
   bool scaled) {
   OR(Y, C, Z, scaled);
 }
+
 void HelixInternal::XOR(
   const vector<double>& C,
   const vector<Share>& Y,
@@ -206,6 +249,7 @@ void HelixInternal::logical_op_r_(
     }
     logical_op_r_(f, hXX, Z, scaled);
   }
+  AUDIT("id:{}, P{} Logical_op_r_, output(Share){}", msgid.get_hex(), player, Vector<Share>(Z));
 }
 
 void HelixInternal::AND(const vector<vector<Share>>& XX, vector<Share>& Z, bool scaled) {

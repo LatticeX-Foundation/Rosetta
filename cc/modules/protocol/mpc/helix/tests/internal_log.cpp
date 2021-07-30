@@ -9,7 +9,7 @@ void run(int partyid) {
     vector<int> power = {7, 10, 8, 6, 5};
 
     vector<Share> shareX;
-    hi->Input(2, XX, shareX);
+    hi->Input(node_id_2, XX, shareX);
     vector<Share> shareZ(shareX.size());
     Share tmp_v;
 
@@ -23,13 +23,13 @@ void run(int partyid) {
     hi->RevealAndPrint(shareZ, "power vector shareZ:");
 
     vector<double> XXX = {0.1, 1.0, 2.0, 2.718, 5.0};
-    hi->Input(2, XXX, shareX);
+    hi->Input(node_id_2, XXX, shareX);
     hi->LogV2(shareX, shareZ);
     hi->RevealAndPrint(shareZ, "LogV2 shareZ:");
     double ori = 0.05;
-    mpc_t a = FloatToMpcType(ori);
-    double aa = MpcTypeToFloat(a);
-    cout << "CONF:" << FLOAT_PRECISION_M << endl;
+    mpc_t a = FloatToMpcType(ori, hi->context_->FLOAT_PRECISION);
+    double aa = MpcTypeToFloat(a, hi->context_->FLOAT_PRECISION);
+    cout << "CONF:" << hi->GetMpcContext()->FLOAT_PRECISION << endl;
     cout << ori << ": " << to_readable_dec(a) << "<=>" << aa << endl;
   HELIX_PROTOCOL_TEST_UNINIT(partyid);
 }

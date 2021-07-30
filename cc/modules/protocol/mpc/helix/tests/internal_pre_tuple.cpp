@@ -35,7 +35,7 @@ void run(int partyid) {
     vector<mpc_t> y = {2, 3, 4, 5, 6, 1, 0, 2};
     size_t size = y.size();
     vector<Share> Y;
-    hi->Input(2, y, Y);
+    hi->Input(node_id_2, y, Y);
 
     vector<Share> aX;
     vector<BitShare> bX;
@@ -80,7 +80,7 @@ void run(int partyid) {
     vector<double> y;
     random_vector(y, size);
     vector<Share> Y;
-    hi->Input(2, y, Y);
+    hi->Input(node_id_2, y, Y);
 
     vector<Share> aX;
     vector<BitShare> bX;

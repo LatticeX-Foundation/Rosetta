@@ -48,7 +48,7 @@
     }                                                                                             \
                                                                                                   \
     if (scale) {                                                                                  \
-      hi->Scale(shareC);                                                                          \
+      hi->Scale(shareC, hi->context_->FLOAT_PRECISION);                                    \
     }                                                                                             \
     helix_convert_share_to_string(shareC, c);                                                     \
     return 0;                                                                                     \
@@ -66,6 +66,7 @@ HELIX_PROTOCOL_BINARY_OP(Mul)
 HELIX_PROTOCOL_BINARY_OP(Div)
 HELIX_PROTOCOL_BINARY_OP(Truediv)
 HELIX_PROTOCOL_BINARY_OP(Floordiv)
+HELIX_PROTOCOL_BINARY_OP(Reciprocaldiv)
 
 HELIX_PROTOCOL_COMPARE_OP(Less)
 HELIX_PROTOCOL_COMPARE_OP(LessEqual)

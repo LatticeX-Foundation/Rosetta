@@ -1,6 +1,5 @@
 #include "snn__test.h"
 #include <string>
-#include "cc/modules/protocol/mpc/snn/include/snn_opsets.h"
 #include "cc/modules/protocol/mpc/comm/include/mpc_defines.h"
 
 using namespace std;
@@ -9,7 +8,7 @@ using namespace std;
 /*
 ** MSB(X)=0
 */
-void test_MSB_zero(rosetta::SnnProtocol& snn0) {
+void test_MSB_zero(shared_ptr<NET_IO> net_io, SnnProtoType& snn0, const string& receivers) {
   msg_id_t msgid("test_MSB basic protocol");
   size_t size = 10;
   
@@ -25,22 +24,18 @@ void test_MSB_zero(rosetta::SnnProtocol& snn0) {
   print_vec(x, size, "Input x: ");
 
   // private input
-  auto private_input = std::make_shared<rosetta::snn::PrivateInput>(msgid, snn0.GetNetHandler());
-  private_input->Run(PARTY_A, x, x_share);
+  auto snn_internal = snn0.GetInternal(msgid);
+  snn_internal->PrivateInput(snn0.GetNetHandler()->GetNodeId(PARTY_A), x, x_share);
   for (auto i = 0; i < size; ++i)
     x_share[i] *= 2;
 
   // share convert to Z_{L-1}
-  auto share_convert = std::make_shared<rosetta::snn::ShareConvert>(msgid, snn0.GetNetHandler());
-  share_convert->Run(x_share, size);
+  snn_internal->ShareConvert(x_share);
 
-  auto compute_msb = std::make_shared<rosetta::snn::ComputeMSB>(msgid, snn0.GetNetHandler());
-  compute_msb->Run(x_share, x_msb, size);
+  snn_internal->ComputeMSB(x_share, x_msb);
 
-  auto reveal = std::make_shared<rosetta::snn::Reconstruct2PC>(msgid, snn0.GetNetHandler());
   vector<mpc_t> msb_reveal(size, 0);
-  reveal->RunEx(x_msb, msb_reveal, 0x07); // 111 to all parties
-  // reveal->RunV2(x_msb, size, msb_reveal, 0); // 111 to all parties
+  snn_internal->Reconstruct2PC_ex(x_msb, msb_reveal, receivers); // 0x111 to all parties
 
   print_vec(msb_reveal, size, "msb:");
   print_vec(expect, size, "msb expected:");
@@ -49,7 +44,7 @@ void test_MSB_zero(rosetta::SnnProtocol& snn0) {
 /*
 ** MSB(X)=1
 */
-void test_MSB_one(rosetta::SnnProtocol& snn0) {
+void test_MSB_one(shared_ptr<NET_IO> net_io, SnnProtoType& snn0, const string& receivers) {
   msg_id_t msgid("test_MSB basic protocol, all one in MSB");
   size_t size = 10;
   
@@ -62,24 +57,22 @@ void test_MSB_one(rosetta::SnnProtocol& snn0) {
   
   vector<double> all_ones(size, 1);
   vector<mpc_t> expect(size, 1);
-  convert_double_to_mpctype(all_ones, expect);
+  convert_double_to_mpctype(all_ones, expect, snn0.GetMpcContext()->FLOAT_PRECISION);
 
   print_vec(x, size, "Input x: ");
 
+  auto snn_internal = snn0.GetInternal(msgid);
   // private input
-  auto private_input = std::make_shared<rosetta::snn::PrivateInput>(msgid, snn0.GetNetHandler());
-  private_input->Run(PARTY_A, x, x_share);
+  snn_internal->PrivateInput(snn0.GetNetHandler()->GetNodeId(PARTY_A), x, x_share);
 
   // share convert to Z_{L-1}
-  auto share_convert = std::make_shared<rosetta::snn::ShareConvert>(msgid, snn0.GetNetHandler());
-  share_convert->Run(x_share, size);
+  snn_internal->ShareConvert(x_share);
 
-  auto compute_msb = std::make_shared<rosetta::snn::ComputeMSB>(msgid, snn0.GetNetHandler());
-  compute_msb->Run(x_share, x_msb, size);
+  snn_internal->ComputeMSB(x_share, x_msb);
 
-  auto reveal = std::make_shared<rosetta::snn::Reconstruct2PC>(msgid, snn0.GetNetHandler());
   vector<mpc_t> msb_reveal(size, 0);
-  reveal->RunEx(x_msb, msb_reveal, 0x07); // reveal to all parties
+  // reveal->RunEx(x_msb, msb_reveal, 0x07); // reveal to all parties
+  snn_internal->Reconstruct2PC_ex(x_msb, msb_reveal, receivers); // reveal to all parties
 
   print_vec(msb_reveal, size, "msb:");
   print_vec(expect, size, "msb expected:");
@@ -90,8 +83,11 @@ void run(int partyid) {
   //////////////////////////////////////////////////////////////////
   /*                   MSB most significant bit                   */
   //////////////////////////////////////////////////////////////////
-  test_MSB_zero(snn0);
-  test_MSB_one(snn0);
+  vector<string> receivers = {"P0", "P1", "P2"};
+  string receiver_parties = receiver_parties_pack(receivers);
+
+  test_MSB_zero(net_io, snn0, receiver_parties);
+  test_MSB_one(net_io, snn0, receiver_parties);
 
   //////////////////////////////////////////////////////////////////
   SNN_PROTOCOL_TEST_UNINIT(partyid);

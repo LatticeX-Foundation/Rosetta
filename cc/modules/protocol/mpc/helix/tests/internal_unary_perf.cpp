@@ -15,7 +15,7 @@ void run(int partyid) {
     random_vector(X, size);                                                       \
                                                                                   \
     vector<Share> shareX, shareY(size);                                           \
-    hi->Input(2, X, shareX);                                                      \
+    hi->Input(node_id_2, X, shareX);                                                      \
                                                                                   \
     string tag(#op);                                                              \
     {                                                                             \

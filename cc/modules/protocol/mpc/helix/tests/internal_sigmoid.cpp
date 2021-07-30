@@ -10,7 +10,7 @@ void run(int partyid) {
     vector<double> X = {-5.0, -4.5, -4.0, -3.5, -2.5, -1.5, -0.5, 0, 0.5, 1.5, 2.5, 3.5, 4.0, 4.5};
     //vector<double> X = {-2.5, 1.5, 3.5};
     vector<Share> shareX, shareY;
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
 
     hi->beg_statistics();
     hi->Sigmoid(shareX, shareY);
@@ -27,7 +27,7 @@ void run(int partyid) {
     random_vector(X, size, -5.0, 5.0);
 
     vector<Share> shareX, shareY;
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
 
     hi->beg_statistics();
     hi->Sigmoid(shareX, shareY);
@@ -43,7 +43,7 @@ void run(int partyid) {
     random_vector(X, size, -5.0, 5.0);
 
     vector<Share> shareX, shareY;
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
 
     for (int i = 0; i < 50; i++) {
       hi->Sigmoid(shareX, shareY);
@@ -65,7 +65,7 @@ void run(int partyid) {
     }
     size_t size = X.size();
     vector<Share> shareX, shareY;
-    hi->Input(2, X, shareX);
+    hi->Input(node_id_2, X, shareX);
 
     hi->beg_statistics();
     hi->Sigmoid(shareX, shareY);

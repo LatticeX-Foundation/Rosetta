@@ -22,8 +22,8 @@ void run(int partyid) {
   cout << __FUNCTION__ << " " << msgid << endl;
   
   vector<string> strX(X.size()), strY(X.size()), strZ(X.size());
-  snn0.GetOps(msgid)->PrivateInput(0, X, strX);
-  snn0.GetOps(msgid)->PrivateInput(1, Y, strY);
+  snn0.GetOps(msgid)->PrivateInput(node_id_0, X, strX);
+  snn0.GetOps(msgid)->PrivateInput(node_id_1, Y, strY);
   cout << __FUNCTION__ << " " << msgid << endl;  
   vector<string> zZ(strZ.size());
 
@@ -36,12 +36,16 @@ void run(int partyid) {
   // ptr->BitMul(a, b, c, a.size());
 
   snn0.GetOps(msgid)->Equal(strX, strY, strZ);
-  snn0.GetOps(msgid)->Reveal(strZ, zZ);
+
+  attr_type attr;
+  vector<string> receivers = {"P0", "P1", "P2"};
+  attr["receive_parties"] = receiver_parties_pack(receivers);
+  snn0.GetOps(msgid)->Reveal(strZ, zZ, &attr);
   print_vec(zZ, 10, "SNN Equal plaintext:");
   print_vec(EQUAL_EXPECT, 10, "Equal expected:");
 
   snn0.GetOps(msgid)->NotEqual(strX, strY, strZ);
-  snn0.GetOps(msgid)->Reveal(strZ, zZ);
+  snn0.GetOps(msgid)->Reveal(strZ, zZ, &attr);
   print_vec(zZ, 10, "SNN NotEqual plaintext:");
   print_vec(NEQUAL_EXPECT, 10, "NotEqual expected:");
 

@@ -10,6 +10,13 @@ target_link_libraries(mpc-naive PUBLIC ${LINKLIBS} mpc-comm)
 set_target_properties(mpc-naive PROPERTIES FOLDER "protocol/naive"
                     APPEND_STRING PROPERTY LINK_FLAGS " ${ADD_LINK_LIB_FLAGS}"
 )
+
+if(COMMAND target_precompile_headers AND ROSETTA_ENABLE_PCH)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pch.h.in ${PROJECT_BINARY_DIR}/mpc_native_pch.h @ONLY)
+  target_precompile_headers(mpc-naive PRIVATE ${PROJECT_BINARY_DIR}/mpc_native_pch.h)
+  message(STATUS "set PCH with mpc-naive path: ${PROJECT_BINARY_DIR}/mpc_native_pch.h")
+endif()
+
 install_libraries(mpc-naive)
 
 

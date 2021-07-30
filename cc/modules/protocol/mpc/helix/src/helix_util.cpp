@@ -39,6 +39,21 @@ DEFINE_AT_EXIT_FUNCTION_END()
 namespace rosetta {
 namespace helix {
 
+// operator+
+template std::vector<mpc_t> operator+(const std::vector<mpc_t>&, const std::vector<mpc_t>&);
+template std::vector<double> operator+(const std::vector<double>&, const std::vector<double>&);
+// operator-
+template std::vector<mpc_t> operator-(const std::vector<mpc_t>&, const std::vector<mpc_t>&);
+template std::vector<double> operator-(const std::vector<double>&, const std::vector<double>&);
+// operator/
+template std::vector<mpc_t> operator/(const std::vector<mpc_t>&, const int);
+template std::vector<double> operator/(const std::vector<double>&, const int);
+template std::vector<bit_t> operator/(const std::vector<bit_t>&, const int);
+// flatten
+template void flatten<double>(const std::vector<std::vector<double>>&, std::vector<double>&);
+// flatten_r
+template void flatten_r<Share>(std::vector<std::vector<Share>>&, const std::vector<Share>&, int, int);
+
 void convert_string_to_share(
   const vector<std::string>& a,
   vector<Share>& b,
@@ -54,22 +69,28 @@ void convert_string_to_share(
     return;
   string v0 = a[0];
 
-  bool encoded = false;
+  bool mpc_encoded = false;
+  bool double_encoded = false;
   if (human) {
     if (v0.length() == sizeof(mpc_t) * 2 * 2 + 1) {
       if (v0.back() == '#') {
-        encoded = true;
+        mpc_encoded = true;
       }
     }
   } else {
     if (v0.length() == sizeof(mpc_t) * 2 + 1) {
       if (v0.back() == '#') {
-        encoded = true;
+        mpc_encoded = true;
       }
     }
   }
+  if (v0.length() == sizeof(double) + 1) {
+    if (v0.back() == '$') {
+      double_encoded = true;
+    }
+  }
 
-  if (encoded) {
+  if (mpc_encoded) {
     for (int i = 0; i < size; i++) {
       b[i].input(a[i], human);
     }
@@ -78,7 +99,13 @@ void convert_string_to_share(
     ELAPSED_STATISTIC_END(convert_string_to_share_timer);
     
     vector<double> fb(size);
-    helix_plain_string_to_double(a, fb);
+    if (double_encoded) {
+      for (int i = 0; i < a.size(); i++) {
+        memcpy(&fb[i], a[i].data(), sizeof(double));
+      }
+    } else {
+      helix_plain_string_to_double(a, fb);
+    }
 
     //! @todo optimized, use HelixImpl*
     HelixInternal* hi = (HelixInternal*)phi;
@@ -88,7 +115,7 @@ void convert_string_to_share(
      * in software architecture. And considering that this case rarely occurs, we handle
      * it as a constant input and convert it to ciphertext ('Share') uniformly.
     */
-    // hi->Input(0, fb, b);
+    // hi->Input(node_id, 0, fb, b);
     hi->ConstCommonInput(fb, b);
   }
 }

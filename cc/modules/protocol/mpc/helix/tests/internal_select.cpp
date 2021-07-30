@@ -20,8 +20,8 @@ void run(int partyid) {
 
     int size = X.size();
     vector<Share> shareX, shareY;
-    hi->Input(2, X, shareX);
-    hi->Input(2, Y, shareY);
+    hi->Input(node_id_2, X, shareX);
+    hi->Input(node_id_2, Y, shareY);
     vector<Share> shareZ;
 
     // X ?> Y
@@ -34,7 +34,7 @@ void run(int partyid) {
 
     // (x-y)*Cond
     vector<Share> prod;
-    hi->Scale(shareZ);
+    hi->Scale(shareZ, hi->GetMpcContext()->FLOAT_PRECISION);
     hi->Mul(shareZ, x_minus_y, prod);
 
     // (x-y)*Cond + y
