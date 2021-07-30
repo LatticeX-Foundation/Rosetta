@@ -339,6 +339,7 @@ def _tf_mpc_run_inputs(protocol, name, mpc_op_name, inputs, const_pos=-1):
   # tf_reveal_outputs = mpc_reveal(player_value)
   player_out = sess.run(tf_reveal_outputs)
   sess.close()
+  rtt.deactivate()
 
   # force set p1 all zeros ?
   outputs = np.double(player_out).tolist()  # convert to list type
