@@ -81,7 +81,7 @@ except:
     print("Fail")
 
 
-
+rtt.deactivate()
 
 Writer = tf.summary.FileWriter("log/graph_opt3", tf.get_default_graph())
 Writer.close()

@@ -52,5 +52,7 @@ except:
         print("Fail")
 
 
+rtt.deactivate()
+
 Writer = tf.summary.FileWriter("log/di", tf.get_default_graph())
 Writer.close()

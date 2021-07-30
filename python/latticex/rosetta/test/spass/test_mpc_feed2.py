@@ -3,7 +3,7 @@ import latticex.rosetta as rst
 import numpy as np
 
 
-
+rst.activate("SecureNN")
 X = tf.placeholder(tf.float64, [2, 2])
 Y = tf.placeholder(tf.float64, [2, 1])
 
@@ -43,6 +43,6 @@ except Exception:
     print("Fail")
 
 
-
+rst.deactivate()
 Writer = tf.summary.FileWriter("log/feed2", tf.get_default_graph())
 Writer.close()
