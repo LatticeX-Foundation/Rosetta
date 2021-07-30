@@ -3,6 +3,7 @@
 
 - [Release Notes](#release-notes)
   - [Introduction](#introduction)
+  - [Rosetta v1.0.0](#rosetta-v100)
   - [Rosetta v0.3.0](#rosetta-v030)
   - [Rosetta v0.2.1](#rosetta-v021)
   - [Rosetta v0.2.0](#rosetta-v020)
@@ -19,6 +20,24 @@
 ## Introduction
 
 This document will maintain and continually update the release notes of each version of Rosetta. If you have questions or comments, please contact us via rosetta@latticex.foundation.
+
+## Rosetta v1.0.0
+
+1. Support multi-tasking concurrency, that mean different privacy protocols can be executed simultaneously.
+   
+2. Nodes can be configured with roles, supporting calculation node, data node and result node, and data nodes can be configured in any number according to requirements.
+   
+3. Refactoring code to make the code highly cohesive and low coupled.
+   
+4. Added SecureExp, SecureSqrt, SecureRsqrt, SecureReciprocaldiv secure operations.
+   
+5. Adding audit logs, which are turned off by default and can be turned on according to business scenarios.
+   
+6. Efficient third-party io modules can be integrated into Rosetta by implementing specific interfaces.
+   
+7. Optimize back-end unit tests to provide more friendly test cases.
+   
+8. Some known bugs are fixed.
 
 ## Rosetta v0.3.0
 

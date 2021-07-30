@@ -12,13 +12,12 @@
 #
 # Important! If you want to run tests/perf under 128bit(only mpc), please export ROSETTA_MPC_128=ON first.
 #
-set -e
 
 . ./rosetta_.sh
 
 curdir=$(pwd)
 
-version="0.3.0"
+version="1.0.0"
 # usage
 E="./"$(basename $0)
 function show_usage() {
@@ -63,6 +62,7 @@ function show_compile_usage() {
     echo "     --build-type                         [Release] One of [Release,Debug]"
     echo ""
     echo "  There are some options for 'phase' of modules or all (if have supported by Rosetta):"
+    echo "     --enable-gmssl                       [OFF] Enable GmSSL(NOT SUPPORTED NOW), default is OpenSSL"
     echo "     --enable-all                         [OFF] Enable all the following options"
     echo "       --enable-protocol-mpc-securenn     [OFF] Secure Multi-party Computation (base on SecureNN)"
     echo "       --enable-protocol-mpc-helix        [OFF] Secure Multi-party Computation (base on Helix)"
@@ -96,6 +96,8 @@ function show_test_usage() {
     echo "     gradop           Gradient operators"
     echo "     spass            Static pass"
     echo "     dpass            Dynamic pass"
+    echo "   multi-task         multi-task"
+    echo "   single-task         single-task"
     echo "     other            Other tests"
     echo ""
     echo "NOTE:"
@@ -149,6 +151,7 @@ if [ "${cmd}" = "compile" ]; then
     # default
     phase=all
     build_type=Release
+    enable_gmssl=OFF
     enable_all=0
     enable_protocol_mpc_securenn=OFF
     enable_protocol_mpc_helix=OFF
@@ -164,7 +167,7 @@ if [ "${cmd}" = "compile" ]; then
         enable_shape_inference=ON
     fi
 
-    ARGS=$(getopt -o "h" -l "help,phase:,build-type:,enable-all,enable-protocol-mpc-securenn,enable-protocol-mpc-helix,enable-128bit,enable-tests" -n "$0" -- "$@")
+    ARGS=$(getopt -o "h" -l "help,phase:,build-type:,enable-gmssl,enable-all,enable-protocol-mpc-securenn,enable-protocol-mpc-helix,enable-128bit,enable-tests" -n "$0" -- "$@")
     eval set -- "${ARGS}"
     while true; do
         case "${1}" in
@@ -180,6 +183,10 @@ if [ "${cmd}" = "compile" ]; then
         --build-type)
             build_type=${2}
             shift 2
+            ;;
+        --enable-gmssl)
+            enable_gmssl=ON
+            shift
             ;;
         --enable-all)
             enable_all=1
@@ -226,6 +233,9 @@ if [ "${cmd}" = "compile" ]; then
     export rtt_command=compile
     export rtt_phase=${phase}
     export rtt_build_type=${build_type}
+    # [ujnss] in general version, not supported GMSSL
+    #export rtt_enable_gmssl=${enable_gmssl}
+    export rtt_enable_gmssl=OFF
     export rtt_enable_protocol_mpc_securenn=${enable_protocol_mpc_securenn}
     export rtt_enable_protocol_mpc_helix=${enable_protocol_mpc_helix}
     export rtt_enable_shape_inference=${enable_shape_inference}
@@ -275,6 +285,8 @@ elif [ "${cmd}" = "test" ]; then
     test_py_gradop=0
     test_py_spass=0
     test_py_dpass=0
+    test_py_multi_task=0
+    test_py_single_task=0
     test_py_other=0
 
     for arg in $*; do
@@ -286,11 +298,14 @@ elif [ "${cmd}" = "test" ]; then
         mpc) test_cpp_mpc=1 ;;
         mpc-securenn) test_cpp_mpc_securenn=1 ;;
         mpc-helix) test_cpp_mpc_helix=1 ;;
+
         # python
         op) test_py_op=1 ;;
         gradop) test_py_gradop=1 ;;
         spass) test_py_spass=1 ;;
         dpass) test_py_dpass=1 ;;
+        multi-task) test_py_multi_task=1 ;;
+        single-task) test_py_single_task=1 ;;
         other) test_py_other=1 ;;
         esac
     done
@@ -304,12 +319,9 @@ elif [ "${cmd}" = "test" ]; then
         test_py_gradop=1
         test_py_spass=1
         test_py_dpass=1
+        test_py_multi_task=1
+        test_py_single_task=1
         test_py_other=1
-    fi
-    if [ $test_cpp_mpc -eq 1 ]; then
-        test_cpp_mpc=1
-        test_cpp_mpc_securenn=1
-        test_cpp_mpc_helix=1
     fi
 
     export rtt_command=test
@@ -322,6 +334,8 @@ elif [ "${cmd}" = "test" ]; then
     export rtt_test_py_gradop=${test_py_gradop}
     export rtt_test_py_spass=${test_py_spass}
     export rtt_test_py_dpass=${test_py_dpass}
+    export rtt_test_multi_task=${test_py_multi_task}
+    export rtt_test_single_task=${test_py_single_task}
     export rtt_test_py_other=${test_py_other}
     echo "      test_cpp_common: ${rtt_test_cpp_common}"
     echo "       test_cpp_netio: ${rtt_test_cpp_netio}"
@@ -332,6 +346,8 @@ elif [ "${cmd}" = "test" ]; then
     echo "       test_py_gradop: ${rtt_test_py_gradop}"
     echo "        test_py_spass: ${rtt_test_py_spass}"
     echo "        test_py_dpass: ${rtt_test_py_dpass}"
+    echo "   test_py_multi_task: ${test_py_multi_task}"
+    echo "   test_py_single_task: ${test_py_single_task}"
     echo "        test_py_other: ${rtt_test_py_other}"
 
     echo -e "${BLUE}Ready to run test${NC}"
@@ -375,11 +391,6 @@ elif [ "${cmd}" = "perf" ]; then
         esac
     done
     if [ $test_all -eq 1 ]; then
-        perf_cpp_mpc=1
-        perf_cpp_mpc_securenn=1
-        perf_cpp_mpc_helix=1
-    fi
-    if [ $perf_cpp_mpc -eq 1 ]; then
         perf_cpp_mpc=1
         perf_cpp_mpc_securenn=1
         perf_cpp_mpc_helix=1

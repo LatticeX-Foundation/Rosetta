@@ -51,9 +51,32 @@ cc/tf/strops/core
 python/latticex/*.so
 python/latticex/lib128
 .publish_to_github
+.publish_snn_to_github
+.publish_snn_and_helix_to_github
 publish_to_github.tar.gz
 core
 !core/
 *.log.*
 *.log
+
+python/latticex/rosetta/secure/decorator/test_cases/data
 *yyl*
+data
+data/**
+example/lenet-5/train/
+example/lenet-5/train/**
+example/lenet-5/*.csv
+example/lenet-5/rtt.logits.txt
+example/lenet-5/temp.rtt.txt
+example/lenet-5/temp.rtt.temp
+example/lenet-5/log-plain
+
+# ignore grpc generated cpp or header files
+*.grpc.pb.cc
+*.grpc.pb.h
+*.pb.cc
+*.pb.h
+
+# ignore gprc generated python files
+*_pb2.py
+*_pb2_grpc.py

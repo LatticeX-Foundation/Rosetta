@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+#set -x
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -12,9 +12,13 @@ curdir=$(pwd)
 ccdir=${curdir}/cc/
 snn_mpcop_dir=${curdir}/cc/tf/mpcops/
 cctf_misc=${curdir}/cc/tf/misc/
-mpcop_py_testdir=${curdir}/python/latticex/rosetta/secure/decorator/test_cases
-mpcgradop_py_testdir=${curdir}/python/latticex/rosetta/secure/grads_ops/test_cases
-spass_py_testdir=${curdir}/python/latticex/rosetta/secure/spass/test_cases
+
+mpcgradop_py_testdir=${curdir}/python/latticex/rosetta/test/grads_ops
+spass_py_testdir=${curdir}/python/latticex/rosetta/test/spass
+dpass_py_testdir=${curdir}/python/latticex/rosetta/test/dpass
+mpcop_py_testdir=${curdir}/python/latticex/rosetta/test/single-task
+multi_task_testdir=${curdir}/python/latticex/rosetta/test/multi-task
+single_task_testdir=${curdir}/python/latticex/rosetta/test/single-task
 misc_py_testdir=${cctf_misc}/test_cases
 
 pv=$(python3 -c 'import sys; print(sys.version_info[0])')
@@ -85,21 +89,21 @@ function run_rosetta_perf_modules() {
 }
 
 function run_rosetta_test_python() {
-  echo -e "stage run_rosetta_test_python."
+  # echo -e "stage run_rosetta_test_python."
 
   if [ $rtt_test_py_op -eq 1 ]; then
-    mkdir -p ${mpcop_py_testdir}/certs
-    cp -f ${ccdir}/certs/* ${mpcop_py_testdir}/certs/
+    # mkdir -p ${mpcop_py_testdir}/certs
+    # cp -f ${ccdir}/certs/* ${mpcop_py_testdir}/certs/
     cd ${mpcop_py_testdir}
-    echo -e "run mpcop test cases..."
-    if [ -f ./test.sh ]; then
-      bash ./test.sh
+    echo -e "run mpc ops test cases [single-task simple]..."
+    if [ -f "./test-simple.sh" ]; then
+      bash ./test-simple.sh
     fi
   fi
 
   if [ $rtt_test_py_gradop -eq 1 ]; then
-    mkdir -p ${mpcgradop_py_testdir}/certs
-    cp -f ${ccdir}/certs/* ${mpcgradop_py_testdir}/certs/
+    # mkdir -p ${mpcgradop_py_testdir}/certs
+    # cp -f ${ccdir}/certs/* ${mpcgradop_py_testdir}/certs/
     cd ${mpcgradop_py_testdir}
     echo -e "run grad mpcop test cases..."
     if [ -f ./test.sh ]; then
@@ -108,8 +112,8 @@ function run_rosetta_test_python() {
   fi
 
   if [ $rtt_test_py_spass -eq 1 ]; then
-    mkdir -p ${spass_py_testdir}/certs
-    cp -f ${ccdir}/certs/* ${spass_py_testdir}/certs/
+    # mkdir -p ${spass_py_testdir}/certs
+    # cp -f ${ccdir}/certs/* ${spass_py_testdir}/certs/
     cd ${spass_py_testdir}
     echo -e "run static pass test cases"
     if [ -f ./test.sh ]; then
@@ -117,9 +121,39 @@ function run_rosetta_test_python() {
     fi
   fi
 
+  if [ $rtt_test_py_dpass -eq 1 ]; then
+    # mkdir -p ${dpass_py_testdir}/certs
+    # cp -f ${ccdir}/certs/* ${dpass_py_testdir}/certs/
+    cd ${dpass_py_testdir}
+    echo -e "run dynamic pass test cases"
+    if [ -f ./test.sh ]; then
+      bash ./test.sh
+    fi
+  fi
+
+  if [ $test_py_multi_task -eq 1 ]; then
+    # mkdir -p ${multi_task_testdir}/certs
+    # cp -f ${ccdir}/certs/* ${multi_task_testdir}/certs/
+    cd ${multi_task_testdir}
+    echo -e "run multi-task test cases"
+    if [ -f ./test.sh ]; then
+      bash ./test.sh
+    fi
+  fi
+
+  if [ $test_py_single_task -eq 1 ]; then
+    # mkdir -p ${single_task_testdir}/certs
+    # cp -f ${ccdir}/certs/* ${single_task_testdir}/certs/
+    cd ${single_task_testdir}
+    echo -e "run single-task [python unittest] test cases"
+    if [ -f ./test-unittest.sh ]; then
+      bash ./test-unittest.sh
+    fi
+  fi
+
   if [ $rtt_test_py_other -eq 1 ]; then
-    mkdir -p ${misc_py_testdir}/certs
-    cp -f ${ccdir}/certs/* ${misc_py_testdir}/certs/
+    # mkdir -p ${misc_py_testdir}/certs
+    # cp -f ${ccdir}/certs/* ${misc_py_testdir}/certs/
     cd ${misc_py_testdir}
     echo -e "run misc test cases"
     if [ -f ./test.sh ]; then
@@ -128,7 +162,7 @@ function run_rosetta_test_python() {
   fi
 
   cd ${curdir}
-  echo -e "${GREEN}run_rosetta_test_python.${NC}"
+  #echo -e "${GREEN}run_rosetta_test_python.${NC}"
 }
 
 function run_rosetta_clean() {

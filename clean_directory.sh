@@ -13,6 +13,7 @@ mkdir -p build/log
 find . -name "log" -type d | xargs rm -rf
 find . -name "__pycache__" -type d | xargs rm -rf
 
+rm -rf .publish_to_github
 rm -rf .eggs
 rm -rf build build128 dist tmp
 

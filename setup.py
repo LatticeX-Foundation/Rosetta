@@ -147,7 +147,7 @@ if 'ROSETTA_MPC_128' in os.environ and os.environ['ROSETTA_MPC_128'] == 'ON':
 
 
 DOCLINES = __doc__.split('\n')
-__version__ = '0.3.0'
+__version__ = '1.0.0'
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 include_dirs = []
@@ -163,7 +163,6 @@ include_dirs.append(TF_INCS)
 ccdir = root_dir+"/cc"
 include_dirs.append(ccdir+"/modules/common/include")
 include_dirs.append(ccdir+"/modules/common/include/utils")
-include_dirs.append(ccdir+"/modules/io/include")
 include_dirs.append(ccdir+"/modules/protocol/mpc/include")
 include_dirs.append(ccdir+"/modules/protocol/mpc/snn/src")
 # added in V0.2.0
@@ -172,7 +171,8 @@ include_dirs.append(ccdir+"/modules/protocol/public")
 # thirdparty includes
 include_dirs.append(ccdir+"/third_party/rapidjson/include")
 include_dirs.append(ccdir+"/third_party/pybind11/include")
-include_dirs.append(ccdir+"/third_party/spdlog-1.6.1/include")
+include_dirs.append(ccdir+"/third_party/spdlog/include")
+include_dirs.append(ccdir+"/third_party/io/include")
 
 # libraries search path
 library_dirs = ['.']
@@ -214,7 +214,7 @@ ext_modules = [
         ['cc/python_export/_rosetta.cc'],
         # cc_files,
         include_dirs=include_dirs,
-        libraries=['tf-dpass', 'mpc-io', 'protocol-utility',
+        libraries=['tf-dpass', 'io', 'protocol-utility',
                    'common', 'protocol-base', 'protocol-api'],
         library_dirs=library_dirs,
         extra_compile_args=extra_cflags,

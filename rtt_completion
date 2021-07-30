@@ -15,7 +15,7 @@ _rosetta_complete_func() {
     compile) # #####################
         opts0="--phase --build-type --enable-gmssl"
         opts0+=" --enable-all --enable-protocol-mpc-securenn"
-        opts0+=" --enable-protocol-mpc-helix --enable-128bit --enable-tests"
+        opts0+=" --enable-protocol-mpc-helix --enable-protocol-psi --enable-protocol-zk --enable-128bit --enable-tests"
         arr_opts=(${opts0})
         opts=""
         for ((i = 0; i < ${#arr_opts[@]}; i++)); do
@@ -52,7 +52,7 @@ _rosetta_complete_func() {
         ;;
     test) # #####################
         opts0="all"
-        opts0+=" common netio mpc mpc-securenn mpc-helix"
+        opts0+=" common netio mpc mpc-securenn mpc-helix psi zk"
         opts0+=" op gradop spass dpass other"
         arr_opts=(${opts0})
         opts=""

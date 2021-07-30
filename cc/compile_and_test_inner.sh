@@ -2,7 +2,6 @@
 #
 # Note, this script is called by ../rosetta.sh
 #
-set -e
 
 curdir=$(pwd)
 ccdir=${curdir}
@@ -25,6 +24,7 @@ function print_compile_options() {
     echo "                     command: ${rtt_command}"
     echo "                       phase: ${rtt_phase}"
     echo "                  build_type: ${rtt_build_type}"
+    echo "                enable_gmssl: ${rtt_enable_gmssl}"
     echo "enable_protocol_mpc_securenn: ${rtt_enable_protocol_mpc_securenn}"
     echo "   enable_protocol_mpc_helix: ${rtt_enable_protocol_mpc_helix}"
     echo "               enable_128bit: ${rtt_enable_128bit}"
@@ -38,6 +38,7 @@ function save_compile_options() {
     echo "${rtt_command}" >>${compile_options_file}
     echo "${rtt_phase}" >>${compile_options_file}
     echo "${rtt_build_type}" >>${compile_options_file}
+    echo "${rtt_enable_gmssl}" >>${compile_options_file}
     echo "${rtt_enable_protocol_mpc_securenn}" >>${compile_options_file}
     echo "${rtt_enable_protocol_mpc_helix}" >>${compile_options_file}
     echo "${rtt_enable_128bit}" >>${compile_options_file}
@@ -53,11 +54,12 @@ function load_compile_options() {
     export rtt_command=${x[0]}
     export rtt_phase=${x[1]}
     export rtt_build_type=${x[2]}
-    export rtt_enable_protocol_mpc_securenn=${x[3]}
-    export rtt_enable_protocol_mpc_helix=${x[4]}
-    export rtt_enable_128bit=${x[5]}
-    export rtt_enable_shape_inference=${x[6]}
-    export rtt_enable_tests=${x[7]}
+    export rtt_enable_gmssl=${x[3]}
+    export rtt_enable_protocol_mpc_securenn=${x[4]}
+    export rtt_enable_protocol_mpc_helix=${x[5]}
+    export rtt_enable_128bit=${x[7]}
+    export rtt_enable_shape_inference=${x[8]}
+    export rtt_enable_tests=${x[9]}
 }
 
 #
@@ -67,16 +69,36 @@ function load_compile_options() {
 # install emp-toolkit
 function install_emptoolkit() {
     # install emp-tool
+    #if [ ! -e ${builddir}/include/emp-tool ]; then
+    #echo "emp-tool not exist"
     echo "to install emp-tool..."
 
+    #if [ ! -e ${third_builddir}/include/emp-tool ]; then mkdir -p ${third_builddir}/emp-tool; fi
     mkdir -p ${third_builddir}/emp-tool
     cd ${third_builddir}/emp-tool
     cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare" \
         ${third_code_dir}/emp-toolkit/emp-tool -DCMAKE_INSTALL_PREFIX=${builddir} -DCMAKE_PREFIX_PATH=${builddir} \
         -DCMAKE_BUILD_TYPE=${rtt_build_type} \
         -DENABLE_FLOAT=ON
-    make -j && make install
+    SECONDS=0
+    make -j4 && make install
     echo "install emp-tool ok."
+    #fi
+
+    # install emp-ot
+    #if [ ! -e ${builddir}/include/emp-otl ]; then
+    #echo "emp-ot not exist"
+    echo "to install emp-ot..."
+
+    #if [ ! -e ${third_builddir}/emp-ot ]; then mkdir -p ${third_builddir}/emp-ot; fi
+    mkdir -p ${third_builddir}/emp-ot
+    cd ${third_builddir}/emp-ot
+    cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare" \
+        ${third_code_dir}/emp-toolkit/emp-ot -DCMAKE_INSTALL_PREFIX=${builddir} -DCMAKE_PREFIX_PATH=${builddir} \
+        -DCMAKE_BUILD_TYPE=${rtt_build_type}
+    make -j4 && make install
+    echo "install emp-ot ok, Elapsed Time (using \$SECONDS): $SECONDS seconds"
+    #fi
 }
 
 # compile c++
@@ -97,9 +119,14 @@ function compile_cpp() {
         -DROSETTA_COMPILE_TESTS=${rtt_enable_tests} \
         -DROSETTA_ENABLES_PROTOCOL_MPC_SECURENN=${rtt_enable_protocol_mpc_securenn} \
         -DROSETTA_ENABLES_PROTOCOL_MPC_HELIX=${rtt_enable_protocol_mpc_helix} \
+        -DUSE_GMTASSL=${rtt_enable_gmssl} \
         -DCMAKE_PREFIX_PATH=${builddir}
-    make -j4
+    SECONDS=0
+    make -j8
+    echo "cpp make Elapsed Time (using \$SECONDS): $SECONDS seconds"
+    SECONDS=0
     make install
+    echo "cpp make install Elapsed Time (using \$SECONDS): $SECONDS seconds"
     cd ${curdir}
 }
 
@@ -120,7 +147,7 @@ function run_io_tests() {
     #./mpc-io-tests-test_net_io | grep -E "passed|failed"
     #./mpc-io-tests-test_parallel_net_io | grep -E "passed|failed"
 
-    #./mpc-io-tests-test_net_io
+    ./mpc-io-examples-netio_ex
     echo "run io-tests ok."
     sleep 1
 }
@@ -129,7 +156,7 @@ function run_io_tests() {
 function run_protocol_mpc_test() {
     name=$1
     echo "run $name"
-    # killall -q $name
+    killall -q $name
     if [ -f "./$name" ]; then
         ./$name >log/console-$name.log 2>&1
         sleep 0.5
@@ -170,11 +197,11 @@ function run_all_modules_tests() {
         run_io_tests
     fi
 
-    if [ "$rtt_enable_protocol_mpc_securenn" == "ON" ] && [ $rtt_test_cpp_mpc_securenn -eq 1 ]; then
+    if [ $rtt_test_cpp_mpc_securenn -eq 1 ]; then
         cd ${bindir}
         run_protocol_mpc_snn_tests
     fi
-    if [ "$rtt_enable_protocol_mpc_helix" == "ON" ] && [ $rtt_test_cpp_mpc_helix -eq 1 ]; then
+    if [ $rtt_test_cpp_mpc_helix -eq 1 ]; then
         cd ${bindir}
         run_protocol_mpc_helix_tests
     fi
@@ -199,11 +226,12 @@ function run_protocol_mpc_helix_perfs() {
 }
 
 function run_all_modules_perfs() {
-    if [ "$rtt_enable_protocol_mpc_securenn" == "ON" ] && [ $rtt_perf_cpp_mpc_securenn -eq 1 ]; then
+    echo "----- rtt_perf_cpp_mpc_securenn: $rtt_perf_cpp_mpc_securenn "
+    if [ $rtt_perf_cpp_mpc_securenn -eq 1 ]; then
         cd ${bindir}
         run_protocol_mpc_snn_perfs
     fi
-    if [ "$rtt_enable_protocol_mpc_helix" == "ON" ] && [ $rtt_perf_cpp_mpc_helix -eq 1 ]; then
+    if [ $rtt_perf_cpp_mpc_helix -eq 1 ]; then
         cd ${bindir}
         run_protocol_mpc_helix_perfs
     fi
@@ -218,9 +246,8 @@ if [ "${rtt_command}" = "compile" ]; then
     compile_cpp
     save_compile_options
 elif [ "${rtt_command}" = "test" ] || [ "${rtt_command}" = "perf" ]; then
-    _rtt_command=${rtt_command}
+    current_command=${rtt_command}
     load_compile_options
-    #print_compile_options
     if [ "${rtt_enable_tests}" != "ON" ]; then
         echo "Please set --enable-tests when compiling."
         exit 1
@@ -232,7 +259,7 @@ elif [ "${rtt_command}" = "test" ] || [ "${rtt_command}" = "perf" ]; then
     mkdir -p log out key data
     cd ${curdir}
 
-    if [ "${_rtt_command}" == "test" ]; then
+    if [ "${current_command}" = "test" ]; then
         run_all_modules_tests
     else
         run_all_modules_perfs
