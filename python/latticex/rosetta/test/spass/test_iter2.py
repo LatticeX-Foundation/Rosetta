@@ -7,6 +7,8 @@ with_header = True
 with_index = False
 batch_size = 2
 
+rtt.activate("SecureNN")
+
 def decode(line):
     fields = tf.string_split([line], ',').values
     if with_index: # Skip index
@@ -53,6 +55,9 @@ try:
         print("Pass")
 except:
     print("Fail")
+
+
+rtt.deactivate()
 
 Writer = tf.compat.v1.summary.FileWriter("log/iter2", tf.compat.v1.get_default_graph())
 Writer.close()

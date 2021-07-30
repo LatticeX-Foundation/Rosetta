@@ -2,6 +2,7 @@ import tensorflow as tf
 import latticex.rosetta as rst
 
 
+rst.activate()
 X = tf.Variable(1.0, name='x')
 Y = tf.Variable(2.0, name='y')
 Z = tf.multiply(X, Y)
@@ -19,7 +20,7 @@ except Exception as ex:
     print("Fail")
 
 
-
+rst.deactivate()
 Writer = tf.summary.FileWriter("log/pridict", tf.get_default_graph())
 Writer.close()
 

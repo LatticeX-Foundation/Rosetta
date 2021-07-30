@@ -13,7 +13,7 @@ import sys
 import numpy as np
 np.set_printoptions(suppress=True)
 
-
+rtt.activate("SecureNN")
 xa = tf.Variable(
     [
         [1.892, 2],
@@ -58,5 +58,6 @@ except Exception as e:
     print("Fail")
 
 
+rtt.deactivate()
 Writer = tf.summary.FileWriter("log/node_dup", tf.get_default_graph())
 Writer.close()

@@ -2,6 +2,7 @@ import tensorflow as tf
 import latticex.rosetta as rst
 
 
+rst.activate("SecureNN")
 xa = tf.Variable(
     [
         [1.892, 2],
@@ -35,6 +36,6 @@ except Exception as e:
     print("Fail")
 
 
-
+rst.deactivate()
 Writer = tf.summary.FileWriter("log/reveal", tf.get_default_graph())
 Writer.close()
