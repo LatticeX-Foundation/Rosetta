@@ -1,4 +1,4 @@
-![LOGO](doc/_static/figs/LOGO.png)
+![LOGO](https://github.com/LatticeX-Foundation/Rosetta/blob/master/doc/_static/figs/LOGO.png)
 
 [![github license](https://img.shields.io/badge/license-LGPLv3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0.en.html)
 
