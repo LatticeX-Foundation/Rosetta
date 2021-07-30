@@ -33,7 +33,7 @@ int SnnTripleGenerator::pre_gen() {
   // TODO: If I am not computation node, just return!
 
   if(!_is_init()) {
-    log_error << "Fail to pre_gen due to SnnTripleGenerator has not been inited correctly!";
+    log_debug << "Fail to pre_gen due to SnnTripleGenerator has not been inited correctly!";
     return 1;
   }
   
