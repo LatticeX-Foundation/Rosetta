@@ -249,6 +249,39 @@ class RttSquareOp : public OpKernel {
 };
 
 template <typename Device>
+class RttExpOp : public OpKernel {
+ public:
+  explicit RttExpOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+  void Compute(OpKernelContext* context) {
+    PRINT_BEG("RttExpOp");
+    throw;
+  }
+};
+
+template <typename Device>
+class RttRsqrtOp : public OpKernel {
+ public:
+  explicit RttRsqrtOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+  void Compute(OpKernelContext* context) {
+    PRINT_BEG("RttRsqrtOp");
+    throw;
+  }
+};
+
+template <typename Device>
+class RttSqrtOp : public OpKernel {
+ public:
+  explicit RttSqrtOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+  void Compute(OpKernelContext* context) {
+    PRINT_BEG("RttSqrtOp");
+    throw;
+  }
+};
+
+template <typename Device>
 class RttAbsOp : public OpKernel {
  public:
   explicit RttAbsOp(OpKernelConstruction* context) : OpKernel(context) {}
@@ -275,7 +308,9 @@ class RttBinaryOp : public OpKernel {
     context->GetAttr("rh_is_const", &rh_is_const_);
   }
 
-  virtual std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) {
+  virtual std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                                  std::shared_ptr<MatrixRtt> matrix1,
+                                                  OpKernelContext* context) {
     THROW_FN;
   }
 
@@ -318,7 +353,7 @@ class RttBinaryOp : public OpKernel {
     }
 
     // Binary op compute
-    auto result = BinaryCompute(matrix0, matrix1);
+    auto result = BinaryCompute(matrix0, matrix1, context);
     if (result.get() == nullptr)
     {
       std::cerr << "Exception Binary Compute get null !" << endl;
@@ -338,7 +373,9 @@ class RttAddOp : public RttBinaryOp<Device> {
   explicit RttAddOp(OpKernelConstruction* context) : RttBinaryOp<Device>(context, "RttAddOp") {
   }
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     // add
     *matrix0 = *matrix0 + *matrix1;
     return matrix0;
@@ -350,7 +387,9 @@ class RttSubOp : public RttBinaryOp<Device> {
  public:
   explicit RttSubOp(OpKernelConstruction* context) : RttBinaryOp<Device>(context, "RttSubOp") {}
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     // mpc sub
     *matrix0 = *matrix0 - *matrix1;
     return matrix0;
@@ -362,7 +401,9 @@ class RttMulOp : public RttBinaryOp<Device> {
  public:
   explicit RttMulOp(OpKernelConstruction* context) : RttBinaryOp<Device>(context, "RttMulOp") {}
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     // mpc dot product
     for (int i = 0; i < matrix0->rows(); ++i) {
       for (int j = 0; j < matrix0->cols(); ++j) {
@@ -379,7 +420,9 @@ class RttDivOp : public RttBinaryOp<Device> {
  public:
   explicit RttDivOp(OpKernelConstruction* context) : RttBinaryOp<Device>(context, "RttDivOp") {}
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     // div
     for (int i = 0; i < matrix0->rows(); ++i) {
       for (int j = 0; j < matrix0->cols(); ++j) {
@@ -408,13 +451,14 @@ class RttReciprocaldivOp : public RttBinaryOp<Device> {
   }
 };
 
-
 template <typename Device>
 class RttFloordivOp : public RttBinaryOp<Device> {
  public:
   explicit RttFloordivOp(OpKernelConstruction* context) : RttBinaryOp<Device>(context, "RttFloolDivOp") {}
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     // floor div
     for (int i = 0; i < matrix0->rows(); ++i) {
       for (int j = 0; j < matrix0->cols(); ++j) {
@@ -507,7 +551,9 @@ class RttLessOp : public RttBinaryOp<Device> {
  public:
   explicit RttLessOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttLessOp") { }
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     for (int i = 0; i < matrix0->rows(); ++i) {
       for (int j = 0; j < matrix0->cols(); ++j) {
         (*matrix0)(i, j) = ((*matrix0)(i, j)) < ((*matrix1)(i, j)) ? 1 : 0;
@@ -523,7 +569,9 @@ class RttLessEqualOp : public RttBinaryOp<Device> {
  public:
   explicit RttLessEqualOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttLessEqualOp") {}
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     for (int i = 0; i < matrix0->rows(); ++i) {
       for (int j = 0; j < matrix0->cols(); ++j) {
         (*matrix0)(i, j) = ((*matrix0)(i, j)) <= ((*matrix1)(i, j)) ? 1 : 0;
@@ -539,7 +587,9 @@ class RttEqualOp : public RttBinaryOp<Device> {
  public:
   explicit RttEqualOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttEqualOp") { }
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     for (int i = 0; i < matrix0->rows(); ++i) {
       for (int j = 0; j < matrix0->cols(); ++j) {
         (*matrix0)(i, j) = ((*matrix0)(i, j)) == ((*matrix1)(i, j)) ? 1 : 0;
@@ -555,7 +605,9 @@ class RttNotEqualOp : public RttBinaryOp<Device> {
  public:
   explicit RttNotEqualOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttNotEqualOp") {}
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     for (int i = 0; i < matrix0->rows(); ++i) {
       for (int j = 0; j < matrix0->cols(); ++j) {
         (*matrix0)(i, j) = ((*matrix0)(i, j)) != ((*matrix1)(i, j)) ? 1 : 0;
@@ -571,7 +623,9 @@ class RttGreaterOp : public RttBinaryOp<Device> {
  public:
   explicit RttGreaterOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttGreaterOp") {}
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     for (int i = 0; i < matrix0->rows(); ++i) {
       for (int j = 0; j < matrix0->cols(); ++j) {
         (*matrix0)(i, j) = ((*matrix0)(i, j)) > ((*matrix1)(i, j)) ? 1 : 0;
@@ -587,7 +641,9 @@ class RttGreaterEqualOp : public RttBinaryOp<Device> {
  public:
   explicit RttGreaterEqualOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttGreaterEqualOp") {}
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     for (int i = 0; i < matrix0->rows(); ++i) {
       for (int j = 0; j < matrix0->cols(); ++j) {
         (*matrix0)(i, j) = ((*matrix0)(i, j)) >= ((*matrix1)(i, j)) ? 1 : 0;
@@ -604,7 +660,9 @@ class RttLogicalAndOp : public RttBinaryOp<Device> {
  public:
   explicit RttLogicalAndOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttLogicalAndOp") {}
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     throw;
   }
 };
@@ -613,7 +671,9 @@ class RttLogicalOrOp : public RttBinaryOp<Device> {
  public:
   explicit RttLogicalOrOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttLogicalOrOp") {}
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     throw;
   }
 };
@@ -622,7 +682,9 @@ class RttLogicalXorOp : public RttBinaryOp<Device> {
  public:
   explicit RttLogicalXorOp(OpKernelConstruction* context)  : RttBinaryOp<Device>(context, "RttLogicalXorOp") {}
 
-  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, 
+                                          std::shared_ptr<MatrixRtt> matrix1,
+                                          OpKernelContext* context) override {
     throw;
   }
 };
@@ -784,38 +846,7 @@ class RttArgMaxOp : public OpKernel {
   }
 };
 
-template <typename Device>
-class RttRsqrtOp : public OpKernel {
- public:
-  explicit RttRsqrtOp(OpKernelConstruction* context) : OpKernel(context) {}
-  
-  void Compute(OpKernelContext* context) {
-    PRINT_BEG("RttRsqrtOp");
-    throw;
-  }
-};
 
-template <typename Device>
-class RttSqrtOp : public OpKernel {
- public:
-  explicit RttSqrtOp(OpKernelConstruction* context) : OpKernel(context) {}
-  
-  void Compute(OpKernelContext* context) {
-    PRINT_BEG("RttSqrtOp");
-    throw;
-  }
-};
-
-template <typename Device>
-class RttExpOp : public OpKernel {
- public:
-  explicit RttExpOp(OpKernelConstruction* context) : OpKernel(context) {}
-  
-  void Compute(OpKernelContext* context) {
-    PRINT_BEG("RttExpOp");
-    throw;
-  }
-};
 ////////////////   register kernels (with string type only)   ////////////////
 using CPUDevice=Eigen::ThreadPoolDevice;
 
@@ -831,9 +862,9 @@ REGISTER_KERNEL_BUILDER(Name("RttNegative").Device(DEVICE_CPU), RttNegOp<CPUDevi
 REGISTER_KERNEL_BUILDER(Name("RttAdd").Device(DEVICE_CPU), RttAddOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttSub").Device(DEVICE_CPU), RttSubOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttMul").Device(DEVICE_CPU), RttMulOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttExp").Device(DEVICE_CPU), RttExpOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttRsqrt").Device(DEVICE_CPU), RttRsqrtOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttSqrt").Device(DEVICE_CPU), RttSqrtOp<CPUDevice>);
-REGISTER_KERNEL_BUILDER(Name("RttExp").Device(DEVICE_CPU), RttExpOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttSquare").Device(DEVICE_CPU), RttSquareOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttDiv").Device(DEVICE_CPU), RttDivOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttReciprocaldiv").Device(DEVICE_CPU), RttDivOp<CPUDevice>);

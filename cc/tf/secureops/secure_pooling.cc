@@ -17,8 +17,8 @@
 // ==============================================================================
 #include "cc/tf/secureops/secure_base_kernel.h"
 #include "tensorflow/core/common_runtime/device.h"
-#include "cc/modules/common/include/utils/logger.h"
-#include "cc/modules/protocol/public/protocol_manager.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
+#include "cc/modules/protocol/public/include/protocol_manager.h"
 #include "tensorflow/core/util/work_sharder.h"
 
 using rosetta::ProtocolManager;
@@ -165,10 +165,10 @@ class SecurePooling2DOp : public SecureOpKernel {
                 errors::Unimplemented("Pooling is not yet supported on the batch dimension."));
     
     log_debug << "construct SecurePooling2DOp info\n"
-              << "data_format:  " << data_format << endl;
+              << "data_format:  " << data_format ;
               // << "padding: " << padding_ << std::endl 
-              // << "ksize: " << ksize_[0] << "," << ksize_[1] << "," << ksize_[2] < "," << ksize_[3] << endl
-              // << "strides: " << stride_ << endl;
+              // << "ksize: " << ksize_[0] << "," << ksize_[1] << "," << ksize_[2] < "," << ksize_[3] 
+              // << "strides: " << stride_ ;
 
   }
 
@@ -329,7 +329,7 @@ class SecurePooling2DOp : public SecureOpKernel {
     // batch pooling
     attrs_["rows"] = std::to_string(max_batches);
     attrs_["cols"] = std::to_string(window_rows*window_cols);
-    PoolMatrixImpl(window_blocks, window_out_blocks);// TODO: handle the whole window blocks in batch
+    PoolMatrixImpl(window_blocks, window_out_blocks, context);// TODO: handle the whole window blocks in batch
     for (size_t idx = 0; idx < max_batches; idx++)
     {
       out_flat(out_indexes[idx]) = std::move(window_out_blocks[idx]);
@@ -338,8 +338,8 @@ class SecurePooling2DOp : public SecureOpKernel {
     log_debug << "PoolCompuateBatchAll ok.";
   }//PoolComputeBatch
 
-  virtual void PoolImpl(const vector<string>& window, vector<string>& output) = 0;
-  virtual void PoolMatrixImpl(const vector<string>& window_blocks, vector<string>& window_out_blocks) = 0;
+  virtual void PoolImpl(const vector<string>& window, vector<string>& output, OpKernelContext* context) = 0;
+  virtual void PoolMatrixImpl(const vector<string>& window_blocks, vector<string>& window_out_blocks, OpKernelContext* context) = 0;
 
   std::vector<int32> ksize_;
   std::vector<int32> stride_;
@@ -353,23 +353,29 @@ class SecureMaxPool2DOp : public SecurePooling2DOp {
       : SecurePooling2DOp(ctx) {
   }
 
-  void PoolImpl(const vector<string>& window, vector<string>& output) override {
+  void PoolImpl(const vector<string>& window, vector<string>& output, OpKernelContext* context) override {
     // window block calling secure protocol max ops
     log_debug << "SecureMaxPool2DOp...";
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Max);
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Max(window, output, &attrs_);
+    ProtocolManager::Instance()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+      ->GetOps(msg_id())
+      ->Max(window, output, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Max);
     log_debug << "SecureMaxPool2DOp OK.";
-  }//PoolImpl
+  }
 
-  void PoolMatrixImpl(const vector<string>& window_blocks, vector<string>& window_out_blocks) override {
+  void PoolMatrixImpl(const vector<string>& window_blocks, vector<string>& window_out_blocks, OpKernelContext* context) override {
     // window block calling secure protocol max ops
     log_debug << "SecureMaxPool2DOp, matrix with axis...";
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Max);
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Max(window_blocks, window_out_blocks, &attrs_);
+    ProtocolManager::Instance()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+      ->GetOps(msg_id())
+      ->Max(window_blocks, window_out_blocks, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Max);
     log_debug << "SecureMaxPool2DOp, matrix with axis... OK.";
-  }//PoolMatrixImpl
+  }
 };//MaxPool2D
 
 
@@ -379,23 +385,29 @@ class SecureAvgPool2DOp : public SecurePooling2DOp {
        : SecurePooling2DOp(ctx) {
   }
 
-  void PoolImpl(const vector<string>& window, vector<string>& output) override {
+  void PoolImpl(const vector<string>& window, vector<string>& output, OpKernelContext* context) override {
     log_debug << "SecureAvgPool2DOp...";
     // window block calling secure protocol mean ops
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mean);
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Mean(window, output, &attrs_);
+    ProtocolManager::Instance()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+      ->GetOps(msg_id())
+      ->Mean(window, output, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mean);
     log_debug << "SecureAvgPool2DOp OK.";
-  }//PoolImpl
+  }
 
-  void PoolMatrixImpl(const vector<string>& window_blocks, vector<string>& window_out_blocks) override {
+  void PoolMatrixImpl(const vector<string>& window_blocks, vector<string>& window_out_blocks, OpKernelContext* context) override {
     // window block calling secure protocol max ops
     log_debug << "SecureMeanPool2DOp, matrix with axis...";
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mean);
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Mean(window_blocks, window_out_blocks, &attrs_);
+    ProtocolManager::Instance()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+      ->GetOps(msg_id())
+      ->Mean(window_blocks, window_out_blocks, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mean);
     log_debug << "SecureMeanPool2DOp, matrix with axis... OK.";
-  }//PoolMatrixImpl
+  }
 };//AvgPool2D
 
 REGISTER_STR_CPU_KERNEL(SecureAvgPool, SecureAvgPool2DOp);

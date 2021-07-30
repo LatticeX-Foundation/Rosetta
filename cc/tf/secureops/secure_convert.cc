@@ -35,8 +35,9 @@ using namespace tensorflow;
 #include "tensorflow/core/lib/strings/numbers.h"
 
 #include "tensorflow/core/lib/strings/stringprintf.h"
-#include "cc/modules/common/include/utils/logger.h"
-#include "cc/modules/protocol/public/protocol_manager.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
+#include "cc/modules/protocol/public/include/protocol_manager.h"
+#include "cc/modules/protocol/mpc/comm/include/mpc_helper.h"
 #include "cc/tf/secureops/secure_base_kernel.h"
 
 using rosetta::ProtocolManager;
@@ -53,11 +54,11 @@ class TfToSecureOp : public SecureOpKernel {
     if (dtype == DT_STRING) {
       return;
     }
-    log_debug << "input dtype: " << dtype << endl;
+    log_debug << "input dtype: " << dtype ;
   }
 
   void ComputeImpl(OpKernelContext* context) {
-    log_debug << "tf_to_secure OpKernel compute ..." << endl;
+    log_debug << "tf_to_secure OpKernel compute ..." ;
     const Tensor* input_tensor;
     OP_REQUIRES_OK(context, context->input("input", &input_tensor));
     const DataType& dtype = input_tensor->dtype();
@@ -79,18 +80,18 @@ class TfToSecureOp : public SecureOpKernel {
     // attrs_["is_const"] = isconst;
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(TfToSecure);
     ProtocolManager::Instance()
-      ->GetProtocol()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->TfToSecure(inputs, outputs, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(TfToSecure);
 
-    log_debug << "tf_to_rtt out:" << endl;
+    log_debug << "tf_to_rtt out:" ;
     for (int i = 0; i < input_flat.size(); ++i) {
       log_debug << outputs[i] << ", ";
       output_flat(i) = outputs[i];
     }
 
-    log_debug << "\ntf_to_secure ok." << endl;
+    log_debug << "\ntf_to_secure ok." ;
   }
 
  private:
@@ -107,13 +108,13 @@ class TfToSecureOp<string> : public SecureOpKernel {
     if (dtype == DT_STRING) {
       return;
     }
-    log_debug << "input dtype: " << dtype << endl;
+    log_debug << "input dtype: " << dtype ;
   }
 
   void ComputeImpl(OpKernelContext* context) {
     log_debug
       << "tf_to_secure OpKernel compute, string input, if not suffix with R, it is constant input ..."
-      << endl;
+      ;
     const Tensor* input_tensor;
     OP_REQUIRES_OK(context, context->input("input", &input_tensor));
     const DataType& dtype = input_tensor->dtype();
@@ -135,7 +136,7 @@ class TfToSecureOp<string> : public SecureOpKernel {
     // attrs_["is_const"] = isconst;
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(TfToSecure);
     ProtocolManager::Instance()
-      ->GetProtocol()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->TfToSecure(inputs, outputs, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(TfToSecure);
@@ -144,7 +145,7 @@ class TfToSecureOp<string> : public SecureOpKernel {
       output_flat(i) = outputs[i];
     }
 
-    log_debug << "\ntf_to_secure ok." << endl;
+    log_debug << "\ntf_to_secure ok." ;
   }
 
  private:
@@ -178,7 +179,10 @@ class SecureToTfOp : public SecureOpKernel {
     vector<string> outputs(input_flat.size());
     // convert from protocol type hex string to native double string
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(SecureToTf);
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->SecureToTf(inputs, outputs);
+    ProtocolManager::Instance()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+      ->GetOps(msg_id())
+      ->SecureToTf(inputs, outputs);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(SecureToTf);
     for (int i = 0; i < input_flat.size(); ++i) {
       output_flat(i) = static_cast<T>(rosetta::convert::from_binary_str<double>(outputs[i]));
@@ -215,7 +219,10 @@ class SecureToTfOp<string> : public SecureOpKernel {
     vector<string> outputs(input_flat.size());
     // convert from protocol type hex string to native double string
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(SecureToTf);
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->SecureToTf(inputs, outputs);
+    ProtocolManager::Instance()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+      ->GetOps(msg_id())
+      ->SecureToTf(inputs, outputs);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(SecureToTf);
 
     for (int i = 0; i < input_flat.size(); ++i) {
@@ -231,14 +238,15 @@ class PrivateInputOp : public SecureOpKernel {
  public:
   explicit PrivateInputOp(OpKernelConstruction* ctx) : SecureOpKernel(ctx) {
     OP_REQUIRES_OK(ctx, ctx->GetAttr("data_owner_", &data_owner_));
-    log_debug << "construct private input T op, data_owner_: " << data_owner_ << endl;
+    log_debug << "construct private input T op, data_owner_: " << data_owner_ ;
   }
 
   void ComputeImpl(OpKernelContext* context) {
-    log_debug << "private_input OpKernel compute ..." << endl;
+    log_debug << "private_input OpKernel compute ..." ;
     const Tensor *input_tensor, *data_owner;
     OP_REQUIRES_OK(context, context->input("input", &input_tensor));
     OP_REQUIRES_OK(context, context->input("data_owner", &data_owner));
+
     Tensor* output_tensor = nullptr;
     OP_REQUIRES_OK(
       context, context->allocate_output("output", input_tensor->shape(), &output_tensor));
@@ -250,14 +258,22 @@ class PrivateInputOp : public SecureOpKernel {
       inputs[i] = double(input_flat(i));
     }
 
-    const auto& data_owner_flat = data_owner->flat<int>();
+    const auto& data_owner_flat = data_owner->flat<string>();
     data_owner_ = data_owner_flat(0);
+
+    string task_id = ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation());
+    shared_ptr<NET_IO> netio = ProtocolManager::Instance()->GetProtocol(task_id)->GetNetHandler();
+    const vector<string>& party2nodes = netio->GetParty2Node();
+    const vector<string>& result_nodes = netio->GetResultNodes();
+    vector<string> nodes = decode_reveal_nodes(data_owner_, party2nodes, result_nodes);
+    OP_REQUIRES(context, nodes.size() == 1, errors::InvalidArgument("Unsupported node."));
+    data_owner_ = nodes[0];
 
     // PrivateInput input
     vector<string> outputs(input_flat.size());
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(PrivateInput);
     ProtocolManager::Instance()
-      ->GetProtocol()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->PrivateInput(data_owner_, inputs, outputs);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(PrivateInput);
@@ -266,11 +282,11 @@ class PrivateInputOp : public SecureOpKernel {
       output_flat(i) = outputs[i];
     }
 
-    log_debug << "run PrivateInput op ok." << endl;
+    log_debug << "run PrivateInput op ok." ;
   }
 
  private:
-  int data_owner_;
+  string data_owner_;
 };
 
 template <>
@@ -278,11 +294,11 @@ class PrivateInputOp<string> : public SecureOpKernel {
  public:
   explicit PrivateInputOp(OpKernelConstruction* ctx) : SecureOpKernel(ctx) {
     // OP_REQUIRES_OK(ctx, ctx->GetAttr("data_owner_", &data_owner_));
-    // log_debug << "construct private input string op, data_owner_: " << data_owner_ << endl;
+    // log_debug << "construct private input string op, data_owner_: " << data_owner_ ;
   }
 
   void ComputeImpl(OpKernelContext* context) {
-    log_debug << "private_input OpKernel compute ..." << endl;
+    log_debug << "private_input OpKernel compute ...";
     const Tensor *input_tensor, *data_owner;
     OP_REQUIRES_OK(context, context->input("input", &input_tensor));
     OP_REQUIRES_OK(context, context->input("data_owner", &data_owner));
@@ -298,14 +314,23 @@ class PrivateInputOp<string> : public SecureOpKernel {
       inputs[i] = std::stod(input_flat(i));
     }
 
-    const auto& data_owner_flat = data_owner->flat<int>();
+    const auto& data_owner_flat = data_owner->flat<string>();
     data_owner_ = data_owner_flat(0);
+
+    string task_id = ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation());
+    shared_ptr<NET_IO> netio = ProtocolManager::Instance()->GetProtocol(task_id)->GetNetHandler();
+    const vector<string>& party2nodes = netio->GetParty2Node();
+    const vector<string>& result_nodes = netio->GetResultNodes();
+    vector<string> nodes = decode_reveal_nodes(data_owner_, party2nodes, result_nodes);
+    OP_REQUIRES(context, nodes.size() == 1, errors::InvalidArgument("Unsupported node."));
+    data_owner_ = nodes[0];
 
     // PrivateInput input
     vector<string> outputs(input_flat.size());
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(PrivateInput);
+    log_info << "private input:" << data_owner_ << "data owner:" << data_owner_ << " size:" << inputs.size();
     ProtocolManager::Instance()
-      ->GetProtocol()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->PrivateInput(data_owner_, inputs, outputs);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(PrivateInput);
@@ -314,11 +339,11 @@ class PrivateInputOp<string> : public SecureOpKernel {
       output_flat(i) = outputs[i];
     }
 
-    log_debug << "run PrivateInput op ok." << endl;
+    log_debug << "run PrivateInput op ok." ;
   }
 
  private:
-  int data_owner_;
+  string data_owner_;
 };
 
 // Registers the currently supported output types.

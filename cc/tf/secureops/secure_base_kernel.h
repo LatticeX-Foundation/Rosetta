@@ -51,13 +51,16 @@ using namespace std;
 #include "tensorflow/core/framework/bounds_check.h"
 #include "tensorflow/core/framework/numeric_types.h"
 #include "tensorflow/core/framework/tensor_types.h"
+#include "tensorflow/core/framework/device_attributes.pb.h"
 
-#include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
 #include "cc/modules/common/include/utils/msg_id.h"
 #include "cc/modules/common/include/utils/msg_id_mgr.h"
-#include "cc/modules/io/include/net_io.h"
-#include "cc/modules/protocol/public/protocol_manager.h"
+#include "cc/modules/iowrapper/include/io_wrapper.h"
+#include "cc/modules/protocol/public/include/protocol_manager.h"
 #include "cc/tf/secureops/mpc_exceptions.h"
+#include "cc/modules/common/include/utils/helper.h"
+#include "cc/modules/protocol/mpc/comm/include/mpc_helper.h"
 
 #ifndef TYPENAME
 #if defined(__GNUC__)
@@ -93,50 +96,40 @@ typedef Eigen::SyclDevice SYCLDevice;
 #define DO_SECURE_OP_PERFORMANCE_STATISTICS 1
 #if DO_SECURE_OP_PERFORMANCE_STATISTICS
 // ////////////////////// PERFORMANCE STATISTICS
-struct __op_stats {
+struct secure_op_stats {
+  secure_op_stats(const string& _op) : op(_op) {}
+  string op;
   atomic<int64_t> calls{0};
   atomic<int64_t> elapse{0};
+  map<string, atomic<int64_t>> protocol_op_elapse;
 };
-struct op_stats {
-  op_stats(const string& _op) : op(_op) {}
-  string op; // secure op name
-  __op_stats secure_op_stats; // secure op
-  map<string, __op_stats> protocol_op_stats; // protocol op
-};
-extern mutex op_stats_mtx;
-extern map<string, op_stats*> map_op_stats;
+extern mutex secure_op_stats_mtx;
+extern map<string, secure_op_stats*> map_op_stats;
 extern atomic<int64_t> init_exit_counter;
-extern std::chrono::time_point<std::chrono::steady_clock> ops_wall_clock;
-void op_stats_exit_func();
+void secure_op_stats_exit_func();
 // ////////////////////// PERFORMANCE STATISTICS
 #define SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_BEG() \
-  map_op_stats[op_]->secure_op_stats.calls++;           \
+  map_op_stats[op_]->calls++;                           \
   auto ___begin = std::chrono::steady_clock::now()
 #define SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_END()                    \
-  map_op_stats[op_]->secure_op_stats.elapse +=                             \
+  map_op_stats[op_]->elapse +=                                             \
     std::chrono::duration_cast<std::chrono::duration<int64_t, std::nano>>( \
       std::chrono::steady_clock::now() - ___begin)                         \
       .count()
 
-#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG_(opname)    \
-  map_op_stats[op_]->protocol_op_stats[#opname].calls++; \
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(opname) \
   auto __##opname##_begin = std::chrono::steady_clock::now()
 
-#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END_(opname)                                            \
-  auto __##opname##_end = std::chrono::steady_clock::now();                                      \
-  auto __##opname##_dur = std::chrono::duration_cast<std::chrono::duration<int64_t, std::nano>>( \
-                            __##opname##_end - __##opname##_begin)                               \
-                            .count();                                                            \
-  map_op_stats[op_]->protocol_op_stats[#opname].elapse += __##opname##_dur
-
-// clang-format off
-#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(opname) {SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG_(opname)
-#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END(opname) SECURE_OP_CALL_PROTOCOL_OP_STATS_END_(opname) ;} (void)0
-// clang-format on
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END(opname)                                           \
+  auto __##opname##_end = std::chrono::steady_clock::now();                                    \
+  auto __##opname##__ = std::chrono::duration_cast<std::chrono::duration<int64_t, std::nano>>( \
+                          __##opname##_end - __##opname##_begin)                               \
+                          .count();                                                            \
+  map_op_stats[op_]->protocol_op_elapse[#opname] += __##opname##__
 
 //! Usage
 //! SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(XXX);
-//! ProtocolManager::Instance()->GetProtocol()->GetOps(...)->YYYY(...);
+//! ProtocolManager::Instance()->GetProtocol(task_id)->GetOps(...)->YYYY(...);
 //! SECURE_OP_CALL_PROTOCOL_OP_STATS_END(XXX);
 // ////////////////////// PERFORMANCE STATISTICS
 #else
@@ -167,13 +160,12 @@ class SecureOpKernel : public OpKernel {
 #if DO_SECURE_OP_PERFORMANCE_STATISTICS
     {
       if (init_exit_counter++ == 0) {
-        atexit(op_stats_exit_func);
-        ops_wall_clock = std::chrono::steady_clock::now();
+        atexit(secure_op_stats_exit_func);
       }
-      unique_lock<mutex> lck(op_stats_mtx);
+      unique_lock<mutex> lck(secure_op_stats_mtx);
       auto iter = map_op_stats.find(op_);
       if (iter == map_op_stats.end()) {
-        map_op_stats[op_] = new op_stats(op_);
+        map_op_stats[op_] = new secure_op_stats(op_);
       }
     }
 #endif
@@ -197,9 +189,10 @@ class SecureOpKernel : public OpKernel {
       log_debug << "======================================================= END NODEDEF\n";
     }
 #endif
-
-    msg_id_ = msg_id_t(def.name());
-    op_name_ = def.name();
+    
+    string task_id = ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation());
+    op_name_ = def.name() + "#T" + task_id;//def.name();
+    msg_id_ = msg_id_t(def.name() + "#T" + task_id);
     log_debug << "SecureOpKernel msgid:" << msg_id();
 
     //-----------------------------------------------
@@ -210,7 +203,7 @@ class SecureOpKernel : public OpKernel {
       if (func_def) {
         std::vector<string> func_name_lists = func_def->ListFunctionNames();
         if (func_name_lists.size() == 1 && !strcmp(def.name().c_str(), "PrivateInput")) {
-          string op_unique_name = func_name_lists[0] + "/" + def.name();
+          string op_unique_name = func_name_lists[0] + "/" + def.name()+ "#T" + task_id;
           msg_id_ = msg_id_t(op_unique_name);
           op_name_ = op_unique_name;
           log_debug << "New SecureOpKernel msgid:" << msg_id();
@@ -250,16 +243,38 @@ class SecureOpKernel : public OpKernel {
     //! @todo
     return false;
   }
-  bool is_public_or_constant_input_by_restore_mode() {
-    int parties = ProtocolManager::Instance()->GetProtocol()->GetParties();
-    const auto& cfg = ProtocolManager::Instance()->GetProtocol()->GetConfigMap();
-    int restore_mode = atoi(cfg.at("restore_mode").c_str());
+  bool is_public_or_constant_input_by_restore_mode(OpKernelContext* context) {
+    string task_id = ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation());
+    int parties = ProtocolManager::Instance()->GetProtocol(task_id) ->GetParties();
+    auto proto_context = ProtocolManager::Instance()->GetProtocol(task_id)->GetMpcContext();
+#ifndef ENABLE_ZK_TASK
+#define ENABLE_ZK_TASK 1
+#if (ENABLE_ZK_TASK == 0)
+    int restore_mode = std::stoi(proto_context->PAYLOAD);// int restore_mode = atoi(cfg.at("restore_mode").c_str());
     int a = (1 << parties) - 1;
     if ((restore_mode & a) == a) {
       // is a public-constant value
       return true;
     }
     return false;
+#else
+    int party_counter = 0;
+    for (const auto& node : proto_context->RESTORE_MODE) {
+      if (-1 == proto_context->GetRole(node)) {
+        // not compute node
+        return false;
+      } else {
+        ++party_counter;
+      }
+    }
+    if (party_counter == parties)
+      return true;
+    
+    return false;
+#endif
+
+#endif
+#undef ENABLE_ZK_TASK
   }
 
   /*
@@ -293,7 +308,7 @@ class SecureOpKernel : public OpKernel {
     log_debug << "======================================================= END BEFORE\n";
   }
 
-  void debug_print_v2(const Tensor& x, int j, string prefix = "") {
+  void debug_print_v2(const Tensor& x, int j, string prefix, OpKernelContext* context) {
     if ((x.dtype() != DataType::DT_STRING) && (x.dtype() != DataType::DT_STRING_REF)) {
       return;
     }
@@ -305,7 +320,9 @@ class SecureOpKernel : public OpKernel {
       vs[i] = x_flat(i);
     }
     if (vs.size() > 0) {
-      auto ops = ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id());
+      auto ops = ProtocolManager::Instance()
+                  ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+                  ->GetOps(msg_id());
       ops->Reveal(vs, vd);
       print_vector(vd, prefix + " index " + to_string(j), 5, 8);
     }
@@ -320,14 +337,14 @@ class SecureOpKernel : public OpKernel {
         Tensor var = context->mutable_input(i, false);
         log_info << "op shape:" << op_ << " input var(" << i << ").shape(): " << var.shape();
         log_debug << "op value:" << op_ << " OpKernel input(" << i << "): " << var.DebugString(9);
-        debug_print_v2(var, i, "input");
+        debug_print_v2(var, i, "input", context);
         continue;
       }
       const Tensor& x = context->input(i);
       log_info << "op shape:" << op_ << " input(" << i << ").shape(): " << x.shape();
       if (x.NumElements() > 0) {
         log_debug << "op value:" << op_ << " OpKernel input(" << i << "): " << x.DebugString(9);
-        debug_print_v2(x, i, "input");
+        debug_print_v2(x, i, "input", context);
       }
     }
     log_info << "======================================================= END BEFORE\n";
@@ -344,7 +361,7 @@ class SecureOpKernel : public OpKernel {
     for (int i = 0; i < context->num_outputs(); i++) {
       Tensor* x = context->mutable_output(i);
       log_info << "op shape:" << op_ << " output(" << i << ").shape(): " << x->shape();
-      debug_print_v2(*x, i, "output");
+      debug_print_v2(*x, i, "output", context);
     }
     log_info << "======================================================= END AFTER\n";
   }
@@ -362,19 +379,24 @@ class SecureOpKernel : public OpKernel {
       log_debug << flat_z(i) << ", ";
   }
 
-  virtual void debug_print_reveal(const vector<string>& in, std::string msg = "") {
+  virtual void debug_print_reveal(const vector<string>& in, std::string msg, OpKernelContext* context) {
     if (op_ == "SecureReveal")
       return;
-    log_debug << __FUNCTION__ << "================= " << msg << endl;
+    log_debug << __FUNCTION__ << "================= " << msg ;
 
     size_t size = in.size();
     vector<string> outs(size);
-    attrs_["receive_party"] = string("1");
-    rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Reveal(
-      in, outs, &attrs_);
+    //char by_recv_pts[] = "\x01\x00\x00\x00N\x02\x00\x00\x00P0";
+    string recv_nodes = encode_reveal_node("P0");
+    attrs_["receive_parties"] = recv_nodes;
+    // attrs_["receive_party"] = string("1");
+    rosetta::ProtocolManager::Instance()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+      ->GetOps(msg_id())
+      ->Reveal(in, outs, &attrs_);
     print_vec(outs);
 
-    log_debug << __FUNCTION__ << "================= " << endl;
+    log_debug << __FUNCTION__ << "================= " ;
   }
 };
 
@@ -391,7 +413,7 @@ struct BinaryOpState {
         bcast(BCast::FromShape(in0.shape()), BCast::FromShape(in1.shape())) {
     if (!bcast.IsValid()) {
       log_debug << "Incompatible shapes: " << in0.shape().DebugString() << " vs. "
-                << in1.shape().DebugString() << endl;
+                << in1.shape().DebugString() ;
       ctx->SetStatus(errors::InvalidArgument(
         "Incompatible shapes: ", in0.shape().DebugString(), " vs. ", in1.shape().DebugString()));
       return;
@@ -407,14 +429,14 @@ struct BinaryOpState {
     in1_dims = in1.dims();
     out_dims = output_shape.dims();
 
-    log_debug << "               ndims:" << ndims;
+    log_debug << "    ndims:" << ndims << ", x_shape.size(): " << bcast.x_reshape().size() << ", y_shape.size(): " << bcast.y_reshape().size();
     log_debug << "      in0 dims shape:" << in0.dims() << " " << in0.shape();
     log_debug << "      in1 dims shape:" << in1.dims() << " " << in1.shape();
     log_debug << "      out dims shape:" << output_shape.dims() << " " << output_shape;
     log_debug << "    in0_num_elements:" << in0_num_elements;
     log_debug << "    in1_num_elements:" << in1_num_elements;
     log_debug << "    out_num_elements:" << out_num_elements;
-  }
+ }
 
   int verbose_ = 1;
 
@@ -450,16 +472,25 @@ void ASSIGN_TENSOR(
     auto _bcast0 = BCast::ToIndexArray<NDIMS>(bcast->x_bcast());
     auto _in1 = in1.template shaped<string, NDIMS>(bcast->y_reshape());
     auto _bcast1 = BCast::ToIndexArray<NDIMS>(bcast->y_bcast());
-    auto _lhs = _in0.broadcast(_bcast0);
-    auto _rhs = _in1.broadcast(_bcast1);
+    auto _lhs = _in0.broadcast(_bcast0);//BroadcastReshapeOp
+    auto _rhs = _in1.broadcast(_bcast1);//BroadcastReshapeOp
 
-    // log_info << "_bcast0.size():" << _bcast0.size() << endl;
-    // log_info << "_bcast1.size():" << _bcast1.size() << endl;
-    // log_info << "_lhs:\n" << _lhs << endl;
-    // log_info << "_rhs:\n" << _rhs << endl;
-    // log_info << "type:\n" << typeid(_rhs).name() << endl;
-    // log_info << "_lhs type:\n" << TYPENAME(typeid(_lhs).name()) << endl;
-    // log_info << "_rhs type:\n" << TYPENAME(typeid(_rhs).name()) << endl;
+    // get a bigger shape
+    bool use_in0 = true;
+    for (auto i = 0; i < bcast->x_bcast().size(); ++i) {
+      if (2 <= bcast->x_bcast()[i]) { // not 1
+        use_in0 = false;
+        break;
+      }
+    }
+    Eigen::DSizes<int64_t, NDIMS> _out_shape(use_in0 ? BCast::ToIndexArray<NDIMS>(bcast->x_reshape()) : BCast::ToIndexArray<NDIMS>(bcast->y_reshape()));
+
+    // log_debug << "dims: " << NDIMS << ", out_dims: " << out_dims ;
+    // log_debug << "_bcast0.size():" << _bcast0.size() ;
+    // log_debug << "_bcast1.size():" << _bcast1.size() ;
+    // log_debug << "type:\n" << typeid(_rhs).name() ;
+    // log_debug << "_lhs type:\n" << TYPENAME(typeid(_lhs).name()) ;
+    // log_debug << "_rhs type:\n" << TYPENAME(typeid(_rhs).name()) ;
     if (out_dims == 0) {
       log_debug << "ASSIGN_TENSOR hit out_dims == 0, which means both inputs are scale values.";
       auto _out = out->tensor<string, 0>();
@@ -467,28 +498,30 @@ void ASSIGN_TENSOR(
       in0_tensor.tensor<string, 0>().reshape(_out_shape).device(eigen_device) = _lhs;
       in1_tensor.tensor<string, 0>().reshape(_out_shape).device(eigen_device) = _rhs;  
     } else if (out_dims == 1) {
-      auto _out = out->tensor<string, 1>();
-      Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      // auto _out = out->tensor<string, 1>();
+      // Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
       in0_tensor.tensor<string, 1>().reshape(_out_shape).device(eigen_device) = _lhs;
       in1_tensor.tensor<string, 1>().reshape(_out_shape).device(eigen_device) = _rhs;
     } else if (out_dims == 2) {
-      auto _out = out->tensor<string, 2>();
-      Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      // auto _out = out->tensor<string, 2>();
+      // Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
       in0_tensor.tensor<string, 2>().reshape(_out_shape).device(eigen_device) = _lhs;
       in1_tensor.tensor<string, 2>().reshape(_out_shape).device(eigen_device) = _rhs;
     } else if (out_dims == 3) {
-      auto _out = out->tensor<string, 3>();
-      Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      // auto _out = out->tensor<string, 3>();
+      // Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
       in0_tensor.tensor<string, 3>().reshape(_out_shape).device(eigen_device) = _lhs;
       in1_tensor.tensor<string, 3>().reshape(_out_shape).device(eigen_device) = _rhs;
     } else if (out_dims == 4) {
-      auto _out = out->tensor<string, 4>();
-      Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      // auto _out = out->tensor<string, 4>();
+      // Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      // in0_tensor.tensor<string, 4>().reshape(_out_shape).device(eigen_device) = _lhs;
+      // in1_tensor.tensor<string, 4>().reshape(_out_shape).device(eigen_device) = _rhs;
       in0_tensor.tensor<string, 4>().reshape(_out_shape).device(eigen_device) = _lhs;
       in1_tensor.tensor<string, 4>().reshape(_out_shape).device(eigen_device) = _rhs;
     } else if (out_dims == 5) {
-      auto _out = out->tensor<string, 5>();
-      Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
+      // auto _out = out->tensor<string, 5>();
+      // Eigen::DSizes<int64_t, 1> _out_shape(_out.size());
       in0_tensor.tensor<string, 5>().reshape(_out_shape).device(eigen_device) = _lhs;
       in1_tensor.tensor<string, 5>().reshape(_out_shape).device(eigen_device) = _rhs;
     } else {
@@ -509,7 +542,7 @@ class SecureBinaryOp : public SecureOpKernel {
     context->GetAttr("rh_is_const", &rh_is_const_);
 #if PRINT_REVEAL
     log_debug << "input0 is " << string(lh_is_const_ ? "const" : "not const") << ", input1 is "
-              << string(rh_is_const_ ? "const" : "not const") << endl;
+              << string(rh_is_const_ ? "const" : "not const") ;
 #endif
     if (lh_is_const_ && rh_is_const_) {
       throw mpc_not_supported_exp("MpcBinaryOp inputs are const");
@@ -519,7 +552,8 @@ class SecureBinaryOp : public SecureOpKernel {
   virtual int BinaryCompute(
     const vector<string>& in1,
     const vector<string>& in2,
-    vector<string>& output) {
+    vector<string>& output,
+    OpKernelContext* context) {
     throw std::runtime_error(string("please implements BinaryCompute"));
   }
 
@@ -539,6 +573,7 @@ class SecureBinaryOp : public SecureOpKernel {
     const Tensor& x1 = context->input(1);
     const auto& in0_flat = x0.flat<string>();
     const auto& in1_flat = x1.flat<string>();
+
     const int ndims = state.ndims;
     int in0_dims = state.in0_dims;
     int in1_dims = state.in1_dims;
@@ -556,9 +591,9 @@ class SecureBinaryOp : public SecureOpKernel {
     vector<string> input0(size);
     vector<string> input1(size);
     vector<string> output(size);
+    
     // we need to align the input tensor by broadcasting the low-dim tensor in missing dim.
     if (ndims == 1) {
-      log_debug << "debug: hit ndims==1";
       ASSIGN_TENSOR<1>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
     } else if (ndims == 2) {
       ASSIGN_TENSOR<2>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
@@ -570,7 +605,6 @@ class SecureBinaryOp : public SecureOpKernel {
       ASSIGN_TENSOR<5>(in0, in1, out, out_dims, in0_tensor, in1_tensor, eigen_device, bcast);
     } else {
       if (out_dims == 0) {
-        // log_debug << "Hit out_dim == 0!";
         input0[0] = in0_flat(0);
         input1[0] = in1_flat(0);
       } else {
@@ -578,7 +612,7 @@ class SecureBinaryOp : public SecureOpKernel {
           "dim error, ndims:" + std::to_string(ndims) + ",out_dims:" + std::to_string(out_dims));
       }
     }
-
+    
     log_debug << "DEBUG raw in0:" << x0.shape() << ", and in1:" << x1.shape();
     log_debug << "DEBUG in0: " << in0_tensor.shape() << ", and in1:" << in1_tensor.shape();
     const auto& expanded_in0_flat = in0_tensor.flat<string>();
@@ -593,7 +627,7 @@ class SecureBinaryOp : public SecureOpKernel {
     attrs_["rh_is_const"] = rh_is_const_ ? "1" : "0";
 
     // compute with protocol
-    BinaryCompute(input0, input1, output);
+    BinaryCompute(input0, input1, output, context);
 
     // set output
     auto out_flat = out->flat<string>();
@@ -602,7 +636,7 @@ class SecureBinaryOp : public SecureOpKernel {
     }
 
 #if PRINT_REVEAL
-    debug_print_reveal(output, string(" mpc out").c_str());
+    debug_print_reveal(output, string(" mpc out").c_str(), context);
 #endif
   }
 };
@@ -616,7 +650,7 @@ class SecureUnaryOp : public SecureOpKernel {
   SecureUnaryOp(OpKernelConstruction* context) : SecureOpKernel(context) {}
   ~SecureUnaryOp() {}
 
-  virtual int UnaryCompute(const vector<string>& input, vector<string>& output) { throw; }
+  virtual int UnaryCompute(const vector<string>& input, vector<string>& output, OpKernelContext* context) { throw; }
 
   virtual string name() { return string("SecureUnaryOp"); }
 
@@ -637,7 +671,7 @@ class SecureUnaryOp : public SecureOpKernel {
 
     // compute with protocol
     vector<string> out(size);
-    UnaryCompute(input, out);
+    UnaryCompute(input, out, context);
 
     // set output
     Tensor* output;
@@ -649,7 +683,7 @@ class SecureUnaryOp : public SecureOpKernel {
       out_flat(i) = std::move(out[i]);
     }
 #if PRINT_REVEAL
-    debug_print_reveal(out, string(" mpc out").c_str());
+    debug_print_reveal(out, string(" mpc out").c_str(), context);
 #endif
 
     return;
@@ -670,7 +704,8 @@ class SecureReduceOp : public SecureOpKernel {
     const vector<string>& input,
     vector<string>& output,
     int rows,
-    int cols) {
+    int cols,
+    OpKernelContext* context) {
     throw;
   }
 

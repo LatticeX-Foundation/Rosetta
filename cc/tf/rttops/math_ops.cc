@@ -93,23 +93,29 @@ namespace {
 #define RTT_OP_SET_SHAPE_FN(ShapeFn) 
 #endif
 
-#define REGISTER_RTT_BINARY_OP(name)                       \
+#define REGISTER_RTT_BINARY_OP(name)                          \
   REGISTER_OP(#name)                                          \
     .Input("x: string")                                       \
     .Input("y: string")                                       \
     .Output("z: string")                                      \
     .Attr("lh_is_const: bool = false")                        \
-    .Attr("rh_is_const: bool = false")                       \
+    .Attr("rh_is_const: bool = false")                        \
     RTT_OP_SET_SHAPE_FN(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn)
 
-#define REGISTER_RTT_BINARY_CONST_OP(name)                       \
+#define REGISTER_RTT_BINARY_CONST_OP(name)                    \
   REGISTER_OP(#name)                                          \
     .Input("x: string")                                       \
     .Input("y: string")                                       \
     .Output("z: string")                                      \
     .Attr("lh_is_const: bool = false")                        \
-    .Attr("rh_is_const: bool = true")                        \
+    .Attr("rh_is_const: bool = true")                         \
     RTT_OP_SET_SHAPE_FN(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn)
+
+#define UNARY()                                               \
+  Input("x: string")                                          \
+    .Output("y: string")                                      \
+    RTT_OP_SET_SHAPE_FN(::tensorflow::shape_inference::UnchangedShape)
+
 
 REGISTER_RTT_BINARY_CONST_OP(RttPow).Doc(R"doc(
     RttPow
@@ -180,35 +186,52 @@ REGISTER_RTT_BINARY_OP(RttLogicalOr).Doc(R"doc(
 REGISTER_RTT_BINARY_OP(RttLogicalXor).Doc(R"doc(
     RttLogicalXor
 )doc");
-REGISTER_OP("RttLogicalNot")
-  .Input("x: string")
-  .Output("y: string")
-  .SetIsStateful();
 
-REGISTER_OP("RttNegative")
-  .Input("x: string")
-  .Output("res: string");
+REGISTER_OP("RttLogicalNot").UNARY().Doc(R"doc(
+  RttLogicalNot
+)doc");
 
-REGISTER_OP("RttAbs")
-  .Input("x: string")
-  .Output("res: string");
+REGISTER_OP("RttNegative").UNARY().Doc(R"doc(
+  RttNegative
+)doc");
 
-REGISTER_OP("RttAbsPrime")
-  .Input("x: string")
-  .Output("res: string");
+REGISTER_OP("RttAbs").UNARY().Doc(R"doc(
+  RttAbs
+)doc");
 
-REGISTER_OP("RttLog")
-  .Input("x: string")
-  .Output("res: string");
+REGISTER_OP("RttAbsPrime").UNARY().Doc(R"doc(
+  RttAbsPrime
+)doc");
 
-REGISTER_OP("RttLog1p")
-  .Input("x: string")
-  .Output("res: string");
+REGISTER_OP("RttLog").UNARY().Doc(R"doc(
+  RttLog
+)doc");
+
+REGISTER_OP("RttLog1p").UNARY().Doc(R"doc(
+  RttLog1p
+)doc");
+
+REGISTER_OP("RttExp").UNARY().Doc(R"doc(
+  RttExp
+)doc");
+
+REGISTER_OP("RttRsqrt").UNARY().Doc(R"doc(
+  RttRsqrt
+)doc");
+
+REGISTER_OP("RttSqrt").UNARY().Doc(R"doc(
+  RttSqrt
+)doc");
+
+REGISTER_OP("RttSquare").UNARY().Doc(R"doc(
+  RttSquare
+)doc");
 
 REGISTER_OP("RttReveal")
   .Input("x: string")
   .Output("res: string")
-  .Attr("receive_party: int = 0");
+  .Attr("receive_parties: string")
+  .SetIsStateful();
 
 REGISTER_OP("RttAddN")
     .Input("inputs: N * T")
@@ -219,67 +242,68 @@ REGISTER_OP("RttAddN")
     .SetIsAggregate();
 
 REGISTER_OP("RttMatmul")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-  .SetShapeFn(::tensorflow::shape_inference::MatMulShape)
-#endif
   .Input("x: string")
   .Input("y: string")
   .Output("res: string")
   .Attr("transpose_a: bool = false")
-  .Attr("transpose_b: bool = false");
-
-REGISTER_OP("RttRsqrt").Input("x: string").Output("res: string");
-REGISTER_OP("RttSqrt").Input("x: string").Output("res: string");
-REGISTER_OP("RttExp").Input("x: string").Output("res: string");
-REGISTER_OP("RttSquare").Input("x: string").Output("res: string");
+  .Attr("transpose_b: bool = false")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::MatMulShape)
+#endif
+;
 
 REGISTER_OP("RttReduceMean")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
-#endif
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+;
 
 REGISTER_OP("RttReduceSum")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
-#endif
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+;
 
 REGISTER_OP("RttReduceMin")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
-#endif
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+;
 
 REGISTER_OP("RttReduceMax")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
-#endif
   .Input("input: string")
   .Input("reduction_indices: Tidx")
   .Output("output: string")
   .Attr("keep_dims: bool = false")
-  .Attr("Tidx: {int32, int64} = DT_INT32");
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+;
 
 REGISTER_OP("RttArgMax")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-    .SetShapeFn(ArgOpShape)
-#endif
     .Input("input: string")
     .Input("dimension: Tidx")
     .Output("output: output_type")
     .Attr("Tidx: {int32, int64} = DT_INT32")
-    .Attr("output_type: {string,} = DT_STRING");
+    .Attr("output_type: {string,} = DT_STRING")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+    .SetShapeFn(ArgOpShape)
+#endif
+;
 

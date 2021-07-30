@@ -4,7 +4,7 @@
 #include "tensorflow/core/lib/strings/stringprintf.h"
 
 #include "cc/tf/secureops/secure_base_kernel.h"
-#include "cc/modules/protocol/public/protocol_manager.h"
+#include "cc/modules/protocol/public/include/protocol_manager.h"
 
 #include <iostream>
 
@@ -25,7 +25,7 @@ class SecureApplyGradientDescentOp : public SecureOpKernel {
   }
 
   void ComputeImpl(OpKernelContext* ctx) {
-    log_debug << "begin debuging SecureApplyGradientDescentOp!" << endl;
+    log_debug << "begin debuging SecureApplyGradientDescentOp!" ;
     // Step 1: check the lock level and validity of inputs the same as the native one.
     //  Note: For now, we do NOT support the exclusive_lock feature.
     OP_REQUIRES(
@@ -62,7 +62,7 @@ class SecureApplyGradientDescentOp : public SecureOpKernel {
     auto alpha_flat = double(alpha.scalar<T>()());
     string alpha_str = strings::Printf("%f", alpha_flat);
     auto delta_flat = delta.flat<string>();
-    log_debug << " DEBUG ALPHA: " << alpha_flat << endl;
+    log_debug << " DEBUG ALPHA: " << alpha_flat ;
 
     vector<string> input_alpha(ele_nums);
     vector<string> input_delta(ele_nums);
@@ -80,7 +80,7 @@ class SecureApplyGradientDescentOp : public SecureOpKernel {
 
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mul);
     ProtocolManager::Instance()
-      ->GetProtocol()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(ctx->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->Mul(input_alpha, input_delta, out_var, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mul);
@@ -89,7 +89,7 @@ class SecureApplyGradientDescentOp : public SecureOpKernel {
     attrs_["rh_is_const"] = "0";
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Sub);
     ProtocolManager::Instance()
-      ->GetProtocol()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(ctx->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->Sub(input_var, out_var, out_var, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Sub);

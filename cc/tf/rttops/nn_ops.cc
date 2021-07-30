@@ -47,6 +47,9 @@ RttSigmoidCrossEntropyOp
 REGISTER_OP("RttSigmoid")
   .Input("x: string")
   .Output("y: string")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::UnchangedShape)
+#endif
   .Doc(R"doc(
 RttSigmoidOp
 )doc");
@@ -60,7 +63,6 @@ REGISTER_OP("RttRelu")
   .Doc(R"doc(
 RttReluOp
 )doc");
-
 
 REGISTER_OP("RttConv2D")
     .Input("input: string")
@@ -77,15 +79,17 @@ REGISTER_OP("RttConv2D")
 #endif
 ;
 
+
 REGISTER_OP("RttBiasAdd")
     .Input("value: string")
     .Input("bias: string")
-    .Attr(GetConvnetDataFormatAttrString())
     .Output("output: string")
+    .Attr(GetConvnetDataFormatAttrString())
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
     .SetShapeFn(::tensorflow::shape_inference::BiasAddShape)
 #endif
 ;
+
 
 REGISTER_OP("RttL2Loss")
     .Input("t: string")
@@ -94,6 +98,7 @@ REGISTER_OP("RttL2Loss")
     .SetShapeFn(::tensorflow::shape_inference::ScalarShape)
 #endif
 ;
+
 
 REGISTER_OP("RttFusedBatchNorm")
     .Input("x: string")
@@ -114,6 +119,7 @@ REGISTER_OP("RttFusedBatchNorm")
 #endif
 ;
 
+
 REGISTER_OP("RttAvgPool")
     .Input("value: string")
     .Output("output: string")
@@ -126,6 +132,7 @@ REGISTER_OP("RttAvgPool")
 #endif
 ;
 
+
 REGISTER_OP("RttMaxPool")
     .Input("input: string")
     .Output("output: string")
@@ -137,6 +144,7 @@ REGISTER_OP("RttMaxPool")
     .SetShapeFn(::tensorflow::shape_inference::MaxPoolShape)
 #endif
 ;
+
 
 REGISTER_OP("RttSoftmax")
     .Input("logits: string")

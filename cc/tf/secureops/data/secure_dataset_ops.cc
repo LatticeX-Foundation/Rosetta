@@ -27,8 +27,9 @@ REGISTER_OP("PrivateTextLineDataset")
     .Input("filenames: string")
     .Input("compression_type: string")
     .Input("buffer_size: int64")
-    .Input("data_owner: int64")
+    .Input("data_owner: string")
     .Output("handle: variant")
+    .Attr("task_id: string = ''")
     .SetIsStateful();
     // shape function will depressed at present !!!!
 

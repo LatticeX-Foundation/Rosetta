@@ -22,12 +22,11 @@ using namespace std;
 
 #if DO_SECURE_OP_PERFORMANCE_STATISTICS
 namespace tensorflow {
-mutex op_stats_mtx;
-map<string, op_stats*> map_op_stats;
+mutex secure_op_stats_mtx;
+map<string, secure_op_stats*> map_op_stats;
 atomic<int64_t> init_exit_counter;
-std::chrono::time_point<std::chrono::steady_clock> ops_wall_clock;
-void op_stats_exit_func() {
-  size_t max_width = strlen("(%)Summary");
+void secure_op_stats_exit_func() {
+  size_t max_width = 0;
   for (auto& iter : map_op_stats) {
     auto stat = iter.second;
     max_width = std::max(stat->op.length(), max_width);
@@ -37,18 +36,9 @@ void op_stats_exit_func() {
     s_ += "-";
   }
 
-  int64_t ops_wall_elapsed = std::chrono::duration_cast<std::chrono::duration<int64_t, std::nano>>(
-                               std::chrono::steady_clock::now() - ops_wall_clock)
-                               .count();
-
   std::stringstream ss1;
   // clang-format off
-  ss1 << "secureop      : ALL OPs WALL CLOCK ELAPSED(s): " << std::fixed << ops_wall_elapsed / 1e9;
-  ss1 << " (counting from the time the first OP is created)" << endl;
-  ss1 << "secureop  name: the protocol level op (NAME >) called by the secure level op (NAME |)" << endl;
-  ss1 << "secureop calls: number of times different OP are called" << endl;
-  ss1 << "secureop   OPL: only protocol level elapsed; OSL: only secure level elapsed; elapsed: OPL + OSL" << endl;
-  ss1 << "secureop  Note: the elapsed(OPL/OSL/elapsed) is the sum of all parallel elapse for each OP" << endl;
+  ss1 << "secureop OPL: only protocol level elapsed; OSL: only secure level elapsed; elapsed: OPL + OSL" << endl;
   ss1 << "secureop +" << s_ << "+----------+---------------+---------------+---------------+---------------+" << endl;
   ss1 << "secureop |" << setw(max_width+1) << "name "        << "|" << setw(10) << "calls "  
       << "|" << setw(15) << "OPL(s) "  << "|" << setw(15) << "OSL(s) "  
@@ -60,40 +50,30 @@ void op_stats_exit_func() {
   int64_t protoc_op_total_elapse = 0;
   for (auto& iter : map_op_stats) {
     auto stat = iter.second;
-    secure_op_total_elapse += stat->secure_op_stats.elapse;
-    for (auto& iter2 : stat->protocol_op_stats) {
-      protoc_op_total_elapse += iter2.second.elapse;
+    secure_op_total_elapse += stat->elapse;
+    for (auto& iter2 : stat->protocol_op_elapse) {
+      protoc_op_total_elapse += iter2.second;
     }
   }
 
   std::stringstream ss2;
   for (auto& iter : map_op_stats) {
     auto stat = iter.second;
+    ss2 << "secureop |" << std::setw(max_width) << stat->op << " |" << std::setw(9) << stat->calls;
 
-    int64_t protocol_level_calls = 0;
     int64_t protocol_level_elapse = 0;
-    for (auto& iter2 : stat->protocol_op_stats) {
-      protocol_level_calls += iter2.second.calls;
-      protocol_level_elapse += iter2.second.elapse;
+    for (auto& iter2 : stat->protocol_op_elapse) {
+      protocol_level_elapse += iter2.second;
     }
-
-    // secure op
-    auto& sos = stat->secure_op_stats;
-    //string s_calls = to_string(sos.calls) + "[" + to_string(protocol_level_calls) + "]";
-    string s_calls = "[" + to_string(sos.calls) + "]";
-    ss2 << "secureop |" << std::setw(max_width) << stat->op << " |" << std::setw(9) << s_calls;
     ss2 << " |" << std::setw(14) << std::fixed << protocol_level_elapse / 1e9;
-    ss2 << " |" << std::setw(14) << std::fixed << (sos.elapse - protocol_level_elapse) / 1e9;
-    ss2 << " |" << std::setw(14) << std::fixed << sos.elapse / 1e9;
-    ss2 << " |" << std::setw(14) << std::fixed << sos.elapse * 100.0 / secure_op_total_elapse;
+    ss2 << " |" << std::setw(14) << std::fixed << (stat->elapse - protocol_level_elapse) / 1e9;
+    ss2 << " |" << std::setw(14) << std::fixed << stat->elapse / 1e9;
+    ss2 << " |" << std::setw(14) << std::fixed << stat->elapse * 100.0 / secure_op_total_elapse;
     ss2 << " |" << endl;
 
-    // protocol op(s)
-    for (auto& iter2 : stat->protocol_op_stats) {
-      auto& pos = iter2.second;
-      string s_calls = to_string(pos.calls); // "[" + to_string(pos.calls) + "]";
-      ss2 << "secureop |" << std::setw(max_width) << iter2.first << " >" << std::setw(9) << s_calls
-          << " |" << std::setw(14) << std::fixed << pos.elapse / 1e9;
+    for (auto& iter2 : stat->protocol_op_elapse) {
+      ss2 << "secureop |" << std::setw(max_width) << iter2.first << " >" << std::setw(9) << ""
+          << " |" << std::setw(14) << std::fixed << iter2.second / 1e9;
       ss2 << " |" << std::setw(14) << ""
           << " |" << std::setw(14) << ""
           << " |" << std::setw(14) << ""

@@ -1,0 +1,33 @@
+#pragma once
+#if defined __cplusplus
+//#include "rosetta_log.h"
+#include <string>
+//#include "tensorflow/core/framework/op.h"
+//#include "tensorflow/core/graph/node_builder.h"
+//#include "tensorflow/core/lib/core/status.h"
+//#include "tensorflow/core/platform/env.h"
+//#include "tensorflow/core/platform/macros.h"
+//#include "cc/tf/dpass/rosetta_log.h"
+//#include "cc/tf/dpass/rosetta_utils.h"
+//#include "cc/tf/dpass/tf_graph_writer.h"
+//#include <iostream>
+//#include <ostream>
+//#include "tensorflow/core/common_runtime/dma_helper.h"
+//#include "tensorflow/core/common_runtime/optimization_registry.h"
+#include "tensorflow/core/framework/attr_value_util.h"
+#include "tensorflow/core/framework/graph.pb.h"
+#include "tensorflow/core/framework/node_def_util.h"
+#include "tensorflow/core/framework/op_kernel.h"
+#include "tensorflow/core/graph/graph_constructor.h"
+#include "tensorflow/core/lib/strings/str_util.h"
+#include "tensorflow/core/platform/protobuf.h"
+#include "tensorflow/core/platform/tensor_coding.h"
+#include "tensorflow/core/util/saved_tensor_slice_util.h"
+#include "cc/tf/dpass/mpc_base_pass.h"
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+#include "tensorflow/core/platform/default/logging.h"
+#include "tensorflow/core/graph/graph.h"
+
+#endif

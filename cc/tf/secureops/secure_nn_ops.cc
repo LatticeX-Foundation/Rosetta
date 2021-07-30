@@ -149,8 +149,8 @@ REGISTER_OP("SecureSoftmax")
     .Output("softmax: string")
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
     .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
-       return ::tensorflow::shape_inference::UnchangedShapeWithRankAtLeast(c, 1);
-     })
+      return ::tensorflow::shape_inference::UnchangedShapeWithRankAtLeast(c, 1);
+    })
 #endif
     .Doc(R"doc(
 SecureSoftmaxOp

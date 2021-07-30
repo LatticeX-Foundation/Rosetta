@@ -24,23 +24,17 @@
 REGISTER_OP("TfToSecure")
   .Attr("dtype: {int32, int64, float, double, string}")
   .Input("input: dtype")
-  .Output("output: string")
-  .SetIsStateful();
+  .Output("output: string");
 
 /// Note[georgeshi]: we can NOT use string in native TF op
 REGISTER_OP("SecureToTf")
-  .Input("input: string")
-  .Output("output: dtype")
   .Attr("dtype: {float, double, int32, int64, string}")
-#if ROSETTA_ENABLES_SHAPE_INFERENCE
-  .SetShapeFn(::tensorflow::shape_inference::UnchangedShape)
-#endif
-  .SetIsStateful();
+  .Input("input: string")
+  .Output("output: dtype");
 
 REGISTER_OP("PrivateInput")
   .Attr("dtype: {int32, int64, float, double, string}")
-  .Attr("T: {int32, int64}")
   .Input("input: dtype")
-  .Input("data_owner: T")
+  .Input("data_owner: string")
   .Output("output: string");
 

@@ -25,8 +25,10 @@
 #include "tensorflow/core/lib/io/record_reader.h"
 #include "tensorflow/core/lib/io/zlib_compression_options.h"
 #include "tensorflow/core/lib/io/zlib_inputstream.h"
-#include "cc/modules/protocol/public/protocol_manager.h"
-#include "cc/modules/common/include/utils/logger.h"
+#include "cc/tf/secureops/secure_base_kernel.h"
+#include "cc/modules/protocol/public/include/protocol_manager.h"
+#include "cc/modules/protocol/mpc/comm/include/mpc_helper.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -97,12 +99,19 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
       zlib_compression_options.input_buffer_size = buffer_size;
     }
 
-    int32 data_owner = 0;
+    string data_owner = "";
     OP_REQUIRES_OK(
-        ctx, ParseScalarArgument<int32>(ctx, "data_owner", &data_owner));
-    OP_REQUIRES(
-        ctx, data_owner >= 0 && data_owner <= 2,
-        errors::InvalidArgument("`data_owner` in {0,1,2}"));
+        ctx, ParseScalarArgument<string>(ctx, "data_owner", &data_owner));
+    string task_id = ProtocolManager::Instance()->QueryMappingID(ctx->device()->attributes().incarnation());
+    shared_ptr<NET_IO> netio = ProtocolManager::Instance()->GetProtocol(task_id)->GetNetHandler();
+    const vector<string>& party2node = netio->GetParty2Node();
+    const vector<string>& result_nodes = netio->GetResultNodes();
+    vector<string> nodes = decode_reveal_nodes(data_owner, party2node, result_nodes);
+    OP_REQUIRES(ctx, nodes.size() == 1, errors::InvalidArgument("Unsupported node."));
+    data_owner = nodes[0];
+    //OP_REQUIRES(
+    //    ctx, data_owner >= 0 && data_owner <= 2,
+    //    errors::InvalidArgument("`data_owner` in {0,1,2}"));
 
     std::vector<string> filenames;
     filenames.reserve(filenames_tensor->NumElements());
@@ -111,7 +120,7 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
     }
 
     *output = new Dataset(ctx, std::move(filenames), compression_type,
-                          zlib_compression_options, data_owner, unique_op_name_);
+                          zlib_compression_options, task_id, data_owner, unique_op_name_);
   }
 
  private:
@@ -119,11 +128,12 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
    public:
     Dataset(OpKernelContext* ctx, std::vector<string> filenames,
             const string& compression_type,
-            const io::ZlibCompressionOptions& options, int data_owner, string unique_op_name)
+            const io::ZlibCompressionOptions& options, const string& task_id, const string& data_owner, string unique_op_name)
         : DatasetBase(DatasetContext(ctx)),
           filenames_(std::move(filenames)),
           compression_type_(compression_type),
           use_compression_(!compression_type.empty()),
+          task_id_(task_id),
           data_owner_(data_owner), 
           unique_op_name_(unique_op_name),
           options_(options) {}
@@ -131,7 +141,7 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
     std::unique_ptr<IteratorBase> MakeIteratorInternal(
         const string& prefix) const override {
       return absl::make_unique<Iterator>(Iterator::Params{
-          this, strings::StrCat(prefix, "::", kPrivateTextLineDatasetName)}, data_owner_);
+          this, strings::StrCat(prefix, "::", kPrivateTextLineDatasetName)}, task_id_, data_owner_);
     }
 
     const DataTypeVector& output_dtypes() const override {
@@ -175,8 +185,10 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
       };
 
      public:
-      explicit Iterator(const Params& params, int data_owner)
-          : data_owner_(data_owner), DatasetIterator<Dataset>(params) {}
+      explicit Iterator(const Params& params, const string& task_id, const string& data_owner)
+          : task_id_(task_id), data_owner_(data_owner), DatasetIterator<Dataset>(params) {
+        net_io_ = ProtocolManager::Instance()->GetProtocol(task_id_)->GetNetHandler();
+      }
 
       Status GetNextInternal(IteratorContext* ctx,
                              std::vector<Tensor>* out_tensors,
@@ -289,9 +301,9 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
               input_stream_.get(), dataset()->options_.input_buffer_size, false);
           }
 
-          log_debug << "data owner: " << ProtocolManager::Instance()->GetProtocol()->GetPartyId() << " and setup stream";
+          log_debug << "data owner: " << net_io_->GetCurrentNodeId() << " and setup stream";
         } else {
-          log_debug << "not data owner: " << ProtocolManager::Instance()->GetProtocol()->GetPartyId() << " with setup fake stream";
+          log_debug << "not data owner: " << net_io_->GetCurrentNodeId() << " with setup fake stream";
         }
 
         // [kelvin] Get data file info, eg. fields, lines, delmiter
@@ -354,13 +366,13 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
       }
 
       int ExchangeDataFileInfo() {
-        int party_id = ProtocolManager::Instance()->GetProtocol()->GetPartyId();
-        log_debug << "to exchange data file info... party_id: " << party_id;
+        string node_id = net_io_->GetCurrentNodeId();
+        log_debug << "to exchange data file info... node_id: " << node_id;
 
         // get unique msg key
         std::stringstream msg_key;
         msg_key << "/SecureTextDataset/" << current_file_index_ << "/" << dataset()->unique_op_name_;
-        log_debug << "SecureTextDataset op msg key:" << msg_key.str() << endl;
+        log_debug << "SecureTextDataset op msg key:" << msg_key.str() ;
         msg_id_t msg__msg_key(msg_key.str());
 
         // assemble data file info
@@ -372,16 +384,16 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
           file_info.with_header = false;
           file_info.delim = ',';
           msg.append((char*)&file_info, sizeof(file_info));
-          log_debug << "get_file_lines_fields: file lines=" << file_info.lines << ", file fields=" << file_info.fields << endl;
+          log_debug << "get_file_lines_fields: file lines=" << file_info.lines << ", file fields=" << file_info.fields ;
         } 
         else {
           msg.resize(sizeof(data_file_info_));
         }
 
         // dataowner send file info to peers and non-dataowner recv file info to peers
-        if (0 != ProtocolManager::Instance()->GetProtocol()->GetOps(msg__msg_key)->Broadcast(data_owner_, msg, result))
+        if (0 != ProtocolManager::Instance()->GetProtocol(task_id_)->GetOps(msg__msg_key)->Broadcast(data_owner_, msg, result))
         {
-          log_error << "call Broadcast failed, party:  " << party_id;
+          log_error << "call Broadcast failed, node id:  " << node_id ;
           return -1;
         }
 
@@ -392,8 +404,7 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
           memcpy(&data_file_info_, result.data(), sizeof(data_file_info_));
 
 
-        int partyid = ProtocolManager::Instance()->GetProtocol()->GetPartyId();
-        log_info << "party:" << partyid << ", owner?:" << IsDataOwner() 
+        log_info << "node id:" << node_id << ", owner?:" << IsDataOwner() 
         << ", msgid:" << msg__msg_key << " " << " Succeed in reading data from CSV file." << " Total lines: "
         << data_file_info_.lines << ", Total fields: " << data_file_info_.fields << "."
         << ", msgid:" << msg__msg_key;
@@ -401,7 +412,7 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
       }
 
       bool IsDataOwner() const {
-        return data_owner_ == ProtocolManager::Instance()->GetProtocol()->GetPartyId();
+        return data_owner_ == net_io_->GetCurrentNodeId();
       }
 
       // Resets all reader streams.
@@ -427,15 +438,18 @@ class PrivateTextLineDatasetOp : public DatasetOpKernel {
       DataFileInfo data_file_info_;
       std::unique_ptr<RandomAccessFile> file_
           GUARDED_BY(mu_);  // must outlive input_stream_
-      int data_owner_;
+      string data_owner_;
       bool is_setup_ GUARDED_BY(mu_) = false;
+      string task_id_ = "";
+      shared_ptr<NET_IO> net_io_ = nullptr;
     };//Dataset::Iterator
 
     const std::vector<string> filenames_;
     const string compression_type_;
     const bool use_compression_;
     const io::ZlibCompressionOptions options_;
-    const int data_owner_;
+    string data_owner_ = "";
+    string task_id_ = "";
     string unique_op_name_;
   };//Dataset
 

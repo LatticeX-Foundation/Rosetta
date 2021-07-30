@@ -17,8 +17,8 @@
 // ==============================================================================
 #include "cc/tf/secureops/secure_base_kernel.h"
 #include "cc/tf/secureops/secure_conv2d.h"
-#include "cc/modules/common/include/utils/logger.h"
-#include "cc/modules/protocol/public/protocol_manager.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
+#include "cc/modules/protocol/public/include/protocol_manager.h"
 
 using rosetta::ProtocolManager;
 
@@ -42,12 +42,12 @@ class SecureSigmoidOp : public SecureUnaryOp {
   SecureSigmoidOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureSigmoidOp() {}
 
-  int UnaryCompute(const vector<string>& input, vector<string>& output) {
+  int UnaryCompute(const vector<string>& input, vector<string>& output, OpKernelContext* context) {
     log_debug << "--> Sigmoid OpKernel compute.";
     output.resize(input.size());
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Sigmoid);
     ProtocolManager::Instance()
-      ->GetProtocol()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->Sigmoid(input, output, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Sigmoid);
@@ -63,12 +63,12 @@ class SecureSigmoidCrossEntropyOp : public SecureBinaryOp<BinaryOpState> {
   SecureSigmoidCrossEntropyOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
   ~SecureSigmoidCrossEntropyOp() {}
 
-  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output, OpKernelContext* context) {
     log_debug << "--> SigmoidCrossEntropy OpKernel compute.";
     output.resize(in1.size());
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(SigmoidCrossEntropy);
     ProtocolManager::Instance()
-      ->GetProtocol()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->SigmoidCrossEntropy(in1, in2, output, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(SigmoidCrossEntropy);
@@ -84,11 +84,11 @@ class SecureReluOp : public SecureUnaryOp {
   SecureReluOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureReluOp() {}
 
-  int UnaryCompute(const vector<string>& input, vector<string>& output) {
+  int UnaryCompute(const vector<string>& input, vector<string>& output, OpKernelContext* context) {
     log_debug << "--> Relu OpKernel compute.";
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Relu);
     ProtocolManager::Instance()
-      ->GetProtocol()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->Relu(input, output, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Relu);
@@ -104,11 +104,11 @@ class SecureReluPrimeOp : public SecureUnaryOp {
   SecureReluPrimeOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureReluPrimeOp() {}
 
-  int UnaryCompute(const vector<string>& input, vector<string>& output) {
+  int UnaryCompute(const vector<string>& input, vector<string>& output, OpKernelContext* context) {
     log_debug << "--> ReluPrime OpKernel compute.";
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(ReluPrime);
     ProtocolManager::Instance()
-      ->GetProtocol()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->ReluPrime(input, output, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(ReluPrime);
@@ -141,12 +141,12 @@ class SecureConv2DOp : public SecureOpKernel {
 
     log_debug << "input_shape.num_elements:" << input_shape.num_elements();
     for (int i = 0; i < input_shape.dims(); i++) {
-      log_debug << "input dim " << i << ":" << input_shape.dim_size(i) << endl;
+      log_debug << "input dim " << i << ":" << input_shape.dim_size(i) ;
     }
 
     const auto& input_flat = input.flat<string>();
     for (int i = 0; i < input.NumElements(); i++) {
-      log_debug << "CCCC input i:" << i << "--->" << input_flat(i) << endl;
+      log_debug << "CCCC input i:" << i << "--->" << input_flat(i) ;
     }
 
     // Input filter is of the following dimensions:
@@ -156,12 +156,12 @@ class SecureConv2DOp : public SecureOpKernel {
 
     log_debug << "filter_shape.num_elements:" << filter_shape.num_elements();
     for (int i = 0; i < filter_shape.dims(); i++) {
-      log_debug << "filter dim " << i << ":" << filter_shape.dim_size(i) << endl;
+      log_debug << "filter dim " << i << ":" << filter_shape.dim_size(i) ;
     }
 
     const auto& filter_flat = filter.flat<string>();
     for (int i = 0; i < filter.NumElements(); i++) {
-      log_debug << "CCCC filter i:" << i << "--->" << filter_flat(i) << endl;
+      log_debug << "CCCC filter i:" << i << "--->" << filter_flat(i) ;
     }
 
     // dimensions, data_format, etc.
@@ -205,13 +205,13 @@ class SecureConv2DOp : public SecureOpKernel {
     log_debug << "out_shape.dims:" << out_shape.dims();
     log_debug << "out_shape.num_elements:" << out_shape.num_elements();
     for (int i = 0; i < out_shape.dims(); i++) {
-      log_debug << "dim " << i << ":" << out_shape.dim_size(i) << endl;
+      log_debug << "dim " << i << ":" << out_shape.dim_size(i) ;
     }
     auto vs = out_shape.dim_sizes();
     assert(vs.size() == out_shape.dims());
     assert(vs.size() == 4);
     for (int i = 0; i < vs.size(); i++) {
-      log_debug << this << ",i:" << i << "->" << vs[i] << endl;
+      log_debug << this << ",i:" << i << "->" << vs[i] ;
     }
 
     //! @todo real compute
@@ -266,14 +266,13 @@ class SecureConv2DOp : public SecureOpKernel {
       vector<double> dzero(1, 0);
       vector<string> szero(1);
       SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(PublicInput);
-      ProtocolManager::Instance()
-        ->GetProtocol()
-        ->GetOps(msg_id())
-        ->PublicInput(0, dzero, szero);
+      auto protocol = ProtocolManager::Instance()
+        ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()));
+      protocol->GetOps(msg_id())->PublicInput(protocol->GetNetHandler()->GetNodeId(0), dzero, szero);
       SECURE_OP_CALL_PROTOCOL_OP_STATS_END(PublicInput);
 
       szero_padding = szero[0];
-      log_debug << "     zero_padding_nums:" << zero_padding_nums << endl;
+      log_debug << "     zero_padding_nums:" << zero_padding_nums ;
     }
 
     // SimpleTimer timerx;
@@ -322,7 +321,7 @@ class SecureConv2DOp : public SecureOpKernel {
       }
       img_channels.push_back(img_channel);
     }
-    // log_error << __FUNCTION__ << " 1timerx:" << timerx.elapse() << endl;
+    // log_error << __FUNCTION__ << " 1timerx:" << timerx.elapse() ;
     // timerx.start();
 
     // martix version
@@ -374,7 +373,7 @@ class SecureConv2DOp : public SecureOpKernel {
       //}
     }
 
-    // log_error << __FUNCTION__ << " 2timerx:" << timerx.elapse() << endl;
+    // log_error << __FUNCTION__ << " 2timerx:" << timerx.elapse() ;
     // timerx.start();
 
 #if 0
@@ -459,26 +458,26 @@ class SecureConv2DOp : public SecureOpKernel {
 #endif
 
     // log_error << __FUNCTION__ << " 3timerx:" << timerx.elapse() << ", out_depth:" << out_depth
-    //           << ",ks[2]:" << ks[2] << ",ks[0]:" << ks[0] << ",ks[1]:" << ks[2] << endl;
+    //           << ",ks[2]:" << ks[2] << ",ks[0]:" << ks[0] << ",ks[1]:" << ks[2] ;
 
     attrs_["m"] = to_string(in_batch * out_rows * out_cols);
     attrs_["k"] = to_string(filter_rows * filter_cols * in_depth);
     attrs_["n"] = to_string(out_depth);
-    attrs_["rh_is_const"] = is_public_or_constant_input_by_restore_mode() ? "1" : "0";
+    attrs_["rh_is_const"] = is_public_or_constant_input_by_restore_mode(context) ? "1" : "0";
 
     // log_error << __FUNCTION__ << " 4timerx:" << timerx.elapse() << " m:" << attrs_["m"]
     //           << " k:" << attrs_["k"] << " n:" << attrs_["n"] << " padding:" << zero_padding_nums
-    //           << endl;
-    log_debug << __FUNCTION__ << " m:" << attrs_["m"] << endl;
-    log_debug << __FUNCTION__ << " k:" << attrs_["k"] << endl;
-    log_debug << __FUNCTION__ << " n:" << attrs_["n"] << endl;
-    log_debug << __FUNCTION__ << " rh_is_const:" << attrs_["rh_is_const"] << endl;
+    //           ;
+    log_debug << __FUNCTION__ << " m:" << attrs_["m"] ;
+    log_debug << __FUNCTION__ << " k:" << attrs_["k"] ;
+    log_debug << __FUNCTION__ << " n:" << attrs_["n"] ;
+    log_debug << __FUNCTION__ << " rh_is_const:" << attrs_["rh_is_const"] ;
 
     // [ out_batch, out_rows, out_cols, out_depth ]
     vector<string> tmpc; //(out_batch * out_rows * out_cols * out_depth); // N*((H*W)*C)
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Matmul);
     ProtocolManager::Instance()
-      ->GetProtocol()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->Matmul(tmpa, tmpb, tmpc, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Matmul);
@@ -537,14 +536,13 @@ class SecureBiasAddOp : public SecureBinaryOp<BinaryOpState> {
   }
   ~SecureBiasAddOp() {}
 
-  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output) {
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output, OpKernelContext* context) {
     log_debug << "--> SecureBiasAddOp OpKernel compute.";
-    int ret = -1;
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(BiasAdd);
-    ret = ProtocolManager::Instance()
-              ->GetProtocol()
-              ->GetOps(msg_id())
-              ->Add(in1, in2, output, &attrs_);
+    int ret = ProtocolManager::Instance()
+                ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+                ->GetOps(msg_id())
+                ->Add(in1, in2, output, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(BiasAdd);
     log_debug << "SecureBiasAddOp OpKernel compute ok. <--";
     return ret;
@@ -633,10 +631,10 @@ class SecureBiasAddOp : public SecureBinaryOp<BinaryOpState> {
     // fill attributes
     attrs_["lh_is_const"] = lh_is_const_ ? "1" : "0";
     attrs_["rh_is_const"] = rh_is_const_ ? "1" : "0";
-    attrs_["rh_is_const"] = is_public_or_constant_input_by_restore_mode() ? "1" : "0";
+    attrs_["rh_is_const"] = is_public_or_constant_input_by_restore_mode(context) ? "1" : "0";
 
     // compute with protocol
-    BinaryCompute(input0, input1, output);
+    BinaryCompute(input0, input1, output, context);
 
     // set output
     auto out_flat = out->flat<string>();
@@ -657,7 +655,7 @@ class SecureL2LossOp : public SecureUnaryOp {
   SecureL2LossOp(OpKernelConstruction* context) : SecureUnaryOp(context) {}
   ~SecureL2LossOp() {}
 
-  int UnaryCompute(const vector<string>& input, vector<string>& output) {
+  int UnaryCompute(const vector<string>& input, vector<string>& output, OpKernelContext* context) {
     log_debug << "--> SecureL2LossOp OpKernel compute.";
     log_debug << "SecureL2LossOp OpKernel compute ok. <--";
     return 0;
@@ -735,7 +733,7 @@ class SecureFusedBatchNormOp : public SecureOpKernel {
     Tensor* saved_maybe_inv_var = nullptr;
     OP_REQUIRES_OK(context, context->allocate_output(4, scale.shape(), &saved_maybe_inv_var));
 
-    log_info << " begin real execution!" << endl;
+    log_info << " begin real execution!" ;
     ////// the following is adapted from `FusedBatchNorm<CPUDevice, T, U>` in native TF.
     OP_REQUIRES(
       context, tensor_format_ == FORMAT_NHWC,
@@ -777,8 +775,8 @@ class SecureFusedBatchNormOp : public SecureOpKernel {
     // for now, this is not the most efficient one, since we not use vectorization.
     // vector<vector<string>> all_input(depth, vector<string>(rest_size));
 
-    attrs_["rh_is_const"] = is_public_or_constant_input_by_restore_mode() ? "1" : "0";
-    log_info << __FUNCTION__ << " rh_is_const:" << attrs_["rh_is_const"] << endl;
+    attrs_["rh_is_const"] = is_public_or_constant_input_by_restore_mode(context) ? "1" : "0";
+    log_info << __FUNCTION__ << " rh_is_const:" << attrs_["rh_is_const"] ;
     bool rh_is_const = (attrs_["rh_is_const"] == "1");
 
     vector<string> inner_flat_x(size);
@@ -789,7 +787,9 @@ class SecureFusedBatchNormOp : public SecureOpKernel {
     const auto& scale_flat = scale.flat<string>();
     const auto& offset_flat = offset.flat<string>();
 
-    auto ops = ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id());
+    auto ops = ProtocolManager::Instance()
+                ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+                ->GetOps(msg_id());
 
     // for debuging:
     #if 0
@@ -900,14 +900,14 @@ class SecureFusedBatchNormOp : public SecureOpKernel {
     // Todo:size of `depth` is enough two!
     vector<string> inner_flat_mean(size);
     vector<string> inner_flat_offset(size);
-    log_info << " depth:" << depth << " rest :" << rest_size << endl;
+    log_info << " depth:" << depth << " rest :" << rest_size ;
     // const auto& inner_x_flat = x_inner.flat<string>();
     for (auto i = 0; i < size; ++i) {
       int d = i % depth;
       // int idx = floor(i / depth);
-      // // log_info << d << ", " << idx << endl;
+      // // log_info << d << ", " << idx ;
       // all_input[d][idx] = x_flat(i);
-      // // log_info << i << "-th input: " << all_input[d][idx] << endl;
+      // // log_info << i << "-th input: " << all_input[d][idx] ;
       inner_flat_x[i] = x_flat(i);
       inner_flat_mean[i] = mean_flat(d);
 
@@ -959,13 +959,13 @@ class SecureSoftmaxOp : public SecureOpKernel {
     OP_REQUIRES_OK(
       context, context->forward_input_or_allocate_output({0}, 0, logits_in.shape(), &softmax_out));
 
-    log_debug << "logits_in.NumElements():" << logits_in.NumElements() << endl;
+    log_debug << "logits_in.NumElements():" << logits_in.NumElements() ;
     const auto& logits_in_flat = logits_in.flat<string>();
 
     const TensorShape& logits_in_shape = logits_in.shape();
     log_debug << "logits_in_shape.num_elements:" << logits_in_shape.num_elements();
     for (int64_t i = 0; i < logits_in_shape.dims(); i++) {
-      log_debug << "logits_in dim " << i << ":" << logits_in_shape.dim_size(i) << endl;
+      log_debug << "logits_in dim " << i << ":" << logits_in_shape.dim_size(i) ;
     }
 
     if (logits_in.NumElements() == 0) {
@@ -975,7 +975,7 @@ class SecureSoftmaxOp : public SecureOpKernel {
     // batch_size x num_classes matrix
     int64_t dims = logits_in_shape.dims();
     if (dims <= 0 || dims > 2) {
-      log_error << "not supported dims:" << dims << endl;
+      log_error << "not supported dims:" << dims ;
       OP_REQUIRES(
         context, false,
         errors::InvalidArgument("not supported dims, got ", logits_in.shape().DebugString()));
@@ -990,7 +990,7 @@ class SecureSoftmaxOp : public SecureOpKernel {
       cols = logits_in_shape.dim_size(1);
     }
 
-    log_debug << "rows:" << rows << ", cols:" << cols << endl;
+    log_debug << "rows:" << rows << ", cols:" << cols ;
     vector<string> a(rows * cols), b(rows * cols);
     for (int64_t i = 0; i < rows; i++) {
       for (int64_t j = 0; j < cols; j++) {
@@ -1003,7 +1003,10 @@ class SecureSoftmaxOp : public SecureOpKernel {
     attrs_["cols"] = to_string(cols); //num_classes
 
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Softmax);
-    ProtocolManager::Instance()->GetProtocol()->GetOps(msg_id())->Softmax(a, b, &attrs_);
+    ProtocolManager::Instance()
+                      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+                      ->GetOps(msg_id())
+                      ->Softmax(a, b, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Softmax);
 
     auto out_flat = softmax_out->flat<string>();

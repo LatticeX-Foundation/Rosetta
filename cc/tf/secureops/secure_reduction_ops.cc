@@ -92,7 +92,7 @@ void SecureReduceOp::ComputeImpl(OpKernelContext* context) {
   ///DETAIL/// }
   ///DETAIL/// vector<double> input_plain(size);
   ///DETAIL/// ProtocolManager::Instance()
-  ///DETAIL///   ->GetProtocol()
+  ///DETAIL///   ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
   ///DETAIL///   ->GetOps(msg_id())
   ///DETAIL///   ->Reveal(input_text, input_plain);
 
@@ -271,9 +271,9 @@ void SecureReduceOp::ComputeImpl(OpKernelContext* context) {
 
   // compute with protocol
   vector<string> outs;
-  ReduceCompute(input_str, outs, rows, cols);
+  ReduceCompute(input_str, outs, rows, cols, context);
   log_debug << "----------------------2: rows:" << rows << ",cols:" << cols
-            << ",outs.size():" << outs.size() << "--------" << endl;
+            << ",outs.size():" << outs.size() << "--------" ;
 
   // re-assign
   for (int64_t i = 0; i < tmpout_flat.size(); i++) {

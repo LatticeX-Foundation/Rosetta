@@ -9,23 +9,29 @@
 #define SECURE_OP_SET_SHAPE_FN(ShapeFn) 
 #endif
 
-#define REGISTER_SECURE_BINARY_OP(name) \
-  REGISTER_OP(#name)                    \
-    .Input("x: string")                 \
-    .Input("y: string")                 \
-    .Output("z: string")                \
-    .Attr("lh_is_const: bool = false")  \
-    .Attr("rh_is_const: bool = false")  \
+#define REGISTER_SECURE_BINARY_OP(name)                     \
+  REGISTER_OP(#name)                                        \
+    .Input("x: string")                                     \
+    .Input("y: string")                                     \
+    .Output("z: string")                                    \
+    .Attr("lh_is_const: bool = false")                      \
+    .Attr("rh_is_const: bool = false")                      \
     SECURE_OP_SET_SHAPE_FN(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn)
 
-#define REGISTER_SECURE_BINARY_CONST_OP(name) \
-  REGISTER_OP(#name)                          \
-    .Input("x: string")                       \
-    .Input("y: string")                       \
-    .Output("z: string")                      \
-    .Attr("lh_is_const: bool = false")        \
-    .Attr("rh_is_const: bool = true")        \
+#define REGISTER_SECURE_BINARY_CONST_OP(name)               \
+  REGISTER_OP(#name)                                        \
+    .Input("x: string")                                     \
+    .Input("y: string")                                     \
+    .Output("z: string")                                    \
+    .Attr("lh_is_const: bool = false")                      \
+    .Attr("rh_is_const: bool = true")                       \
     SECURE_OP_SET_SHAPE_FN(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn)
+
+#define UNARY()                                             \
+  Input("x: string")                                        \
+    .Output("y: string")                                    \
+    SECURE_OP_SET_SHAPE_FN(::tensorflow::shape_inference::UnchangedShape)
+
 
 REGISTER_SECURE_BINARY_CONST_OP(SecurePow).Doc(R"doc(
     SecurePow
@@ -90,31 +96,65 @@ REGISTER_SECURE_BINARY_OP(SecureLessEqual).Doc(R"doc(
 REGISTER_SECURE_BINARY_OP(SecureLogicalAnd).Doc(R"doc(
     SecureLogicalAnd
 )doc");
+
 REGISTER_SECURE_BINARY_OP(SecureLogicalOr).Doc(R"doc(
     SecureLogicalOr
 )doc");
+
 REGISTER_SECURE_BINARY_OP(SecureLogicalXor).Doc(R"doc(
     SecureLogicalXor
 )doc");
-REGISTER_OP("SecureLogicalNot").Input("x: string").Output("y: string").SetIsStateful();
 
-REGISTER_OP("SecureNegative").Input("x: string").Output("res: string").SetIsStateful();
 
-REGISTER_OP("SecureAbs").Input("x: string").Output("res: string").SetIsStateful();
+REGISTER_OP("SecureLogicalNot").UNARY().Doc(R"doc(
+  SecureLogicalNot
+)doc");
 
-REGISTER_OP("SecureAbsPrime").Input("x: string").Output("res: string").SetIsStateful();
+REGISTER_OP("SecureNegative").UNARY().Doc(R"doc(
+  SecureNegative
+)doc");
 
-REGISTER_OP("SecureLog").Input("x: string").Output("res: string").SetIsStateful();
+REGISTER_OP("SecureAbs").UNARY().Doc(R"doc(
+  SecureAbs
+)doc");
 
-REGISTER_OP("SecureHLog").Input("x: string").Output("res: string").SetIsStateful();
+REGISTER_OP("SecureAbsPrime").UNARY().Doc(R"doc(
+  SecureAbsPrime
+)doc");
 
-REGISTER_OP("SecureLog1p").Input("x: string").Output("res: string").SetIsStateful();
+REGISTER_OP("SecureLog").UNARY().Doc(R"doc(
+  SecureLog
+)doc");
+
+REGISTER_OP("SecureHLog").UNARY().Doc(R"doc(
+  SecureHLog
+)doc");
+
+REGISTER_OP("SecureLog1p").UNARY().Doc(R"doc(
+  SecureLog1p
+)doc");
+
+REGISTER_OP("SecureSquare").UNARY().Doc(R"doc(
+  SecureSquare
+)doc");
+
+REGISTER_OP("SecureExp").UNARY().Doc(R"doc(
+  SecureExp
+)doc");
+
+REGISTER_OP("SecureSqrt").UNARY().Doc(R"doc(
+  SecureSqrt
+)doc");
+
+REGISTER_OP("SecureRsqrt").UNARY().Doc(R"doc(
+  SecureRsqrt
+)doc");
 
 REGISTER_OP("SecureReveal")
   .Input("x: string")
   .Output("res: string")
-  .Attr("receive_party: int = 7")
-  .SetIsStateful();
+  .Attr("receive_parties: string")
+  .SetIsStateful();;
 
 REGISTER_OP("SecureAddN")
   .Input("inputs: N * T")
@@ -134,11 +174,6 @@ REGISTER_OP("SecureMatmul")
   .SetShapeFn(::tensorflow::shape_inference::MatMulShape)
 #endif
 ;
-
-REGISTER_OP("SecureSquare").Input("x: string").Output("res: string").SetIsStateful();
-REGISTER_OP("SecureSqrt").Input("x: string").Output("res: string").SetIsStateful();
-REGISTER_OP("SecureRsqrt").Input("x: string").Output("res: string").SetIsStateful();
-REGISTER_OP("SecureExp").Input("x: string").Output("res: string").SetIsStateful();
 
 REGISTER_OP("SecureReduceMean")
   .Input("input: string")
@@ -190,3 +225,4 @@ REGISTER_OP("SecureArgMax")
   .Output("output: output_type")
   .Attr("Tidx: {int32, int64} = DT_INT32")
   .Attr("output_type: {string,} = DT_STRING");
+  
