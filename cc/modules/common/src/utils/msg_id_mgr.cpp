@@ -17,7 +17,7 @@
 // ==============================================================================
 #include "cc/modules/common/include/utils/msg_id.h"
 #include "cc/modules/common/include/utils/msg_id_mgr.h"
-#include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
 
 #include <map>
 #include <vector>
@@ -88,7 +88,7 @@ msg_id_t& MsgIdMgr::GetUniqueMsgId(const string& unique_name) {
       min_idx.store(_MaxId);
     }
     if (_MaxId >= max_idx - 1) {
-      log_error << "error:uid exceeds maximum value " << max_idx << std::endl;
+      log_error << "error:uid exceeds maximum value " << max_idx;
       throw;
     }
     _msg_id_info[unique_name] = msg_id_t(_MaxId, unique_name);
@@ -115,12 +115,12 @@ const msg_id_t& get_msgid(const std::string& str_msgid) {
     // new message id
     index = max_idx--;
     if (max_idx <= min_idx + 1) {
-      log_error << "error: " << min_idx << " exceeds maximum value " << max_idx << std::endl;
+      log_error << "error: " << min_idx << " exceeds maximum value " << max_idx;
       throw;
     }
     mapid[str_msgid] = index;
     mapmid[index] = msg_id_t(index, str_msgid);
-    log_info << "new msgid, index:" << index << ", src:" << str_msgid << endl;
+    log_info << "new msgid, index:" << index << ", src:" << str_msgid;
   } else {
     index = mapid[str_msgid];
   }

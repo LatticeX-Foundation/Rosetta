@@ -27,15 +27,23 @@
 #include <fstream>
 #include <chrono>
 #include <random>
+#include <mutex>
+
 using namespace std;
 
 namespace rosetta {
+
+static std::mutex s_cout_mutex;
 static std::streambuf* cout_buf = nullptr;
 static std::ofstream of;
 static bool redirect_io = false;
 
 // redirect stdout to external specified log file
-void redirect_stdout(const std::string& logfile) {
+void redirect_stdout(const std::string& logfile, const std::string& taskid/*=""*/) {
+  std::lock_guard<std::mutex> lck(s_cout_mutex);
+  if (cout_buf)
+    return;
+  
   cout_buf = cout.rdbuf();
   of.open(logfile);
   streambuf* fileBuf = of.rdbuf();
@@ -44,9 +52,10 @@ void redirect_stdout(const std::string& logfile) {
 }
 
 void restore_stdout() {
+  std::lock_guard<std::mutex> lck(s_cout_mutex);
   if (!redirect_io)
     return;
-  return;
+  // return;////////// fix me
   of.flush();
   of.close();
   cout.rdbuf(cout_buf);

@@ -16,6 +16,7 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #include "cc/modules/common/include/utils/helper.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
 
 #include <cassert>
 #include <chrono>
@@ -31,6 +32,10 @@
 using namespace std;
 
 ////////////////////////////////////////////////
+
+template std::string get_hex_str<uintlong>(uintlong);
+template uintlong from_hex_str<uintlong>(std::string);
+
 string to_readable_dec(const uintlong& v) {
   if (v == 0)
     return "0";
@@ -57,6 +62,18 @@ void print_vec(const vector<uint8_t>& a, int length, string msg) {
       cout << endl;
   }
   cout << endl;
+}
+
+void c_print_vec(const vector<double>& a, int length, string msg) {
+  if (length < 0 || length > a.size())
+    length = a.size();
+  printf("%s : size [%zu] ------\n", msg.data(), a.size());
+  for (int i = 0; i < length; i++) {
+    // cout << setw(22) << (myType2)a[i];
+    cout << setw(22) << std::to_string(a[i]);
+    printf("%.6lf\t", a[i]);
+  }
+  printf("\n------\n");
 }
 
 void print_vec(const vector<int>& a, int length, string msg) {
@@ -169,9 +186,13 @@ inline void print_matrix(vector<T> matrix, size_t row_size) {
 void print_vec(const vector<double>& a, int length, string msg) {
   if (length < 0 || length > a.size())
     length = a.size();
-  cout << msg << ": size [" << a.size() << "]" << endl;
+  // log_info << msg << ": size [" << a.size() << "]";
+  // for (int i = 0; i < length; i++) {
+  //   log_info << std::fixed << std::setprecision(10) << a[i];
+  // }
+  cout << msg << ": [plain] size [" << a.size() << "] ";
   for (int i = 0; i < length; i++) {
-    cout << std::fixed << std::setprecision(10) << a[i] << endl;
+    cout << a[i] << " ";
   }
   cout << endl;
 }
@@ -179,11 +200,10 @@ void print_vec(const vector<double>& a, int length, string msg) {
 void print_vec(const vector<string>& a, int length, string msg) {
   if (length < 0 || length > a.size())
     length = a.size();
-  cout << msg << ": size [" << a.size() << "]" << endl;
+  log_info << msg << ": size [" << a.size() << "]";
   for (int i = 0; i < length; i++) {
-    cout << a[i] << endl;
+    log_info << a[i];
   }
-  cout << endl;
 }
 
 template <class T>

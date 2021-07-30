@@ -19,12 +19,10 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
-#include <vector>
+#include <map>
 #include <stdexcept>
 #include <memory>
 #include <vector>
-#include <string>
-#include <iostream>
 #include "cc/modules/protocol/mpc/comm/include/mpc_defines.h"
 #include "cc/modules/common/include/utils/msg_id.h"
 
@@ -35,6 +33,7 @@ using std::endl;
 using std::shared_ptr;
 using std::string;
 using std::unordered_map;
+using std::map;
 using std::vector;
 using attr_type = unordered_map<string, string>;
 
@@ -44,6 +43,43 @@ using attr_type = unordered_map<string, string>;
 #define THROW_NOT_IMPL_FN(name) \
   throw std::runtime_error(string("please implements '") + name + "' in subclass")
 
+struct ProtocolContext {
+  short VERSION = 2;
+  int FLOAT_PRECISION = FLOAT_PRECISION_DEFAULT;
+
+  // To specify nodes to save model
+  vector<string> SAVER_MODE;
+  // To specify nodes to load or restore model
+  vector<string> RESTORE_MODE;
+  string TASK_ID;
+  string NODE_ID;
+  int ROLE_ID;
+  map<string, int> NODE_ROLE_MAPPING;// node_id -> role
+  string PAYLOAD;
+
+  int GetMyRole() {
+    return ROLE_ID;
+  }
+
+  int GetRole(const string& node_id) {
+    if (NODE_ROLE_MAPPING.find(node_id) == NODE_ROLE_MAPPING.end()) {
+      std::cerr << "cannot find node_id: " << node_id << " when get role id!" << std::endl;
+      return -1;
+    }
+    
+    return NODE_ROLE_MAPPING[node_id];
+  }
+
+  string GetNodeId(const int role) {
+    for (auto iter = NODE_ROLE_MAPPING.begin(); iter != NODE_ROLE_MAPPING.end(); ++iter) {
+      if (iter->second == role)
+        return iter->first;
+    }
+    std::cerr << "cannot find node_id" << " for role id: " << role << std::endl;
+    return "";
+  }
+};
+
 // This is the interface that each specific cryptographic protocol should implement!
 class ProtocolOps {
  public:
@@ -52,17 +88,14 @@ class ProtocolOps {
    */
   msg_id_t _op_msg_id;
 
-  /** 
-   * For now, some tools are passed frm ProtocolBase to its ProtocolOps in 'GetOps' directly.
-   * We will refine this in later version.
+  /**
+   * protocol execution context to support multiple tasks execute in parallel .
    */
-  // the same as config_map of its ProtocolBase class.
-  unordered_map<string, string> op_config_map;
-  //shared_ptr<ProtocolBase> _base_ptr;
+  shared_ptr<ProtocolContext> context_;
 
  public:
-  ProtocolOps(const msg_id_t& msg_id) : _op_msg_id(msg_id){};
-  //ProtocolOps(shared_ptr<ProtocolBase> base_ptr): _base_ptr(base_ptr){};
+  const msg_id_t& msg_id() const { return _op_msg_id; }
+  ProtocolOps(const msg_id_t& msg_id, shared_ptr<ProtocolContext> context) : _op_msg_id(msg_id), context_(context) {};
 
   virtual ~ProtocolOps() = default;
 
@@ -82,7 +115,7 @@ class ProtocolOps {
     THROW_NOT_IMPL;
   }
 
-  //! decode the string in protocol-specific format to literal number
+  // Decode the string in protocol-specific format to literal number
   virtual int SecureToTf(
     const vector<string>& in,
     vector<string>& out,
@@ -91,22 +124,26 @@ class ProtocolOps {
   }
 
   virtual int RandSeed(std::string op_seed, string& out_str) { THROW_NOT_IMPL; }
-  virtual uint64_t RandSeed() { return 0x123456; }
-  virtual uint64_t RandSeed(vector<uint64_t>& seed) { return 0x123456; }
+  virtual uint64_t RandSeed() { 
+    std::cerr << "insecure seed!!! please overide " << __FUNCTION__ << std::endl;
+    return 0x123456;
+  }
+  virtual uint64_t RandSeed(vector<uint64_t>& seed) { 
+    std::cerr << "insecure seed!!! please overide " << __FUNCTION__ << std::endl;
+    return 0x123456;
+  }
 
-  virtual int PrivateInput(int party_id, const vector<double>& in_x, vector<string>& out_x) {
+  virtual int PrivateInput(const string& node_id, const vector<double>& in_x, vector<string>& out_x) {
     THROW_NOT_IMPL;
   }
-  virtual int PublicInput(int party_id, const vector<double>& in_x, vector<string>& out_x) {
+  virtual int PublicInput(const string& node_id, const vector<double>& in_x, vector<string>& out_x) {
     THROW_NOT_IMPL;
   }
 
-  virtual int Broadcast(int from_party, const string& msg, string& result) { THROW_NOT_IMPL; }
+  virtual int Broadcast(const string& from_node, const string& msg, string& result) { THROW_NOT_IMPL; }
 
   // result must be allocate outside!
-  virtual int Broadcast(int from_party, const char* msg, char* result, size_t size) { THROW_NOT_IMPL; }
-  // virtual ssize_t Send(int party, const char* data, size_t size, std::string msgid) { THROW_NOT_IMPL; }
-  // virtual ssize_t Recv(int party, char* data, size_t size, std::string msgid) { THROW_NOT_IMPL; }
+  virtual int Broadcast(const string& from_node, const char* msg, char* result, size_t size) { THROW_NOT_IMPL; }
 
   /**
    * @desc: This is for Tensorflow's SaveV2 Op.
@@ -114,13 +151,7 @@ class ProtocolOps {
   virtual int ConditionalReveal(
     vector<string>& in_vec,
     vector<string>& out_cipher_vec,
-    vector<double>& out_plain_vec) {
-    std::cout << "calling ProtocolOps::ConditionalReveal!" << std::endl;
-    if (op_config_map.find("save_mode") != op_config_map.end()) {
-      cout << "DEBUG:" << op_config_map["save_mode"] << endl;
-    }
-    return -1;
-  }
+    vector<double>& out_plain_vec) { THROW_NOT_IMPL; }
 
   //////////////////////////////////    math ops   //////////////////////////////////
   virtual int Add(
@@ -160,7 +191,6 @@ class ProtocolOps {
     const attr_type* attr_info = nullptr) {
     THROW_NOT_IMPL;
   }
-
 
   virtual int Truediv(
     const vector<string>& a,
@@ -243,28 +273,6 @@ class ProtocolOps {
     const attr_type* attr_info = nullptr) {
     THROW_NOT_IMPL;
   }
-  //get 1/(a^0.5)
-  virtual int Rsqrt(
-    const vector<string>& a,
-    vector<string>& output,
-    const attr_type* attr_info = nullptr) {
-    THROW_NOT_IMPL;
-  }
-//get a^0.5
-  virtual int Sqrt(
-    const vector<string>& a,
-    vector<string>& output,
-    const attr_type* attr_info = nullptr) {
-    THROW_NOT_IMPL;
-  }
-//get e^a
-  virtual int Exp(
-    const vector<string>& a,
-    vector<string>& output,
-    const attr_type* attr_info = nullptr) {
-    THROW_NOT_IMPL;
-  }
-
 
   virtual int Square(
     const vector<string>& a,
@@ -402,7 +410,30 @@ class ProtocolOps {
     THROW_NOT_IMPL;
   }
 
+  // get \sqrt{a}
+  virtual int Sqrt(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
+  // get 1/\sqrt{a}
+  virtual int Rsqrt(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
   virtual int Invert(
+    const vector<string>& a,
+    vector<string>& output,
+    const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
+  virtual int Exp(
     const vector<string>& a,
     vector<string>& output,
     const attr_type* attr_info = nullptr) {

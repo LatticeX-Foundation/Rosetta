@@ -1,5 +1,5 @@
 // ==============================================================================
-// Copyright 2020 The LatticeX Foundation
+// Copyright 2021 The LatticeX Foundation
 // This file is part of the Rosetta library.
 //
 // The Rosetta library is free software: you can redistribute it and/or modify
@@ -15,10 +15,12 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#pragma once
 
-#include "cc/modules/common/include/utils/helper.h"
-#include "cc/modules/common/include/utils/rtt_logger.h"
-#include "cc/modules/common/include/utils/simple_timer.h"
-#include "cc/modules/common/include/utils/random_util.h"
-//#include "cc/modules/common/include/utils/file_directory.h"
+#include"cc/modules/common/include/utils/logger_vector.h"
+
+template struct Vector<char>;
+template struct Vector<mpc_t>;
+template struct Vector<small_mpc_t>;
+template struct Vector<rosetta::helix::Share>;
+template struct Vector<rosetta::helix::BitShare>;
+

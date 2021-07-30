@@ -15,36 +15,25 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#pragma once
+#include "cc/modules/common/include/utils/subprocess.h"
 
-#if 0
-#include <thread>
+//#include <thread>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <string>
-#include <time.h>
-#include <condition_variable>
-#include <mutex>
-#include <vector>
+//#include <string>
+//#include <time.h>
+//#include <condition_variable>
+//#include <mutex>
 #include <iostream>
-#include <atomic>
-#include <algorithm>
-#include <sstream>
-#include <fstream>
+//#include <atomic>
+//#include <algorithm>
+//#include <sstream>
+//#include <fstream>
 using namespace std;
-#endif
 
-#include <vector>
-#include <sys/types.h>
-
-static inline pid_t get_subprocess(std::vector<pid_t>& pids); 
-static inline void wait_subprocess(const std::vector<pid_t>& pids);
-int main_example(int argc, char* argv[]);
-#if 0
-static inline pid_t get_subprocess(vector<pid_t>& pids); 
-{
+static inline pid_t get_subprocess(vector<pid_t>& pids) {
   pid_t pid = fork();
   if (pid < 0) {
     cerr << "error in fork! pid:" << getpid() << endl;
@@ -57,6 +46,7 @@ static inline pid_t get_subprocess(vector<pid_t>& pids);
   }
   return pid;
 }
+
 static inline void wait_subprocess(const vector<pid_t>& pids) {
   for (int i = 0; i < pids.size(); ++i) {
     int status0 = -1;
@@ -93,4 +83,3 @@ int main_example(int argc, char* argv[]) {
 
   return 0;
 }
-#endif

@@ -33,6 +33,24 @@ DEFINE_AT_EXIT_FUNCTION_END()
 
 namespace rosetta {
 namespace convert {
+template void to_binary_str<double>(const double&, std::string&);
+template void to_binary_str<mpc_t>(const mpc_t&, std::string&);
+template void to_binary_str<double>(const std::vector<double>&, std::vector<std::string>&);
+template void to_binary_str<mpc_t> (const std::vector<mpc_t>&,  std::vector<std::string>&);
+
+// const std::string&
+template double from_binary_str<double>(const std::string&);
+template mpc_t from_binary_str<mpc_t>(const std::string&);
+// const std::string&, T&
+template void from_binary_str<double>(const std::string&, double&);
+template void from_binary_str<mpc_t>(const std::string&, mpc_t&);
+// std::vector<std::string>&, std::vector<T>&
+template void from_binary_str<double>(const std::vector<std::string>&, std::vector<double>&);
+template void from_binary_str<mpc_t>(const std::vector<std::string>&, std::vector<mpc_t>&);
+// std::vector<std::string>&
+template std::vector<double> from_binary_str<double>(const std::vector<std::string>&);
+template std::vector<mpc_t> from_binary_str<mpc_t>(const std::vector<std::string>&);
+
 vector<double> from_double_str(const vector<string>& s) {
   ELAPSED_STATISTIC_BEG(convert_string_to_double_timer);
   vector<double> t(s.size());

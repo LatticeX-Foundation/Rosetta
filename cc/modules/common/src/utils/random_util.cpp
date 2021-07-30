@@ -242,9 +242,9 @@ void rand_vec_60bit(vector<int64_t>& rand_vec, int length) {
   }
 }
 
-void random_vector(vector<double>& v, size_t size, double low, double high) {
+void random_vector(vector<double>& v, size_t size, double low, double high, int64_t seed/*=-1*/) {
   v.resize(size, 0);
-  uniform2(v, low, high);
+  uniform2(v, low, high, seed);
 }
 
 void random_vector(vector<uint64_t>& v, size_t size) { rand_vec2(v, size); }

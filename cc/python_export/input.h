@@ -30,7 +30,7 @@ namespace py = pybind11;
 #include <fstream>
 using namespace std;
 
-#include "cc/modules/protocol/public/protocol_manager.h"
+#include "cc/modules/protocol/public/include/protocol_manager.h"
 using np_str_t = std::array<char, 33>; // at most 33 bytes
 
 /**
@@ -38,12 +38,13 @@ using np_str_t = std::array<char, 33>; // at most 33 bytes
  */
 class Input {
  protected:
-  virtual int _input_op(int party_id, const vector<double>& in_x, vector<std::string>& out_x) = 0;
+  virtual int _input_op(const string& node_id, const vector<double>& in_x, vector<std::string>& out_x) = 0;
+  string task_id_;
 
  public:
-  Input() {}
+  Input(const string& task_id) : task_id_(task_id) {}
 
-  py::array_t<np_str_t> input(int party_id, const py::array_t<double>& input) {
+  py::array_t<np_str_t> input(const string& node_id, const py::array_t<double>& input) {
     py::buffer_info buf = input.request();
     ssize_t ndim = buf.ndim;
     ssize_t size = buf.size;
@@ -61,7 +62,7 @@ class Input {
         vd[i] = pbuf[i];
       }
 
-      _input_op(party_id, vd, vs);
+      _input_op(node_id, vd, vs);
 
       for (int i = 0; i < input.shape()[0]; i++) {
         std::memcpy((char*)pout->data(), vs[i].data(), vs[i].size());
@@ -77,7 +78,7 @@ class Input {
         }
       }
 
-      _input_op(party_id, vd, vs);
+      _input_op(node_id, vd, vs);
 
       for (int i = 0; i < input.shape()[0]; i++) {
         for (int j = 0; j < input.shape()[1]; j++) {
@@ -98,7 +99,7 @@ class Input {
         }
       }
 
-      _input_op(party_id, vd, vs);
+      _input_op(node_id, vd, vs);
 
       for (int i = 0; i < input.shape()[0]; i++) {
         for (int j = 0; j < input.shape()[1]; j++) {
@@ -124,7 +125,7 @@ class Input {
         }
       }
 
-      _input_op(party_id, vd, vs);
+      _input_op(node_id, vd, vs);
 
       for (int i = 0; i < input.shape()[0]; i++) {
         for (int j = 0; j < input.shape()[1]; j++) {
@@ -146,20 +147,26 @@ class Input {
 
 class PublicInput : public Input {
  public:
-  int _input_op(int party_id, const vector<double>& vd, vector<std::string>& vs) {
+  PublicInput(const string& task_id) : Input(task_id) {}
+  int _input_op(const string& node_id, const vector<double>& vd, vector<std::string>& vs) {
     msg_id_t msg__input_msg_id("cc This msg id for global PublicInput.");
-    auto ops = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(msg__input_msg_id);
-    ops->PublicInput(party_id, vd, vs);
+    auto ops = rosetta::ProtocolManager::Instance()->GetProtocol(task_id_)->GetOps(msg__input_msg_id);
+    Py_BEGIN_ALLOW_THREADS;
+    ops->PublicInput(node_id, vd, vs);
+    Py_END_ALLOW_THREADS;
     return 0;
   }
 };
 
 class PrivateInput : public Input {
  public:
-  int _input_op(int party_id, const vector<double>& vd, vector<std::string>& vs) {
+  PrivateInput(const string& task_id) : Input(task_id) {}
+  int _input_op(const string& node_id, const vector<double>& vd, vector<std::string>& vs) {
     msg_id_t msg__input_msg_id("cc This msg id for global PrivateInput.");
-    auto ops = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(msg__input_msg_id);
-    ops->PrivateInput(party_id, vd, vs);
+    auto ops = rosetta::ProtocolManager::Instance()->GetProtocol(task_id_)->GetOps(msg__input_msg_id);
+    Py_BEGIN_ALLOW_THREADS;
+    ops->PrivateInput(node_id, vd, vs);
+    Py_END_ALLOW_THREADS;
     return 0;
   }
 };

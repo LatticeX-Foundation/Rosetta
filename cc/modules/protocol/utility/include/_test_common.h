@@ -37,6 +37,8 @@ using namespace std;
 #include "cc/modules/common/include/utils/random_util.h"
 #include "cc/modules/protocol/utility/include/_test_check_func.h"
 
+#define TEST_TASK_NUM    4
+
 #define PERFORMANCE_TEST 0
 typedef void (*_mpc_run_func)(int);
 static inline int _mpc_main(int argc, char* argv[], _mpc_run_func run) {
@@ -64,9 +66,10 @@ static inline int _mpc_main(int argc, char* argv[], _mpc_run_func run) {
       run(2); // P2
 
       waitpid(p0, &status0, 0);
-      printf("status0 = %d\n", WEXITSTATUS(status0));
+      //printf("wait p0 status0 = %d\n", WEXITSTATUS(status0));
       waitpid(p1, &status1, 0);
-      printf("status1 = %d\n", WEXITSTATUS(status1));
+      //printf("wait p1 status1 = %d\n", WEXITSTATUS(status1));
+      printf("3 mock nodes run to the end.\n");
     }
   }
 
@@ -110,3 +113,16 @@ inline void if_print_vec(const vector<T>& a, int length = -1, string msg = "") {
 
 #define RUN_ZK_TEST(func) \
   int main(int argc, char* argv[]) { return _zk_main(argc, argv, func); }
+
+static string get_file_name(const char* file) {
+  string file_path(file);
+  size_t pos = file_path.find_last_of('/');
+  if (pos != string::npos)
+    return file_path.substr(pos+1, file_path.size() - pos);
+  else
+    return file_path;
+}
+
+#if !defined(__FILENAME__)
+#define __FILENAME__ (strrchr(__FILE__, '\\') ? std::strrchr(__FILE__, '\\') + 1 : __FILE__)
+#endif

@@ -219,7 +219,7 @@ void PerfStats::start_perf_stats(bool sampling /* = false */) {
   do_memcpu_stats = true;
   timer.start();
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &process_cpu_time);
-  // todo[ujnss]
+  // [YYL] comment to fix multiple-task environment resource release issues.
   // std::thread tt = std::thread(memcpu_stats_fn, this, sampling);
   // tt.detach();
 }

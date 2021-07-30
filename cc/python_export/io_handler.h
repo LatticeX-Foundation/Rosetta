@@ -15,41 +15,30 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "cc/modules/protocol/public/include/protocol_base.h"
+#pragma once
 
-#include <stdexcept>
+#include <cstdio>
 #include <string>
+#include <vector>
 #include <iostream>
-
+#include <mutex>
+#include <fstream>
 using namespace std;
 
-namespace rosetta {
+#include "cc/third_party/io/include/io/internal/channel_interface.h"
+#include "cc/modules/iowrapper/include/io_manager.h"
+#include "cc/modules/iowrapper/include/io_wrapper.h"
 
-int ProtocolBase::Init() {
-  cout << "calling ProtocolBase::Init" << endl;
-  THROW_NOT_IMPL_FN(__func__);
-  return -1;
-}
-
-int ProtocolBase::Uninit() {
-  cout << "calling ProtocolBase::Uninit" << endl;
-  THROW_NOT_IMPL_FN(__func__);
-  return -1;
-}
-
-void ProtocolBase::SetSaverModel(const vector<string>& mode) {
-  std::lock_guard<std::mutex> lock(status_mtx_);
-  context_->SAVER_MODE = mode;
-}
-
-void ProtocolBase::SetRestoreModel(const vector<string>& mode) {
-  std::lock_guard<std::mutex> lock(status_mtx_);
-  context_->RESTORE_MODE = mode;
-}
-
-void ProtocolBase::SetFloatPrecision(int float_precision) {
-  std::lock_guard<std::mutex> lock(status_mtx_);
-  context_->FLOAT_PRECISION = float_precision;
-}
-
-} // namespace rosetta
+class IOHandler {
+  public:
+    IOHandler() {}
+    bool create_io(const string& task_id, const string& node_id, const std::string &config_str) {
+      return IOManager::Instance()->CreateChannel(task_id, node_id, config_str);
+    }
+    shared_ptr<IOWrapper> get_io_wrapper(const string& task_id) {
+      return IOManager::Instance()->GetIOWrapper(task_id);
+    }
+    void set_channel(const string& task_id, IChannel* channel) {
+      IOManager::Instance()->SetChannel(task_id, channel);
+    }
+};

@@ -33,6 +33,7 @@
 
 using id_type = uint16_t;
 
+typedef char msgid_array[BIN_SIZE];
 class msg_id_t {
  public:
   explicit msg_id_t();
@@ -48,8 +49,12 @@ class msg_id_t {
   bool operator<(const msg_id_t& id) const;
   bool operator==(const msg_id_t& id) const;
   static constexpr size_t Size() { return BIN_SIZE; }
-  const std::string& str() const { return str_; }
+  const std::string& str() const { return src_; }
   const char* data() const { return (const char*)bin_; }
+  uint64_t to_uint64() const { return *(uint64_t*)bin_; }
+  const char* get_hex(void) const {
+	  return str_.c_str();
+  }
 
  private:
 #if USE_SHA256_ID
@@ -66,3 +71,4 @@ class msg_id_t {
  * Get the message id
  */
 const msg_id_t& get_msgid(const std::string& str_msgid);
+

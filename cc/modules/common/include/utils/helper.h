@@ -59,10 +59,12 @@ void print_vec(const vector<unsigned __int128>& a, int length = -1, string msg =
 void print_vec(const vector<double>& a, int length = -1, string msg = "");
 void print_vec(const vector<string>& a, int length = -1, string msg = "");
 
+void c_print_vec(const vector<double>& a, int length, string msg);
+
 ////////////////////////////////////////////////
 //! @todo optimized
 template <typename T>
-inline string get_hex_str(T t) {
+string get_hex_str(T t) {
   char buf[8] = {0};
   char* p = (char*)&t;
   string s(sizeof(T)*2, 0);
@@ -74,10 +76,11 @@ inline string get_hex_str(T t) {
   }
   return s;
 };
+extern template std::string get_hex_str<uintlong>(uintlong);
 
 //! @todo optimized
 template <typename T>
-inline T from_hex_str(string s) {
+T from_hex_str(string s) {
   T t;
   unsigned char* p = (unsigned char*)&t;
   for (int i = 0; i < sizeof(T); i++) {
@@ -97,6 +100,7 @@ inline T from_hex_str(string s) {
   }
   return t;
 }
+extern template uintlong from_hex_str<uintlong>(std::string);
 
 inline string get_hex_buffer(const void* buf, size_t size) {
   char tmp[8] = {0};

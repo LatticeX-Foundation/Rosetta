@@ -16,7 +16,7 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #include "cc/modules/common/include/utils/generate_key.h"
-#include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
 #include "cc/modules/common/include/utils/rtt_exceptions.h"
 
 #include <libgen.h>

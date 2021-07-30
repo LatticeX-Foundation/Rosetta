@@ -17,7 +17,7 @@
 // ==============================================================================
 #include "cc/modules/common/include/utils/msg_id.h"
 #include "cc/modules/common/include/utils/msg_id_mgr.h"
-#include "cc/modules/common/include/utils/logger.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
 
 #include <map>
 #include <set>
@@ -38,7 +38,7 @@ inline std::string to_hex(const char* data, int size) {
    * for high-performance, no need hex-string
    * if you want debug msgid, comment the following line
    */
-  return std::string("");
+  //return std::string("");
 
   std::string str("");
   char tmp[3] = {0};
@@ -95,7 +95,7 @@ msg_id_t::msg_id_t(const std::string& src_msgid) {
 }
 
 std::ostream& operator<<(std::ostream& os, const msg_id_t& id) {
-  os << id.str() << "[" << id.src_ << "]";
+  os << id.str() << "[" << id.get_hex() << "]";
   return os;
 }
 

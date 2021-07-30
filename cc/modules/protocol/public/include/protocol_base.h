@@ -20,6 +20,7 @@
 #include "cc/modules/common/include/utils/perf_stats.h"
 #include "cc/modules/common/include/utils/msg_id.h"
 #include "cc/modules/protocol/public/include/protocol_ops.h"
+#include "cc/modules/iowrapper/include/io_wrapper.h"
 
 #include <memory>
 #include <vector>
@@ -28,11 +29,9 @@
 #include <mutex>
 
 namespace rosetta {
-namespace io {
-class BasicIO;
-}
+
 //! the unique NET_IO defined here!
-using NET_IO = io::BasicIO;
+using NET_IO = IOWrapper;
 
 /**
  * This is the base interface class for all secure cryptographic protocols
@@ -42,21 +41,28 @@ class ProtocolBase {
   /**
    * @brief: constructor, and you can name the protocol.
    */
-  ProtocolBase(const string& protocol_name) : _protocol_name(protocol_name), _net_io(nullptr){};
+  ProtocolBase(const string& protocol_name, int parties=3, const string& task_id="") : 
+            protocol_name_(protocol_name),
+            parties_(parties),
+            net_io_(nullptr), 
+            context_(std::make_shared<ProtocolContext>()) {
+    context_->TASK_ID = task_id;
+  };
+  
   virtual ~ProtocolBase() = default;
 
   /**
    * @desc: to init and activate this protocol. 
    *         Start the underlying network and prepare resources.
-   * @param:
-   *     config_json_str: a string which contains the protocol-specific config.
    * @return:
    *     0 if success, otherwise some errcode
    * @note:
    *   The partyID for MPC protocol is also included in the config_json_str,
    *   you may need extract it.
+   * @changelog:
+   *    The preprocessing/offline phase for some protocols is also carried out in this stage
    */
-  virtual int Init(string config_json_str = "");
+  virtual int Init();
 
   /**
    * @desc: to uninit and deactivate this protocol.
@@ -65,6 +71,13 @@ class ProtocolBase {
    */
   virtual int Uninit();
 
+  /**
+   * @desc: Check if protocol is initialized.
+   * @return:
+   *    True if it has been initialized, otherwise false
+   */
+  virtual bool IsInit() {return is_inited_; }
+  
   /**
    * @desc: after initialization, get the actual operation interface of this protocol
    * @param:
@@ -80,20 +93,61 @@ class ProtocolBase {
    */
   virtual shared_ptr<NET_IO> GetNetHandler() { THROW_NOT_IMPL_FN(__func__); }
 
+  // // Set/Get io channel
+  // virtual void SetIOChannel(shared_ptr<IChannel> channel) { io_channel_ = channel; }
+  // virtual shared_ptr<IChannel> GetIOChannel() { return io_channel_; }
+
   /**
    *  @desc: get the name of this cryptographical protocol
    */
-  virtual string Name() const { return _protocol_name; }
+  virtual string Name() const { return protocol_name_; }
+
+  int GetParties() const { return parties_; }
 
   /**
-   * return party id
+   * @brief Set float precision for fixpoint of Rosetta.
+   * @param
+   *    float_precision, precision bit count.
+   *    task_id, task id the current task.
    */
-  int GetPartyId() const { return my_party_id; }
-  int GetParties() const { return parties; }
+  void SetFloatPrecision(int float_precision);
 
   /**
-   * get current performance statistic info
-   * 
+   * @brief Set up the way of saving Rosetta training model.
+   * @param 
+   *    mode, it is a 3-bit bitmap:[P2 P1 P0]
+              0: none, all private model
+              1: P0 owns plain model, others got nothing
+              2: P1 owns plain model, others got nothing
+              4: P2 owns plain model, others got nothing
+              3: P0 and P1 owns plain model, others got nothing
+              5: P0 and P2 owns plain model, others got nothing
+              6: P1 and P2 owns plain model, others got nothing
+              7: P0, P1 and P2 owns plain model.
+   * @note
+        By default, the local ciphertext values are saved in model(mode=0)
+  */
+  void SetSaverModel(const vector<string>& mode);
+
+  /**
+   * @brief Set up the way of restoring Rosetta training model.
+   * @param 
+   *    mode, it is a 3-bit bitmap:[P2 P1 P0]
+              0: none, all local ciphertext
+              1: P0 owns plain model, others got nothing
+              2: P1 owns plain model, others got nothing
+              4: P2 owns plain model, others got nothing
+              3: P0 and P1 owns plain model, others got nothing
+              5: P0 and P2 owns plain model, others got nothing
+              6: P1 and P2 owns plain model, others got nothing
+              7: P0, P1 and P2 owns plain model.
+   * @note
+        By default, the local ciphertext values are saved in model (mode=0).
+  */
+  void SetRestoreModel(const vector<string>& mode);
+  
+  /** 
+   * @desc: get current performance statistic info
    * @code
    * auto ps0 = GetPerfStats();
    * // some code
@@ -104,19 +158,42 @@ class ProtocolBase {
   virtual PerfStats GetPerfStats() { return PerfStats(); }
   virtual void StartPerfStats() {}
 
-  const unordered_map<string, string>& GetConfigMap() const { return config_map; }
+  shared_ptr<ProtocolContext> GetMpcContext() { return context_; }
+
+protected:
+  
+  /**
+   * @desc: during initialization, perform some pre-processing, such as generating beaver triples offline.
+   * 
+   * @return:
+   *      0 if success, otherwise some errcode
+   * @note:
+   *      For now, some configuration can be protocol-depedent, so specific protocol can parse config files
+   *      to get its addtional hyper-perameters. 
+   */
+  virtual int OfflinePreprocess() {
+    log_debug << "Protocol Base do nothing during offline preprocess.";
+    return 0; 
+  }
 
  protected:
-  int parties = 3;
-  int my_party_id = -1;
-  bool _is_inited = false;
-  string _protocol_name = "";
-
-  std::mutex _status_mtx;
-  shared_ptr<NET_IO> _net_io = nullptr;
-
-  unordered_map<string, string> config_map;
+  string protocol_name_ = "";
+  int parties_ = 3;
+  bool is_inited_ = false;
+  
+  std::mutex status_mtx_;
+  shared_ptr<NET_IO> net_io_ = nullptr;
 
   PerfStats perf_stats_;
+  shared_ptr<ProtocolContext> context_;
 };
+
+
+class IProtocolFactory
+{
+public:
+  virtual shared_ptr<ProtocolBase> Create(const string& task_id="") = 0;
+};//IProtocolFactory
+
+
 } // namespace rosetta

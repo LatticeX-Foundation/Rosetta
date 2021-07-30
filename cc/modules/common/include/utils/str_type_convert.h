@@ -28,6 +28,7 @@
 #include <cstring>
 #include <vector>
 #include <array>
+#include "cc/modules/protocol/mpc/comm/include/mpc_common.h"
 using namespace std;
 using std::vector;
 
@@ -87,6 +88,24 @@ void from_double_str(const vector<string>& s, vector<double>& t);
 
 vector<int64_t> from_int_str(const vector<string>& s);
 void from_int_str(const vector<string>& s, vector<int64_t>& t);
+
+extern template void to_binary_str<double>(const double&, std::string&);
+extern template void to_binary_str<mpc_t>(const mpc_t&, std::string&);
+extern template void to_binary_str<double>(const std::vector<double>&, std::vector<std::string>&);
+extern template void to_binary_str<mpc_t> (const std::vector<mpc_t>&,  std::vector<std::string>&);
+
+extern template double from_binary_str<double>(const std::string&);
+extern template mpc_t from_binary_str<mpc_t>(const std::string&);
+// const std::string&, T&
+extern template void from_binary_str<double>(const std::string&, double&);
+extern template void from_binary_str<mpc_t>(const std::string&, mpc_t&);
+// std::vector<std::string>&, std::vector<T>&
+extern template void from_binary_str<double>(const std::vector<std::string>&, std::vector<double>&);
+extern template void from_binary_str<mpc_t>(const std::vector<std::string>&, std::vector<mpc_t>&);
+// std::vector<std::string>&
+extern template std::vector<double> from_binary_str<double>(const std::vector<std::string>&);
+extern template std::vector<mpc_t> from_binary_str<mpc_t>(const std::vector<std::string>&);
+
 
 } // namespace convert
 } // namespace rosetta

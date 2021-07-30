@@ -38,7 +38,7 @@ void uniform2(vector<int64_t>& m, int64_t low, int64_t up, int64_t seed = -1);
 void rand_vec(vector<int64_t>& vec, int vec_size, int bit_size);
 void rand_vec_30bit(vector<int64_t>& rand_vec, int length);
 void rand_vec_60bit(vector<int64_t>& rand_vec, int length);
-void random_vector(vector<double>& v, size_t size, double low = -2.0, double high = 2.0);
+void random_vector(vector<double>& v, size_t size, double low = -2.0, double high = 2.0, int64_t seed=-1);
 void random_vector(vector<uint64_t>& v, size_t size);
 void random_vector(vector<uint8_t>& v, size_t size);
 

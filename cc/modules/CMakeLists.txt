@@ -15,5 +15,5 @@ ENDIF()
 
 include(SetThirdParty)
 include(common.cmake)
-include(io.cmake)
 include(protocol.cmake)
+include(iowrapper.cmake)

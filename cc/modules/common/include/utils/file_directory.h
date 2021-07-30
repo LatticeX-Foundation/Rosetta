@@ -30,8 +30,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "cc/modules/common/include/utils/logger.h"
-
+#include "cc/modules/common/include/utils/rtt_logger.h"
 
 using namespace std;
 
@@ -153,7 +152,8 @@ static void fromfile(vector<vector<T>>& v, const string& filename) {
 // Returns an error if the while loop could not be fully constructed.
 //
 // TODO(kelvin): 
-int get_file_lines_fields(const string& file, char delimiter, int& lines, int& fields, bool ignore_blank_line=false)
+int get_file_lines_fields(const string& file, char delimiter, int& lines, int& fields, bool ignore_blank_line=false);
+#if 0
 {
   fields = 1;
   lines = 0;
@@ -162,7 +162,7 @@ int get_file_lines_fields(const string& file, char delimiter, int& lines, int& f
   int fd = open(file.data(), O_RDONLY);
   if (fd == -1)
   {
-    log_error << "open file: "  << file << "failed!" << endl;
+    log_error << "open file: "  << file << "failed!";
     return -1;
   }
 
@@ -212,6 +212,7 @@ int get_file_lines_fields(const string& file, char delimiter, int& lines, int& f
       ++lines;
   }
 
-  log_debug << "lines: "<< lines << ", fields: " << fields << endl;
+  log_debug << "lines: "<< lines << ", fields: " << fields;
   return 0;
 }
+#endif

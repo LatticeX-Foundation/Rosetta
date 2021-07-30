@@ -19,6 +19,6 @@
 
 #include <string>
 namespace rosetta {
-void redirect_stdout(const std::string& logfile);
+void redirect_stdout(const std::string& logfile, const std::string& taskid="");
 void restore_stdout();
 } // namespace rosetta

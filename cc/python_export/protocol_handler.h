@@ -23,9 +23,13 @@
 #include <iostream>
 #include <mutex>
 #include <fstream>
+#include <algorithm>
 using namespace std;
 
-#include "cc/modules/protocol/public/protocol_manager.h"
+#include "cc/modules/protocol/public/include/protocol_manager.h"
+#include "cc/modules/common/include/utils/rtt_logger.h"
+#include "cc/modules/common/include/utils/rtt_exceptions.h"
+
 
 class ProtocolHandler {
  public:
@@ -43,16 +47,19 @@ class ProtocolHandler {
   }
 
   ~ProtocolHandler() {
-    rosetta::ProtocolManager::Instance()->DeactivateProtocol();
-
     if (origin_stdout != -1)
       restore_stdout();
   }
 
-  bool is_activated() const { return rosetta::ProtocolManager::Instance()->IsActivated(); }
+  bool is_activated(const string& task_id="") const {
+    shared_ptr<ProtocolBase> proto = rosetta::ProtocolManager::Instance()->GetProtocol(task_id);
+    if (proto.get() != nullptr)
+      return proto->IsInit();
+    return false;
+  }
 
-  int get_party_id() const {
-    return rosetta::ProtocolManager::Instance()->GetProtocol()->GetPartyId();
+  int get_party_id(const string& task_id="") const {
+    return rosetta::ProtocolManager::Instance()->GetProtocol(task_id)->GetMpcContext()->GetMyRole();
   }
 
   std::vector<std::string> get_supported_protocols() {
@@ -63,25 +70,49 @@ class ProtocolHandler {
     return rosetta::ProtocolManager::Instance()->GetDefaultProtocolName();
   }
 
-  int activate(std::string protocol_name, std::string protocol_config_str) {
+  int activate(std::string protocol_name, const string& task_id="") {
     return rosetta::ProtocolManager::Instance()->ActivateProtocol(
-      protocol_name, protocol_config_str);
+      protocol_name, task_id);
   }
 
-  std::string get_protocol_name() {
-    return rosetta::ProtocolManager::Instance()->GetProtocolName();
+  void set_float_precision(int float_precision, const string& task_id="") {
+    rosetta::ProtocolManager::Instance()->SetFloatPrecision(float_precision, task_id);
   }
 
-  int deactivate() { return rosetta::ProtocolManager::Instance()->DeactivateProtocol(); }
+  void get_float_precision(const string& task_id="") {
+    rosetta::ProtocolManager::Instance()->GetFloatPrecision(task_id);
+  }
 
-  uint64_t rand_seed(uint64_t op_seed = 0) {
-    if (!is_activated()) {
-      cerr << "have not actived!" << endl;
+  void set_saver_model(const vector<string> model_nodes, const string& task_id="") {
+    rosetta::ProtocolManager::Instance()->SetSaverModel(model_nodes, task_id);
+  }
+
+  vector<string> get_saver_model(const string& task_id="") {
+    return rosetta::ProtocolManager::Instance()->GetSaverModel(task_id);
+  }
+
+  void set_restore_model(const vector<string>& model_nodes, const string& task_id="") {
+    rosetta::ProtocolManager::Instance()->SetRestoreModel(model_nodes, task_id);
+  }
+
+  vector<string> get_restore_model(const string& task_id="") {
+    return rosetta::ProtocolManager::Instance()->GetRestoreModel(task_id);
+  }
+
+  std::string get_protocol_name(const string& task_id="") {
+    return rosetta::ProtocolManager::Instance()->GetProtocolName(task_id);
+  }
+
+  int deactivate(const string& task_id="") { return rosetta::ProtocolManager::Instance()->DeactivateProtocol(task_id); }
+
+  uint64_t rand_seed(const string& task_id) {
+    if (!is_activated(task_id)) {
+      cerr << "have not activated!" << endl;
       throw;
     }
 
     msg_id_t msg__seed_msg_id(seed_msg_id);
-    auto randop = rosetta::ProtocolManager::Instance()->GetProtocol()->GetOps(msg__seed_msg_id);
+    auto randop = rosetta::ProtocolManager::Instance()->GetProtocol(task_id)->GetOps(msg__seed_msg_id);
     uint64_t seed = (uint64_t)randop->RandSeed();
     return seed;
   }
@@ -102,21 +133,36 @@ class ProtocolHandler {
   }
 
   void log_to_stdout(bool flag) { Logger::Get().log_to_stdout(flag); }
-  void set_logfile(const std::string& logfile) { Logger::Get().set_filename(logfile); }
-  // Note: LogLevel \in { Cout = 0, Trace, Debug, Info, Warn, Error, Fatal };
-  void set_loglevel(int loglevel) { Logger::Get().set_level(loglevel); }
+  void set_logfile(const std::string& logfile, const std::string& task_id="") { Logger::Get().set_filename(logfile, task_id); }
+  void set_logpattern(const std::string& pattern) { Logger::Get().set_pattern(pattern);}
+  // Note: LogLevel \in { Trace, Debug, Audit, Info, Warn, Error, Fatal, off };
+  void set_loglevel(int loglevel) { Logger::Get().set_level((int)loglevel % 7); }
 
   // stats
-  void start_perf_stats() {
-    if (is_activated()) {
-      rosetta::ProtocolManager::Instance()->GetProtocol()->StartPerfStats();
+  void start_perf_stats(const string& task_id) {
+    if (is_activated(task_id)) {
+      rosetta::ProtocolManager::Instance()->GetProtocol(task_id)->StartPerfStats();
     }
   }
-  std::string get_perf_stats(bool pretty = false) {
-    if (!is_activated()) {
+  std::string get_perf_stats(bool pretty = false, const string& task_id="") {
+    if (!is_activated(task_id)) {
       return "{}";
     }
-    auto stats = rosetta::ProtocolManager::Instance()->GetProtocol()->GetPerfStats();
+    auto stats = rosetta::ProtocolManager::Instance()->GetProtocol(task_id)->GetPerfStats();
     return stats.to_json(pretty);
   }
+
+  // associate task id with unique id
+  void mapping_id(const uint64_t& unique_id, const string& task_id="") {
+    rosetta::ProtocolManager::Instance()->MappingID(unique_id, task_id);
+  }
+
+  string query_mapping_id(const uint64_t& unique_id) {
+    return rosetta::ProtocolManager::Instance()->QueryMappingID(unique_id);
+  }
+
+  void unmapping_id(const uint64_t& unique_id) {
+    return rosetta::ProtocolManager::Instance()->UnmappingID(unique_id);
+  }
+
 };
