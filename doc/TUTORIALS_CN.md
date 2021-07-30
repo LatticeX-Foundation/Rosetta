@@ -16,8 +16,12 @@
     - [模型加载与预测](#模型加载与预测)
   - [逻辑回归](#逻辑回归)
   - [支持超大数据集](#支持超大数据集)
+  - [支持随时停止 Rosetta 的执行](#支持随时停止-rosetta-的执行)
 - [隐私深度学习](#隐私深度学习)
-  - [MLP神经网络](#MLP神经网络)
+  - [MLP神经网络](#mlp神经网络)
+    - [tensorflow版](#tensorflow版)
+    - [Rosetta版](#rosetta版)
+- [支持多任务并发](#支持多任务并发)
 - [结语](#结语)
 - [附加](#附加)
   - [数据集说明](#数据集说明)
@@ -871,6 +875,9 @@ Rosetta 完整代码参考 [rtt-ds-lr.py](../example/tutorials/code/rtt-ds-lr.py
         return fields
     ```
 
+### 支持随时停止 Rosetta 的执行
+`Rosetta` 后端是利用 `TensorFlow` 的执行引擎来执行 `Rosetta` 隐私算子所构成的计算图，所以在训练一个隐私 `AI` 模型的过程中可以使用跟 `TensorFlow` 一样的方法来随时停止图的执行。在 `TensorFlow` 中想要停止图的执行，我们只要调用 python API `Session::close()` 即可，故在 `Rosetta` 中也可通过调用 python API `Session::close()` 来停止计算图的执行。
+
 ## 隐私深度学习
 
 前面完成了两个`隐私`与`机器学习`结合的例子，下面要进行`隐私`与`深度学习（Deep Learning, DL）`结合的例子介绍。
@@ -1142,6 +1149,86 @@ accuracy=0.14000000
 ```
 
 因为测试的模型没有包含隐藏层并且使用了缩小版数据集，所以准确率很低，如果有兴趣可以通过调整超参数以及数据集大小来提高准确率。
+
+## 支持多任务并发
+
+`Rosetta v1.0.0` 之前的版本不支持多任务，表现为任何时刻都只允许执行一种隐私协议（如：`SecureNN`、`Helix` 等），如果要并发执行多个任务就必须使用多进程的方式实现。我们在 `Rosetta v1.0.0` 中对代码进行重构来支持多任务，允许不同的任务使用不同的隐私协议并发执行，也就是说如果用户有多任务并发需求，用户业务代码除了使用多进程方式实现外，也可以选择使用多线程方式实现，为用户提供更多的选择机会。
+
+假设我们有以下需求，需要测试 `SecureNN` 和 `Helix` 协议下的 `TrueDiv` 算子的精度表现，我们可以先编写一个用例，使用 `SecureNN` 协议跑一下，然后再修改使用 `Helix` 协议重新跑一下，然后针对结果进行比对即可。有了多任务并发功能支持，我们可以使用简单但很优雅的方式编写我们的用例（这里只是一个简单的测试需求，可以扩展到更具体业务场景下的特定需求）。
+
+这个简单需求的示例程序使用多任务并发特性编写，代码如下：
+
+``` python
+import concurrent.futures
+import numpy as np
+import tensorflow as tf
+import latticex.rosetta as rtt
+
+
+def multi_task_fw(funcs):
+    task_id = 1
+    all_task = []
+
+    try:
+        with concurrent.futures.ThreadPoolExecutor() as executor: 
+            for unit_func in funcs:
+                all_task.append(executor.submit(unit_func, str(task_id)))
+                task_id += 1
+    
+        concurrent.futures.wait(all_task, return_when=concurrent.futures.ALL_COMPLETED)
+    except Exception as e:
+        print(str(e))
+
+
+def run_trurediv_op(protocol, task_id, x_init, y_init):
+    local_g = tf.Graph()
+    with local_g.as_default():
+        X = tf.Variable(x_init)
+        Y = tf.Variable(y_init)
+        Z = tf.truediv(X, Y)
+        rv_Z = rtt.SecureReveal(Z)
+        init = tf.compat.v1.global_variables_initializer()
+
+        try:
+            rtt.activate(protocol, task_id=task_id)    # Add the task_id parameter
+            with tf.Session(task_id=task_id) as sess:  # Add the task_id parameter 
+                sess.run(init)        
+                real_Z = sess.run(rv_Z)
+                print("The result of the truediv calculation using {0} is: {1}".format(protocol, real_Z))
+            rtt.deactivate(task_id=task_id)
+        except Exception as e:
+            print(str(e))
+
+
+def Snn_Div(task_id):
+    return run_trurediv_op("SecureNN", task_id, 
+                        [1.1, 1200.5, -1.1, -23489.56], 
+                        [102.2, 812435.6, 0.95, 0.1234])
+
+
+def Helix_Div(task_id):
+    return run_trurediv_op("Helix", task_id, 
+                        [1.1, 1200.5, -1.1, -23489.56], 
+                        [102.2, 812435.6, 0.95, 0.1234])
+
+
+# run cases
+multi_task_fw([Snn_Div, Helix_Div])
+```
+
+执行以上代码输出结果如下：（只保留计算结果日志，移除其他日志信息）
+
+``` python
+The result of the truediv calculation using Helix is:    [b'0.010742' b'0.001465' b'-1.157837' b'-190521.267212']
+The result of the truediv calculation using SecureNN is: [b'0.010742' b'0.001465' b'-1.157715' b'-190521.267212']
+```
+
+以上支持多任务功能代码跟 `Rosetta v1.0.0` 之前的代码只有两个地方不同：
+
+1. `rtt.activate` 接口增加 `task_id` 参数，目的是把特定的隐私协议和 `task_id` 进行绑定以便支持多任务。`task_id` 参数是可选参数，如果不设置只支持单任务，保持对以前版本的兼容。
+   
+2. `SecureSession` 构造函数增加一个 `task_id` 参数，目的是把这个具体的会话是跟 `task_id` 进行绑定，后面使用这个会话执行图的时候算子层能够根据 `task_id` 找到特定的隐私协议并执行。`task_id` 参数是可选参数，如果不设置只支持单任务，保持对以前版本的兼容。
+   > 注意：上面代码使用的是 `tf.Session` 并不是 `rtt.SecureSession`，原因是 `tf.Session` 被 `rtt.SecureSession` 静态覆盖， 而 `rtt.SecureSession` 派生于 `tf.Session` 并增加扩展参数 `task_id`。（更具体逻辑可参考 `rtt.SecureSession` 的实现）
 
 ## 结语
 

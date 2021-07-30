@@ -35,8 +35,8 @@ In this document, we will describe how to install the Rosetta library with sourc
 
 ### System components
 
-- **Ubuntu**:
-  Check version:
+- **Ubuntu**:   
+  Check version: 
 
   ```sh
   lsb_release -r         # e.g. Release: 18.04
@@ -45,7 +45,7 @@ In this document, we will describe how to install the Rosetta library with sourc
   > ***Note: If your OS version is less than 18.04, then you should upgrade your operating system and then continue the following  steps***
 
 - **Python3 & Pip3 & Openssl & CMake**
-  Check the version:
+  Check the version:   
 
   ```sh
   python3 --version     # e.g. Python 3.6.9
@@ -54,8 +54,7 @@ In this document, we will describe how to install the Rosetta library with sourc
   cmake --version       # e.g. cmake version 3.15.2
   ```
 
-  If the above software versions are not met, you may install or upgrade them as follows:
-
+  If the above software versions are not met, you may install or upgrade them as follows: 
   ```sh
   # install python3, pip3, openssl
   sudo apt update
@@ -81,10 +80,8 @@ Since we have wrapped all the steps in a script, so just get the source code and
 ```bash
 # clone rosetta git repository
 git clone https://github.com/LatticeX-Foundation/Rosetta.git --recursive
-# go to Rosetta directory and use auto completion
-cd Rosetta && source rtt_completion
 # compile, install and run test cases
-./rosetta.sh compile --enable-all --enable-tests;./rosetta.sh install
+cd Rosetta && bash compile_and_test_all.sh
 ```
 
 ## Deployment testing
@@ -97,16 +94,15 @@ After Installing Rosetta, we can test whether it works or not. We can do this by
 
 Here we use the famous [demo of millionaire's problem][millionaire-example] as our example.
 
-> Note: There are several privacy machine learning development examples available, for details refer to [Tutorials](./TUTORIALS.md)。
+
+> We can simulate the stand-alone deployment scenario of this example by running `run.sh` script in that directory.
 
 ## Preparation
 
-Create separate directories for three computing nodes `P0`, `P1`, `P2`, e.g. `millionaire0`, `millionaire1`, `millionaire2`.
-
+Create separate directories for three computing nodes `P0`, `P1`, `P2`, e.g. `millionaire0`, `millionaire1`, `millionaire2`. 
 ```bash
 mkdir millionaire0 millionaire1 millionaire2
 ```
-
 - Download the demo
 
 Download the [python script](../example/millionaire/millionaire.py) to `millionaire0`, `millionaire1`, `millionaire2` directory for `P0`, `P1`, `P2` respectively.
@@ -117,7 +113,7 @@ wget https://github.com/LatticeX-Foundation/Rosetta/tree/master/example/milliona
 
 - Generate server key and certificate
 
-`P0`, `P1`, `P2` nodes need generate their separate ssl server certificate and private key respectively, execute the command below:
+`P0`, `P1`, `P2` nodes need generate their separate ssl server certificate and private key respectively, execute the command below: 
 
 ```bash
 mkdir certs
@@ -135,8 +131,7 @@ openssl x509 -req -days 365 -in certs/cert.req -signkey certs/server-prikey -out
 
 ### Configuration
 
-Write a configuration file `CONFIG.json` with the following template:
-
+Write a configuration file `CONFIG.json` with the following template: 
 ```json
 {
   "PARTY_ID": 0,
@@ -158,13 +153,13 @@ Write a configuration file `CONFIG.json` with the following template:
       "PORT": 13169
     },
     "SAVER_MODE": 7,
-    "RESTORE_MODE": 0
+    "SERVER_CERT": "certs/server-nopass.cert",
+    "SERVER_PRIKEY": "certs/server-prikey",
+    "SERVER_PRIKEY_PASSWORD": "123456"
   }
 }
 ```
-
-Field Description:
-
+Field Description: 
 - `PARTY_ID`: role of Secure Multipart Computation, the valid values are 0,1,2, corresponding to `P0`, `P1`, `P2` respectively
 - `MPC`: specify the protocol of Secure Multipart Computation
 - `FLOAT_PRECISION`: the float-point precision of Secure Multipart Computation
@@ -176,7 +171,7 @@ Field Description:
 - `SERVER_PRIKEY`: server private key
 - `SERVER_PRIKEY_PASSWORD`: server private key password (empty string if not set)
 - `SAVER_MODE`: this indicates how the output checkpoint files are saved. Please refer to `MpcSaveV2` in our [API document](./API_DOC.md) for details.
-- `RESTORE_MODE`: way of model loading, set the model bit plaintext or ciphertext according to the bit, 0: ciphertext, 1: plaintext, such as the value of 0: all participants are ciphertext model, 1: all participants except P0 are ciphertext model, 2: all participants except P1 are ciphertext model
+
 
 ## Run the test
 
@@ -212,8 +207,7 @@ mkdir log
 python3 millionaire.py --party_id=0
 ```
 
-After execution, output should be like this:
-
+After execution, output should be like this: 
 ```bash
 -------------------------------------------------
 1.0
@@ -222,11 +216,13 @@ After execution, output should be like this:
 
 It means that your example has run smoothly and the standalone deployment test has passed, otherwise the test has failed, and please check the above deployment steps.
 
+
 ### Multi-machine testing
 
 Multi-machine testing is similar to stand-alone testing, with the difference that the configuration file needs to be set to a different `HOST` field corresponding to the IP address.
 
-----
+
+-----
 
 [tensorFlow-install]:TENSORFLOW_INSTALL.md
 [millionaire-problem]:https://en.wikipedia.org/wiki/Yao%27s_Millionaires%27_Problem

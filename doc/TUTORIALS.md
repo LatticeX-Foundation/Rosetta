@@ -17,12 +17,12 @@
     - [Model Loading and Prediction](#model-loading-and-prediction)
   - [Logistic Regression](#logistic-regression)
   - [Support big data sets](#support-big-data-sets)
+  - [Support stop Rosetta execution at any time](#support-stop-rosetta-execution-at-any-time)
 - [Privacy-Preserving Deep Learning](#privacy-preserving-deep-learning)
-
-  - [MLP Neural Network](#MLP-neural-network)
-
-    - [TensorFlow version MLP](#Tensorflow-version-MLP)
-    - [Rosetta Version MLP](#Rosetta-version-MLP)
+  - [MLP Neural Network](#mlp-neural-network)
+    - [TensorFlow Version MLP](#tensorflow-version-mlp)
+    - [Rosetta Version MLP](#rosetta-version-mlp)
+- [Support multitasking concurrency](#support-multitasking-concurrency)
 - [Conclusion](#conclusion)
 - [Additional Notes](#additional-notes)
   - [Dataset Description](#dataset-description)
@@ -875,6 +875,8 @@ Analysis of the code in tf-ds-lr.py and rtt-ds-lr.py reveals two main difference
         fields = rtt.PrivateInput(fields, data_owner=0) # P0 hold the file data
         return fields
     ```
+### Support stop Rosetta execution at any time
+The `Rosetta` backend uses the `TensorFlow` execution engine to execute the computational graph constructed by Rosetta's privacy operations, so you can use the same method as `TensorFlow` to stop the graph at any time during the training of a privacy AI model. To stop the execution of the graph in `TensorFlow`, we simply call python API `Session::close()`, so in `Rosetta` we can also stop the execution of the computed graph by calling the python API `Session::close()`.
 
 ## Privacy-Preserving Deep Learning
 
@@ -1141,6 +1143,86 @@ accuracy=0.14000000
 ```
 
 Due to the model did not add hidden layers and used the mini-datasets, the accuracy is very low. If you are interested in the model, you can adjust the structure of the model and size of the datasets to imporove the model accuracy.
+
+## Support multitasking concurrency
+
+Multitasking is not supported in versions prior to `Rosetta 1.0.0`, which means that only one privacy protocol (e.g. `SecureNN`, `Helix`, etc.) can be executed at any time, and if you want to execute multiple tasks concurrently, you must use multi-process to implement. We have refactored the code in `Rosetta v1.0.0` to support multitasking, allowing different tasks to be executed concurrently using different privacy protocols, meaning that if users have multiple task concurrency requirements, besides multi process implementation, the user business code can also be implemented in multi-threaded way, which provides users with more choices.
+
+Suppose we have a requirement to test the accuracy performance of the `TrueDiv` operation under the `SecureNN` and `Helix` protocols, we can write a case, run it using the `SecureNN` protocol, then modify it to run again using the `Helix` protocol and compare the results. With multitasking support, we can write our cases in a simple but elegant way (here is just a simple test requirement, which can be extended to specific requirements in more specific business scenarios).
+
+This example program with simple requirements is written using multitasking concurrency. The code is as follows:
+
+``` python
+import concurrent.futures
+import numpy as np
+import tensorflow as tf
+import latticex.rosetta as rtt
+
+
+def multi_task_fw(funcs):
+    task_id = 1
+    all_task = []
+
+    try:
+        with concurrent.futures.ThreadPoolExecutor() as executor: 
+            for unit_func in funcs:
+                all_task.append(executor.submit(unit_func, str(task_id)))
+                task_id += 1
+    
+        concurrent.futures.wait(all_task, return_when=concurrent.futures.ALL_COMPLETED)
+    except Exception as e:
+        print(str(e))
+
+
+def run_trurediv_op(protocol, task_id, x_init, y_init):
+    local_g = tf.Graph()
+    with local_g.as_default():
+        X = tf.Variable(x_init)
+        Y = tf.Variable(y_init)
+        Z = tf.truediv(X, Y)
+        rv_Z = rtt.SecureReveal(Z)
+        init = tf.compat.v1.global_variables_initializer()
+
+        try:
+            rtt.activate(protocol, task_id=task_id)    # Add the task_id parameter
+            with tf.Session(task_id=task_id) as sess:  # Add the task_id parameter 
+                sess.run(init)        
+                real_Z = sess.run(rv_Z)
+                print("The result of the truediv calculation using {0} is: {1}".format(protocol, real_Z))
+            rtt.deactivate(task_id=task_id)
+        except Exception as e:
+            print(str(e))
+
+
+def Snn_Div(task_id):
+    return run_trurediv_op("SecureNN", task_id, 
+                        [1.1, 1200.5, -1.1, -23489.56], 
+                        [102.2, 812435.6, 0.95, 0.1234])
+
+
+def Helix_Div(task_id):
+    return run_trurediv_op("Helix", task_id, 
+                        [1.1, 1200.5, -1.1, -23489.56], 
+                        [102.2, 812435.6, 0.95, 0.1234])
+
+
+# run cases
+multi_task_fw([Snn_Div, Helix_Div])
+```
+
+The output of the above code is as follows: (only the calculation result log is kept, other log is removed)
+
+``` python
+The result of the truediv calculation using Helix is:    [b'0.010742' b'0.001465' b'-1.157837' b'-190521.267212']
+The result of the truediv calculation using SecureNN is: [b'0.010742' b'0.001465' b'-1.157715' b'-190521.267212']
+```
+
+The above code for multitasking support differs from the code before `Rosetta v1.0.0` in only two places.
+
+1. The `rtt.activate` interface adds a `task_id` parameter to bind a specific privacy protocol to a task in order to support multitasking. The `task_id` parameter is optional and if not set will only support single tasks, maintaining compatibility with previous versions.
+   
+2. The `SecureSession` constructor adds a `task_id` parameter to bind the specific session to a task. so that when the session execution graph is used later the operation layer can find and execute a specific privacy protocol based on `task_id`. The `task_id` parameter is optional, if not set it only supports single tasks, maintaining compatibility with previous versions.
+   > Note: The above code uses `tf.Session` and not `rtt.SecureSession` because `tf.Session` is statically overridden by `rtt.SecureSession` and `rtt.SecureSession` is derived from `tf.Session` with the extension parameter `task_id`. (see the implementation of `rtt.SecureSession` for more.)
 
 ## Conclusion
 
