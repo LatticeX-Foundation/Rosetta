@@ -80,7 +80,7 @@ TensorFlow安装参考: [TensorFlow安装][tensorFlow-install]。
 # clone rosetta git repository
 git clone https://github.com/LatticeX-Foundation/Rosetta.git --recursive
 # compile, install and run test cases
-cd Rosetta && bash compile_and_test_all.sh
+cd Rosetta && ./rosetta.sh compile --enable-protocol-mpc-securenn && ./rosetta.sh install
 ```
 
 ## 部署测试
