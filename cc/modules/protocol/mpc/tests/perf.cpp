@@ -249,7 +249,7 @@ static void run(int partyid) {
   reduce_perf_test(Max, 61, r, c);
   reduce_perf_test(Min, 63, r, c);
 
-  matmul_perf_test(Matmul, 6789, m, K, n);
+  matmul_perf_test(Matmul, 64, m, K, n);
   cout << ssender.str() << endl;
   cout << "Total elapsed(s): " << all_tests_timer.elapse() << endl;
   endPerf();

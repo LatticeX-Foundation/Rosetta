@@ -50,16 +50,16 @@ using namespace rosetta;
 #define PROTOCOL_MPC_TEST_INIT(partyid)                                                           \
   GET_PROTOCOL(mpc_proto);                                                                        \
   string logfile = "log/mpc_tests_" + protocol_name + "_" + get_file_name(__FILENAME__) + "-" + \
-    to_string(partyid) + ".log";                                                                           \
+    to_string(partyid);                                                                           \
   Logger::Get().log_to_stdout(false);                                                             \
-  Logger::Get().set_filename(logfile);                                           \
+  Logger::Get().set_filename(logfile + "-backend.log");                                           \
   Logger::Get().set_level(0);                                           \
   string node_id;                                                                     \
   string task_id = "";\
   string config_json;                                                                 \
   rosetta_old_conf_parse(node_id, config_json, partyid, "CONFIG.json");               \
   IOManager::Instance()->CreateChannel(task_id, node_id, config_json);                         \
-  mpc_proto->Init(logfile);                              \
+  mpc_proto->Init(logfile + "-console.log");                              \
   shared_ptr<NET_IO> net_io = mpc_proto->GetNetHandler();    \
   string node_id_0 = net_io->GetNodeId(0);                                            \
   string node_id_1 = net_io->GetNodeId(1);                                            \
