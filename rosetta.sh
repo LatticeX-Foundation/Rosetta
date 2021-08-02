@@ -311,7 +311,6 @@ elif [ "${cmd}" = "test" ]; then
     done
     if [ $test_all -eq 1 ]; then
         test_cpp_common=1
-        test_cpp_netio=1
         test_cpp_mpc=1
         test_cpp_mpc_securenn=1
         test_cpp_mpc_helix=1
@@ -326,7 +325,6 @@ elif [ "${cmd}" = "test" ]; then
 
     export rtt_command=test
     export rtt_test_cpp_common=${test_cpp_common}
-    export rtt_test_cpp_netio=${test_cpp_netio}
     export rtt_test_cpp_mpc=${test_cpp_mpc}
     export rtt_test_cpp_mpc_securenn=${test_cpp_mpc_securenn}
     export rtt_test_cpp_mpc_helix=${test_cpp_mpc_helix}
@@ -338,7 +336,6 @@ elif [ "${cmd}" = "test" ]; then
     export rtt_test_single_task=${test_py_single_task}
     export rtt_test_py_other=${test_py_other}
     echo "      test_cpp_common: ${rtt_test_cpp_common}"
-    echo "       test_cpp_netio: ${rtt_test_cpp_netio}"
     echo "         test_cpp_mpc: ${rtt_test_cpp_mpc}"
     echo "test_cpp_mpc_securenn: ${rtt_test_cpp_mpc_securenn}"
     echo "   test_cpp_mpc_helix: ${rtt_test_cpp_mpc_helix}"

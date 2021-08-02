@@ -57,7 +57,7 @@ xc = cb.SecureReveal(cb.SecureLog1p(xb))
 xcc = sess.run(xc)
 print("MPC revealed Log1p:", xcc)
 print("=========================== mpc op log1p 2")
-
+cb.deactivate()
 
 
 ###########
