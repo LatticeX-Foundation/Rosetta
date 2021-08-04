@@ -22,6 +22,6 @@ target_include_directories(${LIBNAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../comm
 #target_include_directories(${LIBNAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../thrid_party/spdlog-1.6.1/include)
 #target_include_directories(${LIBNAME} PUBLIC ${CMAKE_SOURCE_DIR}/thrid_party/spdlog-1.6.1/include)
 target_include_directories(${LIBNAME} PUBLIC ${CMAKE_SOURCE_DIR}/thrid_party/spdlog/include)
-add_dependencies(${LIBNAME} io common protocol-utility spdlog)
-target_link_libraries(${LIBNAME} PUBLIC io common protocol-utility spdlog)
+add_dependencies(${LIBNAME} io common spdlog)
+target_link_libraries(${LIBNAME} PUBLIC io common spdlog)
 
