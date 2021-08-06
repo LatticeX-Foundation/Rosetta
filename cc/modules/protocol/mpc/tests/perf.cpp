@@ -192,48 +192,48 @@ static void run(int partyid) {
   SimpleTimer all_tests_timer;
 
   // variable vs variable
-  binary_perf_test(0, 0, strX, strY, Add, 1234);
-  binary_perf_test(0, 0, strX, strY, Sub, 2345);
-  binary_perf_test(0, 0, strX, strY, Mul, 4567);
+  binary_perf_test(0, 0, strX, strY, Add, 64);
+  binary_perf_test(0, 0, strX, strY, Sub, 128);
+  binary_perf_test(0, 0, strX, strY, Mul, 256);
   binary_perf_test(0, 0, strX, strY, Truediv, 5);
   binary_perf_test(0, 0, strX, strY, Floordiv, 5); ////////////////////
-  binary_perf_test(0, 0, strX, strY, Less, 234);
-  binary_perf_test(0, 0, strX, strY, LessEqual, 234);
+  binary_perf_test(0, 0, strX, strY, Less, 32);
+  binary_perf_test(0, 0, strX, strY, LessEqual, 32);
   binary_perf_test(0, 0, strX, strY, Equal, 71);
   binary_perf_test(0, 0, strX, strY, NotEqual, 73);
-  binary_perf_test(0, 0, strX, strY, Greater, 235);
-  binary_perf_test(0, 0, strX, strY, GreaterEqual, 237); ////////////////////
+  binary_perf_test(0, 0, strX, strY, Greater, 32);
+  binary_perf_test(0, 0, strX, strY, GreaterEqual, 32); ////////////////////
   binary_perf_test(0, 0, strX, strY, SigmoidCrossEntropy, 63);
   // constant vs variable
-  binary_perf_test(1, 0, strCX, strY, Add, 1234);
-  binary_perf_test(1, 0, strCX, strY, Sub, 2345);
-  binary_perf_test(1, 0, strCX, strY, Mul, 4567);
+  binary_perf_test(1, 0, strCX, strY, Add, 64);
+  binary_perf_test(1, 0, strCX, strY, Sub, 128);
+  binary_perf_test(1, 0, strCX, strY, Mul, 256);
   binary_perf_test(1, 0, strCX, strY, Truediv, 5);
   binary_perf_test(1, 0, strCX, strY, Floordiv, 5); ////////////////////
-  binary_perf_test(1, 0, strCX, strY, Less, 234);
-  binary_perf_test(1, 0, strCX, strY, LessEqual, 234);
+  binary_perf_test(1, 0, strCX, strY, Less, 32);
+  binary_perf_test(1, 0, strCX, strY, LessEqual, 32);
   binary_perf_test(1, 0, strCX, strY, Equal, 71);
   binary_perf_test(1, 0, strCX, strY, NotEqual, 73);
-  binary_perf_test(1, 0, strCX, strY, Greater, 235);
-  binary_perf_test(1, 0, strCX, strY, GreaterEqual, 237); ////////////////////
+  binary_perf_test(1, 0, strCX, strY, Greater, 32);
+  binary_perf_test(1, 0, strCX, strY, GreaterEqual, 32); ////////////////////
   binary_perf_test(1, 0, strCX, strY, SigmoidCrossEntropy, 63);
   // variable vs constant
-  binary_perf_test(0, 1, strX, strCY, Add, 1234);
-  binary_perf_test(0, 1, strX, strCY, Sub, 2345);
-  binary_perf_test(0, 1, strX, strCY, Mul, 4567);
+  binary_perf_test(0, 1, strX, strCY, Add, 64);
+  binary_perf_test(0, 1, strX, strCY, Sub, 128);
+  binary_perf_test(0, 1, strX, strCY, Mul, 256);
   binary_perf_test(0, 1, strX, strCY, Truediv, 5);
   binary_perf_test(0, 1, strX, strCY, Floordiv, 5); ////////////////////
-  binary_perf_test(0, 1, strX, strCY, Less, 234);
-  binary_perf_test(0, 1, strX, strCY, LessEqual, 234);
+  binary_perf_test(0, 1, strX, strCY, Less, 32);
+  binary_perf_test(0, 1, strX, strCY, LessEqual, 32);
   binary_perf_test(0, 1, strX, strCY, Equal, 71);
   binary_perf_test(0, 1, strX, strCY, NotEqual, 73);
-  binary_perf_test(0, 1, strX, strCY, Greater, 235);
-  binary_perf_test(0, 1, strX, strCY, GreaterEqual, 237); ////////////////////
+  binary_perf_test(0, 1, strX, strCY, Greater, 32);
+  binary_perf_test(0, 1, strX, strCY, GreaterEqual, 32); ////////////////////
   binary_perf_test(0, 1, strX, strCY, SigmoidCrossEntropy, 63);
   binary_perf_test(0, 1, strX, positiveCY, Pow, 11);
 
-  unary_perf_test(Square, 5432);
-  unary_perf_test(Negative, 9876);
+  unary_perf_test(Square, 64);
+  unary_perf_test(Negative, 128);
   unary_perf_test(Abs, 121);
   unary_perf_test(AbsPrime, 135);
   unary_perf_test(Log, 76);
@@ -243,13 +243,13 @@ static void run(int partyid) {
   unary_perf_test(ReluPrime, 211);
   unary_perf_test(Sigmoid, 53);
 
-  reduce_perf_test(Mean, 9981, r, c);
-  reduce_perf_test(Sum, 8864, r, c);
-  reduce_perf_test(AddN, 7749, r, c);
+  reduce_perf_test(Mean, 128, r, c);
+  reduce_perf_test(Sum, 128, r, c);
+  reduce_perf_test(AddN, 128, r, c);
   reduce_perf_test(Max, 61, r, c);
   reduce_perf_test(Min, 63, r, c);
 
-  matmul_perf_test(Matmul, 6789, m, K, n);
+  matmul_perf_test(Matmul, 64, m, K, n);
   cout << ssender.str() << endl;
   cout << "Total elapsed(s): " << all_tests_timer.elapse() << endl;
   endPerf();

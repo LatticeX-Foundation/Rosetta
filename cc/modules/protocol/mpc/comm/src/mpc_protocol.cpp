@@ -33,10 +33,10 @@ MpcProtocol::MpcProtocol(const string& protocol, int parties, const string& task
 int MpcProtocol::Init() { return Init(""); }
 
 int MpcProtocol::Init(string logfile) {
-// #if NDEBUG
-//   if (logfile != "")
-//     rosetta::redirect_stdout(logfile);
-// #endif
+#if NDEBUG
+  if (logfile != "")
+    rosetta::redirect_stdout(logfile);
+#endif
 
   //! @todo optimized
   if (!is_inited_) {

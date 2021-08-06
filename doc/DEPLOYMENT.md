@@ -81,7 +81,7 @@ Since we have wrapped all the steps in a script, so just get the source code and
 # clone rosetta git repository
 git clone https://github.com/LatticeX-Foundation/Rosetta.git --recursive
 # compile, install and run test cases
-cd Rosetta && bash compile_and_test_all.sh
+cd Rosetta && ./rosetta.sh compile --enable-protocol-mpc-securenn && ./rosetta.sh install
 ```
 
 ## Deployment testing

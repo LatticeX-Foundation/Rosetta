@@ -20,7 +20,7 @@
 /**
  * @todo remove to public
  */
-#define __SO_VERSION__ "0.2.0.0"
+#define __SO_VERSION__ "1.0.0.0"
 std::string get_version() {
   return std::string("VERSION: ") + std::string(__SO_VERSION__) + std::string(" COMPILE at: ") +
     std::string(__TIME__) + " " + std::string(__DATE__);

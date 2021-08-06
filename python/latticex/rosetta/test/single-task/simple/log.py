@@ -51,6 +51,7 @@ print("=========================== secure op log 2")
 print("=========================== secure op high-precision log 1")
 xc = cb.SecureHLog(xb)
 xcc = sess.run(cb.SecureReveal(xc))
+cb.deactivate()
 print("MPC plain HLog: ", xcc)
 print("=========================== secure op high-precision log 2")
 ###########:

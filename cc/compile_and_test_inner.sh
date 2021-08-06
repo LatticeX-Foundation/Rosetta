@@ -57,9 +57,9 @@ function load_compile_options() {
     export rtt_enable_gmssl=${x[3]}
     export rtt_enable_protocol_mpc_securenn=${x[4]}
     export rtt_enable_protocol_mpc_helix=${x[5]}
-    export rtt_enable_128bit=${x[7]}
-    export rtt_enable_shape_inference=${x[8]}
-    export rtt_enable_tests=${x[9]}
+    export rtt_enable_128bit=${x[6]}
+    export rtt_enable_shape_inference=${x[7]}
+    export rtt_enable_tests=${x[8]}
 }
 
 #
@@ -144,16 +144,6 @@ function run_common_tests() {
     fi
 }
 
-function run_io_tests() {
-    echo "run io-tests"
-    #./mpc-io-tests-test_net_io | grep -E "passed|failed"
-    #./mpc-io-tests-test_parallel_net_io | grep -E "passed|failed"
-
-    ./mpc-io-examples-netio_ex
-    echo "run io-tests ok."
-    sleep 1
-}
-
 # Protocol tests
 function run_protocol_mpc_test() {
     name=$1
@@ -192,11 +182,6 @@ function run_all_modules_tests() {
     if [ $rtt_test_cpp_common -eq 1 ]; then
         cd ${bindir}
         run_common_tests
-    fi
-
-    if [ $rtt_test_cpp_netio -eq 1 ]; then
-        cd ${bindir}
-        run_io_tests
     fi
 
     if [ $rtt_test_cpp_mpc_securenn -eq 1 ]; then
@@ -250,6 +235,7 @@ if [ "${rtt_command}" = "compile" ]; then
 elif [ "${rtt_command}" = "test" ] || [ "${rtt_command}" = "perf" ]; then
     current_command=${rtt_command}
     load_compile_options
+
     if [ "${rtt_enable_tests}" != "ON" ]; then
         echo "Please set --enable-tests when compiling."
         exit 1
