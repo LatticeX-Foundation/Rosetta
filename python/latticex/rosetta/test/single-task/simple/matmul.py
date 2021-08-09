@@ -7,7 +7,7 @@ import sys, os
 import numpy as np
 np.set_printoptions(suppress=True)
 
-protocol="helix"
+protocol="Helix"
 
 if "ROSETTA_TEST_PROTOCOL" in os.environ.keys():
     print("***** test_cases use ", os.environ["ROSETTA_TEST_PROTOCOL"])
