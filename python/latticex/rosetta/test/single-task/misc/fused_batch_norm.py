@@ -120,3 +120,4 @@ try:
 except Exception as e:
     print("FAIL!!!")
     print("context:", e)
+rtt.deactivate()

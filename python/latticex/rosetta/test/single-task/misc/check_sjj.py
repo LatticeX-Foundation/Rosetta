@@ -83,3 +83,4 @@ with tf.Session() as sess1:
 
     print("**** Div [C vs C] ****")
     print('rr_a4:', rr_a4)
+rtt.deactivate()

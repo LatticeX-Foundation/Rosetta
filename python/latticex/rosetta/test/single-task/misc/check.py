@@ -203,3 +203,4 @@ reveal0 = rtt.SecureReveal(share_f)
 with tf.Session() as sess:
     sess.run(init)
     print('SecureMatMul:', sess.run(reveal0))
+rtt.deactivate()

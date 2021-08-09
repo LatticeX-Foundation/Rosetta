@@ -35,3 +35,4 @@ sess.run(init)
 
 
 ###########
+cb.deactivate()

@@ -18,9 +18,9 @@ with tf.Session('') as sess:
   except Exception:
     print("Fail")
   #sess.run(z)
-
 #Writer = tf.summary.FileWriter("log", tf.get_default_graph())
 #Writer.close()
+cb.deactivate()
   
 
 

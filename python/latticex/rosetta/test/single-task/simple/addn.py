@@ -57,3 +57,4 @@ print(xcc)
 
 writer = tf.summary.FileWriter("log/graph", tf.get_default_graph())
 writer.close()
+rst.deactivate()

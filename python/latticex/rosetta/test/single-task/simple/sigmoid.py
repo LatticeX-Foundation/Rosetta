@@ -74,3 +74,4 @@ print("=========================== mpc op sigmoid 2")
 print(xcc)
 
 ###########
+rtt.deactivate()

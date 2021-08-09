@@ -95,4 +95,5 @@ if __name__ == "__main__":
     cmp_equal = rtt.SecureEqual(xa, xb)
     test_cmp(cmp_equal, 'cmp-equal', test_count)
 
+    rtt.deactivate()
     print('--------  ending ---------')

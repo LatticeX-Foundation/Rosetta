@@ -17,3 +17,4 @@ except Exception:
 
 Writer = tf.summary.FileWriter("log/sigmoid", tf.get_default_graph())
 Writer.close()
+rst.deactivate()

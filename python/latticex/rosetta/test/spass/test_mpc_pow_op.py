@@ -18,5 +18,6 @@ except Exception:
 
 Writer = tf.summary.FileWriter("log/pow", tf.get_default_graph())
 Writer.close()
+rst.deactivate()
 
 

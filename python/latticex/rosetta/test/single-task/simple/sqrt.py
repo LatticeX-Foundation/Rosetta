@@ -47,3 +47,4 @@ print("MPC cipher sqrt:", sess.run(xc))
 xcc = sess.run(rtt.SecureReveal(xc))
 print("MPC plain sqrt: ", xcc)
 #########################################
+rtt.deactivate()

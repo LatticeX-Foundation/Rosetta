@@ -135,4 +135,4 @@ xc = cb.SecureMean(xa2, axis=1)
 print(xc)
 xcc = sess.run(xc)
 print(xcc)
-
+cb.deactivate()

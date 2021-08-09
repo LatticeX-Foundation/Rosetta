@@ -44,3 +44,4 @@ with tf.Session() as sess:
     sess.run(init)
     res1 = sess.run(rtt.SecureReveal(res1))
     print('rtt res1', res1)
+rtt.deactivate()

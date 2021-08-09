@@ -47,6 +47,6 @@ with tf.compat.v1.Session() as mpc_check_result_sess:
 #Writer = tf.summary.FileWriter("log", tf.get_default_graph())
 #Writer.close()
   
-
+rst.deactivate()
 
 

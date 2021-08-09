@@ -234,6 +234,11 @@ def binary_op_test(op_functor, msg):
         a = test_case_array[i][0]
         for j in range(i, size):
             b = test_case_array[j][0]
+            shape_a = np.array(a).shape
+            shape_b = np.array(b).shape
+            shape_single = (1, 1)
+            if (shape_a != shape_b and shape_a != shape_single and shape_b != shape_single):
+                continue
             print(i, a)
             print(j, b)
             xa = tf.Variable(a)

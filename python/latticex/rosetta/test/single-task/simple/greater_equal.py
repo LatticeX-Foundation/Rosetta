@@ -45,3 +45,4 @@ print("=========================== mpc op greater_equal 2")
 print(xcc)
 
 ###########
+cb.deactivate()

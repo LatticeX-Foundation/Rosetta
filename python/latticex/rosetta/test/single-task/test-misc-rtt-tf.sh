@@ -71,7 +71,7 @@ test_rtt_op const_rtt
 # rtt cases
 test_rtt_op check_hgf
 test_rtt_op check_sjj
-test_rtt_op check_yyl
+#test_rtt_op check_yyl
 test_rtt_op check
 # test_rtt_op fused_batch_norm # wolvering
 

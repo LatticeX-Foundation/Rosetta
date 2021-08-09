@@ -13,3 +13,4 @@ reduce_op_test(cb.SecureReduceSum, "cb.SecureReduceSum axis=0", axis=0)
 
 reduce_op_test(tf.reduce_sum, "tf.reduce_sum axis=1", axis=1)
 reduce_op_test(cb.SecureReduceSum, "cb.SecureReduceSum axis=1", axis=1)
+cb.deactivate()

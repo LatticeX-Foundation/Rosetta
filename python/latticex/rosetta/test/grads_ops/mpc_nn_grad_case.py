@@ -114,3 +114,4 @@ common.print_check_result(res_flag)
 
 Writer = tf.summary.FileWriter("log/sce", tf.get_default_graph())
 Writer.close()
+rst.deactivate()

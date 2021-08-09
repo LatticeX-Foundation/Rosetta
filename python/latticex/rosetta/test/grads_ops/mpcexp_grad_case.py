@@ -89,3 +89,4 @@ common.print_check_result(res_flag)
 
 Writer = tf.summary.FileWriter("exp", tf.get_default_graph())
 Writer.close()
+cb.deactivate()

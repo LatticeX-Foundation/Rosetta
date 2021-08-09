@@ -41,3 +41,4 @@ print("reveal string xcc: ", reveal_xcc)
 print("=========================== mpc op pow const 21")
 #print(xcc)
 ###########
+rtt.deactivate()

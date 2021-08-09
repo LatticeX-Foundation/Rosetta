@@ -6,7 +6,7 @@ mkdir -p log
 function judge() {
     name=$1
     script_name=./${name}.py
-    log_name=./log/log-${name}-0.txt
+    log_name=./log/log-${name}-0.log
     message='^Pass$'
     if cat ${log_name} | grep "$message" >/dev/null
     then
@@ -28,9 +28,9 @@ function test_dpass() {
     fi
     echo -e "\nrun ${script_name} ..."
     # chmod +x ${script_name}
-    python3 ${script_name} --party_id=2 >log/log-${name}-2.txt 2>&1 &
-    python3 ${script_name} --party_id=1 >log/log-${name}-1.txt 2>&1 &
-    python3 ${script_name} --party_id=0 >log/log-${name}-0.txt 2>&1
+    python3 ${script_name} --party_id=2 >log/log-${name}-2.log 2>&1 &
+    python3 ${script_name} --party_id=1 >log/log-${name}-1.log 2>&1 &
+    python3 ${script_name} --party_id=0 >log/log-${name}-0.log 2>&1
 
     wait
     # sleep 0.5

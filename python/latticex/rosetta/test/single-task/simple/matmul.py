@@ -45,6 +45,7 @@ with tf.Session() as sess:
     print(sess.run(z1))
     print(sess.run(z0))
 
+cb.deactivate()
 exit(0)
 
 

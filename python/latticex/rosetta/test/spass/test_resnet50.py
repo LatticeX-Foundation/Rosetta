@@ -327,4 +327,5 @@ except Exception as e:
 # save secure graph
 Writer = tf.summary.FileWriter("log/resnet50", tf.get_default_graph())
 Writer.close()
+rtt.deactivate()
 

@@ -6,3 +6,4 @@ import tensorflow as tf
 
 binary_op_test(tf.subtract, "tf.subtract")
 binary_op_test(cb.SecureSub, "cb.SecureSub")
+cb.deactivate()

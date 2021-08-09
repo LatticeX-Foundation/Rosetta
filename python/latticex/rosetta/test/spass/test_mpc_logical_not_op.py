@@ -34,3 +34,4 @@ except Exception:
 
 Writer = tf.summary.FileWriter("log/logical_not", tf.get_default_graph())
 Writer.close()
+rtt.deactivate()

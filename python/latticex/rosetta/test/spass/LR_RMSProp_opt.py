@@ -13,4 +13,4 @@ try:
     print("Pass")
 except Exception:
     print("Fail")
-
+rst.deactivate()

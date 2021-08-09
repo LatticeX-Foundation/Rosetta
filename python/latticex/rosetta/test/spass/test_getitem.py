@@ -17,3 +17,4 @@ except:
 
 writer = tf.summary.FileWriter("log/getitem", tf.get_default_graph())
 writer.close()
+rst.deactivate()

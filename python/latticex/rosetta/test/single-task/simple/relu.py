@@ -40,3 +40,4 @@ xcc = sess.run(xc)
 print("=========================== mpc op reluPrime 2")
 print(xcc)
 ###########
+cb.deactivate()
