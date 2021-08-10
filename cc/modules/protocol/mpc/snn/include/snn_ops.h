@@ -44,7 +44,8 @@ class SnnProtocolOps : public ProtocolOps {
     const msg_id_t& msgid,
     shared_ptr<ProtocolContext> context,
     shared_ptr<RttPRG> prg_seed,
-    shared_ptr<NET_IO> io_channel);
+    shared_ptr<NET_IO> io_channel,
+    shared_ptr<SnnAesobjectsController> aes_controller);
 
   shared_ptr<SnnInternal> GetInternal() { return internal_; }
   

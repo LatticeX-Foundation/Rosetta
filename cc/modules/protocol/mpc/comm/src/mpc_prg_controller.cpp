@@ -34,7 +34,8 @@ void MpcPRGKeysV2::reset() {
   key_prg0  = "00000000000000000000000000000000";
   key_prg1  = "00000000000000000000000000000000";
   key_prg2  = "00000000000000000000000000000000";
-  key_private  = "00000000000000000000000000000000";
+  key_a0.clear();
+  key_a1.clear();
   // clang-format on
 }
 
@@ -46,7 +47,12 @@ void MpcPRGKeysV2::fmt_print() {
   cout << " K0 " << key_prg0 << endl;
   cout << " K1 " << key_prg1 << endl;
   cout << " K2 " << key_prg2 << endl;
-  cout << " KPrivate " << key_private << endl;
+  for (auto iter = key_a0.begin(); iter != key_a0.end(); iter++) {
+    cout << "A0 " << iter->first << " " << iter->second << endl;
+  }
+  for (auto iter = key_a1.begin(); iter != key_a1.end(); iter++) {
+    cout << "A1 " << iter->first << " " << iter->second << endl;
+  }
 }
 
 int MpcPRGObjsV2::Init(const msg_id_t& msg_id, const MpcPRGKeysV2& prg_keys) {
@@ -60,7 +66,14 @@ int MpcPRGObjsV2::Init(const msg_id_t& msg_id, const MpcPRGKeysV2& prg_keys) {
   prg0 = std::make_shared<RttPRG>(prg_keys.key_prg0);
   prg1 = std::make_shared<RttPRG>(prg_keys.key_prg1);
   prg2 = std::make_shared<RttPRG>(prg_keys.key_prg2);
-  prg_private = std::make_shared<RttPRG>(prg_keys.key_private);
+  prg_a0.clear();
+  prg_a1.clear();
+  for (auto iter = prg_keys.key_a0.begin(); iter != prg_keys.key_a0.end(); iter++) {
+    prg_a0.insert(std::pair<std::string, std::shared_ptr<RttPRG>>(iter->first, std::make_shared<RttPRG>(iter->second)));
+  }
+  for (auto iter = prg_keys.key_a1.begin(); iter != prg_keys.key_a1.end(); iter++) {
+    prg_a1.insert(std::pair<std::string, std::shared_ptr<RttPRG>>(iter->first, std::make_shared<RttPRG>(iter->second)));
+  }
 
   return 0;
 }

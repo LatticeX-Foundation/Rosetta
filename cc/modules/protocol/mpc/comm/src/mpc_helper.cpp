@@ -189,10 +189,10 @@ vector<string> decode_reveal_nodes(const string& bytes, const vector<string>& pa
   }
   else if (party_size < 0) {
     int party_mask = -party_size;
-    nodes.reserve(result_nodes.size());
-    for (int i = 0; i < result_nodes.size(); i++) {
+    nodes.reserve(party2node.size());
+    for (int i = 0; i < party2node.size(); i++) {
       if (party_mask & (1 << i)) {
-        nodes.push_back(result_nodes[i]);
+        nodes.push_back(party2node[i]);
       }
     }
   }

@@ -27,6 +27,20 @@ int SnnInternal::SyncAesKey(
   return 0;
 }
 
+int SnnInternal::SyncAesKey(
+  const string& node_id, int party_id, std::string& key_send, std::string& key_recv) {
+  const string& current_node_id = io->GetCurrentNodeId();
+  if (current_node_id == node_id) {
+    sendBuf(party_id, key_send.data(), key_send.length(), 0);
+    AUDIT("id:{}, P{} SyncAesKey SEND to P{}, key_send{}", msg_id().get_hex(), node_id, party_id, CStr(key_send.c_str(), key_send.length()));
+  }
+  if (GetRoleId() == party_id) {
+    receiveBuf(node_id, (char*)key_recv.data(), key_recv.length(), 0);
+    AUDIT("id:{}, P{} SyncAesKey RECV from P{}, key_recv{}", msg_id().get_hex(), node_id, party_id, CStr(key_recv.c_str(), key_recv.length()));
+  }
+  return 0;
+}
+
 
 // zero sharing with Pseudorandom Zero-Sharing
 int SnnInternal::PRZS(int party0, int party1, vector<double>& shares) {
@@ -72,8 +86,10 @@ int SnnInternal::PRZS(int party0, int party1, vector<mpc_t>& shares) {
   return 0;
 }
 
-int SnnInternal::PRZS(vector<mpc_t>& shares) {
-  populateRandomVector3<mpc_t>(shares, shares.size());
+int SnnInternal::PRZS(const string& node_id, int party_id, vector<mpc_t>& shares) {
+  const string& current_node_id = io->GetCurrentNodeId();
+  assert((partyNum == PARTY_A || current_node_id == node_id) && "invalid node id or party id");
+  populateRandomVector3<mpc_t>(node_id, shares, shares.size());
   return 0;
 }
 
@@ -121,17 +137,17 @@ int SnnInternal::PrivateInput(const string& node_id, const vector<mpc_t>& v, vec
     }
     // other nodes input data
     else if (current_node_id == node_id || PRIMARY) {
-      if (current_node_id == node_id) {
-        PRZS(shares);
-        sendVector<mpc_t>(shares, PARTY_A, shares.size());
-        AUDIT("id:{}, funPrivateInput P{} SEND to P{}{}", msg_id().get_hex(), partyNum, PARTY_A, Vector<mpc_t>(shares));
+      if (current_node_id == node_id || partyNum == PARTY_A) {
+        PRZS(node_id, PARTY_A, shares);
         
-        for (size_t i = 0; i < v.size(); ++i) {
-          shares[i] = v[i] - shares[i];
+        if (current_node_id == node_id) {
+          for (size_t i = 0; i < v.size(); ++i) {
+            shares[i] = v[i] - shares[i];
+          }
+          sendVector<mpc_t>(shares, PARTY_B, shares.size());
+          AUDIT("id:{}, funPrivateInput P{} SEND to P{}{}", msg_id().get_hex(), partyNum, PARTY_B, Vector<mpc_t>(shares));  
         }
-        sendVector<mpc_t>(shares, PARTY_B, shares.size());
-        AUDIT("id:{}, funPrivateInput P{} SEND to P{}{}", msg_id().get_hex(), partyNum, PARTY_B, Vector<mpc_t>(shares));
-      } else if (PRIMARY) {
+      } else if (partyNum == PARTY_B) {
         receiveVector2<mpc_t>(shares, node_id, shares.size());
         AUDIT("id:{}, funPrivateInput P{} RECV from P{}{}", msg_id().get_hex(), partyNum, node_id, Vector<mpc_t>(shares));
       }

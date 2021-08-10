@@ -38,7 +38,8 @@ struct MpcPRGKeysV2 {
   std::string key_prg0  = "FF000000000000000000000000000000";
   std::string key_prg1  = "FF010000000000000000000000000000";
   std::string key_prg2  = "FF020000000000000000000000000000";
-  std::string key_private = "PRIVATE0000000000000000000000000";
+  std::map<std::string, std::string> key_a0;
+  std::map<std::string, std::string> key_a1;
   // clang-format on
 
   void reset();
@@ -63,7 +64,8 @@ struct MpcPRGObjsV2 {
   std::shared_ptr<RttPRG> prg0 = nullptr;
   std::shared_ptr<RttPRG> prg1 = nullptr;
   std::shared_ptr<RttPRG> prg2 = nullptr;
-  std::shared_ptr<RttPRG> prg_private = nullptr;
+  std::map<std::string, std::shared_ptr<RttPRG>> prg_a0;
+  std::map<std::string, std::shared_ptr<RttPRG>> prg_a1;
 
   msg_id_t msgid;
 

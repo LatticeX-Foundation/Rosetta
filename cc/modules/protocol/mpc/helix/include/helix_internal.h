@@ -248,15 +248,6 @@ class HelixInternal {
     AUDIT("id:{}, P{} Reveal, input X{}", msgid.get_hex(), player, Vector<T1>(X));
     vector<string> result_nodes = io->GetResultNodes();
     vector<string> parties = decode_reveal_nodes(nodes, io->GetParty2Node(), result_nodes);
-
-    for (auto iter = parties.begin(); iter != parties.end(); ) {
-      if (std::find(result_nodes.begin(), result_nodes.end(), *iter) == result_nodes.end()) {
-        tlog_error << "node " << *iter << " is not a valid result node!" ;
-        iter = parties.erase(iter);
-      } else {
-        iter++;
-      }
-    }
     Reveal_(X, plain, parties);
   }
 
@@ -380,6 +371,7 @@ class HelixInternal {
     // 1. Pi and P2 generates A0 and A1 (A = A0 + A1)
     vector<T1> A0(size, 0);
     vector<T1> A1(size, 0);
+    vector<T1> deltaX(size, 0);
     if (p == PARTY_0) {
       PRF02(A0, size);
       AUDIT("id:{}, P{} input from P{}, generate A0{}", msgid.get_hex(), player, p, Vector<T1>(A0));
@@ -389,19 +381,20 @@ class HelixInternal {
     } else if (p == PARTY_2) {
       PRF02(A0, size);
       AUDIT("id:{}, P{} input from P{}, generate A0{}", msgid.get_hex(), player, p, Vector<T1>(A0));
-
-      PRF12(A1, size);
-      AUDIT("id:{}, P{} input from P{}, generate A1{}", msgid.get_hex(), player, p, Vector<T1>(A1));
     } else {
-      PRF_PRIVATE(A0, size);
-      AUDIT("id:{}, P{} input from P{}, generate A0{}", msgid.get_hex(), player, p, Vector<T1>(A0));
+      PRF_DATA_A0(node_id, A0, size);
+      AUDIT("id:{}, P{} input from P{}, generate A0{}", msgid.get_hex(), node_id, p, Vector<T1>(A0));
 
-      PRF_PRIVATE(A1, size);
-      AUDIT("id:{}, P{} input from P{}, generate A1{}", msgid.get_hex(), player, p, Vector<T1>(A1));
+      PRF_DATA_A1(node_id, A1, size);
+      AUDIT("id:{}, P{} input from P{}, generate A1{}", msgid.get_hex(), node_id, p, Vector<T1>(A1));
     }
 
     // 2. Pi sets deltaX
-    vector<T1> deltaX = X - A0 - A1;
+    if (p != PARTY_2 && current_node_id == node_id) {
+      deltaX = X - A0 - A1;
+    } else if (p == PARTY_2 && player == PARTY_2) {
+      A1 = X - A0;
+    }
     AUDIT("id:{}, P{} input from P{}, locally compute deltaX=X-A0-A1, deltaX{}", msgid.get_hex(), player, p, Vector<T1>(deltaX));
     //vector<T1> deltaX = X;
     //Sub(deltaX, A0);
@@ -420,51 +413,24 @@ class HelixInternal {
         }
       }
     } else if (p == PARTY_2) {
-      // P2 sends deltaX to P0 and P1
+      // P2 sends A1 to P1
       if (is_helper()) {
-        send(PARTY_0, deltaX, size);
-        AUDIT("id:{}, P{} input from P{}, P{} SEND to P{}, deltaX{}", msgid.get_hex(), player, p, player, PARTY_0, Vector<T1>(deltaX));
-
-        send(PARTY_1, deltaX, size);
-        AUDIT("id:{}, P{} input from P{}, P{} SEND to P{}, deltaX{}", msgid.get_hex(), player, p, player, PARTY_1, Vector<T1>(deltaX));
-      } else if (is_primary()) {
-        recv(PARTY_2, deltaX, size);
-        AUDIT("id:{}, P{} input from P{}, P{} RECV from P{}, deltaX{}", msgid.get_hex(), player, p, player, PARTY_2, Vector<T1>(deltaX));
+        send(PARTY_1, A1, size);
+        AUDIT("id:{}, P{} input from P{}, P{} SEND to P{}, A1{}", msgid.get_hex(), player, p, player, PARTY_1, Vector<T1>(A1));
+      } else if (player == PARTY_1) {
+        recv(PARTY_2, A1, size);
+        AUDIT("id:{}, P{} input from P{}, P{} RECV from P{}, A1{}", msgid.get_hex(), player, p, player, PARTY_2, Vector<T1>(A1));
       }
     } else {
       if (node_id == current_node_id) {
         send(PARTY_0, deltaX, size);
         AUDIT("id:{}, P{} input from P{}, P{} SEND to P{}, deltaX{}", msgid.get_hex(), player, p, player, PARTY_0, Vector<T1>(deltaX));
 
-        send(PARTY_0, A0, size);
-        AUDIT("id:{}, P{} input from P{}, P{} SEND to P{}, A0{}", msgid.get_hex(), player, p, player, PARTY_0, Vector<T1>(A0));
-
         send(PARTY_1, deltaX, size);
         AUDIT("id:{}, P{} input from P{}, P{} SEND to P{}, deltaX{}", msgid.get_hex(), player, p, player, PARTY_1, Vector<T1>(deltaX));
-
-        send(PARTY_1, A1, size);
-        AUDIT("id:{}, P{} input from P{}, P{} SEND to P{}, A1{}", msgid.get_hex(), player, p, player, PARTY_1, Vector<T1>(A1));
-
-        send(PARTY_2, A0, size);
-        AUDIT("id:{}, P{} input from P{}, P{} SEND to P{}, A0{}", msgid.get_hex(), player, p, player, PARTY_2, Vector<T1>(A0));
-
-        send(PARTY_2, A1, size);
-        AUDIT("id:{}, P{} input from P{}, P{} SEND to P{}, A1{}", msgid.get_hex(), player, p, player, PARTY_2, Vector<T1>(A1));
-      } else if (is_primary() || is_helper()) {
-        if (is_primary()) {
-          recv(node_id, deltaX, size);
-          AUDIT("id:{}, P{} input from P{}, P{} RECV from {}, deltaX{}", msgid.get_hex(), player, p, player, node_id, Vector<T1>(deltaX));
-        } else {
-          recv(node_id, A0, size);
-          AUDIT("id:{}, P{} input from P{}, P{} RECV from {}, A0{}", msgid.get_hex(), player, p, player, node_id, Vector<T1>(A0));
-        }
-        if (player == PARTY_0) {
-          recv(node_id, A0, size);
-          AUDIT("id:{}, P{} input from P{}, P{} RECV from {}, A0{}", msgid.get_hex(), player, p, player, node_id, Vector<T1>(A0));
-        } else {
-          recv(node_id, A1, size);
-          AUDIT("id:{}, P{} input from P{}, P{} RECV from {}, A1{}", msgid.get_hex(), player, p, player, node_id, Vector<T1>(A1));
-        }
+      } else if (is_primary()) {
+        recv(node_id, deltaX, size);
+        AUDIT("id:{}, P{} input from P{}, P{} RECV from {}, deltaX{}", msgid.get_hex(), player, p, player, node_id, Vector<T1>(deltaX));
       }
     }
 
@@ -650,14 +616,17 @@ class HelixInternal {
   void PRF2(vector<bit_t>& A, size_t size);
   void PRF(vector<mpc_t>& A, size_t size);
   void PRF(vector<bit_t>& A, size_t size);
-  void PRF_PRIVATE(vector<mpc_t>& A, size_t size);
-  void PRF_PRIVATE(vector<bit_t>& A, size_t size);
+  void PRF_DATA_A0(const string &node_id, vector<mpc_t>& A, size_t size);
+  void PRF_DATA_A1(const string &node_id, vector<mpc_t>& A, size_t size);
+  void PRF_DATA_A0(const string &node_id, vector<bit_t>& A, size_t size);
+  void PRF_DATA_A1(const string &node_id, vector<bit_t>& A, size_t size);
 
   void RandSeed(vector<uint64_t>& seeds, size_t size);
   void SyncPRGKeyV1();
   void SyncPRGKeyV1(int partyA, int partyB, std::string& key_send, std::string& key_recv);
   shared_ptr<MpcKeyPrgController> SyncPRGKey();
   void SyncPRGKey(int partyA, int partyB, const std::string& key_send, std::string& key_recv);
+  void SyncPRGKey(const string& node_id, int party_id, const std::string& key_send, std::string& key_recv);
 
  public:
   // scale up by X << power locally and securely.

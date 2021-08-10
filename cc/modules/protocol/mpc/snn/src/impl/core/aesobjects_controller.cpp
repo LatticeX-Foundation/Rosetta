@@ -66,7 +66,6 @@ int AESObjectsV2::init_aes(int pid, const msg_id_t& msg_id) {
   std::string kac = fxor(keys.key_ac);
   std::string kbc = fxor(keys.key_bc);
   std::string kcd = fxor(keys.key_cd);
-  std::string kprivate = fxor(keys.key_private);
 
   /*********************** AES SETUP and SYNC *************************/
   // P0 --> "KEYS":["keyA","keyAB","keyAC","null"]
@@ -104,9 +103,11 @@ int AESObjectsV2::init_aes(int pid, const msg_id_t& msg_id) {
 
   aes_randseed = std::make_shared<AESObject>();
   aes_randseed->Init(k0);
-
-  aes_private = std::make_shared<AESObject>();
-  aes_private->Init(kprivate);
+  for (auto iter = keys.key_data.begin(); iter != keys.key_data.end(); iter++) {
+    std::shared_ptr<AESObject> aes_obj = std::make_shared<AESObject>();
+    aes_obj->Init(iter->second);
+    aes_data.insert(std::pair<std::string, std::shared_ptr<AESObject>>(iter->first, aes_obj));
+  }
 
   return 0;
 }

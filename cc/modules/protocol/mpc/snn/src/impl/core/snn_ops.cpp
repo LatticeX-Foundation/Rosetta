@@ -229,12 +229,14 @@ SnnProtocolOps::SnnProtocolOps(
   const msg_id_t& msgid,
   shared_ptr<ProtocolContext> context,
   shared_ptr<RttPRG> prg_seed,
-  shared_ptr<NET_IO> io_channel)
+  shared_ptr<NET_IO> io_channel,
+  shared_ptr<SnnAesobjectsController> aes_controller)
     : ProtocolOps(msgid, context),
     gseed_(prg_seed), net_io_(io_channel) {
   internal_ = make_shared<rosetta::snn::SnnInternal>(msgid, context, gseed_, io_channel);
 
   internal_->SetTripleGenerator(_triple_generator);
+  internal_->SetAesController(aes_controller);
 }
 
 int SnnProtocolOps::TfToSecure(
@@ -482,17 +484,28 @@ int SnnProtocolOps::Reveal(
 
   snn_decode(a, private_a, context_->FLOAT_PRECISION);
 
-  vector<string> reveal_nodes = decode_reveal_nodes(parties, net_io_->GetParty2Node(), net_io_->GetResultNodes());
+  vector<string> result_nodes = net_io_->GetResultNodes();
+  vector<string> nodes = decode_reveal_nodes(parties, net_io_->GetParty2Node(),result_nodes);
+
+  for (auto iter = nodes.begin(); iter != nodes.end(); ) {
+    if (std::find(result_nodes.begin(), result_nodes.end(), *iter) == result_nodes.end()) {
+      tlog_error << "node " << *iter << " is not a valid result nodes!" ;
+      iter = nodes.erase(iter);
+    } else {
+      iter++;
+    }
+  }
+  
   string reveal_parties_str = "[";
-  for (auto i = 0; i < reveal_nodes.size(); ++i) {
-    reveal_parties_str.append(reveal_nodes[0]);
-    if (i != reveal_nodes.size()-1)
+  for (auto i = 0; i < nodes.size(); ++i) {
+    reveal_parties_str.append(nodes[0]);
+    if (i != nodes.size()-1)
       reveal_parties_str.append(", ");
   }
   reveal_parties_str.append("]");
   
   tlog_debug << "----> Reveal, receive_parties: " << reveal_parties_str << " ...";
-  internal_->Reconstruct2PC_ex(private_a, out_vec, parties);
+  internal_->Reconstruct2PC(private_a, out_vec, nodes);
 
   // to double values
   output.resize(out_vec.size());

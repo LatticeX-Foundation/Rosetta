@@ -355,14 +355,6 @@ int SnnInternal::Reconstruct2PC_ex(
   vector<string> result_nodes = io->GetResultNodes();
   vector<string> nodes = decode_reveal_nodes(recv_parties, io->GetParty2Node(),result_nodes);
 
-  for (auto iter = nodes.begin(); iter != nodes.end(); ) {
-    if (std::find(result_nodes.begin(), result_nodes.end(), *iter) == result_nodes.end()) {
-      tlog_error << "node " << *iter << " is not a valid result nodes!" ;
-      iter = nodes.erase(iter);
-    } else {
-      iter++;
-    }
-  }
   return Reconstruct2PC(a, out, nodes);
 }
 

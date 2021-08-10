@@ -41,7 +41,7 @@ static void snn_init_once_calls()
 
 shared_ptr<ProtocolOps> SnnProtocol::GetOps(const msg_id_t& msgid) {
   //! @todo optimized
-  auto snn_ops_ptr = make_shared<SnnProtocolOps>(msgid, context_, gseed_, GetNetHandler());
+  auto snn_ops_ptr = make_shared<SnnProtocolOps>(msgid, context_, gseed_, GetNetHandler(), aes_controller_);
   snn_ops_ptr->_triple_generator = triple_generator_;
   
   return snn_ops_ptr;
@@ -68,6 +68,16 @@ int SnnProtocol::InitAesKeys() {
   {
     // gen private key
     // 3PC: P0-->keyA, keyCD; P1-->keyB; P2-->keyC
+    const string& current_node_id = net_io_->GetCurrentNodeId();
+    vector<string> data_nodes = net_io_->GetNonComputationNodes();
+    const vector<string>& party2node = net_io_->GetParty2Node();
+    for (auto iter = data_nodes.begin(); iter != data_nodes.end(); ) {
+      if (std::find(party2node.begin(), party2node.end(), *iter) != party2node.end()) {
+        iter = data_nodes.erase(iter);
+      } else {
+        iter++;
+      }
+    }
     auto my_party_id = context_->ROLE_ID;
     if (my_party_id == 0) {
       aes_keys_.key_a = gen_key_str();
@@ -76,6 +86,14 @@ int SnnProtocol::InitAesKeys() {
     } else if (my_party_id == 2) {
       aes_keys_.key_c = gen_key_str();
       aes_keys_.key_cd = gen_key_str();
+    }
+    if (my_party_id == 0 || std::find(data_nodes.begin(), data_nodes.end(), current_node_id) != data_nodes.end()) {
+      for (int i = 0; i < data_nodes.size(); i++) {
+        if (my_party_id == 0 || data_nodes[i] == current_node_id) {
+          string key_data = gen_key_str();
+          aes_keys_.key_data.insert(std::pair<std::string, std::string>(data_nodes[i], key_data));
+        }
+      }
     }
     //usleep(1000);//no need to sleep
 
@@ -96,6 +114,10 @@ int SnnProtocol::InitAesKeys() {
     internal->SyncAesKey(PARTY_B, PARTY_C, kbc, kbc);
     internal->SyncAesKey(PARTY_C, PARTY_A, k0, k0);
     internal->SyncAesKey(PARTY_C, PARTY_B, k0, k0);
+    for (int i = 0; i < data_nodes.size(); i++) {
+      const string data_node = data_nodes[i];
+      internal->SyncAesKey(data_nodes[i], PARTY_A, aes_keys_.key_data[data_node], aes_keys_.key_data[data_node]);
+    }
     aes_keys_.key_0 = k0;
     aes_keys_.key_ab = kab;
     aes_keys_.key_bc = kbc;
@@ -105,6 +127,7 @@ int SnnProtocol::InitAesKeys() {
     auto role_id = GetMpcContext()->GetMyRole();
     aes_controller_ = std::make_shared<SnnAesobjectsController>();
     aes_controller_->Init(role_id, aes_keys_);
+    internal->SetAesController(aes_controller_);
   }
   //usleep(1000);//no need to sleep
 

@@ -24,13 +24,8 @@
 using namespace std;
 namespace rosetta {
 int HelixOpsImpl::Reveal(const vector<string>& a, vector<string>& c, const attr_type* attr_info) {
-  string nodes = get_attr_value(attr_info, "receive_parties", "");
-  vector<Share> shareA;
-  helix_convert_string_to_share(a, shareA);
-  AUDIT("id:{}, P{} Reveal input X(Share){}", _op_msg_id.get_hex(),  hi->party_id(), Vector<Share>(shareA));
-
   vector<double> fc;
-  hi->Reveal(shareA, fc, nodes);
+  Reveal(a, fc, attr_info);
   helix_double_to_plain_string(fc, c);
   AUDIT("id:{}, P{} Reveal output(double, plain){}", _op_msg_id.get_hex(), hi->party_id(), Vector<double>(fc));
 
@@ -42,8 +37,19 @@ int HelixOpsImpl::Reveal(const vector<string>& a, vector<double>& c, const attr_
   vector<Share> shareA;
   helix_convert_string_to_share(a, shareA);
   AUDIT("id:{}, P{} Reveal input X(Share){}", _op_msg_id.get_hex(),  hi->party_id(), Vector<Share>(shareA));
+  
+  vector<string> result_nodes = io->GetResultNodes();
+  vector<string> parties = decode_reveal_nodes(nodes, io->GetParty2Node(), result_nodes);
 
-  hi->Reveal(shareA, c, nodes);
+  for (auto iter = parties.begin(); iter != parties.end(); ) {
+    if (std::find(result_nodes.begin(), result_nodes.end(), *iter) == result_nodes.end()) {
+      tlog_error << "node " << *iter << " is not a valid result node!" ;
+      iter = parties.erase(iter);
+    } else {
+      iter++;
+    }
+  }
+  hi->Reveal(shareA, c, parties);
   AUDIT("id:{}, P{} Reveal output(double, plain){}", _op_msg_id.get_hex(), hi->party_id(), Vector<double>(c));
 
   return 0;

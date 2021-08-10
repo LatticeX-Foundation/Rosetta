@@ -40,7 +40,7 @@ struct AESKeyStringsV2 {
   std::string key_ac = "F00000000000000000000000000000AC";
   std::string key_bc = "F00000000000000000000000000000BC";
   std::string key_cd = "F00000000000000000000000000000CD";
-  std::string key_private = "F000000000000000000000000PRIVATE";
+  std::map<string, std::string> key_data;
 };
 
 /**
@@ -58,7 +58,7 @@ public:
   std::shared_ptr<AESObject> aes_b_1 = nullptr; // A and C
   std::shared_ptr<AESObject> aes_b_2 = nullptr; // B and C
   std::shared_ptr<AESObject> aes_c_1 = nullptr; // A and C
-  std::shared_ptr<AESObject> aes_private = nullptr;
+  std::map<std::string, std::shared_ptr<AESObject>> aes_data;
 
   AESKeyStringsV2 keys;
 

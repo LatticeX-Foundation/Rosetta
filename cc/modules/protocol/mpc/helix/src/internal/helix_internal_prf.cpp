@@ -110,8 +110,10 @@ void HelixInternal::PRF2(vector<mpc_t>& A, size_t size) { _PRF(player, PARTY_2, 
 void HelixInternal::PRF2(vector<bit_t>& A, size_t size) { _PRF(player, PARTY_2, A, size, prgobjs->prg2); }
 void HelixInternal::PRF(vector<mpc_t>& A, size_t size) { _PRF(A, size, prgobjs->prg); }
 void HelixInternal::PRF(vector<bit_t>& A, size_t size) { _PRF(A, size, prgobjs->prg); }
-void HelixInternal::PRF_PRIVATE(vector<mpc_t>& A, size_t size) { _PRF(A, size, prgobjs->prg_private); }
-void HelixInternal::PRF_PRIVATE(vector<bit_t>& A, size_t size) { _PRF(A, size, prgobjs->prg_private); }
+void HelixInternal::PRF_DATA_A0(const string& node_id, vector<mpc_t>& A, size_t size) { _PRF(A, size, prgobjs->prg_a0[node_id]); }
+void HelixInternal::PRF_DATA_A1(const string& node_id, vector<mpc_t>& A, size_t size) { _PRF(A, size, prgobjs->prg_a1[node_id]); }
+void HelixInternal::PRF_DATA_A0(const string& node_id, vector<bit_t>& A, size_t size) { _PRF(A, size, prgobjs->prg_a0[node_id]); }
+void HelixInternal::PRF_DATA_A1(const string& node_id, vector<bit_t>& A, size_t size) { _PRF(A, size, prgobjs->prg_a1[node_id]); }
 // clang-format on
 
 void HelixInternal::SyncPRGKeyV1() {
@@ -181,6 +183,16 @@ void HelixInternal::SyncPRGKeyV1(
 
 shared_ptr<MpcKeyPrgController> HelixInternal::SyncPRGKey() {
   MpcPRGKeysV2 keys;
+  const string& current_node_id = io->GetCurrentNodeId();
+  vector<string> data_nodes = io->GetNonComputationNodes();
+  const vector<string>& party2node = io->GetParty2Node();
+  for (auto iter = data_nodes.begin(); iter != data_nodes.end(); ) {
+    if (std::find(party2node.begin(), party2node.end(), *iter) != party2node.end()) {
+      iter = data_nodes.erase(iter);
+    } else {
+      iter++;
+    }
+  }
   if (player == PARTY_0) {
     keys.key_prg0 = gen_key_str();
   } else if (player == PARTY_1) {
@@ -188,7 +200,16 @@ shared_ptr<MpcKeyPrgController> HelixInternal::SyncPRGKey() {
   } else if (player == PARTY_2) {
     keys.key_prg2 = gen_key_str();
   }
-  keys.key_private = gen_key_str();
+  if (is_primary() || is_helper() || std::find(data_nodes.begin(), data_nodes.end(), current_node_id) != data_nodes.end()) {
+    for (int i = 0; i < data_nodes.size(); i++) {
+      if (is_primary() || is_helper() || data_nodes[i] == current_node_id) {
+        string key_a0 = gen_key_str();
+        keys.key_a0.insert(std::pair<std::string, std::string>(data_nodes[i], key_a0));
+        string key_a1 = gen_key_str();
+        keys.key_a1.insert(std::pair<std::string, std::string>(data_nodes[i], key_a1));
+      }
+    }
+  }
 
   // common or public key
   string k01, k02, k12, k0;
@@ -202,6 +223,14 @@ shared_ptr<MpcKeyPrgController> HelixInternal::SyncPRGKey() {
   SyncPRGKey(PARTY_1, PARTY_2, k12, k12);
   SyncPRGKey(PARTY_2, PARTY_0, k0, k0);
   SyncPRGKey(PARTY_2, PARTY_1, k0, k0);
+  for (int i = 0; i < data_nodes.size(); i++) {
+    const string data_node = data_nodes[i];
+    SyncPRGKey(data_nodes[i], PARTY_0, keys.key_a0[data_node], keys.key_a0[data_node]);
+    SyncPRGKey(data_nodes[i], PARTY_1, keys.key_a1[data_node], keys.key_a1[data_node]);
+    SyncPRGKey(data_nodes[i], PARTY_2, keys.key_a0[data_node], keys.key_a0[data_node]);
+    SyncPRGKey(data_nodes[i], PARTY_2, keys.key_a1[data_node], keys.key_a1[data_node]);
+  }
+  
   keys.key_prg = k0;
   keys.key_prg01 = k01;
   keys.key_prg02 = k02;
@@ -236,6 +265,22 @@ void HelixInternal::SyncPRGKey(
   if (player == partyB) {
     recv(partyA, (char*)key_recv.data(), key_recv.length());
     AUDIT("id:{}, P{} recv SyncPRGKey from P{}: {}", msgid.get_hex(), player, partyA, key_recv);
+  }
+}
+
+void HelixInternal::SyncPRGKey(
+  const string& node_id,
+  int party_id,
+  const std::string& key_send,
+  std::string& key_recv) {
+  const string& current_node_id = io->GetCurrentNodeId();
+  if (current_node_id == node_id) {
+    send(party_id, key_send.data(), key_send.length());
+    AUDIT("id:{}, P{} send SyncPRGKey to P{}: {}", msgid.get_hex(), node_id, party_id, key_send);
+  }
+  if (player == party_id) {
+    recv(node_id, (char*)key_recv.data(), key_recv.length());
+    AUDIT("id:{}, P{} recv SyncPRGKey from P{}: {}", msgid.get_hex(), node_id, party_id, key_recv);
   }
 }
 

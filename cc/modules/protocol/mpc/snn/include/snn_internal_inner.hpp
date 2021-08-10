@@ -469,13 +469,13 @@
   }
 
   template <typename T>
-  void populateRandomVector3(vector<T>& vec, size_t size) {
+  void populateRandomVector3(const string& node_id, vector<T>& vec, size_t size) {
     if (sizeof(T) == sizeof(mpc_t)) {
       for (size_t i = 0; i < size; ++i)
-        vec[i] = aes_private->get64Bits();
+        vec[i] = aes_data[node_id]->get64Bits();
     } else {
       for (size_t i = 0; i < size; ++i)
-        vec[i] = aes_private->get8Bits();
+        vec[i] = aes_data[node_id]->get8Bits();
     }
   }
 

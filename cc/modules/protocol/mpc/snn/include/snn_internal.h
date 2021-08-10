@@ -50,6 +50,7 @@ class SnnInternal {
   std::shared_ptr<RttPRG> gseed_ = nullptr;
 
   shared_ptr<SnnTripleGenerator> _triple_generator = nullptr;
+  shared_ptr<SnnAesobjectsController> aes_controller_ = nullptr;
 
  protected:
   std::shared_ptr<AESObject> aes_randseed = nullptr;
@@ -60,7 +61,7 @@ class SnnInternal {
   std::shared_ptr<AESObject> aes_b_1 = nullptr;
   std::shared_ptr<AESObject> aes_b_2 = nullptr;
   std::shared_ptr<AESObject> aes_c_1 = nullptr;
-  std::shared_ptr<AESObject> aes_private = nullptr;
+  std::map<std::string, std::shared_ptr<AESObject>> aes_data; 
 
  protected:
   // statistics [will delete in near future]
@@ -75,7 +76,7 @@ class SnnInternal {
   msg_id_t op_msg_id;
 
  public:
-  SnnInternal() { init(); }
+  SnnInternal() { }
   SnnInternal(const msg_id_t& msgid, shared_ptr<ProtocolContext> context, shared_ptr<RttPRG> prg_seed, shared_ptr<NET_IO> net_io) {
     op_msg_id = msgid;
     context_ = context; 
@@ -83,7 +84,6 @@ class SnnInternal {
     num_of_parties = context_->NODE_ROLE_MAPPING.size();
     gseed_ = prg_seed;
     io = net_io;
-    init();
   }
 
   virtual ~SnnInternal() {}
@@ -92,6 +92,11 @@ class SnnInternal {
   virtual void SetTripleGenerator(shared_ptr<SnnTripleGenerator> triple_generator) {
     log_debug << "calling SetTripleGenerator...";
     _triple_generator = triple_generator;
+  }
+
+  void SetAesController(shared_ptr<SnnAesobjectsController> aes_controller) {
+    aes_controller_ = aes_controller;
+    init_aes();
   }
 
   virtual void SetPrgSeed(shared_ptr<RttPRG> prg_seed) { gseed_ = prg_seed; }
@@ -104,9 +109,8 @@ class SnnInternal {
   const msg_id_t& msg_id() const { return op_msg_id; }
 
  public:
-  void init() {
-    auto aesobjs = std::make_shared<AESObjectsV2>();
-    aesobjs->init_aes(GetRoleId(), op_msg_id);
+  void init_aes() {
+    auto aesobjs = aes_controller_->Get(op_msg_id);
     aes_randseed = aesobjs->aes_randseed;
     aes_common = aesobjs->aes_common;
     aes_indep = aesobjs->aes_indep;
@@ -115,7 +119,7 @@ class SnnInternal {
     aes_b_1 = aesobjs->aes_b_1;
     aes_b_2 = aesobjs->aes_b_2;
     aes_c_1 = aesobjs->aes_c_1;
-    aes_private = aesobjs->aes_private;
+    aes_data = aesobjs->aes_data;
   }
   
   // inner inline implementation of operations
@@ -133,13 +137,14 @@ class SnnInternal {
     kbc: B --> C
   */
   int SyncAesKey(int partyA, int partyB, std::string& key_send, std::string& key_recv);
+  int SyncAesKey(const string& node_id, int party_id, std::string& key_send, std::string& key_recv);
 
   // zero sharing with Pseudorandom Zero-Sharing
   int PRZS(int party0, int party1, vector<mpc_t>& shares);
   int PRZS(int party0, int party1, vector<double>& shares);
   int PRZS(int party0, int party1, mpc_t& shares);
   int PRZS(int party0, int party1, double& shares);
-  int PRZS(vector<mpc_t>& shares);
+  int PRZS(const string& node_id, int party_id, vector<mpc_t>& shares);
 
   // Private input data, input private plain data and ouput sharing data
   int PrivateInput(const string& node_id, const vector<double>& v, vector<mpc_t>& shares);
