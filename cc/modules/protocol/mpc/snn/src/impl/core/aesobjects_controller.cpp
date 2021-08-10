@@ -128,7 +128,7 @@ std::shared_ptr<AESObjectsV2> SnnAesobjectsController::Get(const msg_id_t& msg_i
     }
   }
 
-  auto aesobjs = std::make_shared<AESObjectsV2>();
+  auto aesobjs = std::make_shared<AESObjectsV2>(keys_);
   int partyNum = party_id_;
   aesobjs->init_aes(partyNum, msg_id);
 
