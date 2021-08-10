@@ -43,8 +43,8 @@ function test_op()
 echo -e "\n*** simple secure ops test running... ***\n"
 
 # check all op and simple test all secure ops
-test_op secure_tests
-
+#test_op secure_tests
+#
 test_op abs_test
 test_op save_v2
 test_op saver_test

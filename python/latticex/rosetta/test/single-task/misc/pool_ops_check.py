@@ -174,3 +174,5 @@ with tf.Session() as sess:
     print('out_same4:', sess.run(rtt.SecureReveal(out_same4))) # ok
 
     print("end.")
+
+rtt.deactivate()

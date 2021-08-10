@@ -41,7 +41,7 @@ print(xc)
 xcc = sess.run(xc)
 print(xcc)
 print("secure output multiply 2.3, rh_is_const: ", xcc)
-
+cb.deactivate()
 exit(0)
 
 # the following statement is two consts, 

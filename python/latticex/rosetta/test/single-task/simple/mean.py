@@ -12,3 +12,4 @@ reduce_op_test(cb.SecureMean, "cb.SecureMean axis=0", axis=0)
 
 reduce_op_test(tf.reduce_mean, "tf.reduce_mean axis=1", axis=1)
 reduce_op_test(cb.SecureMean, "cb.SecureMean axis=1", axis=1)
+cb.deactivate()

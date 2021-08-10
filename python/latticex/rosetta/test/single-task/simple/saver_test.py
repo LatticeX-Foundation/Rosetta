@@ -78,3 +78,4 @@ with tf.compat.v1.Session() as mpc_check_result_sess:
         print("num_a or num_b restored failed!")
 
 print("========SecureSaveV2 test END================")
+cb.deactivate()

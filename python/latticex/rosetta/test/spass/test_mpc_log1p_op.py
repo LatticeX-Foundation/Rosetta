@@ -18,3 +18,4 @@ except Exception:
 
 Writer = tf.summary.FileWriter("log/log1p", tf.get_default_graph())
 Writer.close()
+rst.deactivate()

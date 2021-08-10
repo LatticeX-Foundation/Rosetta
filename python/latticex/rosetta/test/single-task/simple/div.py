@@ -5,3 +5,4 @@ import tensorflow as tf
 
 binary_op_test(tf.div, "tf.div")
 # binary_op_test(cb.SecureDiv, "cb.SecureDiv")
+cb.deactivate()

@@ -23,10 +23,10 @@ with tf.Session() as sess:
       print("Pass")
     except Exception:
       print("Fail")
-
 #writer = tf.summary.FileWriter("log", tf.get_default_graph())
 #writer.close()
 
+cb.deactivate()
   
 
 

@@ -38,3 +38,4 @@ with tf.Session() as sess:
     mpc_res = sess.run(tf.strings.to_number(rxz))
     print('revealed result:', mpc_res)
     print("TEST:", mpc_res == expected_res)
+cb.deactivate()

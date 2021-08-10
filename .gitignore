@@ -80,3 +80,4 @@ example/lenet-5/log-plain
 # ignore gprc generated python files
 *_pb2.py
 *_pb2_grpc.py
+cc/modules/common/src/version.cpp

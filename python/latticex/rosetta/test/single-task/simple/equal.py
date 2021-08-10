@@ -79,3 +79,4 @@ print(xcc)
 xcc = sess.run(cb.SecureReveal(xc))
 print("MPC plain NotEqual: \n", xcc)
 ###########
+cb.deactivate()

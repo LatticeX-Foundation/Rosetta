@@ -413,5 +413,5 @@ test_all_ops(protocol)
 # # Helix test
 #protocol = "Helix"
 #test_all_ops(protocol)
-
+rtt.deactivate()
 print("----- ending ---- ")

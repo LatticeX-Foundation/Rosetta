@@ -24,6 +24,7 @@ with tf.Session('') as sess:
 
 # Writer = tf.summary.FileWriter("log", tf.get_default_graph())
 # Writer.close()
+cb.deactivate()
   
 
 

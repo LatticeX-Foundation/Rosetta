@@ -76,4 +76,4 @@ with tf.compat.v1.Session() as sess3:
     print('restored xb=', b_out)
 
 print("========SecureSaveV2 test END================")
-
+cb.deactivate()

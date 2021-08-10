@@ -7,7 +7,7 @@ import sys, os
 import numpy as np
 np.set_printoptions(suppress=True)
 
-protocol="helix"
+protocol="Helix"
 
 if "ROSETTA_TEST_PROTOCOL" in os.environ.keys():
     print("***** test_cases use ", os.environ["ROSETTA_TEST_PROTOCOL"])
@@ -45,6 +45,7 @@ with tf.Session() as sess:
     print(sess.run(z1))
     print(sess.run(z0))
 
+cb.deactivate()
 exit(0)
 
 

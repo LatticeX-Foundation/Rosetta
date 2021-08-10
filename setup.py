@@ -251,7 +251,6 @@ setup(
     version=__version__,
     author='LatticeX Foundation',
     author_email='rosetta@latticex.foundation',
-    url='https://www.platon.network/',
     download_url='https://github.com/LatticeX-Foundation/Rosetta',
     description=DOCLINES[0],
     long_description='\n'.join(DOCLINES[2:]),

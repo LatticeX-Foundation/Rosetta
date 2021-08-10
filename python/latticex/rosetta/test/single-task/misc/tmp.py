@@ -91,3 +91,4 @@ print("=========================== mpc op high-precision log 2")
 print(xcc)
 
 ###########:
+rtt.deactivate()

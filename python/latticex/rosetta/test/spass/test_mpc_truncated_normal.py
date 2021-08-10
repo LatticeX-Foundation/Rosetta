@@ -18,3 +18,4 @@ except Exception:
 
 Writer = tf.summary.FileWriter("log/truncated_normal", tf.get_default_graph())
 Writer.close()
+rrt.deactivate()

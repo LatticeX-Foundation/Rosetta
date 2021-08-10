@@ -42,3 +42,4 @@ xcc = sess.run(xc)
 print("=========================== mpc op AbsPrime 2")
 print(xcc)
 ###########
+rst.deactivate()

@@ -197,3 +197,4 @@ with tf.Session() as sess:
     print("assign_sub(expect-1) reveal: ", sess.run(r_assign_sub))
     
     print("ending.")
+rtt.deactivate()

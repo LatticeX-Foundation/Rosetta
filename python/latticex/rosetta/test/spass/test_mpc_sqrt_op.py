@@ -16,3 +16,4 @@ except Exception:
 
 Writer = tf.summary.FileWriter("log/sqrt", tf.get_default_graph())
 Writer.close()
+rst.deactivate()

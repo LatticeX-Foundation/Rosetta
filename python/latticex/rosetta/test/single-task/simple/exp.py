@@ -49,3 +49,4 @@ xcc = sess.run(rtt.SecureReveal(xc))
 print("MPC plain exp: ", xcc)
 print("=========================== secure op exp 2")
 ###########:
+rtt.deactivate()

@@ -190,3 +190,4 @@ for i in range(len(TEST_CASES)):
         print("{}-th case(Truediv--rtt_res) failed! And detailed context: {}".format(i, curr_case))
 
 print("*" * 69)
+rtt.deactivate()

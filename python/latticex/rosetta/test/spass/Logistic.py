@@ -28,3 +28,4 @@ except Exception:
 #write log
 Writer = tf.summary.FileWriter("log/logistic", tf.get_default_graph())
 Writer.close()
+rst.deactivate()

@@ -6,3 +6,4 @@ import tensorflow as tf
 
 binary_op_test(tf.add, "tf.add")
 binary_op_test(cb.SecureAdd, "cb.SecureAdd")
+cb.deactivate()

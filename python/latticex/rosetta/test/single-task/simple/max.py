@@ -49,3 +49,4 @@ except Exception as e:
     print("FAIL!!!")
     print("context:", e)
 print("*" * 69)
+rtt.deactivate()

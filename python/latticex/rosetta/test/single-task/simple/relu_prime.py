@@ -13,3 +13,4 @@ with tf.compat.v1.Session() as sess:
     print("relu-prime: {}".format(ret))
 
 print("ok")
+rtt.deactivate()

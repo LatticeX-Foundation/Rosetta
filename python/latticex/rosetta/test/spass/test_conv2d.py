@@ -108,3 +108,4 @@ except Exception as e:
 
 Writer = tf.summary.FileWriter("log/conv2d", tf.get_default_graph())
 Writer.close()
+rtt.deactivate()

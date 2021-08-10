@@ -71,3 +71,4 @@ with tf.compat.v1.Session() as MPC_show_sess:
     print("original input variable:\n", MPC_show_sess.run(input_val))
     print("output:\n", MPC_show_sess.run(rtt.SecureReveal(apply_sgd)))
     print("updated input variable:\n", MPC_show_sess.run(rtt.SecureReveal(input_val)))
+rtt.deactivate()

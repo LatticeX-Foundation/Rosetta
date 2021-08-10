@@ -6,3 +6,4 @@ import tensorflow as tf
 
 binary_op_test(tf.multiply, "tf.multiply")
 binary_op_test(cb.SecureMul, "cb.SecureMul")
+cb.deactivate()

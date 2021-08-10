@@ -29,3 +29,4 @@ else:
 
 Writer = tf.summary.FileWriter("log/opt_need_secure_flow", tf.get_default_graph())
 Writer.close()
+rtt.deactivate()
