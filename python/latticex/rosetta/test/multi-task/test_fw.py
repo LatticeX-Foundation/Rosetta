@@ -73,7 +73,8 @@ def bin_op_test(protocol, task_id, tf_op, x_init, y_init, expect_val):
 
         try:
             rtt.activate(protocol, task_id=task_id)
-            with tf.Session(task_id=task_id) as sess:
+            config = tf.ConfigProto(inter_op_parallelism_threads = 16, intra_op_parallelism_threads = 16)
+            with tf.Session(task_id=task_id, config=config) as sess:
                 sess.run(init)        
                 real_Z = sess.run(rv_Z)
                 res = check_mpc_results(real_Z, expect_val)
@@ -98,7 +99,8 @@ def bin_op_rh_const_test(protocol, task_id, tf_op, x_init, y_init, expect_val):
 
         try:
             rtt.activate(protocol, task_id=task_id)
-            with tf.Session(task_id=task_id) as sess:
+            config = tf.ConfigProto(inter_op_parallelism_threads = 16, intra_op_parallelism_threads = 16)
+            with tf.Session(task_id=task_id, config=config) as sess:
                 sess.run(init)        
                 real_Z = sess.run(rv_Z)
                 res = check_mpc_results(real_Z, expect_val)
@@ -123,7 +125,8 @@ def unary_op_test(protocol, task_id, tf_op, x_init, expect_val, precision=PRECIS
 
         try:
             rtt.activate(protocol, task_id=task_id)
-            with tf.Session(task_id=task_id) as sess:
+            config = tf.ConfigProto(inter_op_parallelism_threads = 16, intra_op_parallelism_threads = 16)
+            with tf.Session(task_id=task_id, config=config) as sess:
                 sess.run(init)        
                 real_Z = sess.run(rv_Z)
                 res = check_mpc_results(real_Z, expect_val, precision)
@@ -148,7 +151,8 @@ def reduce_op_test(protocol, task_id, tf_op, x_init, expect_val):
 
         try:
             rtt.activate(protocol, task_id=task_id)
-            with tf.Session(task_id=task_id) as sess:
+            config = tf.ConfigProto(inter_op_parallelism_threads = 16, intra_op_parallelism_threads = 16)
+            with tf.Session(task_id=task_id, config=config) as sess:
                 sess.run(init)        
                 real_Z = sess.run(rv_Z)
                 res = check_mpc_results(real_Z, expect_val)
