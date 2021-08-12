@@ -15,7 +15,8 @@ optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(z)
 saver = tf.train.Saver()
 
 
-with tf.Session() as sess:
+config = tf.ConfigProto(inter_op_parallelism_threads = 16, intra_op_parallelism_threads = 16)
+with tf.Session(config = config) as sess:
     tf.global_variables_initializer().run()
     try:
       sess.run(optimizer)

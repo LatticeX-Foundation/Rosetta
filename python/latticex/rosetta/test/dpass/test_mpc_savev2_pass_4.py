@@ -13,7 +13,8 @@ z = (x * y + b) + (x1 * b1) + (y1 + b)
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
 
-with tf.Session('') as sess:
+config = tf.ConfigProto(inter_op_parallelism_threads = 16, intra_op_parallelism_threads = 16)
+with tf.Session('', config = config) as sess:
   sess.run(init)
   try:
     saver.save(sess, "./ckp/test_save_model_4")
