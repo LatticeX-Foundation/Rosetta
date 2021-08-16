@@ -550,7 +550,7 @@ int SnnProtocolOps::ConditionalReveal(
   // not to reveal plaintext by default
   const SaverModel& save_model = context_->SAVER_MODEL;
   int vec_size = in_vec.size();
-  // case one: all ciphertext, just return
+  // case one: all ciphertext, save on computation nodes or result nodes
   if (save_model.is_computation_mode()) {
     out_cipher_vec = in_vec;
     out_plain_vec.clear();

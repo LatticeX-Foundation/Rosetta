@@ -19,10 +19,10 @@ learning_rate = 0.0002
 
 task_id = "task-id"
 rtt.activate("Helix", task_id = task_id)
-rtt.py_protocol_handler.set_saver_model(['p0', 'p1', 'p2', 'p9'], task_id = task_id)
-#rtt.py_protocol_handler.set_saver_model([])
-#rtt.py_protocol_handler.set_saver_model(['p0', 'p1', 'p2'])
-print('saver model:', rtt.py_protocol_handler.get_saver_model(task_id = task_id))
+rtt.set_saver_model(['p0', 'p1', 'p2', 'p9'], task_id = task_id)
+#rtt.set_saver_model([])
+#rtt.set_saver_model(['p0', 'p1', 'p2'])
+print('saver model:', rtt.get_saver_model(task_id = task_id))
 node_id = rtt.get_current_node_id(task_id = task_id)
 
 # real data
@@ -96,5 +96,5 @@ with tf.Session(task_id = task_id) as sess:
     print("reveal_Y:", reveal_y)
 
 print(rtt.get_perf_stats(True, task_id = task_id))
-print('saver model:', rtt.py_protocol_handler.get_saver_model(task_id = task_id))
+print('saver model:', rtt.get_saver_model(task_id = task_id))
 rtt.deactivate(task_id = task_id)

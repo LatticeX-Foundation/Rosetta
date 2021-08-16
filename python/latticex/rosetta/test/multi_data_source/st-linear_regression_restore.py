@@ -20,8 +20,8 @@ learning_rate = 0.0002
 task_id = 'task-id'
 rtt.py_protocol_handler.set_loglevel(0)
 rtt.activate("Helix", task_id = task_id)
-rtt.py_protocol_handler.set_restore_model(['p0','p1','p2'], task_id = task_id)
-#rtt.py_protocol_handler.set_restore_model(['p0', 'p1', 'p2'])
+rtt.set_restore_model(['p0','p1','p2'], task_id = task_id)
+#rtt.set_restore_model(['p0', 'p1', 'p2'])
 node_id = rtt.get_current_node_id(task_id = task_id)
 
 # real data

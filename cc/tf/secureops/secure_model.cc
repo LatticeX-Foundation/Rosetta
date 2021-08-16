@@ -811,17 +811,17 @@ class SecureRestoreV2Op : public SecureOpKernel {
       const map<string, int> computation_nodes = net_io->GetComputationNodes();
       string current_node_id = net_io->GetCurrentNodeId();
       int current_party_id = net_io->GetPartyId(current_node_id);
-      if (ciphertext_nodes.find(current_node_id) != ciphertext_nodes.end()
-        || computation_nodes.find(current_node_id) != computation_nodes.end()) {
+      
+      {
+        // sync ciphertext shape
+        map<string, vector<int64_t>> shape_map;
+        int vec_size = 0;
+        int slen = 0;
         for (auto iter = ciphertext_nodes.begin(); iter != ciphertext_nodes.end(); iter++) {
           string send_node = iter->first;
           int recv_party = iter->second;
-          if (current_node_id != send_node && current_party_id != recv_party)
-            continue;
           
-          int vec_size = 0;
-          int slen = 0;
-          if (current_node_id == send_node && current_party_id != recv_party) {
+          if (current_node_id == send_node) {
             vector<int64_t> shapes;
             shapes.push_back(stored_values_.size());
             for (auto& stored_values : stored_values_) {
@@ -839,52 +839,76 @@ class SecureRestoreV2Op : public SecureOpKernel {
             // sync shapes to other parties
             ///////////////////////////////////////////////////////////////////////////
             int64_t n = shapes.size();
-            net_io->send(recv_party, (const char*)&n, sizeof(n), msg_id());
-            net_io->send(recv_party, (const char*)shapes.data(), sizeof(int64_t) * shapes.size(), msg_id());
-            log_info << "send n:" << n;
-            for (int i = 0; i < shapes.size(); i++) {
-              log_info << "send shapes:" << shapes[i];
-            }
-          } else if (current_party_id == recv_party && current_node_id != send_node) {
+            SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
+            ops->Broadcast(send_node, (const char*)&n, (char*)&n, sizeof(n));
+            ops->Broadcast(send_node, (const char*)shapes.data(), (char*)shapes.data(),
+            sizeof(int64_t) * shapes.size());
+            SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
+            shape_map.insert(std::pair<string, vector<int64_t>>(send_node, shapes));
+          } else {
             int64_t n = 0;
-            net_io->recv(send_node, (char*)&n, sizeof(n), msg_id());
+            SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
+            ops->Broadcast(send_node, (const char*)&n, (char*)&n, sizeof(n));
             vector<int64_t> shapes(n);
-            net_io->recv(send_node, (char*)shapes.data(), sizeof(int64_t) * shapes.size(), msg_id());
-            log_info << "recv n:" << n ;
-            for (int i = 0; i < shapes.size(); i++) {
-              log_info << "recv shape:" << shapes[i] ;
-            }
+            ops->Broadcast(send_node, (const char*)shapes.data(), (char*)shapes.data(), sizeof(int64_t) * shapes.size());
+            SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
+            shape_map.insert(std::pair<string, vector<int64_t>>(send_node, shapes));
             ///////////////////////////////////////////////////////////////////////////
+          }
+        }
+        auto shape_iter = shape_map.begin();
+        const vector<int64_t>& shapes = shape_iter->second;
+        string first_send_node = shape_iter->first;
+        shape_iter++;
+        for (; shape_iter != shape_map.end(); shape_iter++) {
+          const vector<int64_t>& current_shape = shape_iter->second;
+          OP_REQUIRES(
+            context, current_shape == shapes,
+            errors::InvalidArgument(
+            "Got shape from ", shape_iter->first, " , but different with shape from ", first_send_node));
+        }
+        if (ciphertext_nodes.find(current_node_id) == ciphertext_nodes.end()) {
+          stored_values_.resize(shapes[0]);
       
-            stored_values_.resize(shapes[0]);
+          int64_t k = 1;
+          for (int64_t i = 0; i < stored_values_.size(); i++) {
+            auto& stored_values = stored_values_[i];
+            stored_values.idx = i;
       
-            int64_t k = 1;
-            for (int64_t i = 0; i < stored_values_.size(); i++) {
-              auto& stored_values = stored_values_[i];
-              stored_values.idx = i;
+            vector<int64_t> ds;
+            int64_t dims = shapes[k++];
+            for (int d = 0; d < dims; d++) {
+              ds.push_back(shapes[k++]);
+            }
+            vec_size = shapes[shapes.size() - 2];
+            slen = shapes[shapes.size() - 1];
       
-              vector<int64_t> ds;
-              int64_t dims = shapes[k++];
-              for (int d = 0; d < dims; d++) {
-                ds.push_back(shapes[k++]);
-              }
-              vec_size = shapes[shapes.size() - 2];
-              slen = shapes[shapes.size() - 1];
-      
-              if (dims == 1)
-                stored_values.shape = TensorShape({ds[0]});
-              else if (dims == 2)
-                stored_values.shape = TensorShape({ds[0], ds[1]});
-              else if (dims == 3)
-                stored_values.shape = TensorShape({ds[0], ds[1], ds[2]});
-              else if (dims == 4)
-                stored_values.shape = TensorShape({ds[0], ds[1], ds[2], ds[3]});
-              else if (dims == 5)
-                stored_values.shape = TensorShape({ds[0], ds[1], ds[2], ds[3], ds[4]});
-              else
-                throw;
-      
-              stored_values.value.resize(stored_values.shape.num_elements(), 0);
+            if (dims == 1)
+              stored_values.shape = TensorShape({ds[0]});
+            else if (dims == 2)
+              stored_values.shape = TensorShape({ds[0], ds[1]});
+            else if (dims == 3)
+              stored_values.shape = TensorShape({ds[0], ds[1], ds[2]});
+            else if (dims == 4)
+              stored_values.shape = TensorShape({ds[0], ds[1], ds[2], ds[3]});
+            else if (dims == 5)
+              stored_values.shape = TensorShape({ds[0], ds[1], ds[2], ds[3], ds[4]});
+            else
+              throw;
+            stored_values.cipher_value.resize(stored_values.shape.num_elements());
+          }
+        }
+
+        // sync model
+        //for (auto iter = ciphertext_nodes.begin(); iter != ciphertext_nodes.end(); iter++) {
+        {
+          string send_node = "";
+          int recv_party = -1;
+          for (auto iter = ciphertext_nodes.begin(); iter != ciphertext_nodes.end(); iter++) {
+            if (iter->first == current_node_id || iter->second == current_party_id) {
+              send_node = iter->first;
+              recv_party = iter->second;
+              break;
             }
           }
           int ii = 0;
@@ -901,29 +925,27 @@ class SecureRestoreV2Op : public SecureOpKernel {
       
             auto& tempvs = stored_values.cipher_value;
             vector<string> tempvs2; //(stored_values.shape.num_elements());
-            log_error << "tempvs";
-      
-            //print_vector(tempvd, "restore index " + to_string(ii), 5, 8);
-            SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(PrivateInput);
-            //ops->PrivateInput(plaintext_node, tempvd, tempvs);
-            SECURE_OP_CALL_PROTOCOL_OP_STATS_END(PrivateInput);
-            if (current_node_id == send_node && current_party_id != recv_party) {
-              for (int i = 0; i < tempvs.size(); i++) {
-                net_io->send(recv_party, tempvs[i].data(), tempvs[i].size(), msg_id());
+            if (!send_node.empty() && recv_party != -1) {
+              if (current_node_id == send_node && current_party_id != recv_party) {
+                for (int i = 0; i < tempvs.size(); i++) {
+                  net_io->send(recv_party, tempvs[i].data(), tempvs[i].size(), msg_id());
+                }
+                tempvs2.swap(tempvs);
+                log_info << "send model to P" << recv_party;
+              } else if (current_party_id == recv_party && current_node_id != send_node) {
+                tempvs2.resize(tempvs.size());
+                for (int i = 0; i < tempvs2.size(); i++) {
+                  tempvs2[i].resize(slen);
+                  net_io->recv(send_node, &tempvs2[i][0], tempvs2[i].size(), msg_id());
+                }
+                log_info << "recv model from " << send_node;
+              } else if (current_node_id == send_node && current_party_id == recv_party) {
+                tempvs2.swap(tempvs);
+                log_info << "load model from " << send_node;
               }
-              tempvs2 = tempvs;
-            } else if (current_party_id == recv_party && current_node_id != send_node) {
-              tempvs2.resize(vec_size);
-              for (int i = 0; i < tempvs2.size(); i++) {
-                tempvs2[i].resize(slen);
-                net_io->recv(send_node, &tempvs2[i][0], tempvs2[i].size(), msg_id());
-              }
-            } else if (current_node_id == send_node && current_party_id == recv_party) {
-              tempvs2 = tempvs;
             } else {
-              tempvs2.resize(vec_size);
+              tempvs2.resize(tempvs.size());
             }
-      
             OP_REQUIRES_OK(context, context->allocate_output(idx, restored_full_shape, &restored_tensor));
             auto out_flat = restored_tensor->flat<string>();
             for (int64_t i = 0; i < tempvs2.size(); ++i) {

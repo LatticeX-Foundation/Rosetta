@@ -25,6 +25,7 @@ from latticex.rosetta.controller.common_util import *
 from latticex.rosetta.controller import backend_handler
 from latticex.rosetta.controller.backend_handler import py_protocol_handler
 from latticex.rosetta.controller.io_api import _check_io
+from latticex.rosetta.controller.io_api import get_computation_node_ids
 
 
 def get_supported_protocols():
@@ -243,7 +244,7 @@ def get_float_precision(task_id=None):
     """
     if task_id == None:
         task_id = ""
-    py_protocol_handler.get_float_precision(task_id)
+    return py_protocol_handler.get_float_precision(task_id)
 
 def get_saver_model(task_id=None):
     """ Get nodes that act as model savers.
@@ -252,8 +253,14 @@ def get_saver_model(task_id=None):
     """
     if task_id == None:
         task_id = ""
-    return ""
-    #py_protocol_handler.get_saver_model(task_id)
+    if py_protocol_handler.is_saver_computation_model(task_id):
+        return get_computation_node_ids(task_id)
+    elif py_protocol_handler.is_saver_plain_model(task_id):
+        return py_protocol_handler.get_saver_plain_model(task_id)
+    elif py_protocol_handler.is_saver_cipher_model(task_id):
+        return py_protocol_handler.get_saver_cipher_model(task_id)
+    else:
+        return None
 
 def get_restore_model(task_id=None):
     """ Get nodes to restore model.
@@ -262,8 +269,17 @@ def get_restore_model(task_id=None):
     """
     if task_id == None:
         task_id = ""
-    return ""
-    #py_protocol_handler.get_restore_model(task_id)
+    if py_protocol_handler.is_restore_computation_model(task_id):
+        return get_computation_node_ids(task_id)
+    elif py_protocol_handler.is_restore_cipher_model(task_id):
+        return py_protocol_handler.get_restore_cipher_model(task_id)
+    elif py_protocol_handler.is_restore_public_plain_model(task_id):
+        computation_nodes = get_computation_node_ids(task_id)
+        return list(computation_nodes.keys())
+    elif py_protocol_handler.is_restore_private_plain_model(task_id):
+        return py_protocol_handler.get_restore_private_plain_model(task_id)
+    else:
+      return None
 
 def start_perf_stats(task_id=None):
     if task_id == None:

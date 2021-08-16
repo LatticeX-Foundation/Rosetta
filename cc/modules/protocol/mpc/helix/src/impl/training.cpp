@@ -76,7 +76,7 @@ int HelixOpsImpl::ConditionalReveal(
     vector<Share> inner_out_vec = shared_input;
     const map<string, int>& ciphertext_nodes = save_model.get_ciphertext_nodes(); 
     hi->SyncCiphertext(shared_input, inner_out_vec, ciphertext_nodes);
-    helix_convert_share_to_string(shared_input, out_cipher_vec);
+    helix_convert_share_to_string(inner_out_vec, out_cipher_vec);
     out_plain_vec.clear();
     return 0;
   }

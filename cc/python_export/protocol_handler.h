@@ -80,8 +80,8 @@ class ProtocolHandler {
     rosetta::ProtocolManager::Instance()->SetFloatPrecision(float_precision, task_id);
   }
 
-  void get_float_precision(const string& task_id="") {
-    rosetta::ProtocolManager::Instance()->GetFloatPrecision(task_id);
+  int get_float_precision(const string& task_id="") {
+    return rosetta::ProtocolManager::Instance()->GetFloatPrecision(task_id);
   }
 
   void set_saver_computation_model(const string& task_id="") {
@@ -110,6 +110,21 @@ class ProtocolHandler {
   vector<string> get_saver_plain_model(const string& task_id="") {
     rosetta::SaverModel model = rosetta::ProtocolManager::Instance()->GetSaverModel(task_id);
     return model.get_plaintext_nodes();
+  }
+
+  bool is_saver_computation_model(const string& task_id="") {
+    rosetta::SaverModel model = rosetta::ProtocolManager::Instance()->GetSaverModel(task_id);
+    return model.is_computation_mode();
+  }
+
+  bool is_saver_cipher_model(const string& task_id="") {
+    rosetta::SaverModel model = rosetta::ProtocolManager::Instance()->GetSaverModel(task_id);
+    return model.is_ciphertext_mode();
+  }
+
+  bool is_saver_plain_model(const string& task_id="") {
+    rosetta::SaverModel model = rosetta::ProtocolManager::Instance()->GetSaverModel(task_id);
+    return model.is_plaintext_mode();
   }
 
   void set_restore_computation_model(const string& task_id="") {
@@ -144,6 +159,26 @@ class ProtocolHandler {
   string get_restore_private_plain_model(const string& task_id="") {
     rosetta::RestoreModel model = rosetta::ProtocolManager::Instance()->GetRestoreModel(task_id);
     return model.get_plaintext_node();
+  }
+
+  bool is_restore_computation_model(const string& task_id="") {
+    rosetta::RestoreModel model = rosetta::ProtocolManager::Instance()->GetRestoreModel(task_id);
+    return model.is_computation_mode();
+  }
+
+  bool is_restore_cipher_model(const string& task_id="") {
+    rosetta::RestoreModel model = rosetta::ProtocolManager::Instance()->GetRestoreModel(task_id);
+    return model.is_ciphertext_mode();
+  }
+
+  bool is_restore_public_plain_model(const string& task_id="") {
+    rosetta::RestoreModel model = rosetta::ProtocolManager::Instance()->GetRestoreModel(task_id);
+    return model.is_public_plaintext_mode();
+  }
+
+  bool is_restore_private_plain_model(const string& task_id="") {
+    rosetta::RestoreModel model = rosetta::ProtocolManager::Instance()->GetRestoreModel(task_id);
+    return model.is_private_plaintext_mode();
   }
 
   std::string get_protocol_name(const string& task_id="") {

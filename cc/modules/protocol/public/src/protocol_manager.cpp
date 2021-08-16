@@ -192,7 +192,6 @@ int ProtocolManager::GetFloatPrecision(const string& task_id/*=""*/) {
     tlog_warn_(task_id) << "get float precision failed, task id: " << task_id << " not exists!";
     return -1;
   }
-
   return iter->second->GetMpcContext()->FLOAT_PRECISION;
 }
 
