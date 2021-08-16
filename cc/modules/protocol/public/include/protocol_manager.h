@@ -142,8 +142,8 @@ private:
    * @note
         By default, the local ciphertext values are saved in model(mode=0)
   */
-  void SetSaverModel(const vector<string>& model_nodes, const string& task_id="");
-  vector<string> GetSaverModel(const string& task_id="");
+  void SetSaverModel(const SaverModel& model, const string& task_id="");
+  SaverModel GetSaverModel(const string& task_id="");
 
   /**
    * @brief Set up the way of restoring Rosetta training model.
@@ -162,8 +162,8 @@ private:
    * @note
         By default, the local ciphertext values are saved in model (mode=0).
   */
-  void SetRestoreModel(const vector<string>& model_nodes, const string& task_id="");
-  vector<string> GetRestoreModel(const string& task_id="");
+  void SetRestoreModel(const RestoreModel& model_nodes, const string& task_id="");
+  RestoreModel GetRestoreModel(const string& task_id="");
 
 
 private:

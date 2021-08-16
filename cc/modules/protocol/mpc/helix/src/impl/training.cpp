@@ -63,11 +63,20 @@ int HelixOpsImpl::ConditionalReveal(
   vector<string>& out_cipher_vec,
   vector<double>& out_plain_vec) {
   // not to reveal plaintext by default
-  const vector<string>& save_mode = context_->SAVER_MODE;
+  const SaverModel& save_model = context_->SAVER_MODEL;
 
   // all ciphertext
-  if (save_mode.empty()) {
+  if (save_model.is_computation_mode()) {
     out_cipher_vec = in_vec;
+    out_plain_vec.clear();
+    return 0;
+  } else if (save_model.is_ciphertext_mode()) {
+    vector<Share> shared_input(in_vec.size());
+    helix_convert_string_to_share(in_vec, shared_input);
+    vector<Share> inner_out_vec = shared_input;
+    const map<string, int>& ciphertext_nodes = save_model.get_ciphertext_nodes(); 
+    hi->SyncCiphertext(shared_input, inner_out_vec, ciphertext_nodes);
+    helix_convert_share_to_string(shared_input, out_cipher_vec);
     out_plain_vec.clear();
     return 0;
   }
@@ -76,10 +85,11 @@ int HelixOpsImpl::ConditionalReveal(
   helix_convert_string_to_share(in_vec, shareA);
   AUDIT("id:{}, P{} Reveal, input(Share){}", _op_msg_id.get_hex(), hi->party_id(),  Vector<Share>(shareA));
 
+  const vector<string>& plaintext_nodes = save_model.get_plaintext_nodes();
   vector<double> c;
-  hi->Reveal(shareA, c, save_mode);
+  hi->Reveal(shareA, c, plaintext_nodes);
   string current_node_id = io->GetCurrentNodeId();
-  if (std::find(save_mode.begin(), save_mode.end(), current_node_id) != save_mode.end()) {
+  if (std::find(plaintext_nodes.begin(), plaintext_nodes.end(), current_node_id) != plaintext_nodes.end()) {
     out_plain_vec.swap(c);
   } else {
     out_plain_vec.resize(in_vec.size());

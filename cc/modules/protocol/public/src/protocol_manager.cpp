@@ -4,6 +4,7 @@
 #include "cc/modules/common/include/utils/rtt_logger.h"
 #include "cc/modules/common/include/utils/rtt_exceptions.h"
 #include "cc/modules/iowrapper/include/io_manager.h"
+#include "cc/modules/protocol/public/include/protocol_ops.h"
 
 
 #if ROSETTA_ENABLES_PROTOCOL_MPC_HELIX
@@ -125,8 +126,8 @@ int ProtocolManager::DeactivateProtocol(const string& task_id/*=""*/) {
   return 0;
 }
 
-void ProtocolManager::SetSaverModel(const vector<string>& model_nodes, const string& task_id/*=""*/) {
-  _Check_Model_Nodes(task_id, model_nodes, true);
+void ProtocolManager::SetSaverModel(const SaverModel& model, const string& task_id/*=""*/) {
+  //_Check_Model_Nodes(task_id, model_nodes, true);
 
   std::lock_guard<std::mutex> lock(protocol_mutex_);
   auto iter = working_protocols_.find(task_id);
@@ -135,22 +136,22 @@ void ProtocolManager::SetSaverModel(const vector<string>& model_nodes, const str
     return;
   }
   
-  iter->second->GetMpcContext()->SAVER_MODE = model_nodes;
+  iter->second->GetMpcContext()->SAVER_MODEL = model;
 }
 
-vector<string> ProtocolManager::GetSaverModel(const string& task_id/*=""*/) {
+SaverModel ProtocolManager::GetSaverModel(const string& task_id/*=""*/) {
   std::lock_guard<std::mutex> lock(protocol_mutex_);
   auto iter = working_protocols_.find(task_id);
   if (iter == working_protocols_.end()) {
     tlog_warn_(task_id) << "get restore model failed, task id: " << task_id << " not exists!";
-    return vector<string>();
+    return SaverModel();
   }
 
-  return iter->second->GetMpcContext()->SAVER_MODE;
+  return iter->second->GetMpcContext()->SAVER_MODEL;
 }
 
-void ProtocolManager::SetRestoreModel(const vector<string>& model_nodes, const string& task_id/*=""*/) {
-  _Check_Model_Nodes(task_id, model_nodes, false);
+void ProtocolManager::SetRestoreModel(const RestoreModel& model, const string& task_id/*=""*/) {
+  //_Check_Model_Nodes(task_id, model_nodes, false);
 
   std::lock_guard<std::mutex> lock(protocol_mutex_);
   auto iter = working_protocols_.find(task_id);
@@ -159,18 +160,18 @@ void ProtocolManager::SetRestoreModel(const vector<string>& model_nodes, const s
     return;
   }
 
-  iter->second->GetMpcContext()->RESTORE_MODE = model_nodes;
+  iter->second->GetMpcContext()->RESTORE_MODEL = model;
 }
 
-vector<string> ProtocolManager::GetRestoreModel(const string& task_id/*=""*/) {
+RestoreModel ProtocolManager::GetRestoreModel(const string& task_id/*=""*/) {
   std::lock_guard<std::mutex> lock(protocol_mutex_);
   auto iter = working_protocols_.find(task_id);
   if (iter == working_protocols_.end()) {
     tlog_warn_(task_id) << "get restore model failed, task id: " << task_id << " not exists!";
-    return vector<string>();
+    return RestoreModel();
   }
 
-  return iter->second->GetMpcContext()->RESTORE_MODE;
+  return iter->second->GetMpcContext()->RESTORE_MODEL;
 }
 
 void ProtocolManager::SetFloatPrecision(int float_precision, const string& task_id/*=""*/) {

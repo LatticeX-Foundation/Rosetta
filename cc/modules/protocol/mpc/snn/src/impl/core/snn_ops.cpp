@@ -548,11 +548,20 @@ int SnnProtocolOps::ConditionalReveal(
   vector<double>& out_plain_vec) {
   std::cout << "SnnProtocolOps::ConditionalReveal!" << std::endl;
   // not to reveal plaintext by default
-  const vector<string>& save_mode = context_->SAVER_MODE;
+  const SaverModel& save_model = context_->SAVER_MODEL;
   int vec_size = in_vec.size();
   // case one: all ciphertext, just return
-  if (save_mode.empty()) {
+  if (save_model.is_computation_mode()) {
     out_cipher_vec = in_vec;
+    out_plain_vec.clear();
+    return 0;
+  } else if (save_model.is_ciphertext_mode()) {
+    vector<mpc_t> shared_input(vec_size);
+    snn_decode(in_vec, shared_input, context_->FLOAT_PRECISION);
+    vector<mpc_t> inner_out_vec = shared_input;
+    const map<string, int>& ciphertext_nodes = save_model.get_ciphertext_nodes(); 
+    internal_->SyncCiphertext(shared_input, inner_out_vec, ciphertext_nodes);
+    snn_encode(inner_out_vec, out_cipher_vec);
     out_plain_vec.clear();
     return 0;
   }
@@ -563,15 +572,15 @@ int SnnProtocolOps::ConditionalReveal(
 
   snn_decode(in_vec, shared_input, context_->FLOAT_PRECISION);
   // snn_decode(in_vec, shared_input);
-
-  internal_->Reconstruct2PC(shared_input, inner_out_vec, save_mode);
+  const vector<string>& plaintext_nodes = save_model.get_plaintext_nodes();
+  internal_->Reconstruct2PC(shared_input, inner_out_vec, plaintext_nodes);
 
   // to double values
   vector<double> dvalues(vec_size);
   convert_mpctype_to_double(inner_out_vec, dvalues, context_->FLOAT_PRECISION);
   // we will not use global variable partyNum in later version.
   string current_node_id = net_io_->GetCurrentNodeId();
-  if (std::find(save_mode.begin(), save_mode.end(), current_node_id) != save_mode.end()) {
+  if (std::find(plaintext_nodes.begin(), plaintext_nodes.end(), current_node_id) != plaintext_nodes.end()) {
     out_plain_vec.swap(dvalues);
   } else {
     out_plain_vec.resize(in_vec.size());

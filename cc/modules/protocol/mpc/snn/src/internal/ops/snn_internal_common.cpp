@@ -397,6 +397,19 @@ int SnnInternal::ReconstructBit2PC(
   return 0;
 }
 
+  int SnnInternal::SyncCiphertext(const vector<mpc_t>& in_vec, vector<mpc_t>& out_vec, const map<string, int>& ciphertext_nodes) {
+    string current_node_id = io->GetCurrentNodeId();
+    for (auto iter = ciphertext_nodes.begin(); iter != ciphertext_nodes.end(); iter++) {
+      if (partyNum == iter->second && iter->first != current_node_id) {
+        sendVector2(in_vec, iter->first, in_vec.size());
+      } else if (iter->first == current_node_id && partyNum != iter->second) {
+        receiveVector(out_vec, iter->second, out_vec.size());
+      }
+    }
+    return 0;
+  }
+
+
 
 
 }//snn

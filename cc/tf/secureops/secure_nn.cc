@@ -463,7 +463,7 @@ class SecureConv2DOp : public SecureOpKernel {
     attrs_["m"] = to_string(in_batch * out_rows * out_cols);
     attrs_["k"] = to_string(filter_rows * filter_cols * in_depth);
     attrs_["n"] = to_string(out_depth);
-    attrs_["rh_is_const"] = is_public_or_constant_input_by_restore_mode(context) ? "1" : "0";
+    attrs_["rh_is_const"] = is_public_or_constant_input_by_restore_model(context) ? "1" : "0";
 
     // log_error << __FUNCTION__ << " 4timerx:" << timerx.elapse() << " m:" << attrs_["m"]
     //           << " k:" << attrs_["k"] << " n:" << attrs_["n"] << " padding:" << zero_padding_nums
@@ -631,7 +631,7 @@ class SecureBiasAddOp : public SecureBinaryOp<BinaryOpState> {
     // fill attributes
     attrs_["lh_is_const"] = lh_is_const_ ? "1" : "0";
     attrs_["rh_is_const"] = rh_is_const_ ? "1" : "0";
-    attrs_["rh_is_const"] = is_public_or_constant_input_by_restore_mode(context) ? "1" : "0";
+    attrs_["rh_is_const"] = is_public_or_constant_input_by_restore_model(context) ? "1" : "0";
 
     // compute with protocol
     BinaryCompute(input0, input1, output, context);
@@ -775,7 +775,7 @@ class SecureFusedBatchNormOp : public SecureOpKernel {
     // for now, this is not the most efficient one, since we not use vectorization.
     // vector<vector<string>> all_input(depth, vector<string>(rest_size));
 
-    attrs_["rh_is_const"] = is_public_or_constant_input_by_restore_mode(context) ? "1" : "0";
+    attrs_["rh_is_const"] = is_public_or_constant_input_by_restore_model(context) ? "1" : "0";
     log_info << __FUNCTION__ << " rh_is_const:" << attrs_["rh_is_const"] ;
     bool rh_is_const = (attrs_["rh_is_const"] == "1");
 

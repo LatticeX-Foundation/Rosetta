@@ -196,6 +196,8 @@ class SnnInternal {
   // Broadcast data
   int Broadcast(const string& from_node, const string& msg, string& result);
   int Broadcast(const string& from_node, const char* msg, char* result, size_t size);
+
+  int SyncCiphertext(const vector<mpc_t>& in_vec, vector<mpc_t>& out_vec, const map<string, int>& ciphertext_nodes);
   
 
   ///////////  basic math functions ////////

@@ -37,14 +37,14 @@ int ProtocolBase::Uninit() {
   return -1;
 }
 
-void ProtocolBase::SetSaverModel(const vector<string>& mode) {
+void ProtocolBase::SetSaverModel(const SaverModel& model) {
   std::lock_guard<std::mutex> lock(status_mtx_);
-  context_->SAVER_MODE = mode;
+  context_->SAVER_MODEL = model;
 }
 
-void ProtocolBase::SetRestoreModel(const vector<string>& mode) {
+void ProtocolBase::SetRestoreModel(const RestoreModel& model) {
   std::lock_guard<std::mutex> lock(status_mtx_);
-  context_->RESTORE_MODE = mode;
+  context_->RESTORE_MODEL = model;
 }
 
 void ProtocolBase::SetFloatPrecision(int float_precision) {

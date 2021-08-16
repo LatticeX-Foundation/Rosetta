@@ -48,8 +48,8 @@ int MpcProtocol::Init(string logfile) {
       context_->NODE_ID = net_io_->GetCurrentNodeId();
       context_->ROLE_ID = net_io_->GetPartyId(context_->NODE_ID);
       context_->NODE_ROLE_MAPPING = net_io_->GetComputationNodes();
-      context_->SAVER_MODE.clear();
-      context_->RESTORE_MODE.clear();
+      context_->SAVER_MODEL.set_computation_mode();
+      context_->RESTORE_MODEL.set_computation_mode();
 
       InitMpcEnvironment();
       InitAesKeys();

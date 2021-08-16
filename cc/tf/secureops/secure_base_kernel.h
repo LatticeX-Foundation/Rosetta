@@ -243,33 +243,24 @@ class SecureOpKernel : public OpKernel {
     //! @todo
     return false;
   }
-  bool is_public_or_constant_input_by_restore_mode(OpKernelContext* context) {
+  bool is_public_or_constant_input_by_restore_model(OpKernelContext* context) {
     string task_id = ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation());
     int parties = ProtocolManager::Instance()->GetProtocol(task_id) ->GetParties();
     auto proto_context = ProtocolManager::Instance()->GetProtocol(task_id)->GetMpcContext();
 #ifndef ENABLE_ZK_TASK
 #define ENABLE_ZK_TASK 1
 #if (ENABLE_ZK_TASK == 0)
-    int restore_mode = std::stoi(proto_context->PAYLOAD);// int restore_mode = atoi(cfg.at("restore_mode").c_str());
+    int restore_model = std::stoi(proto_context->PAYLOAD);// int restore_model = atoi(cfg.at("restore_model").c_str());
     int a = (1 << parties) - 1;
-    if ((restore_mode & a) == a) {
+    if ((restore_model & a) == a) {
       // is a public-constant value
       return true;
     }
     return false;
 #else
-    int party_counter = 0;
-    for (const auto& node : proto_context->RESTORE_MODE) {
-      if (-1 == proto_context->GetRole(node)) {
-        // not compute node
-        return false;
-      } else {
-        ++party_counter;
-      }
-    }
-    if (party_counter == parties)
+    if (proto_context->RESTORE_MODEL.is_public_plaintext_mode()) {
       return true;
-    
+    }
     return false;
 #endif
 

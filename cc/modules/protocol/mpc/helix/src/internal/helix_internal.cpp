@@ -282,6 +282,33 @@ void HelixInternal::Reveal(const vector<BitShare>& X, vector<bit_t>& plain, cons
   AUDIT("id:{}, P{} Reveal, output(bit_t){}", msgid.get_hex(), player, Vector<bit_t>(plain));
 }
 
+void HelixInternal::SyncCiphertext(const vector<Share>& in_vec, vector<Share>& out_vec, const map<string, int>& ciphertext_nodes) {
+  string current_node_id = io->GetCurrentNodeId();
+  vector<mpc_t> in_vec_s(2 * in_vec.size(), 0);
+  int j = 0;
+  for (int i = 0; i < in_vec.size(); i++) {
+    in_vec_s[j++] = in_vec[i].s0.A0;
+    in_vec_s[j++] = in_vec[i].s1.A1;
+  }
+  vector<mpc_t> out_vec_s(2 * out_vec.size(), 0);
+   bool recv_flag = false;
+  for (auto iter = ciphertext_nodes.begin(); iter != ciphertext_nodes.end(); iter++) {
+    if (player == iter->second && iter->first != current_node_id) {
+      send(iter->first, in_vec_s, in_vec_s.size());
+    } else if (iter->first == current_node_id && player != iter->second) {
+      recv(iter->second, out_vec_s, out_vec_s.size());
+      recv_flag = true;
+    }
+  }
+  if (recv_flag) {
+    int j = 0;
+    for (int i = 0; i < out_vec.size(); i++) {
+      out_vec[i].s0.A0 = out_vec_s[j++];
+      out_vec[i].s1.A1 = out_vec_s[j++];
+    }
+  }
+}
+
 /**
  * Input, binary
  */

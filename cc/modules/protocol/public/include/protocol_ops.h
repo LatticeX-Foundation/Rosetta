@@ -43,14 +43,147 @@ using attr_type = unordered_map<string, string>;
 #define THROW_NOT_IMPL_FN(name) \
   throw std::runtime_error(string("please implements '") + name + "' in subclass")
 
+struct SaverModel {
+  private:
+    enum mode{
+      SAVER_MODE_INVALID = 0,
+      SAVER_MODE_COMPUTATION_NODE = 1,
+      SAVER_MODE_CIPHERTEXT = 2,
+      SAVER_MODE_PLAINTEXT = 3
+    };
+  
+    enum mode mode_ = SAVER_MODE_INVALID;
+    map<string, int> ciphertext_nodes_;
+    vector<string> plaintext_nodes_;
+
+    void clear() {
+      switch (mode_) {
+        case SAVER_MODE_CIPHERTEXT:
+        ciphertext_nodes_.clear();
+        break;
+      case SAVER_MODE_PLAINTEXT:
+        plaintext_nodes_.clear();
+        break;
+      default:
+        break;
+      }
+      mode_ = SAVER_MODE_INVALID;
+    }
+  public:
+    void set_computation_mode() {
+      clear();
+      mode_ = SAVER_MODE_COMPUTATION_NODE;
+    }
+
+    void set_ciphertext_mode(const map<string, int>& ciphertext_nodes) {
+      clear();
+      mode_ = SAVER_MODE_CIPHERTEXT;
+      ciphertext_nodes_ = ciphertext_nodes;
+    }
+
+    void set_plaintext_mode(const vector<string>& plaintext_nodes) {
+      clear();
+      mode_ = SAVER_MODE_PLAINTEXT;
+      plaintext_nodes_ = plaintext_nodes;
+    }
+
+    bool is_computation_mode() const {
+      return mode_ == SAVER_MODE_COMPUTATION_NODE;
+    }
+
+    bool is_ciphertext_mode() const {
+      return mode_ == SAVER_MODE_CIPHERTEXT;
+    }
+
+    bool is_plaintext_mode() const {
+      return mode_ == SAVER_MODE_PLAINTEXT;
+    }
+
+    const map<string, int>& get_ciphertext_nodes() const {
+      return ciphertext_nodes_;
+    }
+
+    const vector<string>& get_plaintext_nodes() const {
+      return plaintext_nodes_;
+    }
+};
+
+struct RestoreModel {
+  private:
+    enum mode{
+      RESTORE_MODE_INVALID = 0,
+      RESTORE_MODE_COMPUTATION_NODE = 1,
+      RESTORE_MODE_CIPHERTEXT = 2,
+      RESTORE_MODE_PRIVATE_PLAINTEXT = 3,
+      RESTORE_MODE_PUBLIC_PLAINTEXT = 4
+    };
+
+    enum mode mode_ = RESTORE_MODE_INVALID;
+    map<string, int> ciphertext_nodes_;
+    string plaintext_node_;
+  
+    void clear() {
+      switch (mode_) {
+        case RESTORE_MODE_CIPHERTEXT:
+          ciphertext_nodes_.clear();
+          break;
+        case RESTORE_MODE_PRIVATE_PLAINTEXT:
+          plaintext_node_.clear();
+          break;
+        default:
+          break;
+      }
+      mode_ = RESTORE_MODE_INVALID;
+    }
+  public:
+    void set_computation_mode() {
+      clear();
+      mode_ = RESTORE_MODE_COMPUTATION_NODE;
+    }
+    void set_ciphertext_mode(const map<string, int>& ciphertext_nodes) {
+      clear();
+      mode_ = RESTORE_MODE_CIPHERTEXT;
+      ciphertext_nodes_ = ciphertext_nodes;
+    }
+    void set_private_plaintext_mode(const string& plaintext_node) {
+      clear();
+      mode_ = RESTORE_MODE_PRIVATE_PLAINTEXT;
+      plaintext_node_ = plaintext_node;
+    }
+    void set_public_plaintext_mode() {
+      clear();
+      mode_ = RESTORE_MODE_PUBLIC_PLAINTEXT;
+    }
+
+    bool is_computation_mode() const {
+      return mode_ == RESTORE_MODE_COMPUTATION_NODE;
+    }
+    bool is_ciphertext_mode() const {
+      return mode_ == RESTORE_MODE_CIPHERTEXT;
+    }
+    bool is_private_plaintext_mode() const {
+      return mode_ == RESTORE_MODE_PRIVATE_PLAINTEXT;
+    }
+    bool is_public_plaintext_mode() const {
+      return mode_ == RESTORE_MODE_PUBLIC_PLAINTEXT;
+    }
+
+    const map<string, int>& get_ciphertext_nodes() const {
+      return ciphertext_nodes_;
+    }
+    const string& get_plaintext_node() const {
+      return plaintext_node_;
+    }
+};
+
 struct ProtocolContext {
   short VERSION = 2;
   int FLOAT_PRECISION = FLOAT_PRECISION_DEFAULT;
 
   // To specify nodes to save model
-  vector<string> SAVER_MODE;
+  SaverModel SAVER_MODEL;
   // To specify nodes to load or restore model
-  vector<string> RESTORE_MODE;
+  RestoreModel RESTORE_MODEL;
   string TASK_ID;
   string NODE_ID;
   int ROLE_ID;

@@ -171,6 +171,7 @@ struct StoredValue {
   string shape_and_slice; /*now not use*/
   TensorShape shape;
   vector<double> value;
+  vector<string> cipher_value;
   DataType original_dtype;
 };
 
@@ -213,8 +214,9 @@ struct RestoreOp {
     VLOG(1) << "Restoring tensor " << idx << " : " << tensor_name << " : "
             << restored_full_shape.num_elements();
     Tensor* restored_tensor;
+
     if (shape_and_slice.empty()) {
-      if (restore_mode.empty()) {
+      if (restore_model.is_computation_mode()) {
         // Lookup the full tensor.
         TF_RETURN_IF_ERROR(context->allocate_output(idx, restored_full_shape, &restored_tensor));
         TF_RETURN_IF_ERROR(reader->Lookup(tensor_name, restored_tensor));
@@ -225,6 +227,7 @@ struct RestoreOp {
           context->allocate_temp(stored_value->original_dtype, restored_full_shape, &temp_tensor));
         TF_RETURN_IF_ERROR(reader->Lookup(tensor_name, &temp_tensor));
         vector<double> tempvd(temp_tensor.NumElements());
+        vector<string> tempvs;
         if (stored_value->original_dtype == DataType::DT_FLOAT) {
           const auto& temp_flat = temp_tensor.flat<float>();
           for (int i = 0; i < temp_tensor.NumElements(); i++) {
@@ -235,13 +238,20 @@ struct RestoreOp {
           for (int i = 0; i < temp_tensor.NumElements(); i++) {
             tempvd[i] = temp_flat(i);
           }
+        } else if (restore_model.is_ciphertext_mode()) {
+          const auto& temp_flat = temp_tensor.flat<string>();
+          tempvs.resize(temp_tensor.NumElements());
+          for (int i = 0; i < temp_tensor.NumElements(); i++) {
+            tempvs[i] = temp_flat(i);
+          }
         } else {
-          log_error << "not supported1" ;
+          log_error << "not supported1" << DataTypeString(stored_value->original_dtype) ;
         }
         stored_value->idx = idx;
         stored_value->shape_and_slice = shape_and_slice;
         stored_value->shape = restored_full_shape;
         stored_value->value = tempvd;
+        stored_value->cipher_value = tempvs;
       }
     } else {
       //! @todo [ujnss]
@@ -260,8 +270,8 @@ struct RestoreOp {
           parsed_full_shape.DebugString(),
           " does not match the shape stored in checkpoint: ", restored_full_shape.DebugString());
       }
-
-      if (restore_mode.empty()) {
+      
+      if (restore_model.is_computation_mode()) {
         TF_RETURN_IF_ERROR(context->allocate_output(idx, parsed_slice_shape, &restored_tensor));
         TF_RETURN_IF_ERROR(reader->LookupSlice(tensor_name, parsed_slice, restored_tensor));
       } else {
@@ -272,6 +282,7 @@ struct RestoreOp {
         TF_RETURN_IF_ERROR(reader->LookupSlice(tensor_name, parsed_slice, &temp_tensor));
 
         vector<double> tempvd(temp_tensor.NumElements());
+        vector<string> tempvs;
         if (stored_value->original_dtype == DataType::DT_FLOAT) {
           const auto& temp_flat = temp_tensor.flat<float>();
           for (int i = 0; i < temp_tensor.NumElements(); i++) {
@@ -282,6 +293,12 @@ struct RestoreOp {
           for (int i = 0; i < temp_tensor.NumElements(); i++) {
             tempvd[i] = temp_flat(i);
           }
+        } else if (restore_model.is_ciphertext_mode()) {
+          const auto& temp_flat = temp_tensor.flat<string>();
+          tempvs.resize(temp_tensor.NumElements());
+          for (int i = 0; i < temp_tensor.NumElements(); i++) {
+            tempvs[i] = temp_flat(i);
+          }
         } else {
           log_error << "not supported2" ;
         }
@@ -289,6 +306,7 @@ struct RestoreOp {
         stored_value->shape_and_slice = shape_and_slice;
         stored_value->shape = restored_full_shape;
         stored_value->value = tempvd;
+        stored_value->cipher_value = tempvs;
       }
     }
     return Status::OK();
@@ -300,7 +318,7 @@ struct RestoreOp {
   string shape_and_slice;
   string reader_prefix;
   StoredValue* stored_value;
-  vector<string> restore_mode;
+  RestoreModel restore_model;
 
   ::tensorflow::Status status;
 };
@@ -317,7 +335,9 @@ Status RestoreTensorsV2(
   const Tensor& shape_and_slices,
   gtl::ArraySlice<DataType> dtypes,
   vector<StoredValue>& stored_values,
-  const vector<string>& restore_mode) {
+  const RestoreModel& restore_model,
+  const map<string, int>& computation_nodes,
+  const string& current_node_id) {
   const string& prefix_string = prefix.scalar<string>()();
   const auto& tensor_names_flat = tensor_names.flat<string>();
   const auto& shape_and_slices_flat = shape_and_slices.flat<string>();
@@ -347,7 +367,7 @@ Status RestoreTensorsV2(
     // log_info << "tensor_name:" << tensor_name << ",dtypes[i]:" << DataTypeString(dtypes[i])
     //          << ",original_dtype:" << DataTypeString(original_dtype) ;
     stored_values[i].original_dtype = original_dtype;
-    if (restore_mode.empty()) {
+    if (restore_model.is_computation_mode() || restore_model.is_ciphertext_mode()) {
       if (dtypes[i] != original_dtype) {
         string error_msg = strings::StrCat(
           "tensor_name = ", tensor_name, "; expected dtype ", DataTypeString(dtypes[i]),
@@ -380,7 +400,7 @@ Status RestoreTensorsV2(
     const string& tensor_name = tensor_names_flat(i);
     const string& shape_and_slice = shape_and_slices_flat(i);
     auto op = new RestoreOp{
-      context, i, tensor_name, shape_and_slice, prefix_string, &stored_values[i], restore_mode};
+      context, i, tensor_name, shape_and_slice, prefix_string, &stored_values[i], restore_model};
     if (op->should_run_in_pool(&default_reader)) {
       pool_restore_ops.emplace_back(op);
     } else {
@@ -410,7 +430,7 @@ Status RestoreTensorsV2(
     TF_RETURN_IF_ERROR(op->status);
   }
 
-  if (!restore_mode.empty()) {
+  if (!restore_model.is_computation_mode()) {
     return Status::OK();
   }
 
@@ -661,38 +681,40 @@ class SecureRestoreV2Op : public SecureOpKernel {
     node_id_ = ProtocolManager::Instance()
                   ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
                   ->GetNetHandler()->GetCurrentNodeId();
-    restore_mode_ = ProtocolManager::Instance()
+    restore_model_ = ProtocolManager::Instance()
                   ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
-                  ->GetMpcContext()->RESTORE_MODE;
+                  ->GetMpcContext()->RESTORE_MODEL;
     int restore_party_id = -1;
     bool is_public_model = false;
     bool is_model_owner = false;
+    bool is_ciphertext_model_owner = false;
 
     // party id start 0
-    std::string restore_desc = "unsupported restore_mode";
+    std::string restore_desc = "unsupported restore_model";
     auto prtc = ProtocolManager::Instance()->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()));
     vector<string> data_nodes = prtc->GetNetHandler()->GetDataNodes();
     map<string, int> computation_nodes = prtc->GetNetHandler()->GetComputationNodes(); 
-    if (restore_mode_.empty()) {
+    if (restore_model_.is_computation_mode()) {
       restore_desc = "all parties each have the secret sharing value of the model";
-    } else if (restore_mode_.size() == 1) {
-      if (std::find(data_nodes.begin(), data_nodes.end(), restore_mode_[0]) == data_nodes.end()) {
+    } else if (restore_model_.is_private_plaintext_mode()) {
+      const string& plaintext_node = restore_model_.get_plaintext_node();
+      if (std::find(data_nodes.begin(), data_nodes.end(), plaintext_node) == data_nodes.end()) {
         log_error << "restore node is not a valid data node!" ;
         return;
       }
-      if (node_id_ == restore_mode_[0]) {
+      if (node_id_ == plaintext_node) {
         is_model_owner = true;
       }
-      restore_desc = restore_mode_[0] + " owns the plain model, load model as private";
-    } else {
-      for (auto iter = computation_nodes.begin(); iter != computation_nodes.end(); iter++) {
-        if (std::find(restore_mode_.begin(), restore_mode_.end(), iter->first) == restore_mode_.end()) {
-          log_error << "more than one computation node own model, but " + iter->first + " does not own model!";
-          return;
-        }
-      }
+      restore_desc = plaintext_node + " owns the plain model, load model as private";
+    } else if (restore_model_.is_public_plaintext_mode()) {
       restore_desc = "each party has the same plain model, load model as public";
       is_public_model = true;
+    } else if (restore_model_.is_ciphertext_mode()) {
+      map<string, int> ciphertext_nodes = restore_model_.get_ciphertext_nodes();
+      if (ciphertext_nodes.find(node_id_) != ciphertext_nodes.end()) {
+        restore_desc = node_id_ + " owns the ciphertext model, load model as private";
+        is_ciphertext_model_owner = true;
+      }
     }
 
     //log_info << "partyid: " << partyid_ << "/" << parties << ", restore_mode:" << restore_mode_
@@ -713,7 +735,7 @@ class SecureRestoreV2Op : public SecureOpKernel {
     const auto& tensor_names_flat = tensor_names.flat<string>();
     const auto& shape_and_slices_flat = shape_and_slices.flat<string>();
 
-    if ((restore_mode_.empty()) || (is_public_model) || (is_model_owner)) {
+    if ((restore_model_.is_computation_mode()) || (is_public_model) || (is_model_owner) || (is_ciphertext_model_owner)) {
       // Intention: we plan to use the RestoreV2 op as a backward-compatible
       // reader as we upgrade to the V2 format.  This allows transparent upgrade.
       // We here attempt to read a V1 checkpoint, if "prefix_string" does not
@@ -739,18 +761,19 @@ class SecureRestoreV2Op : public SecureOpKernel {
       OP_REQUIRES_OK(
         context,
         RestoreTensorsV2(
-          context, prefix, tensor_names, shape_and_slices, dtypes_, stored_values_, restore_mode_));
+          context, prefix, tensor_names, shape_and_slices, dtypes_, stored_values_, restore_model_, computation_nodes, node_id_));
     }
     auto print_model_parameters_info = [&]() {
       int64_t total_size = 0;
       for (auto& stored_values : stored_values_) {
         total_size += stored_values.value.size();
       }
+      log_info << "dtype:" << DataTypeString(dtypes_[0]);
       log_info << "the variable number of the model:" << stored_values_.size()
                << ", total parameters:" << total_size ;
     };
 
-    if (restore_mode_.empty()) {
+    if (restore_model_.is_computation_mode()) {
       print_model_parameters_info();
       log_info << "restore model done:" << timer.elapse() ;
       return;
@@ -779,13 +802,145 @@ class SecureRestoreV2Op : public SecureOpKernel {
       }
       log_info << "restore model done:" << timer.elapse() ;
       return;
-    }
+    } else if (restore_model_.is_ciphertext_mode()) {
+      const map<string, int> ciphertext_nodes = restore_model_.get_ciphertext_nodes();
+      auto protocol = ProtocolManager::Instance()
+                ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()));
+      auto ops = protocol->GetOps(msg_id());
+      shared_ptr<NET_IO> net_io = protocol->GetNetHandler();
+      const map<string, int> computation_nodes = net_io->GetComputationNodes();
+      string current_node_id = net_io->GetCurrentNodeId();
+      int current_party_id = net_io->GetPartyId(current_node_id);
+      if (ciphertext_nodes.find(current_node_id) != ciphertext_nodes.end()
+        || computation_nodes.find(current_node_id) != computation_nodes.end()) {
+        for (auto iter = ciphertext_nodes.begin(); iter != ciphertext_nodes.end(); iter++) {
+          string send_node = iter->first;
+          int recv_party = iter->second;
+          if (current_node_id != send_node && current_party_id != recv_party)
+            continue;
+          
+          int vec_size = 0;
+          int slen = 0;
+          if (current_node_id == send_node && current_party_id != recv_party) {
+            vector<int64_t> shapes;
+            shapes.push_back(stored_values_.size());
+            for (auto& stored_values : stored_values_) {
+              auto dims = stored_values.shape.dims();
+              shapes.push_back(dims);
+              for (int i = 0; i < dims; i++) {
+                shapes.push_back(stored_values.shape.dim_size(i));
+              }
+            }
+            vec_size = stored_values_[0].cipher_value.size();
+            slen = stored_values_[0].cipher_value[0].size();
+            shapes.push_back(vec_size);
+            shapes.push_back(slen);
 
+            // sync shapes to other parties
+            ///////////////////////////////////////////////////////////////////////////
+            int64_t n = shapes.size();
+            net_io->send(recv_party, (const char*)&n, sizeof(n), msg_id());
+            net_io->send(recv_party, (const char*)shapes.data(), sizeof(int64_t) * shapes.size(), msg_id());
+            log_info << "send n:" << n;
+            for (int i = 0; i < shapes.size(); i++) {
+              log_info << "send shapes:" << shapes[i];
+            }
+          } else if (current_party_id == recv_party && current_node_id != send_node) {
+            int64_t n = 0;
+            net_io->recv(send_node, (char*)&n, sizeof(n), msg_id());
+            vector<int64_t> shapes(n);
+            net_io->recv(send_node, (char*)shapes.data(), sizeof(int64_t) * shapes.size(), msg_id());
+            log_info << "recv n:" << n ;
+            for (int i = 0; i < shapes.size(); i++) {
+              log_info << "recv shape:" << shapes[i] ;
+            }
+            ///////////////////////////////////////////////////////////////////////////
+      
+            stored_values_.resize(shapes[0]);
+      
+            int64_t k = 1;
+            for (int64_t i = 0; i < stored_values_.size(); i++) {
+              auto& stored_values = stored_values_[i];
+              stored_values.idx = i;
+      
+              vector<int64_t> ds;
+              int64_t dims = shapes[k++];
+              for (int d = 0; d < dims; d++) {
+                ds.push_back(shapes[k++]);
+              }
+              vec_size = shapes[shapes.size() - 2];
+              slen = shapes[shapes.size() - 1];
+      
+              if (dims == 1)
+                stored_values.shape = TensorShape({ds[0]});
+              else if (dims == 2)
+                stored_values.shape = TensorShape({ds[0], ds[1]});
+              else if (dims == 3)
+                stored_values.shape = TensorShape({ds[0], ds[1], ds[2]});
+              else if (dims == 4)
+                stored_values.shape = TensorShape({ds[0], ds[1], ds[2], ds[3]});
+              else if (dims == 5)
+                stored_values.shape = TensorShape({ds[0], ds[1], ds[2], ds[3], ds[4]});
+              else
+                throw;
+      
+              stored_values.value.resize(stored_values.shape.num_elements(), 0);
+            }
+          }
+          int ii = 0;
+          for (auto& stored_values : stored_values_) {
+            if (stored_values.cipher_value.size() > 500 * 1000) {
+              log_debug << "-- print the size of those variables with more than 500,000 elements ("
+                        << ii + 1 << "/" << stored_values_.size() << "):" << stored_values.cipher_value.size()
+                        ;
+            }
+      
+            int64_t idx = stored_values.idx;
+            TensorShape restored_full_shape = stored_values.shape;
+            Tensor* restored_tensor = nullptr;
+      
+            auto& tempvs = stored_values.cipher_value;
+            vector<string> tempvs2; //(stored_values.shape.num_elements());
+            log_error << "tempvs";
+      
+            //print_vector(tempvd, "restore index " + to_string(ii), 5, 8);
+            SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(PrivateInput);
+            //ops->PrivateInput(plaintext_node, tempvd, tempvs);
+            SECURE_OP_CALL_PROTOCOL_OP_STATS_END(PrivateInput);
+            if (current_node_id == send_node && current_party_id != recv_party) {
+              for (int i = 0; i < tempvs.size(); i++) {
+                net_io->send(recv_party, tempvs[i].data(), tempvs[i].size(), msg_id());
+              }
+              tempvs2 = tempvs;
+            } else if (current_party_id == recv_party && current_node_id != send_node) {
+              tempvs2.resize(vec_size);
+              for (int i = 0; i < tempvs2.size(); i++) {
+                tempvs2[i].resize(slen);
+                net_io->recv(send_node, &tempvs2[i][0], tempvs2[i].size(), msg_id());
+              }
+            } else if (current_node_id == send_node && current_party_id == recv_party) {
+              tempvs2 = tempvs;
+            } else {
+              tempvs2.resize(vec_size);
+            }
+      
+            OP_REQUIRES_OK(context, context->allocate_output(idx, restored_full_shape, &restored_tensor));
+            auto out_flat = restored_tensor->flat<string>();
+            for (int64_t i = 0; i < tempvs2.size(); ++i) {
+              out_flat(i) = std::move(tempvs2[i]);
+            }
+            ii++;
+          }
+        }
+      }
+      return;
+    }
+    const string plaintext_node = restore_model_.get_plaintext_node();
     auto protocol = ProtocolManager::Instance()
                 ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()));
     auto ops = protocol->GetOps(msg_id());
     shared_ptr<NET_IO> net_io = protocol->GetNetHandler();
-    if (node_id_ == restore_mode_[0]) {
+    if (node_id_ == plaintext_node) {
       print_model_parameters_info();
       vector<int64_t> shapes;
       shapes.push_back(stored_values_.size());
@@ -801,8 +956,8 @@ class SecureRestoreV2Op : public SecureOpKernel {
       ///////////////////////////////////////////////////////////////////////////
       int64_t n = shapes.size();
       SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
-      ops->Broadcast(restore_mode_[0], (const char*)&n, (char*)&n, sizeof(n));
-      ops->Broadcast(restore_mode_[0], (const char*)shapes.data(), (char*)shapes.data(),
+      ops->Broadcast(plaintext_node, (const char*)&n, (char*)&n, sizeof(n));
+      ops->Broadcast(plaintext_node, (const char*)shapes.data(), (char*)shapes.data(),
         sizeof(int64_t) * shapes.size());
       SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
       log_info << "send n:" << n;
@@ -812,9 +967,9 @@ class SecureRestoreV2Op : public SecureOpKernel {
     } else {
       int64_t n = 0;
       SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
-      ops->Broadcast(restore_mode_[0], (const char*)&n, (char*)&n, sizeof(n));
+      ops->Broadcast(plaintext_node, (const char*)&n, (char*)&n, sizeof(n));
       vector<int64_t> shapes(n);
-      ops->Broadcast(restore_mode_[0], (const char*)shapes.data(), (char*)shapes.data(), sizeof(int64_t) * shapes.size());
+      ops->Broadcast(plaintext_node, (const char*)shapes.data(), (char*)shapes.data(), sizeof(int64_t) * shapes.size());
       SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
       log_info << "recv n:" << n ;
       for (int i = 0; i < shapes.size(); i++) {
@@ -875,7 +1030,7 @@ class SecureRestoreV2Op : public SecureOpKernel {
 
       vector<string> tempvs; //(tempvd.size());
       SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(PrivateInput);
-      ops->PrivateInput(restore_mode_[0], tempvd, tempvs);
+      ops->PrivateInput(plaintext_node, tempvd, tempvs);
       SECURE_OP_CALL_PROTOCOL_OP_STATS_END(PrivateInput);
 
       int64_t temp_params_size = 0;
@@ -912,7 +1067,7 @@ class SecureRestoreV2Op : public SecureOpKernel {
 
       //print_vector(tempvd, "restore index " + to_string(ii), 5, 8);
       SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(PrivateInput);
-      ops->PrivateInput(restore_mode_[0], tempvd, tempvs);
+      ops->PrivateInput(plaintext_node, tempvd, tempvs);
       SECURE_OP_CALL_PROTOCOL_OP_STATS_END(PrivateInput);
 
       OP_REQUIRES_OK(context, context->allocate_output(idx, restored_full_shape, &restored_tensor));
@@ -940,7 +1095,7 @@ class SecureRestoreV2Op : public SecureOpKernel {
   std::vector<DataType> dtypes_;
   vector<StoredValue> stored_values_;
   string node_id_;
-  vector<string> restore_mode_; // ref config
+  RestoreModel restore_model_; // ref config
 }; // namespace tensorflow
 
 REGISTER_KERNEL_BUILDER(Name("SecureSaveV2").Device(DEVICE_CPU), SecureSaveV2Op);

@@ -200,7 +200,7 @@ def set_float_precision(float_precision: int, task_id=None):
         task_id = ""
     py_protocol_handler.set_float_precision(float_precision, task_id)
 
-def set_saver_model(model_nodes: list, task_id=None):
+def set_saver_model(model_nodes, task_id=None):
     """ Specify which nodes act as model savers.
 
     Args:
@@ -209,7 +209,14 @@ def set_saver_model(model_nodes: list, task_id=None):
     """
     if task_id == None:
         task_id = ""
-    py_protocol_handler.set_saver_model(model_nodes, task_id)
+    if model_nodes == None or len(model_nodes) == 0:
+        py_protocol_handler.set_saver_computation_model()
+    elif isinstance(model_nodes, list) or isinstance(model_nodes, tuple):
+        py_protocol_handler.set_saver_plain_model(model_nodes)
+    elif isinstance(model_nodes, dict):
+        py_protocol_handler.set_saver_cipher_model(model_nodes)
+    else:
+        raise Exception("unsupported saver model!")
 
 def set_restore_model(model_nodes: list, task_id=None):
     """ Set nodes to restore model.
@@ -220,7 +227,14 @@ def set_restore_model(model_nodes: list, task_id=None):
     """
     if task_id == None:
         task_id = ""
-    py_protocol_handler.set_float_precision(model_nodes, task_id)
+    if model_nodes == None or len(model_nodes) == 0:
+        py_protocol_handler.set_restore_computation_model()
+    elif isinstance(model_nodes, str):
+        py_protocol_handler.set_restore_private_plain_model(model_nodes)
+    elif isinstance(model_nodes, dict):
+        py_protocol_handler.set_restore_cipher_model(model_nodes)
+    elif isinstance(model_nodes, list) or isinstance(model_nodes, tuple):
+        py_protocol_handler.set_restore_public_plain_model()
 
 def get_float_precision(task_id=None):
     """ Get floating point precision. 
@@ -229,7 +243,7 @@ def get_float_precision(task_id=None):
     """
     if task_id == None:
         task_id = ""
-    py_protocol_handler.set_float_precision(float_precision, task_id)
+    py_protocol_handler.get_float_precision(task_id)
 
 def get_saver_model(task_id=None):
     """ Get nodes that act as model savers.
@@ -238,16 +252,18 @@ def get_saver_model(task_id=None):
     """
     if task_id == None:
         task_id = ""
-    py_protocol_handler.set_saver_model(model_nodes, task_id)
+    return ""
+    #py_protocol_handler.get_saver_model(task_id)
 
-def get_restore_model(model_nodes: list, task_id=None):
+def get_restore_model(task_id=None):
     """ Get nodes to restore model.
     Args:
         task_id: task ID for the specified protocol.    
     """
     if task_id == None:
         task_id = ""
-    py_protocol_handler.set_float_precision(model_nodes, task_id)
+    return ""
+    #py_protocol_handler.get_restore_model(task_id)
 
 def start_perf_stats(task_id=None):
     if task_id == None:

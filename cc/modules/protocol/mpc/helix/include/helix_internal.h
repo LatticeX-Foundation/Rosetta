@@ -703,6 +703,7 @@ class HelixInternal {
   void Reveal(const vector<BitShare>& X, vector<bit_t>& plain, const string& nodes);
   void Reveal(const vector<Share>& X, vector<mpc_t>& plain, const vector<string>& nodes);
   void Reveal(const vector<Share>& X, vector<double>& plain, const vector<string>& nodes);
+  void SyncCiphertext(const vector<Share>& in_vec, vector<Share>& out_vec, const map<string, int>& ciphertext_nodes);
 
   // RevealAndPrint*, only for test & debug
   void RevealAndPrint(const vector<Share>& X, std::string msg);

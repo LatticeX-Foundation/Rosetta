@@ -127,7 +127,7 @@ class ProtocolBase {
    * @note
         By default, the local ciphertext values are saved in model(mode=0)
   */
-  void SetSaverModel(const vector<string>& mode);
+  void SetSaverModel(const SaverModel& model);
 
   /**
    * @brief Set up the way of restoring Rosetta training model.
@@ -144,7 +144,7 @@ class ProtocolBase {
    * @note
         By default, the local ciphertext values are saved in model (mode=0).
   */
-  void SetRestoreModel(const vector<string>& mode);
+  void SetRestoreModel(const RestoreModel& model);
   
   /** 
    * @desc: get current performance statistic info
