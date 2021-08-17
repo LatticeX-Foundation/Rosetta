@@ -168,7 +168,8 @@ private:
 
 private:
   // Checking model nodes for legitimacy
-  void _Check_Model_Nodes(const string& task_id, const vector<string>& model_nodes, bool is_saver_model);
+  void _Check_Saver_Model(const string& task_id, const SaverModel& model);
+  void _Check_Restore_Model(const string& task_id, const RestoreModel& model);
 
 
  private:
