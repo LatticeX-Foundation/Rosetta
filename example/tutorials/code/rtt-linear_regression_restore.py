@@ -18,6 +18,7 @@ BATCH_SIZE = 16
 learning_rate = 0.0002
 
 rtt.activate("SecureNN")
+rtt.set_restore_model('P0')
 mpc_player_id = rtt.py_protocol_handler.get_party_id()
 
 # real data
