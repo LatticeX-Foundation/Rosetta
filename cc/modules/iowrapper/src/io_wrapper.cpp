@@ -31,9 +31,9 @@ namespace rosetta {
 IOWrapper::IOWrapper(const string& task_id, IChannel* channel) {
   task_id_ = task_id;
   channel_ = channel;
-  node_id_ = decode_string(::GetCurrentNodeID(channel_));
+  node_id_ = decode_string(channel_->GetCurrentNodeID());
   log_debug << "node id:" << node_id_;
-  node2party_ = decode_map(::GetComputationNodeIDs(channel_));
+  node2party_ = decode_map(channel_->GetComputationNodeIDs());
   party2node_.resize(node2party_.size());
   for (auto iter = node2party_.begin(); iter != node2party_.end(); iter++) {
     party2node_[iter->second] = iter->first;
@@ -42,17 +42,17 @@ IOWrapper::IOWrapper(const string& task_id, IChannel* channel) {
   party_ = GetPartyId(node_id_);
   log_debug << "party id:" << party_ ;
   parties_ = node2party_.size();
-  connected_nodes_ = decode_vector(::GetConnectedNodeIDs(channel_));
+  connected_nodes_ = decode_vector(channel_->GetConnectedNodeIDs());
   std::sort(connected_nodes_.begin(), connected_nodes_.end());
   for (int i = 0; i < connected_nodes_.size(); i++) {
     log_debug << "connected node:" << connected_nodes_[i] ;
   }
-  data_nodes_ = decode_vector(::GetDataNodeIDs(channel_));
+  data_nodes_ = decode_vector(channel_->GetDataNodeIDs());
   std::sort(data_nodes_.begin(), data_nodes_.end());
   for (int i = 0; i < data_nodes_.size(); i++) {
     log_debug << "data node:" << data_nodes_[i] ;
   }
-  result_nodes_ = decode_vector(::GetResultNodeIDs(channel_));
+  result_nodes_ = decode_vector(channel_->GetResultNodeIDs());
   std::sort(result_nodes_.begin(), result_nodes_.end());
   for (int i = 0; i < result_nodes_.size(); i++) {
     log_debug << "result node:" << result_nodes_[i] ;
@@ -125,7 +125,7 @@ ssize_t IOWrapper::recv(const string& node_id, char* data, size_t len, const msg
   log_debug << "begin recv data from " << node_id << " id:" << id << " len:" << len;
   if (timeout < 0)
     timeout = 10 * 1000000;
-  ssize_t ret = ::Recv(channel_, node_id.c_str(), id.str().c_str(), data, len, timeout);
+  ssize_t ret = channel_->Recv(node_id.c_str(), id.str().c_str(), data, len, timeout);
   if (ret != len) {
     log_error << "recv len:" << ret << " expect: " << len;
   }
@@ -171,7 +171,7 @@ ssize_t IOWrapper::send(const string& node_id, const char* data, size_t len, con
   log_debug << "begin send data to " << node_id << " id:" << id << " len:" << len;
   if (timeout < 0)
     timeout = 10 * 1000000;
-  ssize_t ret = ::Send(channel_, node_id.c_str(), id.str().c_str(), data, len, timeout);
+  ssize_t ret = channel_->Send(node_id.c_str(), id.str().c_str(), data, len, timeout);
   {
     net_stat_st_.message_sent++;
     net_stat_st_.bytes_sent += sizeof(int32_t);

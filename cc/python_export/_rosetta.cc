@@ -25,7 +25,7 @@ namespace py = pybind11;
 #include "cc/python_export/dataset.h"
 #include "cc/python_export/msg_id_handle.h"
 #include "cc/python_export/protocol_handler.h"
-#include "cc/third_party/io/include/io/internal/channel_interface.h"
+#include "cc/third_party/io/include/io/channel.h"
 #include "cc/python_export/io_handler.h"
 
 PYBIND11_MODULE(_rosetta, m) {

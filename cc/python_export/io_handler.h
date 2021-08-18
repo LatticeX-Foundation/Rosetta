@@ -25,7 +25,7 @@
 #include <fstream>
 using namespace std;
 
-#include "cc/third_party/io/include/io/internal/channel_interface.h"
+#include "cc/third_party/io/include/io/channel.h"
 #include "cc/modules/iowrapper/include/io_manager.h"
 #include "cc/modules/iowrapper/include/io_wrapper.h"
 
