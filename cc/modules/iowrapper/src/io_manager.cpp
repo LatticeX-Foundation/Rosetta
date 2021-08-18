@@ -64,6 +64,15 @@ shared_ptr<IOWrapper> IOManager::GetIOWrapper(const string& task_id) {
   return nullptr;
 }
 
+bool IOManager::HasIOWrapper(const string& task_id) {
+  std::unique_lock<std::mutex> lck(ios_mutex_);
+  auto iter = ios_.find(task_id);
+  if (iter != ios_.end()) {
+    return true;
+  }
+  return false;
+}
+
 void IOManager::DestroyChannel(const string& task_id) {
   IChannel *channel = nullptr;
   {

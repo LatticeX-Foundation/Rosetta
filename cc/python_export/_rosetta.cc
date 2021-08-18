@@ -91,6 +91,7 @@ PYBIND11_MODULE(_rosetta, m) {
   py::class_<IOHandler>(m_io_handler, "IOHandler")
     .def(py::init<>())
     .def("create_io", &IOHandler::create_io)
+    .def("has_io_wrapper", &IOHandler::has_io_wrapper)
     .def("get_io_wrapper", &IOHandler::get_io_wrapper)
     .def("set_channel", &IOHandler::set_channel)
     ;

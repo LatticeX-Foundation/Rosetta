@@ -45,7 +45,9 @@ class IOManager {
 
 
     static void process_error(const char* current_node_id, const char* node_id, int errorno, const char* errormsg, void*user_data);
-
+    
+    bool HasIOWrapper(const string& task_id);
+    
     shared_ptr<IOWrapper> GetIOWrapper(const string& task_id);
 
     void SetChannel(const string& task_id, IChannel* channel);

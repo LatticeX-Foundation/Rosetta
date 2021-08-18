@@ -35,6 +35,9 @@ class IOHandler {
     bool create_io(const string& task_id, const string& node_id, const std::string &config_str) {
       return IOManager::Instance()->CreateChannel(task_id, node_id, config_str);
     }
+    bool has_io_wrapper(const string& task_id) {
+      return IOManager::Instance()->HasIOWrapper(task_id);
+    }
     shared_ptr<IOWrapper> get_io_wrapper(const string& task_id) {
       return IOManager::Instance()->GetIOWrapper(task_id);
     }

@@ -66,9 +66,17 @@ def __create_io(task_id, io_config_str=None):
     res = py_io_handler.create_io(task_id, node_id, io_config_str)
     return res
 
+def __has_io_wrapper(task_id = None):
+    if task_id == None:
+        task_id = ''
+    return py_io_handler.has_io_wrapper(task_id)
+
 def _check_io(task_id):
     if task_id == None:
         task_id = ''
+    if __has_io_wrapper(task_id):
+        print('io wrapper with task id[' + task_id + '] already exists')
+        return
     if __create_io(task_id):
         print('Create IO ok, task id:', task_id)
     else:
