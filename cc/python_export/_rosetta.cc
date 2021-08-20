@@ -96,7 +96,7 @@ PYBIND11_MODULE(_rosetta, m) {
     .def("set_channel", &IOHandler::set_channel)
     ;
   
-  py::class_<IChannel,  shared_ptr<IChannel> >(m_io_handler, "IChannel")
+  py::class_<IChannel,  unique_ptr<IChannel, py::nodelete> >(m_io_handler, "IChannel")
     ;
 
   py::class_<IOWrapper,  shared_ptr<IOWrapper> >(m_io_handler, "IOWrapper")
