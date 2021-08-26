@@ -450,7 +450,7 @@ int SnnProtocolOps::SigmoidCrossEntropy(
   // auto ops =
   //   std::make_shared<rosetta::snn::SigmoidCrossEntropy>(_op_msg_id, net_io_, GetMpcContext());
   // ops->Run(private_a, private_b, out, a.size());
-  int ret = internal_->SigmoidCrossEntropy(private_a, private_b, out, a.size());
+  int ret = internal_->SigmoidCrossEntropyBatch(private_a, private_b, out, a.size());
 
   snn_encode(out, output);
 
