@@ -66,15 +66,16 @@ int HelixOpsImpl::ConditionalReveal(
   const SaverModel& save_model = context_->SAVER_MODEL;
 
   // all ciphertext
-  if (save_model.is_computation_mode()) {
+  if (save_model.is_local_ciphertext_mode()) {
     out_cipher_vec = in_vec;
     out_plain_vec.clear();
     return 0;
   } else if (save_model.is_ciphertext_mode()) {
     vector<Share> shared_input(in_vec.size());
     helix_convert_string_to_share(in_vec, shared_input);
-    vector<Share> inner_out_vec = shared_input;
-    const map<string, int>& ciphertext_nodes = save_model.get_ciphertext_nodes(); 
+    vector<Share> inner_out_vec;
+    inner_out_vec.resize(shared_input.size());
+    const map<string, vector<string>>& ciphertext_nodes = save_model.get_ciphertext_nodes(); 
     hi->SyncCiphertext(shared_input, inner_out_vec, ciphertext_nodes);
     helix_convert_share_to_string(inner_out_vec, out_cipher_vec);
     out_plain_vec.clear();

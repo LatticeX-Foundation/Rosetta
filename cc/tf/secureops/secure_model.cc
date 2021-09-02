@@ -216,7 +216,7 @@ struct RestoreOp {
     Tensor* restored_tensor;
 
     if (shape_and_slice.empty()) {
-      if (restore_model.is_computation_mode()) {
+      if (restore_model.is_local_ciphertext_mode()) {
         // Lookup the full tensor.
         TF_RETURN_IF_ERROR(context->allocate_output(idx, restored_full_shape, &restored_tensor));
         TF_RETURN_IF_ERROR(reader->Lookup(tensor_name, restored_tensor));
@@ -271,7 +271,7 @@ struct RestoreOp {
           " does not match the shape stored in checkpoint: ", restored_full_shape.DebugString());
       }
       
-      if (restore_model.is_computation_mode()) {
+      if (restore_model.is_local_ciphertext_mode()) {
         TF_RETURN_IF_ERROR(context->allocate_output(idx, parsed_slice_shape, &restored_tensor));
         TF_RETURN_IF_ERROR(reader->LookupSlice(tensor_name, parsed_slice, restored_tensor));
       } else {
@@ -367,7 +367,7 @@ Status RestoreTensorsV2(
     // log_info << "tensor_name:" << tensor_name << ",dtypes[i]:" << DataTypeString(dtypes[i])
     //          << ",original_dtype:" << DataTypeString(original_dtype) ;
     stored_values[i].original_dtype = original_dtype;
-    if (restore_model.is_computation_mode() || restore_model.is_ciphertext_mode()) {
+    if (restore_model.is_local_ciphertext_mode() || restore_model.is_ciphertext_mode()) {
       if (dtypes[i] != original_dtype) {
         string error_msg = strings::StrCat(
           "tensor_name = ", tensor_name, "; expected dtype ", DataTypeString(dtypes[i]),
@@ -430,7 +430,7 @@ Status RestoreTensorsV2(
     TF_RETURN_IF_ERROR(op->status);
   }
 
-  if (!restore_model.is_computation_mode()) {
+  if (!restore_model.is_local_ciphertext_mode()) {
     return Status::OK();
   }
 
@@ -694,9 +694,9 @@ class SecureRestoreV2Op : public SecureOpKernel {
     auto prtc = ProtocolManager::Instance()->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()));
     vector<string> data_nodes = prtc->GetNetHandler()->GetDataNodes();
     map<string, int> computation_nodes = prtc->GetNetHandler()->GetComputationNodes(); 
-    if (restore_model_.is_computation_mode()) {
+    if (restore_model_.is_local_ciphertext_mode()) {
       restore_desc = "all parties each have the secret sharing value of the model";
-    } else if (restore_model_.is_private_plaintext_mode()) {
+    } else if (restore_model_.is_plaintext_mode()) {
       const string& plaintext_node = restore_model_.get_plaintext_node();
       if (std::find(data_nodes.begin(), data_nodes.end(), plaintext_node) == data_nodes.end()) {
         log_error << "restore node is not a valid data node!" ;
@@ -706,11 +706,11 @@ class SecureRestoreV2Op : public SecureOpKernel {
         is_model_owner = true;
       }
       restore_desc = plaintext_node + " owns the plain model, load model as private";
-    } else if (restore_model_.is_public_plaintext_mode()) {
+    } else if (restore_model_.is_local_plaintext_mode()) {
       restore_desc = "each party has the same plain model, load model as public";
       is_public_model = true;
     } else if (restore_model_.is_ciphertext_mode()) {
-      map<string, int> ciphertext_nodes = restore_model_.get_ciphertext_nodes();
+      map<string, string> ciphertext_nodes = restore_model_.get_ciphertext_nodes();
       if (ciphertext_nodes.find(node_id_) != ciphertext_nodes.end()) {
         restore_desc = node_id_ + " owns the ciphertext model, load model as private";
         is_ciphertext_model_owner = true;
@@ -735,7 +735,7 @@ class SecureRestoreV2Op : public SecureOpKernel {
     const auto& tensor_names_flat = tensor_names.flat<string>();
     const auto& shape_and_slices_flat = shape_and_slices.flat<string>();
 
-    if ((restore_model_.is_computation_mode()) || (is_public_model) || (is_model_owner) || (is_ciphertext_model_owner)) {
+    if ((restore_model_.is_local_ciphertext_mode()) || (is_public_model) || (is_model_owner) || (is_ciphertext_model_owner)) {
       // Intention: we plan to use the RestoreV2 op as a backward-compatible
       // reader as we upgrade to the V2 format.  This allows transparent upgrade.
       // We here attempt to read a V1 checkpoint, if "prefix_string" does not
@@ -773,7 +773,7 @@ class SecureRestoreV2Op : public SecureOpKernel {
                << ", total parameters:" << total_size ;
     };
 
-    if (restore_model_.is_computation_mode()) {
+    if (restore_model_.is_local_ciphertext_mode()) {
       print_model_parameters_info();
       log_info << "restore model done:" << timer.elapse() ;
       return;
@@ -803,14 +803,14 @@ class SecureRestoreV2Op : public SecureOpKernel {
       log_info << "restore model done:" << timer.elapse() ;
       return;
     } else if (restore_model_.is_ciphertext_mode()) {
-      const map<string, int> ciphertext_nodes = restore_model_.get_ciphertext_nodes();
+      const map<string, string>& ciphertext_nodes = restore_model_.get_ciphertext_nodes();
       auto protocol = ProtocolManager::Instance()
                 ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()));
       auto ops = protocol->GetOps(msg_id());
       shared_ptr<NET_IO> net_io = protocol->GetNetHandler();
       const map<string, int> computation_nodes = net_io->GetComputationNodes();
       string current_node_id = net_io->GetCurrentNodeId();
-      int current_party_id = net_io->GetPartyId(current_node_id);
+      //int current_party_id = net_io->GetPartyId(current_node_id);
       
       {
         // sync ciphertext shape
@@ -818,8 +818,8 @@ class SecureRestoreV2Op : public SecureOpKernel {
         int vec_size = 0;
         int slen = 0;
         for (auto iter = ciphertext_nodes.begin(); iter != ciphertext_nodes.end(); iter++) {
-          string send_node = iter->first;
-          int recv_party = iter->second;
+          const string& send_node = iter->first;
+          const string& recv_node = iter->second;
           
           if (current_node_id == send_node) {
             vector<int64_t> shapes;
@@ -903,11 +903,11 @@ class SecureRestoreV2Op : public SecureOpKernel {
         //for (auto iter = ciphertext_nodes.begin(); iter != ciphertext_nodes.end(); iter++) {
         {
           string send_node = "";
-          int recv_party = -1;
+          string recv_node = "";
           for (auto iter = ciphertext_nodes.begin(); iter != ciphertext_nodes.end(); iter++) {
-            if (iter->first == current_node_id || iter->second == current_party_id) {
+            if (iter->first == current_node_id || iter->second == current_node_id) {
               send_node = iter->first;
-              recv_party = iter->second;
+              recv_node = iter->second;
               break;
             }
           }
@@ -925,21 +925,21 @@ class SecureRestoreV2Op : public SecureOpKernel {
       
             auto& tempvs = stored_values.cipher_value;
             vector<string> tempvs2; //(stored_values.shape.num_elements());
-            if (!send_node.empty() && recv_party != -1) {
-              if (current_node_id == send_node && current_party_id != recv_party) {
+            if (!send_node.empty() && !recv_node.empty()) {
+              if (current_node_id == send_node && current_node_id != recv_node) {
                 for (int i = 0; i < tempvs.size(); i++) {
-                  net_io->send(recv_party, tempvs[i].data(), tempvs[i].size(), msg_id());
+                  net_io->send(recv_node, tempvs[i].data(), tempvs[i].size(), msg_id());
                 }
                 tempvs2.swap(tempvs);
-                log_info << "send model to P" << recv_party;
-              } else if (current_party_id == recv_party && current_node_id != send_node) {
+                log_info << "send model to " << recv_node;
+              } else if (current_node_id == recv_node && current_node_id != send_node) {
                 tempvs2.resize(tempvs.size());
                 for (int i = 0; i < tempvs2.size(); i++) {
                   tempvs2[i].resize(slen);
                   net_io->recv(send_node, &tempvs2[i][0], tempvs2[i].size(), msg_id());
                 }
                 log_info << "recv model from " << send_node;
-              } else if (current_node_id == send_node && current_party_id == recv_party) {
+              } else if (current_node_id == send_node && current_node_id == recv_node) {
                 tempvs2.swap(tempvs);
                 log_info << "load model from " << send_node;
               }
@@ -957,7 +957,7 @@ class SecureRestoreV2Op : public SecureOpKernel {
       }
       return;
     }
-    const string plaintext_node = restore_model_.get_plaintext_node();
+    const string& plaintext_node = restore_model_.get_plaintext_node();
     auto protocol = ProtocolManager::Instance()
                 ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()));
     auto ops = protocol->GetOps(msg_id());

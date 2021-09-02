@@ -30,10 +30,10 @@ namespace rosetta {
 
 using std::cout;
 using std::endl;
+using std::map;
 using std::shared_ptr;
 using std::string;
 using std::unordered_map;
-using std::map;
 using std::vector;
 using attr_type = unordered_map<string, string>;
 
@@ -44,21 +44,21 @@ using attr_type = unordered_map<string, string>;
   throw std::runtime_error(string("please implements '") + name + "' in subclass")
 
 struct SaverModel {
-  private:
-    enum mode{
-      SAVER_MODE_INVALID = 0,
-      SAVER_MODE_COMPUTATION_NODE = 1,
-      SAVER_MODE_CIPHERTEXT = 2,
-      SAVER_MODE_PLAINTEXT = 3
-    };
-  
-    enum mode mode_ = SAVER_MODE_INVALID;
-    map<string, int> ciphertext_nodes_;
-    vector<string> plaintext_nodes_;
+ private:
+  enum mode {
+    SAVER_MODE_INVALID = 0,
+    SAVER_MODE_LOCAL_CIPHERTEXT = 1,           // computation nodes save ciphertext model locally
+    SAVER_MODE_CIPHERTEXT = 2,                 // computation nodes or result nodes save ciphertext model
+    SAVER_MODE_PLAINTEXT = 3                   //  result nodes save plaintext model
+  };
 
-    void clear() {
-      switch (mode_) {
-        case SAVER_MODE_CIPHERTEXT:
+  enum mode mode_ = SAVER_MODE_INVALID;
+  map<string, vector<string>> ciphertext_nodes_;
+  vector<string> plaintext_nodes_;
+
+  void clear() {
+    switch (mode_) {
+      case SAVER_MODE_CIPHERTEXT:
         ciphertext_nodes_.clear();
         break;
       case SAVER_MODE_PLAINTEXT:
@@ -66,114 +66,94 @@ struct SaverModel {
         break;
       default:
         break;
-      }
-      mode_ = SAVER_MODE_INVALID;
     }
-  public:
-    void set_computation_mode() {
-      clear();
-      mode_ = SAVER_MODE_COMPUTATION_NODE;
-    }
+    mode_ = SAVER_MODE_INVALID;
+  }
 
-    void set_ciphertext_mode(const map<string, int>& ciphertext_nodes) {
-      clear();
-      mode_ = SAVER_MODE_CIPHERTEXT;
-      ciphertext_nodes_ = ciphertext_nodes;
-    }
+ public:
+  void set_local_ciphertext_mode() {
+    clear();
+    mode_ = SAVER_MODE_LOCAL_CIPHERTEXT;
+  }
 
-    void set_plaintext_mode(const vector<string>& plaintext_nodes) {
-      clear();
-      mode_ = SAVER_MODE_PLAINTEXT;
-      plaintext_nodes_ = plaintext_nodes;
-    }
+  void set_ciphertext_mode(const map<string, vector<string>>& ciphertext_nodes) {
+    clear();
+    mode_ = SAVER_MODE_CIPHERTEXT;
+    ciphertext_nodes_ = ciphertext_nodes;
+  }
 
-    bool is_computation_mode() const {
-      return mode_ == SAVER_MODE_COMPUTATION_NODE;
-    }
+  void set_plaintext_mode(const vector<string>& plaintext_nodes) {
+    clear();
+    mode_ = SAVER_MODE_PLAINTEXT;
+    plaintext_nodes_ = plaintext_nodes;
+  }
 
-    bool is_ciphertext_mode() const {
-      return mode_ == SAVER_MODE_CIPHERTEXT;
-    }
+  bool is_local_ciphertext_mode() const { return mode_ == SAVER_MODE_LOCAL_CIPHERTEXT; }
 
-    bool is_plaintext_mode() const {
-      return mode_ == SAVER_MODE_PLAINTEXT;
-    }
+  bool is_ciphertext_mode() const { return mode_ == SAVER_MODE_CIPHERTEXT; }
 
-    const map<string, int>& get_ciphertext_nodes() const {
-      return ciphertext_nodes_;
-    }
+  bool is_plaintext_mode() const { return mode_ == SAVER_MODE_PLAINTEXT; }
 
-    const vector<string>& get_plaintext_nodes() const {
-      return plaintext_nodes_;
-    }
+  const map<string, vector<string>>& get_ciphertext_nodes() const { return ciphertext_nodes_; }
+
+  const vector<string>& get_plaintext_nodes() const { return plaintext_nodes_; }
 };
 
 struct RestoreModel {
-  private:
-    enum mode{
-      RESTORE_MODE_INVALID = 0,
-      RESTORE_MODE_COMPUTATION_NODE = 1,
-      RESTORE_MODE_CIPHERTEXT = 2,
-      RESTORE_MODE_PRIVATE_PLAINTEXT = 3,
-      RESTORE_MODE_PUBLIC_PLAINTEXT = 4
-    };
+ private:
+  enum mode {
+    RESTORE_MODE_INVALID = 0,
+    RESTORE_MODE_LOCAL_CIPHERTEXT = 1,            // computation nodes restore ciphertext model locally
+    RESTORE_MODE_CIPHERTEXT = 2,                  // computation nodes or data nodes restore ciphertext model
+    RESTORE_MODE_PLAINTEXT = 3,                   // data node restore plaintext
+    RESTORE_MODE_LOCAL_PLAINTEXT = 4              // computation nodes restore plaintext locally
+  };
 
-    enum mode mode_ = RESTORE_MODE_INVALID;
-    map<string, int> ciphertext_nodes_;
-    string plaintext_node_;
-  
-    void clear() {
-      switch (mode_) {
-        case RESTORE_MODE_CIPHERTEXT:
-          ciphertext_nodes_.clear();
-          break;
-        case RESTORE_MODE_PRIVATE_PLAINTEXT:
-          plaintext_node_.clear();
-          break;
-        default:
-          break;
-      }
-      mode_ = RESTORE_MODE_INVALID;
-    }
-  public:
-    void set_computation_mode() {
-      clear();
-      mode_ = RESTORE_MODE_COMPUTATION_NODE;
-    }
-    void set_ciphertext_mode(const map<string, int>& ciphertext_nodes) {
-      clear();
-      mode_ = RESTORE_MODE_CIPHERTEXT;
-      ciphertext_nodes_ = ciphertext_nodes;
-    }
-    void set_private_plaintext_mode(const string& plaintext_node) {
-      clear();
-      mode_ = RESTORE_MODE_PRIVATE_PLAINTEXT;
-      plaintext_node_ = plaintext_node;
-    }
-    void set_public_plaintext_mode() {
-      clear();
-      mode_ = RESTORE_MODE_PUBLIC_PLAINTEXT;
-    }
+  enum mode mode_ = RESTORE_MODE_INVALID;
+  map<string, string> ciphertext_nodes_;
+  string plaintext_node_;
 
-    bool is_computation_mode() const {
-      return mode_ == RESTORE_MODE_COMPUTATION_NODE;
+  void clear() {
+    switch (mode_) {
+      case RESTORE_MODE_CIPHERTEXT:
+        ciphertext_nodes_.clear();
+        break;
+      case RESTORE_MODE_PLAINTEXT:
+        plaintext_node_.clear();
+        break;
+      default:
+        break;
     }
-    bool is_ciphertext_mode() const {
-      return mode_ == RESTORE_MODE_CIPHERTEXT;
-    }
-    bool is_private_plaintext_mode() const {
-      return mode_ == RESTORE_MODE_PRIVATE_PLAINTEXT;
-    }
-    bool is_public_plaintext_mode() const {
-      return mode_ == RESTORE_MODE_PUBLIC_PLAINTEXT;
-    }
+    mode_ = RESTORE_MODE_INVALID;
+  }
 
-    const map<string, int>& get_ciphertext_nodes() const {
-      return ciphertext_nodes_;
-    }
-    const string& get_plaintext_node() const {
-      return plaintext_node_;
-    }
+ public:
+  void set_local_ciphertext_mode() {
+    clear();
+    mode_ = RESTORE_MODE_LOCAL_CIPHERTEXT;
+  }
+  void set_ciphertext_mode(const map<string, string>& ciphertext_nodes) {
+    clear();
+    mode_ = RESTORE_MODE_CIPHERTEXT;
+    ciphertext_nodes_ = ciphertext_nodes;
+  }
+  void set_plaintext_mode(const string& plaintext_node) {
+    clear();
+    mode_ = RESTORE_MODE_PLAINTEXT;
+    plaintext_node_ = plaintext_node;
+  }
+  void set_local_plaintext_mode() {
+    clear();
+    mode_ = RESTORE_MODE_LOCAL_PLAINTEXT;
+  }
+
+  bool is_local_ciphertext_mode() const { return mode_ == RESTORE_MODE_LOCAL_CIPHERTEXT; }
+  bool is_ciphertext_mode() const { return mode_ == RESTORE_MODE_CIPHERTEXT; }
+  bool is_plaintext_mode() const { return mode_ == RESTORE_MODE_PLAINTEXT; }
+  bool is_local_plaintext_mode() const { return mode_ == RESTORE_MODE_LOCAL_PLAINTEXT; }
+
+  const map<string, string>& get_ciphertext_nodes() const { return ciphertext_nodes_; }
+  const string& get_plaintext_node() const { return plaintext_node_; }
 };
 
 struct ProtocolContext {
@@ -187,19 +167,17 @@ struct ProtocolContext {
   string TASK_ID;
   string NODE_ID;
   int ROLE_ID;
-  map<string, int> NODE_ROLE_MAPPING;// node_id -> role
+  map<string, int> NODE_ROLE_MAPPING; // node_id -> role
   string PAYLOAD;
 
-  int GetMyRole() {
-    return ROLE_ID;
-  }
+  int GetMyRole() { return ROLE_ID; }
 
   int GetRole(const string& node_id) {
     if (NODE_ROLE_MAPPING.find(node_id) == NODE_ROLE_MAPPING.end()) {
       std::cerr << "cannot find node_id: " << node_id << " when get role id!" << std::endl;
       return -1;
     }
-    
+
     return NODE_ROLE_MAPPING[node_id];
   }
 
@@ -208,7 +186,7 @@ struct ProtocolContext {
       if (iter->second == role)
         return iter->first;
     }
-    std::cerr << "cannot find node_id" << " for role id: " << role << std::endl;
+    std::cerr << "cannot find node_id for role id: " << role << std::endl;
     return "";
   }
 };
@@ -228,7 +206,8 @@ class ProtocolOps {
 
  public:
   const msg_id_t& msg_id() const { return _op_msg_id; }
-  ProtocolOps(const msg_id_t& msg_id, shared_ptr<ProtocolContext> context) : _op_msg_id(msg_id), context_(context) {};
+  ProtocolOps(const msg_id_t& msg_id, shared_ptr<ProtocolContext> context)
+      : _op_msg_id(msg_id), context_(context){};
 
   virtual ~ProtocolOps() = default;
 
@@ -257,26 +236,36 @@ class ProtocolOps {
   }
 
   virtual int RandSeed(std::string op_seed, string& out_str) { THROW_NOT_IMPL; }
-  virtual uint64_t RandSeed() { 
+  virtual uint64_t RandSeed() {
     std::cerr << "insecure seed!!! please overide " << __FUNCTION__ << std::endl;
     return 0x123456;
   }
-  virtual uint64_t RandSeed(vector<uint64_t>& seed) { 
+  virtual uint64_t RandSeed(vector<uint64_t>& seed) {
     std::cerr << "insecure seed!!! please overide " << __FUNCTION__ << std::endl;
     return 0x123456;
   }
 
-  virtual int PrivateInput(const string& node_id, const vector<double>& in_x, vector<string>& out_x) {
+  virtual int PrivateInput(
+    const string& node_id,
+    const vector<double>& in_x,
+    vector<string>& out_x) {
     THROW_NOT_IMPL;
   }
-  virtual int PublicInput(const string& node_id, const vector<double>& in_x, vector<string>& out_x) {
+  virtual int PublicInput(
+    const string& node_id,
+    const vector<double>& in_x,
+    vector<string>& out_x) {
     THROW_NOT_IMPL;
   }
 
-  virtual int Broadcast(const string& from_node, const string& msg, string& result) { THROW_NOT_IMPL; }
+  virtual int Broadcast(const string& from_node, const string& msg, string& result) {
+    THROW_NOT_IMPL;
+  }
 
   // result must be allocate outside!
-  virtual int Broadcast(const string& from_node, const char* msg, char* result, size_t size) { THROW_NOT_IMPL; }
+  virtual int Broadcast(const string& from_node, const char* msg, char* result, size_t size) {
+    THROW_NOT_IMPL;
+  }
 
   /**
    * @desc: This is for Tensorflow's SaveV2 Op.
@@ -284,7 +273,9 @@ class ProtocolOps {
   virtual int ConditionalReveal(
     vector<string>& in_vec,
     vector<string>& out_cipher_vec,
-    vector<double>& out_plain_vec) { THROW_NOT_IMPL; }
+    vector<double>& out_plain_vec) {
+    THROW_NOT_IMPL;
+  }
 
   //////////////////////////////////    math ops   //////////////////////////////////
   virtual int Add(
@@ -620,6 +611,43 @@ class ProtocolOps {
     const vector<string>& a,
     vector<string>& output,
     const attr_type* attr_info = nullptr) {
+    THROW_NOT_IMPL;
+  }
+
+  // Sort & Permutation. Only supports A.size() = cols*(2^k)
+  /**
+   * \param[in,out] A, a vector, the default sorted order is ascending
+   * \param[in] attr, 'descending'. indicates the sorted order, the default value is 0
+   */
+  virtual int Sort(vector<string>& A, const attr_type* attr = nullptr) { THROW_NOT_IMPL; }
+  /**
+   * \param[in,out] A, a vector, the default sorted order is ascending
+   * \param[out] R, a vector, indicates whether to swap two elements
+   * \param[in] attr, 'descending'. indicates the sorted order, the default value is 0
+   */
+  virtual int Sort(vector<string>& A, vector<string>& R, const attr_type* attr = nullptr) {
+    THROW_NOT_IMPL;
+  }
+  /**
+   * \param[in,out] A, a matrix of shape rows x cols, which passed by `attr`, row first
+   * \param[in] R, a vector, indicates whether to swap two elements
+   * \param[in] attr, 'cols'. the default value is 1
+   */
+  virtual int Permutation(
+    vector<string>& A,
+    const vector<string>& R,
+    const attr_type* attr = nullptr) {
+    THROW_NOT_IMPL;
+  }
+  /**
+   * \param[in,out] A, a matrix of shape rows x cols, which passed by `attr`, row first
+   * \param[in] R, a vector, indicates whether to swap two elements
+   * \param[in] attr, 'cols'. the default value is 1
+   */
+  virtual int InversePermutation(
+    vector<string>& A,
+    const vector<string>& R,
+    const attr_type* attr = nullptr) {
     THROW_NOT_IMPL;
   }
 };

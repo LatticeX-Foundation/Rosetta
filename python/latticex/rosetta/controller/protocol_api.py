@@ -201,41 +201,42 @@ def set_float_precision(float_precision: int, task_id=None):
         task_id = ""
     py_protocol_handler.set_float_precision(float_precision, task_id)
 
-def set_saver_model(model_nodes, task_id=None):
-    """ Specify which nodes act as model savers.
+def set_saver_model(is_cipher_model: bool, cipher_model = {}, plain_model = [], task_id=''):
+    """ Set saver model.
 
     Args:
-        model_nodes:  model saver nodes.
+        is_cipher_model:  true or false.
+        cipher_model: contains node ids of senders and vectors of node ids of receivers. 
+                      Key denotes senders(computation nodes) and value denotes receivers(result nodes).
+                      It is valid if and only if is_cipher_model is true. 
+                      Result nodes will receive and save cipher models sent from computation nodes. 
+                      e.g. cipher_model = {'P0':['P3', 'P4'], 'P1':['P5'], 'P2':['P7', 'P8']}. If not specified,
+                      computation nodes will save cipher models locally.
+        plain_model: contains node ids. It is valid if and only if is_cipher_model is false.
+                     Result nodes will receive and save plain models sent from computation nodes.
+                     e.g. plain_model = ['P6', 'P7', 'P8']. If not specified, all the result nodes will 
+                     save plain models.
         task_id: task ID for the specified protocol.    
     """
-    if task_id == None:
-        task_id = ""
-    if model_nodes == None or len(model_nodes) == 0:
-        py_protocol_handler.set_saver_computation_model()
-    elif isinstance(model_nodes, list) or isinstance(model_nodes, tuple):
-        py_protocol_handler.set_saver_plain_model(model_nodes)
-    elif isinstance(model_nodes, dict):
-        py_protocol_handler.set_saver_cipher_model(model_nodes)
-    else:
-        raise Exception("unsupported saver model!")
+    py_protocol_handler.set_saver_model(is_cipher_model, cipher_model, plain_model, task_id)
 
-def set_restore_model(model_nodes: list, task_id=None):
-    """ Set nodes to restore model.
+def set_restore_model(is_cipher_model: bool, cipher_model = {}, plain_model = '', task_id=''):
+    """ Set restore model.
 
     Args:
-        model_nodes:  nodes to restore model.
+        is_cipher_model:  true or false.
+        cipher_model: contains node id and party id pairs. It is valid if and only if is_cipher_model is true.
+                      Computation nodes will receive cipher models sent from data nodes.
+                      e.g. cipher_model = {'P4':"P0', 'P1':'P1', 'P5':'P2'}. If not specified, 
+                      computation nodes will restore cipher model locally.
+        plain_model: node id of the data node owning plain models. It is valid if and only if is_cipher_model is false.
+                     Computation nodes will receive plain models sent from data nodes.
+                     e.g. plain_model = 'P3'. It should not be left empty.
         task_id: task ID for the specified protocol.    
     """
-    if task_id == None:
-        task_id = ""
-    if model_nodes == None or len(model_nodes) == 0:
-        py_protocol_handler.set_restore_computation_model()
-    elif isinstance(model_nodes, str):
-        py_protocol_handler.set_restore_private_plain_model(model_nodes)
-    elif isinstance(model_nodes, dict):
-        py_protocol_handler.set_restore_cipher_model(model_nodes)
-    elif isinstance(model_nodes, list) or isinstance(model_nodes, tuple):
-        py_protocol_handler.set_restore_public_plain_model()
+    if is_cipher_model == False and len(plain_model) == 0:
+        raise ValueError("You choose to restore plain models and the data node containing model is not specified!")
+    py_protocol_handler.set_restore_model(is_cipher_model, cipher_model, plain_model, task_id)
 
 def get_float_precision(task_id=None):
     """ Get floating point precision. 
@@ -246,40 +247,19 @@ def get_float_precision(task_id=None):
         task_id = ""
     return py_protocol_handler.get_float_precision(task_id)
 
-def get_saver_model(task_id=None):
-    """ Get nodes that act as model savers.
+def get_saver_model(task_id=''):
+    """ Get saver model.
     Args:
         task_id: task ID for the specified protocol.    
     """
-    if task_id == None:
-        task_id = ""
-    if py_protocol_handler.is_saver_computation_model(task_id):
-        return get_computation_node_ids(task_id)
-    elif py_protocol_handler.is_saver_plain_model(task_id):
-        return py_protocol_handler.get_saver_plain_model(task_id)
-    elif py_protocol_handler.is_saver_cipher_model(task_id):
-        return py_protocol_handler.get_saver_cipher_model(task_id)
-    else:
-        return None
+    return py_protocol_handler.get_saver_model(task_id)
 
-def get_restore_model(task_id=None):
-    """ Get nodes to restore model.
+def get_restore_model(task_id=''):
+    """ Get restore model.
     Args:
         task_id: task ID for the specified protocol.    
     """
-    if task_id == None:
-        task_id = ""
-    if py_protocol_handler.is_restore_computation_model(task_id):
-        return get_computation_node_ids(task_id)
-    elif py_protocol_handler.is_restore_cipher_model(task_id):
-        return py_protocol_handler.get_restore_cipher_model(task_id)
-    elif py_protocol_handler.is_restore_public_plain_model(task_id):
-        computation_nodes = get_computation_node_ids(task_id)
-        return list(computation_nodes.keys())
-    elif py_protocol_handler.is_restore_private_plain_model(task_id):
-        return py_protocol_handler.get_restore_private_plain_model(task_id)
-    else:
-      return None
+    return py_protocol_handler.get_restore_model(task_id)
 
 def start_perf_stats(task_id=None):
     if task_id == None:

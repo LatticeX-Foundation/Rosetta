@@ -397,13 +397,20 @@ int SnnInternal::ReconstructBit2PC(
   return 0;
 }
 
-  int SnnInternal::SyncCiphertext(const vector<mpc_t>& in_vec, vector<mpc_t>& out_vec, const map<string, int>& ciphertext_nodes) {
+  int SnnInternal::SyncCiphertext(const vector<mpc_t>& in_vec, vector<mpc_t>& out_vec, const map<string, vector<string>>& ciphertext_nodes) {
     string current_node_id = io->GetCurrentNodeId();
     for (auto iter = ciphertext_nodes.begin(); iter != ciphertext_nodes.end(); iter++) {
-      if (partyNum == iter->second && iter->first != current_node_id) {
-        sendVector2(in_vec, iter->first, in_vec.size());
-      } else if (iter->first == current_node_id && partyNum != iter->second) {
-        receiveVector(out_vec, iter->second, out_vec.size());
+      const vector<string>& recv_nodes = iter->second;
+      if (iter->first == current_node_id) {
+        for (auto riter = recv_nodes.begin(); riter != recv_nodes.end(); riter++) {
+          if (*riter != current_node_id) {
+            sendVector2(in_vec, *riter, in_vec.size());
+          } else {
+            out_vec = in_vec;
+          }
+        }
+      } else if (std::find(recv_nodes.begin(), recv_nodes.end(), current_node_id) != recv_nodes.end()) {
+        receiveVector2(out_vec, iter->first, out_vec.size());
       }
     }
     return 0;

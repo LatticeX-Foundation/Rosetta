@@ -551,15 +551,16 @@ int SnnProtocolOps::ConditionalReveal(
   const SaverModel& save_model = context_->SAVER_MODEL;
   int vec_size = in_vec.size();
   // case one: all ciphertext, save on computation nodes or result nodes
-  if (save_model.is_computation_mode()) {
+  if (save_model.is_local_ciphertext_mode()) {
     out_cipher_vec = in_vec;
     out_plain_vec.clear();
     return 0;
   } else if (save_model.is_ciphertext_mode()) {
     vector<mpc_t> shared_input(vec_size);
     snn_decode(in_vec, shared_input, context_->FLOAT_PRECISION);
-    vector<mpc_t> inner_out_vec = shared_input;
-    const map<string, int>& ciphertext_nodes = save_model.get_ciphertext_nodes(); 
+    vector<mpc_t> inner_out_vec;
+    inner_out_vec.resize(shared_input.size());
+    const map<string, vector<string>>& ciphertext_nodes = save_model.get_ciphertext_nodes(); 
     internal_->SyncCiphertext(shared_input, inner_out_vec, ciphertext_nodes);
     snn_encode(inner_out_vec, out_cipher_vec);
     out_plain_vec.clear();

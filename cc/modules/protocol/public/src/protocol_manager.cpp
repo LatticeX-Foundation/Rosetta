@@ -237,18 +237,24 @@ void ProtocolManager::_Check_Saver_Model(const string& task_id, const SaverModel
   const map<string, int>& computation_nodes = net_io->GetComputationNodes();
   const vector<string>& result_nodes = net_io->GetResultNodes();
   if (model.is_ciphertext_mode()) {
-    const map<string, int>& ciphertext_nodes = model.get_ciphertext_nodes();
+    const map<string, vector<string>>& ciphertext_nodes = model.get_ciphertext_nodes();
     for (auto iter = ciphertext_nodes.begin(); iter != ciphertext_nodes.end(); iter++) {
-      int send_party = iter->second;
-      string recv_node = iter->first;
-      if (std::find(result_nodes.begin(), result_nodes.end(), recv_node) != result_nodes.end()) {
-        log_info << "Check Saver Model: " << recv_node << " is a valid result node";
-      } else {
-        auto citer = computation_nodes.find(recv_node);
-        if (citer != computation_nodes.end() && send_party == citer->second) {
-          log_info << "Check Saver Model: " << recv_node << " is a valid computation node and saves ciphertext model locally";
+      const string& send_node = iter->first;
+      const vector<string>& recv_nodes = iter->second;
+      if (computation_nodes.find(send_node) == computation_nodes.end()) {
+        throw other_exp(send_node + " is not a valid computation node!");
+      }
+      for (auto riter = recv_nodes.begin(); riter != recv_nodes.end(); riter++) {
+        const string& recv_node = *riter;
+        if (std::find(result_nodes.begin(), result_nodes.end(), recv_node) != result_nodes.end()) {
+          log_info << "Check Saver Model: " << recv_node << " is a valid result node";
         } else {
-          throw other_exp(recv_node + " check saver ciphertext model failed!");
+          auto citer = computation_nodes.find(recv_node);
+          if (citer != computation_nodes.end() && send_node == recv_node) {
+            log_info << "Check Saver Model: " << *riter << " is a valid computation node and saves ciphertext model locally";
+          } else {
+            throw other_exp(recv_node + " check saver ciphertext model failed!");
+          }
         }
       }
     }
@@ -269,22 +275,25 @@ void ProtocolManager::_Check_Restore_Model(const string& task_id, const RestoreM
   const vector<string>& data_nodes = net_io->GetDataNodes();
   const map<string, int>& computation_nodes = net_io->GetComputationNodes();
   if (model.is_ciphertext_mode()) {
-    const map<string, int>& ciphertext_nodes = model.get_ciphertext_nodes();
+    const map<string, string>& ciphertext_nodes = model.get_ciphertext_nodes();
     for (auto iter = ciphertext_nodes.begin(); iter != ciphertext_nodes.end(); iter++) {
-      string send_node = iter->first;
-      int recv_party = iter->second;
+      const string& send_node = iter->first;
+      const string& recv_node = iter->second;
       if (std::find(data_nodes.begin(), data_nodes.end(), send_node) != data_nodes.end()) {
         log_info << "Check Restore Model: " << send_node << " is a valid data node";
       } else {
         auto citer = computation_nodes.find(send_node);
-        if (citer != computation_nodes.end() && citer->second == recv_party) {
+        if (citer != computation_nodes.end() && send_node == recv_node) {
           log_info << "Check Restore Model: " << send_node << " is a valid computation node and restore ciphertext model locally";
         } else {
           throw other_exp(send_node + " check restore ciphertext model fail!");
         }
       }
+      if (computation_nodes.find(recv_node) == computation_nodes.end()) {
+        throw other_exp(recv_node + " is not a valid computation node!");
+      }
     }
-  } else if (model.is_private_plaintext_mode()) {
+  } else if (model.is_plaintext_mode()) {
     const string& plaintext_node = model.get_plaintext_node();
     if (std::find(data_nodes.begin(), data_nodes.end(), plaintext_node) != data_nodes.end()) {
       log_info << "Check Restore Model: " << plaintext_node << " is a valid data node";

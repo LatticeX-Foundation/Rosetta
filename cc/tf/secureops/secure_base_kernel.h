@@ -258,7 +258,7 @@ class SecureOpKernel : public OpKernel {
     }
     return false;
 #else
-    if (proto_context->RESTORE_MODEL.is_public_plaintext_mode()) {
+    if (proto_context->RESTORE_MODEL.is_local_plaintext_mode()) {
       return true;
     }
     return false;

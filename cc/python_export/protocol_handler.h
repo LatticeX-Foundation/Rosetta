@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <string>
 #include <vector>
+#include <map>
 #include <iostream>
 #include <mutex>
 #include <fstream>
@@ -84,101 +85,41 @@ class ProtocolHandler {
     return rosetta::ProtocolManager::Instance()->GetFloatPrecision(task_id);
   }
 
-  void set_saver_computation_model(const string& task_id="") {
+  void set_saver_model(bool is_cipher_model, const std::map<string, vector<string>>& cipher_model, const vector<string>& plain_model, const string& task_id="") {
     rosetta::SaverModel model;
-    model.set_computation_mode();
+    if (is_cipher_model) {
+      if (cipher_model.empty()) {
+        model.set_local_ciphertext_mode();
+      } else {
+        model.set_ciphertext_mode(cipher_model);
+      }
+    } else {
+      if (plain_model.empty()) {
+        const vector<string>& result_nodes = rosetta::IOManager::Instance()->GetIOWrapper(task_id)->GetResultNodes();
+        model.set_plaintext_mode(result_nodes);
+      } else {
+        model.set_plaintext_mode(plain_model);
+      }
+    }
     rosetta::ProtocolManager::Instance()->SetSaverModel(model, task_id);
   }
 
-  void set_saver_cipher_model(const map<string, int> model_nodes, const string& task_id="") {
-    rosetta::SaverModel model;
-    model.set_ciphertext_mode(model_nodes);
-    rosetta::ProtocolManager::Instance()->SetSaverModel(model, task_id);
-  }
-
-  void set_saver_plain_model(const vector<string> model_nodes, const string& task_id="") {
-    rosetta::SaverModel model;
-    model.set_plaintext_mode(model_nodes);
-    rosetta::ProtocolManager::Instance()->SetSaverModel(model, task_id);
-  }
-
-  map<string, int> get_saver_cipher_model(const string& task_id="") {
-    rosetta::SaverModel model = rosetta::ProtocolManager::Instance()->GetSaverModel(task_id);
-    return model.get_ciphertext_nodes();
-  }
-
-  vector<string> get_saver_plain_model(const string& task_id="") {
-    rosetta::SaverModel model = rosetta::ProtocolManager::Instance()->GetSaverModel(task_id);
-    return model.get_plaintext_nodes();
-  }
-
-  bool is_saver_computation_model(const string& task_id="") {
-    rosetta::SaverModel model = rosetta::ProtocolManager::Instance()->GetSaverModel(task_id);
-    return model.is_computation_mode();
-  }
-
-  bool is_saver_cipher_model(const string& task_id="") {
-    rosetta::SaverModel model = rosetta::ProtocolManager::Instance()->GetSaverModel(task_id);
-    return model.is_ciphertext_mode();
-  }
-
-  bool is_saver_plain_model(const string& task_id="") {
-    rosetta::SaverModel model = rosetta::ProtocolManager::Instance()->GetSaverModel(task_id);
-    return model.is_plaintext_mode();
-  }
-
-  void set_restore_computation_model(const string& task_id="") {
+  void set_restore_model(bool is_cipher_model, const map<string, string>& cipher_model, const string& plain_model, const string& task_id="") {
     rosetta::RestoreModel model;
-    model.set_computation_mode();
+    if (is_cipher_model) {
+      if (cipher_model.empty()) {
+        model.set_local_ciphertext_mode();
+      } else {
+        model.set_ciphertext_mode(cipher_model);
+      }
+    } else {
+      if (plain_model.empty()) {
+        model.set_local_plaintext_mode();
+      } else {
+        model.set_plaintext_mode(plain_model);
+      }
+    }
     rosetta::ProtocolManager::Instance()->SetRestoreModel(model, task_id);
-  }
-
-  void set_restore_cipher_model(const map<string, int>& model_nodes, const string& task_id="") {
-    rosetta::RestoreModel model;
-    model.set_ciphertext_mode(model_nodes);
-    rosetta::ProtocolManager::Instance()->SetRestoreModel(model, task_id);
-  }
-
-  void set_restore_private_plain_model(const string& model_nodes, const string& task_id="") {
-    rosetta::RestoreModel model;
-    model.set_private_plaintext_mode(model_nodes);
-    rosetta::ProtocolManager::Instance()->SetRestoreModel(model, task_id);
-  }
-
-  void set_restore_public_plain_model(const string& task_id="") {
-    rosetta::RestoreModel model;
-    model.set_public_plaintext_mode();
-    rosetta::ProtocolManager::Instance()->SetRestoreModel(model, task_id);
-  }
-
-  map<string, int> get_restore_cipher_model(const string& task_id="") {
-    rosetta::RestoreModel model = rosetta::ProtocolManager::Instance()->GetRestoreModel(task_id);
-    return model.get_ciphertext_nodes();
-  }
-
-  string get_restore_private_plain_model(const string& task_id="") {
-    rosetta::RestoreModel model = rosetta::ProtocolManager::Instance()->GetRestoreModel(task_id);
-    return model.get_plaintext_node();
-  }
-
-  bool is_restore_computation_model(const string& task_id="") {
-    rosetta::RestoreModel model = rosetta::ProtocolManager::Instance()->GetRestoreModel(task_id);
-    return model.is_computation_mode();
-  }
-
-  bool is_restore_cipher_model(const string& task_id="") {
-    rosetta::RestoreModel model = rosetta::ProtocolManager::Instance()->GetRestoreModel(task_id);
-    return model.is_ciphertext_mode();
-  }
-
-  bool is_restore_public_plain_model(const string& task_id="") {
-    rosetta::RestoreModel model = rosetta::ProtocolManager::Instance()->GetRestoreModel(task_id);
-    return model.is_public_plaintext_mode();
-  }
-
-  bool is_restore_private_plain_model(const string& task_id="") {
-    rosetta::RestoreModel model = rosetta::ProtocolManager::Instance()->GetRestoreModel(task_id);
-    return model.is_private_plaintext_mode();
   }
 
   std::string get_protocol_name(const string& task_id="") {
