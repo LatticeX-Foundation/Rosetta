@@ -7,3 +7,9 @@
 [submodule "cc/third_party/spdlog"]
 	path = cc/third_party/spdlog
 	url = https://github.com/LatticeX-Foundation/Rosetta-Log.git
+[submodule "cc/third_party/emp-toolkit/emp-zk"]
+	path = cc/third_party/emp-toolkit/emp-zk
+	url = https://github.com/emp-toolkit/emp-zk.git
+[submodule "cc/third_party/emp-toolkit/emp-ot"]
+	path = cc/third_party/emp-toolkit/emp-ot
+	url = https://github.com/emp-toolkit/emp-ot.git
