@@ -17,6 +17,9 @@ using namespace rosetta::snn;
 #endif
 
 #include "cc/modules/protocol/mpc/naive/include/naive_impl.h"
+#if ROSETTA_ENABLES_PROTOCOL_ZK
+#include "cc/modules/protocol/zk/wolverine/include/wolverine_impl.h"
+#endif
 
 namespace rosetta {
 
@@ -225,7 +228,7 @@ string ProtocolManager::QueryMappingID(const uint64_t& unique_id) {
   std::lock_guard<std::mutex> lock(protocol_mutex_);
   auto iter = unique_id_mapping_.find(unique_id);
   if (iter == unique_id_mapping_.end()) {
-    log_warn << "cannot find mapping task id, with unique id: "<< unique_id;
+    // log_warn << "cannot find mapping task id, with unique id: "<< unique_id;
     return "";
   }
 
@@ -329,5 +332,9 @@ REGISTER_SECURE_PROTOCOL_FACTORY(SnnProtocolFactory, "SecureNN");
 #endif
 
 REGISTER_SECURE_PROTOCOL_FACTORY(NaiveProtocolFactory, "Naive");
+
+#if ROSETTA_ENABLES_PROTOCOL_ZK
+REGISTER_SECURE_PROTOCOL_FACTORY(WolverineProtocolFactory, "Wolverine");
+#endif
 
 }// rosetta
