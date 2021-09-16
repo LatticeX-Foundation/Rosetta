@@ -6,7 +6,7 @@
 curdir=$(pwd)
 ccdir=${curdir}
 third_code_dir=${ccdir}/third_party
-wolverine_dir=${ccdir}/third_party/emp-toolkit
+emp_dir=${ccdir}/third_party/emp-toolkit
 builddir=${curdir}/../build
 compile_options_file=${builddir}/.rtt_compile_options
 if [ "${rtt_enable_128bit}" = "ON" ]; then
@@ -27,6 +27,8 @@ function print_compile_options() {
     echo "                enable_gmssl: ${rtt_enable_gmssl}"
     echo "enable_protocol_mpc_securenn: ${rtt_enable_protocol_mpc_securenn}"
     echo "   enable_protocol_mpc_helix: ${rtt_enable_protocol_mpc_helix}"
+
+    echo "          enable_protocol_zk: ${rtt_enable_protocol_zk}"
     echo "               enable_128bit: ${rtt_enable_128bit}"
     echo "      enable_shape_inference: ${rtt_enable_shape_inference}"
     echo "                enable_tests: ${rtt_enable_tests}"
@@ -41,6 +43,8 @@ function save_compile_options() {
     echo "${rtt_enable_gmssl}" >>${compile_options_file}
     echo "${rtt_enable_protocol_mpc_securenn}" >>${compile_options_file}
     echo "${rtt_enable_protocol_mpc_helix}" >>${compile_options_file}
+
+    echo "${rtt_enable_protocol_zk}" >>${compile_options_file}
     echo "${rtt_enable_128bit}" >>${compile_options_file}
     echo "${rtt_enable_shape_inference}" >>${compile_options_file}
     echo "${rtt_enable_tests}" >>${compile_options_file}
@@ -57,9 +61,10 @@ function load_compile_options() {
     export rtt_enable_gmssl=${x[3]}
     export rtt_enable_protocol_mpc_securenn=${x[4]}
     export rtt_enable_protocol_mpc_helix=${x[5]}
-    export rtt_enable_128bit=${x[6]}
-    export rtt_enable_shape_inference=${x[7]}
-    export rtt_enable_tests=${x[8]}
+    export rtt_enable_protocol_zk=${x[6]}
+    export rtt_enable_128bit=${x[7]}
+    export rtt_enable_shape_inference=${x[8]}
+    export rtt_enable_tests=${x[9]}
 }
 
 #
@@ -69,11 +74,8 @@ function load_compile_options() {
 # install emp-toolkit
 function install_emptoolkit() {
     # install emp-tool
-    #if [ ! -e ${builddir}/include/emp-tool ]; then
-    #echo "emp-tool not exist"
     echo "to install emp-tool..."
 
-    #if [ ! -e ${third_builddir}/include/emp-tool ]; then mkdir -p ${third_builddir}/emp-tool; fi
     mkdir -p ${third_builddir}/emp-tool
     cd ${third_builddir}/emp-tool
     cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare" \
@@ -82,25 +84,31 @@ function install_emptoolkit() {
         -DENABLE_FLOAT=ON
     SECONDS=0
     make -j4 && make install
-    echo "install emp-tool ok."
-    #fi
+    echo "install emp-tool ok. Elapsed Time (using \$SECONDS): $SECONDS seconds"
+}
 
-    ## TODO: [HGF] emp-ot is not required at present !!!
-    return
+# install emp-zk
+function install_emp_zk() {
     # install emp-ot
-    #if [ ! -e ${builddir}/include/emp-otl ]; then
-    #echo "emp-ot not exist"
     echo "to install emp-ot..."
 
-    #if [ ! -e ${third_builddir}/emp-ot ]; then mkdir -p ${third_builddir}/emp-ot; fi
     mkdir -p ${third_builddir}/emp-ot
     cd ${third_builddir}/emp-ot
     cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare" \
         ${third_code_dir}/emp-toolkit/emp-ot -DCMAKE_INSTALL_PREFIX=${builddir} -DCMAKE_PREFIX_PATH=${builddir} \
         -DCMAKE_BUILD_TYPE=${rtt_build_type}
     make -j4 && make install
-    echo "install emp-ot ok, Elapsed Time (using \$SECONDS): $SECONDS seconds"
-    #fi
+    echo "install emp-ot ok"
+
+    # install emp-zk
+    echo "to install emp-zk..."
+    mkdir -p ${third_builddir}/emp-zk
+    cd ${third_builddir}/emp-zk
+    cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare" \
+        ${third_code_dir}/emp-toolkit/emp-zk -DCMAKE_INSTALL_PREFIX=${builddir} -DCMAKE_PREFIX_PATH=${builddir} \
+        -DCMAKE_BUILD_TYPE=${rtt_build_type}
+    make -j && make install
+    echo "install emp-zk ok."
 }
 
 # compile c++
@@ -121,6 +129,7 @@ function compile_cpp() {
         -DROSETTA_COMPILE_TESTS=${rtt_enable_tests} \
         -DROSETTA_ENABLES_PROTOCOL_MPC_SECURENN=${rtt_enable_protocol_mpc_securenn} \
         -DROSETTA_ENABLES_PROTOCOL_MPC_HELIX=${rtt_enable_protocol_mpc_helix} \
+        -DROSETTA_ENABLES_PROTOCOL_ZK=${rtt_enable_protocol_zk} \
         -DUSE_GMTASSL=${rtt_enable_gmssl} \
         -DCMAKE_PREFIX_PATH=${builddir}
     SECONDS=0
@@ -178,6 +187,11 @@ function run_protocol_mpc_helix_tests() {
     echo "run run protocol mpc helix tests end."
 }
 
+function run_protocol_zk_tests() {
+    echo "run run protocol zk tests beg."
+    echo "run run protocol zk tests end."
+}
+
 function run_all_modules_tests() {
     if [ $rtt_test_cpp_common -eq 1 ]; then
         cd ${bindir}
@@ -193,6 +207,10 @@ function run_all_modules_tests() {
         run_protocol_mpc_helix_tests
     fi
 
+    if [ $rtt_test_cpp_zk -eq 1 ]; then
+        cd ${bindir}
+        run_protocol_zk_tests
+    fi
 }
 
 #
@@ -229,13 +247,15 @@ if [ "${rtt_command}" = "compile" ]; then
 
     # install deps. emp-toolkit, ...
     install_emptoolkit
+    if [ "${rtt_enable_protocol_zk}" = "ON" ]; then
+        install_emp_zk
+    fi
 
     compile_cpp
     save_compile_options
 elif [ "${rtt_command}" = "test" ] || [ "${rtt_command}" = "perf" ]; then
     current_command=${rtt_command}
     load_compile_options
-
     if [ "${rtt_enable_tests}" != "ON" ]; then
         echo "Please set --enable-tests when compiling."
         exit 1
