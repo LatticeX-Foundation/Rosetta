@@ -30,6 +30,9 @@ using namespace rapidjson;
 #include <fstream>
 #include <sstream>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 namespace rosetta {
 
@@ -237,6 +240,13 @@ PerfStats::__stat PerfStats::get_perf_stats(bool stop /* = false */) {
   struct timespec process_cpu_time_end;
   clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &process_cpu_time_end);
   s.cpu_seconds = process_cpu_time_end - process_cpu_time;
+  {
+    int who = RUSAGE_SELF;
+    struct rusage usage;
+    int ret;
+    ret = getrusage(who, &usage);
+    s.max_vmrss = usage.ru_maxrss;
+  }
 
   return s;
 }
