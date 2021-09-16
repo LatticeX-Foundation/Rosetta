@@ -63,7 +63,7 @@ PYBIND11_MODULE(_rosetta, m) {
     .def("get_float_precision", &ProtocolHandler::get_float_precision, py::arg("task_id") = "")
     .def("set_saver_model", &ProtocolHandler::set_saver_model, py::arg("is_cipher_model"), py::arg("cipher_model"), py::arg("plain_model"), py::arg("task_id") = "")
     .def("set_restore_model", &ProtocolHandler::set_restore_model, py::arg("is_cipher_model"), py::arg("cipher_model"), py::arg("plain_model"), py::arg("task_id") = "")
-    .def("rand_seed", &ProtocolHandler::rand_seed, py::arg("task_id") = "")
+    .def("rand_seed", &ProtocolHandler::rand_seed, py::arg("seedid") = 0)
     .def("start_perf_stats", &ProtocolHandler::start_perf_stats, py::arg("task_id") = "")
     .def("get_perf_stats", &ProtocolHandler::get_perf_stats, py::arg("pretty")=true, py::arg("task_id") = "")
     .def("mapping_id", &ProtocolHandler::mapping_id, py::arg("unique_id"), py::arg("task_id") = "")
