@@ -538,8 +538,9 @@ class SecureBiasAddOp : public SecureBinaryOp<BinaryOpState> {
 
   int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output, OpKernelContext* context) {
     log_debug << "--> SecureBiasAddOp OpKernel compute.";
+    int ret = -1;
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(BiasAdd);
-    int ret = ProtocolManager::Instance()
+    ret = ProtocolManager::Instance()
                 ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
                 ->GetOps(msg_id())
                 ->Add(in1, in2, output, &attrs_);

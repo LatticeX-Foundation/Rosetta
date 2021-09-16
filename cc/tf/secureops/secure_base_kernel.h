@@ -56,6 +56,7 @@ using namespace std;
 #include "cc/modules/common/include/utils/rtt_logger.h"
 #include "cc/modules/common/include/utils/msg_id.h"
 #include "cc/modules/common/include/utils/msg_id_mgr.h"
+#include "cc/modules/common/include/utils/perf_stats_op.h"
 #include "cc/modules/iowrapper/include/io_wrapper.h"
 #include "cc/modules/protocol/public/include/protocol_manager.h"
 #include "cc/tf/secureops/mpc_exceptions.h"
@@ -85,6 +86,20 @@ using namespace std;
 #define REGISTER_STR_CPU_KERNEL(name, cls) \
   REGISTER_KERNEL_BUILDER(Name(#name).Device(DEVICE_CPU), cls)
 
+// clang-format off
+#if DO_SECURE_OP_PERFORMANCE_STATISTICS
+//! Usage
+//! SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(XXX);
+//! ProtocolManager::Instance()->GetProtocol(task_id)->GetOps(...)->YYYY(...);
+//! SECURE_OP_CALL_PROTOCOL_OP_STATS_END(XXX);
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(opname) SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG_(op_, opname)
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END(opname) SECURE_OP_CALL_PROTOCOL_OP_STATS_END_(op_, opname)
+#else
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(opname) (void)0
+#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END(opname) (void)0
+#endif
+// clang-format on
+
 namespace tensorflow {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
@@ -93,52 +108,6 @@ typedef Eigen::GpuDevice GPUDevice;
 typedef Eigen::SyclDevice SYCLDevice;
 #endif // TENSORFLOW_USE_SYCL
 
-#define DO_SECURE_OP_PERFORMANCE_STATISTICS 1
-#if DO_SECURE_OP_PERFORMANCE_STATISTICS
-// ////////////////////// PERFORMANCE STATISTICS
-struct secure_op_stats {
-  secure_op_stats(const string& _op) : op(_op) {}
-  string op;
-  atomic<int64_t> calls{0};
-  atomic<int64_t> elapse{0};
-  map<string, atomic<int64_t>> protocol_op_elapse;
-};
-extern mutex secure_op_stats_mtx;
-extern map<string, secure_op_stats*> map_op_stats;
-extern atomic<int64_t> init_exit_counter;
-void secure_op_stats_exit_func();
-// ////////////////////// PERFORMANCE STATISTICS
-#define SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_BEG() \
-  map_op_stats[op_]->calls++;                           \
-  auto ___begin = std::chrono::steady_clock::now()
-#define SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_END()                    \
-  map_op_stats[op_]->elapse +=                                             \
-    std::chrono::duration_cast<std::chrono::duration<int64_t, std::nano>>( \
-      std::chrono::steady_clock::now() - ___begin)                         \
-      .count()
-
-#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(opname) \
-  auto __##opname##_begin = std::chrono::steady_clock::now()
-
-#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END(opname)                                           \
-  auto __##opname##_end = std::chrono::steady_clock::now();                                    \
-  auto __##opname##__ = std::chrono::duration_cast<std::chrono::duration<int64_t, std::nano>>( \
-                          __##opname##_end - __##opname##_begin)                               \
-                          .count();                                                            \
-  map_op_stats[op_]->protocol_op_elapse[#opname] += __##opname##__
-
-//! Usage
-//! SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(XXX);
-//! ProtocolManager::Instance()->GetProtocol(task_id)->GetOps(...)->YYYY(...);
-//! SECURE_OP_CALL_PROTOCOL_OP_STATS_END(XXX);
-// ////////////////////// PERFORMANCE STATISTICS
-#else
-#define SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_BEG() (void)0
-#define SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_END() (void)0
-#define SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(opname) (void)0
-#define SECURE_OP_CALL_PROTOCOL_OP_STATS_END(opname) (void)0
-#endif
-// ////////////////////// PERFORMANCE STATISTICS
 
 class SecureOpKernel : public OpKernel {
  protected:
@@ -156,19 +125,7 @@ class SecureOpKernel : public OpKernel {
     // about node
     const NodeDef& def = context->def();
     op_ = def.op();
-
-#if DO_SECURE_OP_PERFORMANCE_STATISTICS
-    {
-      if (init_exit_counter++ == 0) {
-        atexit(secure_op_stats_exit_func);
-      }
-      unique_lock<mutex> lck(secure_op_stats_mtx);
-      auto iter = map_op_stats.find(op_);
-      if (iter == map_op_stats.end()) {
-        map_op_stats[op_] = new secure_op_stats(op_);
-      }
-    }
-#endif
+    SECURE_OP_ADD_BASE_OP(op_);
 
 #if PRINT_REVEAL
     {
@@ -221,14 +178,14 @@ class SecureOpKernel : public OpKernel {
     log_debug << "SecureOpKernel Compute msgid:" << msg_id();
 #endif
 
-    SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_BEG();
+    SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_BEG(op_);
     DEBUG_PRINT_BEFORE(context);
     // log_info << "OpKernel Compute:" << this_thread::get_id() << " " << msg_id_;
     //debug_print_before_v2(context);
     ComputeImpl(context);
     //debug_print_after_v2(context);
     DEBUG_PRINT_AFTER(context);
-    SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_END();
+    SECURE_OP_KERNEL_BASE_CLASS_COMPUTE_STATS_END(op_);
   }
 
   virtual void ComputeImpl(OpKernelContext* context) {
