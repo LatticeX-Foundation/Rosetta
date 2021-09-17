@@ -16,7 +16,7 @@ import latticex.rosetta
 
 当前版本集成了3方参与的安全多方计算（MPC）协议。当前使用的默认底层协议是 [SecureNN](https://eprint.iacr.org/2018/442.pdf) 和自研的 Helix 协议。这些协议可以在诚实者占多数的半诚实安全模型假设下保障数据安全。
 
-> **Rosetta 还集成了一个高效的零知识证明协议 [Mystique](https://eprint.iacr.org/2021/730)，用于复杂机器学习模型预测阶段的相关安全证明，关于其使用请参考 [wiki 页面](https://github.com/LatticeX-Foundation/Rosetta/wiki/Zero-knowledge-Proof-for-Machine-Learning-Inference).**
+Rosetta 还集成了一个高效的零知识证明协议 [Mystique] (https://eprint.iacr.org/2021/730)，用于复杂机器学习模型预测阶段的相关安全证明，例如 ResNet。关于其使用请参考 [示例说明](example/zkp_resnet/README.md).
 
 <div align=center>
 <img src="doc/_static/figs/deployment.png" width="500" height="350" />
