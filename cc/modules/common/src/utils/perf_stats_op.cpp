@@ -74,6 +74,9 @@ void __op_stats_exit_func() {
   for (auto& iter : map_op_stats) {
     auto stat = iter.second;
     max_width = std::max(stat->op.length(), max_width);
+    for (auto& iter2 : stat->protocol_op_stats) {
+      max_width = std::max(iter2.first.length(), max_width);
+    }
   }
   string s_("");
   for (size_t i = 0; i < max_width + 1; i++) {
