@@ -171,10 +171,10 @@ class DataSet {
     errmsg = "all check:";
     {
       // 3. check all arguments
-      vector<vector<string>> all_args(data_owner_.size(), vector<string>(data_owner_.size() + 2));
-      all_args[0] = data_owner_;
-      all_args[0][data_owner_.size() - 2] = std::to_string(dataset_type_);
-      all_args[0][data_owner_.size() - 1] = label_owner_;
+      vector<vector<string>> all_args(data_owner_.size());
+      all_args[0].insert(all_args[0].end(), data_owner_.begin(), data_owner_.end());
+      all_args[0].push_back(std::to_string(dataset_type_));
+      all_args[0].push_back(label_owner_);
       for (int i = 1; i < all_args.size(); i++) {
         all_args[i] = all_args[0];
       }
