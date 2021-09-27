@@ -25,6 +25,7 @@
 #include <mutex>
 #include <fstream>
 #include <algorithm>
+#include <random>
 using namespace std;
 
 #include "cc/modules/protocol/public/include/protocol_manager.h"
@@ -128,7 +129,13 @@ class ProtocolHandler {
 
   int deactivate(const string& task_id="") { return rosetta::ProtocolManager::Instance()->DeactivateProtocol(task_id); }
 
-  uint64_t rand_seed(const string& task_id) {
+
+  uint32_t rand_seed(int seedid = 0) {
+#if 1
+    // Python 'Seed must be between 0 and 2**32 - 1'
+    std::mt19937 g(seedid);
+    uint32_t seed = g(); 
+#else //! maybe useful
     if (!is_activated(task_id)) {
       cerr << "have not activated!" << endl;
       throw;
@@ -137,6 +144,7 @@ class ProtocolHandler {
     msg_id_t msg__seed_msg_id(seed_msg_id);
     auto randop = rosetta::ProtocolManager::Instance()->GetProtocol(task_id)->GetOps(msg__seed_msg_id);
     uint64_t seed = (uint64_t)randop->RandSeed();
+#endif
     return seed;
   }
 

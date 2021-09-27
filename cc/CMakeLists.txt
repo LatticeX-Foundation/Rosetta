@@ -80,6 +80,6 @@ endif()
 
 # modules
 add_subdirectory(third_party/spdlog)
+add_subdirectory(third_party/io)
 add_subdirectory(modules)
 add_subdirectory(tf)
-add_subdirectory(third_party/io)

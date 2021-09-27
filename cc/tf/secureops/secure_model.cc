@@ -841,17 +841,26 @@ class SecureRestoreV2Op : public SecureOpKernel {
             int64_t n = shapes.size();
             SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
             ops->Broadcast(send_node, (const char*)&n, (char*)&n, sizeof(n));
+            SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
+            
+            SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
             ops->Broadcast(send_node, (const char*)shapes.data(), (char*)shapes.data(),
             sizeof(int64_t) * shapes.size());
             SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
+
             shape_map.insert(std::pair<string, vector<int64_t>>(send_node, shapes));
           } else {
             int64_t n = 0;
             SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
             ops->Broadcast(send_node, (const char*)&n, (char*)&n, sizeof(n));
+            SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
+            
             vector<int64_t> shapes(n);
+
+            SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
             ops->Broadcast(send_node, (const char*)shapes.data(), (char*)shapes.data(), sizeof(int64_t) * shapes.size());
             SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
+
             shape_map.insert(std::pair<string, vector<int64_t>>(send_node, shapes));
             ///////////////////////////////////////////////////////////////////////////
           }
@@ -979,9 +988,13 @@ class SecureRestoreV2Op : public SecureOpKernel {
       int64_t n = shapes.size();
       SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
       ops->Broadcast(plaintext_node, (const char*)&n, (char*)&n, sizeof(n));
+      SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
+      
+      SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
       ops->Broadcast(plaintext_node, (const char*)shapes.data(), (char*)shapes.data(),
         sizeof(int64_t) * shapes.size());
       SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
+     
       log_info << "send n:" << n;
       for (int i = 0; i < shapes.size(); i++) {
         log_info << "send shapes:" << shapes[i];
@@ -990,7 +1003,11 @@ class SecureRestoreV2Op : public SecureOpKernel {
       int64_t n = 0;
       SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
       ops->Broadcast(plaintext_node, (const char*)&n, (char*)&n, sizeof(n));
+      SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
+      
       vector<int64_t> shapes(n);
+
+      SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Broadcast);
       ops->Broadcast(plaintext_node, (const char*)shapes.data(), (char*)shapes.data(), sizeof(int64_t) * shapes.size());
       SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Broadcast);
       log_info << "recv n:" << n ;

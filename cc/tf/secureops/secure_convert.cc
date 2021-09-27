@@ -328,7 +328,7 @@ class PrivateInputOp<string> : public SecureOpKernel {
     // PrivateInput input
     vector<string> outputs(input_flat.size());
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(PrivateInput);
-    log_info << "private input:" << data_owner_ << "data owner:" << data_owner_ << " size:" << inputs.size();
+    // log_info << "private input:" << data_owner_ << "data owner:" << data_owner_ << " size:" << inputs.size();
     ProtocolManager::Instance()
       ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())

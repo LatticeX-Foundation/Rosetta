@@ -66,6 +66,7 @@ function show_compile_usage() {
     echo "     --enable-all                         [OFF] Enable all the following options"
     echo "       --enable-protocol-mpc-securenn     [OFF] Secure Multi-party Computation (base on SecureNN)"
     echo "       --enable-protocol-mpc-helix        [OFF] Secure Multi-party Computation (base on Helix)"
+    echo "       --enable-protocol-zk               [OFF] Zero-Knowledge Proof"
     echo "       --enable-128bit                    [OFF] 128-bit data type"
     echo "       --enable-tests                     [OFF] Compile all the test cases"
     echo ""
@@ -90,6 +91,7 @@ function show_test_usage() {
     echo "     mpc              Protocol MPC (including mpc-*)"
     echo "     mpc-securenn     Protocol MPC (SecureNN)"
     echo "     mpc-helix        Protocol MPC (Helix)"
+    echo "     zk               Protocol ZK (including zk-*)"
     echo ""
     echo "  For python:"
     echo "     op               Operators"
@@ -155,6 +157,7 @@ if [ "${cmd}" = "compile" ]; then
     enable_all=0
     enable_protocol_mpc_securenn=OFF
     enable_protocol_mpc_helix=OFF
+    enable_protocol_zk=OFF
     enable_128bit=OFF
     enable_shape_inference=OFF
     enable_tests=OFF
@@ -167,7 +170,7 @@ if [ "${cmd}" = "compile" ]; then
         enable_shape_inference=ON
     fi
 
-    ARGS=$(getopt -o "h" -l "help,phase:,build-type:,enable-gmssl,enable-all,enable-protocol-mpc-securenn,enable-protocol-mpc-helix,enable-128bit,enable-tests" -n "$0" -- "$@")
+    ARGS=$(getopt -o "h" -l "help,phase:,build-type:,enable-gmssl,enable-all,enable-protocol-mpc-securenn,enable-protocol-mpc-helix,enable-protocol-zk,enable-128bit,enable-tests" -n "$0" -- "$@")
     eval set -- "${ARGS}"
     while true; do
         case "${1}" in
@@ -200,6 +203,10 @@ if [ "${cmd}" = "compile" ]; then
             enable_protocol_mpc_helix=ON
             shift
             ;;
+        --enable-protocol-zk)
+            enable_protocol_zk=ON
+            shift
+            ;;
         --enable-128bit)
             enable_128bit=ON
             shift
@@ -221,6 +228,7 @@ if [ "${cmd}" = "compile" ]; then
     if [ ${enable_all} -eq 1 ]; then
         enable_protocol_mpc_securenn=ON
         enable_protocol_mpc_helix=ON
+        enable_protocol_zk=ON
         enable_128bit=ON
         enable_tests=ON
     fi
@@ -239,13 +247,16 @@ if [ "${cmd}" = "compile" ]; then
     export rtt_enable_protocol_mpc_securenn=${enable_protocol_mpc_securenn}
     export rtt_enable_protocol_mpc_helix=${enable_protocol_mpc_helix}
     export rtt_enable_shape_inference=${enable_shape_inference}
+    export rtt_enable_protocol_zk=${enable_protocol_zk}
     export rtt_enable_tests=${enable_tests}
     if [ "${rtt_phase}" = "all" ] || [ "${rtt_phase}" = "modules" ]; then
         if [ "${enable_128bit}" = "ON" ]; then
             # compile 128bit first
+            export rtt_enable_protocol_zk=OFF
             export rtt_enable_128bit=ON
             run_rosetta_compile_modules
         fi
+        export rtt_enable_protocol_zk=${enable_protocol_zk}
         export rtt_enable_128bit=OFF
         run_rosetta_compile_modules
     fi
@@ -281,6 +292,7 @@ elif [ "${cmd}" = "test" ]; then
     test_cpp_mpc=0
     test_cpp_mpc_securenn=0
     test_cpp_mpc_helix=0
+    test_cpp_zk=0
     test_py_op=0
     test_py_gradop=0
     test_py_spass=0
@@ -299,6 +311,7 @@ elif [ "${cmd}" = "test" ]; then
         mpc-securenn) test_cpp_mpc_securenn=1 ;;
         mpc-helix) test_cpp_mpc_helix=1 ;;
 
+        zk) test_cpp_zk=1 ;;
         # python
         op) test_py_op=1 ;;
         gradop) test_py_gradop=1 ;;
@@ -311,9 +324,11 @@ elif [ "${cmd}" = "test" ]; then
     done
     if [ $test_all -eq 1 ]; then
         test_cpp_common=1
+        test_cpp_netio=1
         test_cpp_mpc=1
         test_cpp_mpc_securenn=1
         test_cpp_mpc_helix=1
+        test_cpp_zk=1
         test_py_op=1
         test_py_gradop=1
         test_py_spass=1
@@ -325,9 +340,11 @@ elif [ "${cmd}" = "test" ]; then
 
     export rtt_command=test
     export rtt_test_cpp_common=${test_cpp_common}
+    export rtt_test_cpp_netio=${test_cpp_netio}
     export rtt_test_cpp_mpc=${test_cpp_mpc}
     export rtt_test_cpp_mpc_securenn=${test_cpp_mpc_securenn}
     export rtt_test_cpp_mpc_helix=${test_cpp_mpc_helix}
+    export rtt_test_cpp_zk=${test_cpp_zk}
     export rtt_test_py_op=${test_py_op}
     export rtt_test_py_gradop=${test_py_gradop}
     export rtt_test_py_spass=${test_py_spass}
@@ -336,9 +353,11 @@ elif [ "${cmd}" = "test" ]; then
     export rtt_test_single_task=${test_py_single_task}
     export rtt_test_py_other=${test_py_other}
     echo "      test_cpp_common: ${rtt_test_cpp_common}"
+    echo "       test_cpp_netio: ${rtt_test_cpp_netio}"
     echo "         test_cpp_mpc: ${rtt_test_cpp_mpc}"
     echo "test_cpp_mpc_securenn: ${rtt_test_cpp_mpc_securenn}"
     echo "   test_cpp_mpc_helix: ${rtt_test_cpp_mpc_helix}"
+    echo "          test_cpp_zk: ${rtt_test_cpp_zk}"
     echo "           test_py_op: ${rtt_test_py_op}"
     echo "       test_py_gradop: ${rtt_test_py_gradop}"
     echo "        test_py_spass: ${rtt_test_py_spass}"

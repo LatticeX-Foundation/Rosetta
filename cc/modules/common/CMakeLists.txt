@@ -43,7 +43,7 @@ set_source_files_properties(${LIB_SOURCE_FILES} PROPERTIES COMPILE_FLAGS "${PEDA
 add_library(common SHARED ${LIB_HEADER_FILES} ${LIB_SOURCE_FILES})
 target_include_directories(common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include" PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/utils")
 add_dependencies (common spdlog)
-target_link_libraries(common ${LINKLIBS} common)
+target_link_libraries(common ${LINKLIBS} common spdlog)
 set_target_properties(common PROPERTIES FOLDER "common"
     APPEND_STRING PROPERTY LINK_FLAGS " ${ADD_LINK_LIB_FLAGS}")
 list(APPEND LINKLIBS common)
