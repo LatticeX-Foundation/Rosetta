@@ -17,13 +17,13 @@
 // ==============================================================================
 #pragma once
 
-#include "cc/modules/protocol/zk/wolverine/include/zk_int_fp_eigen.h"
+#include "cc/modules/protocol/zk/mystique/include/zk_int_fp_eigen.h"
 #include "emp-tool/emp-tool.h"
 #include "emp-tool/circuits/integer.h"
 
 #include "emp-zk/emp-zk.h"
 
-#include "cc/modules/protocol/zk/wolverine/include/wvr_util.h"
+#include "cc/modules/protocol/zk/mystique/include/wvr_util.h"
 
 using emp::Integer;
 using rosetta::zk::ZkUint64;
@@ -55,23 +55,23 @@ static inline void plain_zk_fp(const IntFp *zks, ZkUint64 *result, int size) {
   }
 }
 
-static inline ZkUint64 wolverine_plain_add(const ZkUint64& a, const ZkUint64& b) {
+static inline ZkUint64 mystique_plain_add(const ZkUint64& a, const ZkUint64& b) {
   return a+b;
 }
 
-static inline ZkUint64 wolverine_plain_sub(const ZkUint64& a, const ZkUint64& b) {
+static inline ZkUint64 mystique_plain_sub(const ZkUint64& a, const ZkUint64& b) {
   return a-b;
 }
 
-static inline ZkUint64 wolverine_plain_neg(const ZkUint64& a) {
+static inline ZkUint64 mystique_plain_neg(const ZkUint64& a) {
   return -a;
 }
 
-static inline ZkUint64 wolverine_plain_mul(const ZkUint64& a, const ZkUint64& b) {
+static inline ZkUint64 mystique_plain_mul(const ZkUint64& a, const ZkUint64& b) {
   return a*b;
 }
 
-static inline void wolverine_plain_truncate(ZkUint64* in, size_t size) {
+static inline void mystique_plain_truncate(ZkUint64* in, size_t size) {
   // out.resize(in.size());
   SimpleTimer timer;
   vector<Integer> bc(size);
@@ -99,7 +99,7 @@ static inline void wolverine_plain_truncate(ZkUint64* in, size_t size) {
   // }
 }
 
-static inline void wolverine_plain_relu(const vector<ZkUint64>& in, vector<ZkUint64>& out, int scale_count=1) {
+static inline void mystique_plain_relu(const vector<ZkUint64>& in, vector<ZkUint64>& out, int scale_count=1) {
   size_t size = in.size();
   // vector<ZkUint64> bin = in;
   vector<uint64_t> in_fps(in.size());
@@ -132,9 +132,9 @@ static inline void wolverine_plain_relu(const vector<ZkUint64>& in, vector<ZkUin
     relu[i] = (in_fps[i] >= smallest_neg.value ? zero : in_fps[i]);
 }
 
-static inline void wolverine_plain_max(const vector<ZkUint64>& in, ZkUint64& out) {
+static inline void mystique_plain_max(const vector<ZkUint64>& in, ZkUint64& out) {
   if (in.empty())
-    throw std::runtime_error("null input, wolverine_plain_max");
+    throw std::runtime_error("null input, mystique_plain_max");
   
   // simple bubble 
   size_t size = in.size();
@@ -168,11 +168,11 @@ static inline void wolverine_plain_max(const vector<ZkUint64>& in, ZkUint64& out
 }
 
 // get max elements of matrix, axis=1, get max of each row
-static inline void wolverine_plain_max_matrix(const vector<ZkUint64>& in, size_t rows, size_t cols, vector<ZkUint64>& out) {
+static inline void mystique_plain_max_matrix(const vector<ZkUint64>& in, size_t rows, size_t cols, vector<ZkUint64>& out) {
   if (in.size() != rows*cols)
-    throw std::runtime_error("input size ! = rows*cols, wolverine_plain_max_matrix");
+    throw std::runtime_error("input size ! = rows*cols, mystique_plain_max_matrix");
   
-  log_debug << "wolverine_plain_max_matrix, rows: " << rows << ", cols: " << cols;
+  log_debug << "mystique_plain_max_matrix, rows: " << rows << ", cols: " << cols;
   // simple bubble to get max element of each row
   out.resize(rows);
   
@@ -188,10 +188,10 @@ static inline void wolverine_plain_max_matrix(const vector<ZkUint64>& in, size_t
   bool compare_sign;
   bool a_and_b_not_same_sign;
   
-  // log_info << "wolverine_plain_max_matrix, start run...";
+  // log_info << "mystique_plain_max_matrix, start run...";
   // get a bigger one
   for(size_t i = 0; i < rows; ++i) {
-    // log_info << "wolverine_plain_max_matrix, start run-" << i << " row...";
+    // log_info << "mystique_plain_max_matrix, start run-" << i << " row...";
     bin_c[i] = in[i*cols];
     for (size_t j = 1; j < cols; ++j) {
       sign_a = (bin_c[i] >= NEG_SIGN);// is negative
@@ -208,11 +208,11 @@ static inline void wolverine_plain_max_matrix(const vector<ZkUint64>& in, size_t
     }
   }
   
-  log_debug << "wolverine_plain_max_matrix ok.";
+  log_debug << "mystique_plain_max_matrix ok.";
 }
 
 // matmul proof with right operhand constant
-static inline int wolverine_plain_matmul_proof_r_const(const ZkU64Matrix& a, const DoubleMatrix& b, ZkU64Matrix& c, bool need_truncate=true) {
+static inline int mystique_plain_matmul_proof_r_const(const ZkU64Matrix& a, const DoubleMatrix& b, ZkU64Matrix& c, bool need_truncate=true) {
   assert(a.size() != 0 && b.size() != 0);
   if (c.size() == 0)
     c.resize(a.rows(), b.cols());
@@ -224,23 +224,23 @@ static inline int wolverine_plain_matmul_proof_r_const(const ZkU64Matrix& a, con
 
   // TODO: truncation to Fp or just encode as emp::Float
   if (need_truncate) {
-    wolverine_plain_truncate(c.data(), c.size());
+    mystique_plain_truncate(c.data(), c.size());
   }
 
   return 0;
 }
 
 // matmul proof (not private_input float encoded a*b )
-static inline int wolverine_plain_matmul_proof(const ZkU64Matrix& a, const ZkU64Matrix& b, ZkU64Matrix& c, bool need_truncate=true) {
+static inline int mystique_plain_matmul_proof(const ZkU64Matrix& a, const ZkU64Matrix& b, ZkU64Matrix& c, bool need_truncate=true) {
   assert(a.size() != 0 && b.size() != 0);
   
   c = a * b;
   // TODO: truncation to Fp or just encode as emp::Float
   if (need_truncate) {
-    wolverine_plain_truncate(c.data(), c.size());
+    mystique_plain_truncate(c.data(), c.size());
   }
   
-  log_info << "party: " << zk_party_id << "wolverine_plain_matmul_fp_with_proof ok.";
+  log_info << "party: " << zk_party_id << "mystique_plain_matmul_fp_with_proof ok.";
   return 0;
 }
 

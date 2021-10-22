@@ -15,18 +15,18 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
-#include "cc/modules/protocol/zk/wolverine/include/wvr_util.h"
+#include "cc/modules/protocol/zk/mystique/include/wvr_util.h"
 
-#include "cc/modules/protocol/zk/wolverine/include/zk_int_fp.h"
-#include "cc/modules/protocol/zk/wolverine/include/zk_int_fp_eigen.h"
+#include "cc/modules/protocol/zk/mystique/include/zk_int_fp.h"
+#include "cc/modules/protocol/zk/mystique/include/zk_int_fp_eigen.h"
 #include <iostream>
 #include "emp-tool/emp-tool.h"
 
 #include <iostream>
 
-#include "cc/modules/protocol/zk/wolverine/include/wolverine_ops_impl.h"
-#include "cc/modules/protocol/zk/wolverine/include/wolverine_plain_internal.h"
-#include "cc/modules/protocol/zk/wolverine/include/zk_uint64_t.h"
+#include "cc/modules/protocol/zk/mystique/include/mystique_ops_impl.h"
+#include "cc/modules/protocol/zk/mystique/include/mystique_plain_internal.h"
+#include "cc/modules/protocol/zk/mystique/include/zk_uint64_t.h"
 
 #include <stdexcept>
 #include <string>

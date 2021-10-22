@@ -18,7 +18,7 @@ using namespace rosetta::snn;
 
 #include "cc/modules/protocol/mpc/naive/include/naive_impl.h"
 #if ROSETTA_ENABLES_PROTOCOL_ZK
-#include "cc/modules/protocol/zk/wolverine/include/wolverine_impl.h"
+#include "cc/modules/protocol/zk/mystique/include/mystique_impl.h"
 #endif
 
 namespace rosetta {
@@ -334,7 +334,7 @@ REGISTER_SECURE_PROTOCOL_FACTORY(SnnProtocolFactory, "SecureNN");
 REGISTER_SECURE_PROTOCOL_FACTORY(NaiveProtocolFactory, "Naive");
 
 #if ROSETTA_ENABLES_PROTOCOL_ZK
-REGISTER_SECURE_PROTOCOL_FACTORY(WolverineProtocolFactory, "Wolverine");
+REGISTER_SECURE_PROTOCOL_FACTORY(MystiqueProtocolFactory, "Mystique");
 #endif
 
 }// rosetta

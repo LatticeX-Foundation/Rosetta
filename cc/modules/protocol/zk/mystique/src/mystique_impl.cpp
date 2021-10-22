@@ -16,10 +16,10 @@
 // along with the Rosetta library. If not, see <http://www.gnu.org/licenses/>.
 // ==============================================================================
 #include "cc/modules/iowrapper/include/io_manager.h"
-#include "cc/modules/protocol/zk/wolverine/include/wolverine_impl.h"
-#include "cc/modules/protocol/zk/wolverine/include/wolverine_ops_impl.h"
+#include "cc/modules/protocol/zk/mystique/include/mystique_impl.h"
+#include "cc/modules/protocol/zk/mystique/include/mystique_ops_impl.h"
 #include "cc/modules/protocol/utility/include/util.h"
-#include "cc/modules/protocol/zk/wolverine/include/zk_int_fp.h"
+#include "cc/modules/protocol/zk/mystique/include/zk_int_fp.h"
 #include <iostream>
 
 #include <stdexcept>
@@ -72,9 +72,9 @@ void print_global_static_elasped() {
 
 namespace rosetta {
 
-int WolverineProtocol::Init() { return Init(""); }
-int WolverineProtocol::Init(std::string logfile) {
-  tlog_debug << "WolverineProtocol Init...";
+int MystiqueProtocol::Init() { return Init(""); }
+int MystiqueProtocol::Init(std::string logfile) {
+  tlog_debug << "MystiqueProtocol Init...";
   if (!is_inited_) {
     std::unique_lock<std::mutex> lck(status_mtx_);
     if (!is_inited_) {
@@ -89,13 +89,13 @@ int WolverineProtocol::Init(std::string logfile) {
 
       int my_party_id = net_io_->GetCurrentPartyId();
 
-      // Note that in wolverine, we use the P0's port in config file as zk port.
+      // Note that in mystique, we use the P0's port in config file as zk port.
       if (my_party_id == PARTY_A) {
-        // ALICE in Wolverine
+        // ALICE in Mystique
         party = 1;
         tlog_info << "I'm the prover, Alice!";
       } else if (my_party_id == PARTY_B) {
-        // BOB in Wolverine
+        // BOB in Mystique
         party = 2;
         tlog_info << "I'm the verifier, Bob!";
       } else {
@@ -132,13 +132,13 @@ int WolverineProtocol::Init(std::string logfile) {
   tlog_info << "Rosetta: Protocol [" << protocol_name_
             << "] backend initialization succeeded! task: " << context_->TASK_ID
             << ", node id: " << context_->NODE_ID;
-  tlog_debug << "WolverineProtocol Init ok.";
+  tlog_debug << "MystiqueProtocol Init ok.";
 
   return 0;
 }
 
-int WolverineProtocol::Uninit() {
-  tlog_debug << "WolverineProtocol Uninit...";
+int MystiqueProtocol::Uninit() {
+  tlog_debug << "MystiqueProtocol Uninit...";
   std::unique_lock<std::mutex> lck(status_mtx_);
 
   if (is_inited_) {
@@ -173,12 +173,12 @@ int WolverineProtocol::Uninit() {
   IOManager::Instance()->DestroyChannel(
     context_
       ->TASK_ID); // [HGF] why should we destroy channel here ? channel creation and destory should be outside
-  tlog_debug << "WolverineProtocol Uninit ok.";
+  tlog_debug << "MystiqueProtocol Uninit ok.";
   return 0;
 }
 
-shared_ptr<ProtocolOps> WolverineProtocol::GetOps(const msg_id_t& msgid) {
-  auto wvr_ops_ptr = make_shared<WolverineOpsImpl>(msgid, context_);
+shared_ptr<ProtocolOps> MystiqueProtocol::GetOps(const msg_id_t& msgid) {
+  auto wvr_ops_ptr = make_shared<MystiqueOpsImpl>(msgid, context_);
   // wvr_ops_ptr->op_config_map["PID"] = "P" + to_string(my_party_id);
   wvr_ops_ptr->io = GetNetHandler();
   for (int i = 0; i < THREAD_NUM; ++i) {
@@ -190,7 +190,7 @@ shared_ptr<ProtocolOps> WolverineProtocol::GetOps(const msg_id_t& msgid) {
   return std::dynamic_pointer_cast<ProtocolOps>(wvr_ops_ptr);
 }
 
-PerfStats WolverineProtocol::GetPerfStats() {
+PerfStats MystiqueProtocol::GetPerfStats() {
   PerfStats perf_stats;
   if (!is_inited_) {
     return perf_stats;
@@ -213,7 +213,7 @@ PerfStats WolverineProtocol::GetPerfStats() {
   return perf_stats;
 }
 
-void WolverineProtocol::StartPerfStats() {
+void MystiqueProtocol::StartPerfStats() {
   if (!is_inited_) {
     return;
   }

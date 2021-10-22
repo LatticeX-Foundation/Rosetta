@@ -20,7 +20,7 @@
 #include "emp-tool/emp-tool.h"
 #include "emp-zk/emp-zk.h"
 
-#include "cc/modules/protocol/zk/wolverine/include/zk_netio.h"
+#include "cc/modules/protocol/zk/mystique/include/zk_netio.h"
 
 #define ZK_INT_LEN 62
 #define ZK_THREAD_NUM 5

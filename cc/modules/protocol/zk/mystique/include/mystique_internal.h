@@ -18,12 +18,12 @@
 #pragma once
 
 #include "cc/modules/protocol/utility/include/prg.h"
-#include "cc/modules/protocol/zk/wolverine/include/zk_int_fp_eigen.h"
+#include "cc/modules/protocol/zk/mystique/include/zk_int_fp_eigen.h"
 #include "emp-tool/emp-tool.h"
 #include "emp-tool/circuits/integer.h"
 #include "emp-zk/emp-zk.h"
 
-#include "cc/modules/protocol/zk/wolverine/include/wvr_util.h"
+#include "cc/modules/protocol/zk/mystique/include/wvr_util.h"
 
 using emp::Integer;
 using rosetta::zk::ZkIntFp;
@@ -47,7 +47,7 @@ extern int zk_party_id;
 namespace rosetta {
 namespace zk {
 
-static inline void wolverine_truncate(ZkIntFp* in, size_t size) {
+static inline void mystique_truncate(ZkIntFp* in, size_t size) {
   // out.resize(in.size());
   SimpleTimer timer;
   vector<Integer> bc(size);
@@ -71,7 +71,7 @@ static inline void wolverine_truncate(ZkIntFp* in, size_t size) {
   log_debug << "truncation OK. cost: " << timer.ns_elapse()/1000 << " us";
 }
 
-static inline void wolverine_relu(const vector<ZkIntFp>& in, vector<ZkIntFp>& out, int scale_count=1) {
+static inline void mystique_relu(const vector<ZkIntFp>& in, vector<ZkIntFp>& out, int scale_count=1) {
   size_t size = in.size();
   vector<Integer> bin(size);
   sync_zk_bool<BoolIO<ZKNetIO>>();
@@ -107,7 +107,7 @@ static inline void wolverine_relu(const vector<ZkIntFp>& in, vector<ZkIntFp>& ou
   sync_zk_bool<BoolIO<ZKNetIO>>();
 }
 
-static inline void wolverine_relu_prime(const ZkIntFp* in, size_t size, vector<ZkIntFp>& output) {
+static inline void mystique_relu_prime(const ZkIntFp* in, size_t size, vector<ZkIntFp>& output) {
   vector<Integer> bin(size, Integer(ZK_INT_LEN, 0, PUBLIC));
   output.resize(size);
   sync_zk_bool<BoolIO<ZKNetIO>>();
@@ -127,13 +127,13 @@ static inline void wolverine_relu_prime(const ZkIntFp* in, size_t size, vector<Z
   sync_zk_bool<BoolIO<ZKNetIO>>();
 }
 
-static inline void wolverine_relu_prime(const vector<ZkIntFp>& in, vector<ZkIntFp>& out) {
-  wolverine_relu_prime(in.data(), in.size(), out);
+static inline void mystique_relu_prime(const vector<ZkIntFp>& in, vector<ZkIntFp>& out) {
+  mystique_relu_prime(in.data(), in.size(), out);
 }
 
-static inline void wolverine_max(const vector<ZkIntFp>& in, ZkIntFp& out) {
+static inline void mystique_max(const vector<ZkIntFp>& in, ZkIntFp& out) {
   if (in.empty())
-    throw std::runtime_error("null input, wolverine_max");
+    throw std::runtime_error("null input, mystique_max");
   // sync_zk_bool<BoolIO<ZKNetIO>>();
   // simple bubble 
   size_t size = in.size();
@@ -155,11 +155,11 @@ static inline void wolverine_max(const vector<ZkIntFp>& in, ZkIntFp& out) {
 }
 
 // get max elements of matrix, axis=1, get max of each row
-static inline void wolverine_max_matrix(const vector<ZkIntFp>& in, size_t rows, size_t cols, vector<ZkIntFp>& out) {
+static inline void mystique_max_matrix(const vector<ZkIntFp>& in, size_t rows, size_t cols, vector<ZkIntFp>& out) {
   if (in.size() != rows*cols)
-    throw std::runtime_error("input size ! = rows*cols, wolverine_max_matrix");
+    throw std::runtime_error("input size ! = rows*cols, mystique_max_matrix");
   
-  log_debug << "wolverine_max_matrix, rows: " << rows << ", cols: " << cols;
+  log_debug << "mystique_max_matrix, rows: " << rows << ", cols: " << cols;
   // simple bubble to get max element of each row
   out.resize(rows);
   
@@ -179,10 +179,10 @@ static inline void wolverine_max_matrix(const vector<ZkIntFp>& in, size_t rows, 
   Bit compare_sign;
   Bit a_and_b_not_same_sign;
   
-  // log_info << "wolverine_max_matrix, start run...";
+  // log_info << "mystique_max_matrix, start run...";
   // get a bigger one
   for(size_t i = 0; i < rows; ++i) {
-    // log_info << "wolverine_max_matrix, start run-" << i << " row...";
+    // log_info << "mystique_max_matrix, start run-" << i << " row...";
     bin_c[i] = input_bin[i*cols];
     for (size_t j = 1; j < cols; ++j) {
       sign_a = bin_c[i].geq(NEG_SIGN);// is negative
@@ -201,15 +201,15 @@ static inline void wolverine_max_matrix(const vector<ZkIntFp>& in, size_t rows, 
   // sync_zk_bool<BoolIO<ZKNetIO>>();
   bool2arith<BoolIO<ZKNetIO>>((IntFp*)out.data(), bin_c.data(), rows);
   sync_zk_bool<BoolIO<ZKNetIO>>();
-  log_debug << "wolverine_max_matrix ok.";
+  log_debug << "mystique_max_matrix ok.";
 }
 
 // get max elements of matrix, axis=1, get max of each row
-static inline void wolverine_max_matrix_bin(const vector<Integer>& input_bin, size_t rows, size_t cols, vector<Integer>& out) {
+static inline void mystique_max_matrix_bin(const vector<Integer>& input_bin, size_t rows, size_t cols, vector<Integer>& out) {
   if (input_bin.size() != rows*cols)
-    throw std::runtime_error("input size ! = rows*cols, wolverine_max_matrix");
+    throw std::runtime_error("input size ! = rows*cols, mystique_max_matrix");
   
-  log_debug << "wolverine_max_matrix_bool, rows: " << rows << ", cols: " << cols;
+  log_debug << "mystique_max_matrix_bool, rows: " << rows << ", cols: " << cols;
   // simple bubble to get max element of each row
   out.resize(rows);
   
@@ -224,10 +224,10 @@ static inline void wolverine_max_matrix_bin(const vector<Integer>& input_bin, si
   Bit compare_sign;
   Bit a_and_b_not_same_sign;
   
-  // log_info << "wolverine_max_matrix, start run...";
+  // log_info << "mystique_max_matrix, start run...";
   // get a bigger one
   for(size_t i = 0; i < rows; ++i) {
-    // log_info << "wolverine_max_matrix, start run-" << i << " row...";
+    // log_info << "mystique_max_matrix, start run-" << i << " row...";
     bin_c[i] = input_bin[i*cols];
     for (size_t j = 1; j < cols; ++j) {
       sign_a = bin_c[i].geq(NEG_SIGN);// is negative
@@ -244,15 +244,15 @@ static inline void wolverine_max_matrix_bin(const vector<Integer>& input_bin, si
     }
   }
   
-  log_debug << "wolverine_max_matrix_bool ok.";
+  log_debug << "mystique_max_matrix_bool ok.";
 }
 
-static inline void wolverine_min(const vector<ZkIntFp>& in, ZkIntFp& out) {
-  throw std::runtime_error("Wolverine_min NOT IMPL!");
+static inline void mystique_min(const vector<ZkIntFp>& in, ZkIntFp& out) {
+  throw std::runtime_error("Mystique_min NOT IMPL!");
   if (in.empty())
-    throw std::runtime_error("null input, wolverine_min");
+    throw std::runtime_error("null input, mystique_min");
   
-  //[kelvin] TODO: implement min the same way as wolverine_max does
+  //[kelvin] TODO: implement min the same way as mystique_max does
 }
 
 // matmul proof 
@@ -271,8 +271,8 @@ static inline void wolverine_min(const vector<ZkIntFp>& in, ZkIntFp& out) {
 // 9. Prover/Verifier convert $[\Delta]_{m,n}$ to  $\left|\Delta\right|_{m*n}$ vector;
 // 10. $\text{for}\; i\; in\; [0,1,\;\cdots \;(m*n)):$
 // 	- prover/verifier check if $abs(\left|\Delta\right|_{m*n}[i]) \leq 2^{16}$ is satisfied, true go next, false then abort;
-static inline int wolverine_matmul_fp_with_proof(const ZkMatrix& a, const ZkMatrix& b, ZkMatrix& c) {
-  log_debug << "party: " << zk_party_id << " : wolverine_matmul_fp_with_proof, (" << a.rows() << "," << a.cols() << ") * (" << b.rows() << "," << b.cols() << "), start..." << ENDL;
+static inline int mystique_matmul_fp_with_proof(const ZkMatrix& a, const ZkMatrix& b, ZkMatrix& c) {
+  log_debug << "party: " << zk_party_id << " : mystique_matmul_fp_with_proof, (" << a.rows() << "," << a.cols() << ") * (" << b.rows() << "," << b.cols() << "), start..." << ENDL;
   assert(a.size() != 0 && b.size() != 0);
   if (c.size() == 0)
     c.resize(a.rows(), b.cols());
@@ -360,7 +360,7 @@ static inline int wolverine_matmul_fp_with_proof(const ZkMatrix& a, const ZkMatr
   zk_eigen_const_matmul(u, C_tilde, temp1);
   zk_eigen_const_matmul(temp1, v, temp2);
   ZkMatrix result = t - temp2;
-  log_debug << "wolverine_matmul_fp_with_proof, after [t] - u* [tilde_C] * v, " << zk_party_id << ": " << result(0,0);
+  log_debug << "mystique_matmul_fp_with_proof, after [t] - u* [tilde_C] * v, " << zk_party_id << ": " << result(0,0);
 
   bool status = batch_reveal_check_zero((IntFp*)result.data(), result.size());
   log_debug << "step7.2 Prover/Verifier reveal [t] - u* [tilde_C] * v ok, and check:  " << status;
@@ -372,7 +372,7 @@ static inline int wolverine_matmul_fp_with_proof(const ZkMatrix& a, const ZkMatr
   log_debug << "step8.2. (step8,9,10 together) each element do batch multiplication ok, check: " << (ret == 0);
 #endif
 
-  log_debug << " wolverine_matmul_fp_with_proof ok." << "party: " << zk_party_id;
+  log_debug << " mystique_matmul_fp_with_proof ok." << "party: " << zk_party_id;
   return 0;
 }
 
@@ -389,8 +389,8 @@ static inline int wolverine_matmul_fp_with_proof(const ZkMatrix& a, const ZkMatr
 //   4.2. Prover/Verifier convert $[\Delta]_{m,n}$ to  $\left|\Delta\right|_{m*n}$ vector;
 //   4.3. $\text{for}\; i\; in\; [0,1,\;\cdots \;(m*n)):$
 // 	     - prover/verifier check if $abs(\left|\Delta\right|_{m*n}[i]) \leq 2^{16}$ is satisfied, true go next, false then abort;
-static inline int wolverine_matmul_fp_with_proof_r_const(const ZkMatrix& a, const DoubleMatrix& b, ZkMatrix& c) {
-  log_debug << "party: " << zk_party_id << " : wolverine_matmul_fp_with_proof, (" 
+static inline int mystique_matmul_fp_with_proof_r_const(const ZkMatrix& a, const DoubleMatrix& b, ZkMatrix& c) {
+  log_debug << "party: " << zk_party_id << " : mystique_matmul_fp_with_proof, (" 
           << a.rows() << "," << a.cols() << ") * (" 
           << b.rows() << "," << b.cols() << "), B is const start..." << ENDL;
   assert(a.size() != 0 && b.size() != 0);
@@ -436,13 +436,13 @@ static inline int wolverine_matmul_fp_with_proof_r_const(const ZkMatrix& a, cons
   log_debug << "step4. each element do batch multiplication ok, check: " << (ret == 0);
 #endif
 
-  log_debug << "party: " << zk_party_id << " : wolverine_matmul_fp_with_proof (B is const) ok.";
+  log_debug << "party: " << zk_party_id << " : mystique_matmul_fp_with_proof (B is const) ok.";
   return 0;
 }
 
 // matmul proof with right operhand constant
-static inline int wolverine_matmul_proof_r_const(const ZkMatrix& a, const DoubleMatrix& b, ZkMatrix& c, bool need_truncate=true) {
-  log_debug << "party: " << zk_party_id << " : wolverine_matmul_fp_with_proof, (" 
+static inline int mystique_matmul_proof_r_const(const ZkMatrix& a, const DoubleMatrix& b, ZkMatrix& c, bool need_truncate=true) {
+  log_debug << "party: " << zk_party_id << " : mystique_matmul_fp_with_proof, (" 
           << a.rows() << "," << a.cols() << ") * (" 
           << b.rows() << "," << b.cols() << "), B is const start..." << ENDL;
   assert(a.size() != 0 && b.size() != 0);
@@ -459,16 +459,16 @@ static inline int wolverine_matmul_proof_r_const(const ZkMatrix& a, const Double
 
   // TODO: truncation to Fp or just encode as emp::Float
   if (need_truncate) {
-    wolverine_truncate(C_prime.data(), C_prime.size());
+    mystique_truncate(C_prime.data(), C_prime.size());
   }
 
-  log_debug << "party: " << zk_party_id << " : wolverine_matmul_fp_with_proof (B is const) ok.";
+  log_debug << "party: " << zk_party_id << " : mystique_matmul_fp_with_proof (B is const) ok.";
   return 0;
 }
 
 // matmul proof (not private_input float encoded a*b )
-static inline int wolverine_matmul_proof(const ZkMatrix& a, const ZkMatrix& b, ZkMatrix& c, bool need_truncate=true) {
-  log_debug << "party: " << zk_party_id << " : wolverine_matmul_fp_with_proof, (" << a.rows() << "," << a.cols() << ") * (" << b.rows() << "," << b.cols() << "), start..." << ENDL;
+static inline int mystique_matmul_proof(const ZkMatrix& a, const ZkMatrix& b, ZkMatrix& c, bool need_truncate=true) {
+  log_debug << "party: " << zk_party_id << " : mystique_matmul_fp_with_proof, (" << a.rows() << "," << a.cols() << ") * (" << b.rows() << "," << b.cols() << "), start..." << ENDL;
   assert(a.size() != 0 && b.size() != 0);
   if (c.size() == 0)
     c.resize(a.rows(), b.cols());
@@ -552,17 +552,17 @@ static inline int wolverine_matmul_proof(const ZkMatrix& a, const ZkMatrix& b, Z
   zk_eigen_const_matmul(u, C_prime, temp1);
   zk_eigen_const_matmul(temp1, v, temp2);
   ZkMatrix result = t - temp2; // actually t has shape (1,1)
-  log_debug << "wolverine_matmul_fp_with_proof, after [t] - u* [tilde_C] * v, " << zk_party_id << ": " << result(0,0);
+  log_debug << "mystique_matmul_fp_with_proof, after [t] - u* [tilde_C] * v, " << zk_party_id << ": " << result(0,0);
 
   bool status = batch_reveal_check_zero((IntFp*)result.data(), result.size());
   log_debug << "Prover/Verifier reveal [t] - u* [tilde_C] * v ok, and check:  " << status;
 
   // TODO: truncation to Fp or just encode as emp::Float
   if (need_truncate) {
-    wolverine_truncate(C_prime.data(), C_prime.size());
+    mystique_truncate(C_prime.data(), C_prime.size());
   }
   
-  log_info << "party: " << zk_party_id << "wolverine_matmul_fp_with_proof ok.";
+  log_info << "party: " << zk_party_id << "mystique_matmul_fp_with_proof ok.";
   return 0;
 }
 

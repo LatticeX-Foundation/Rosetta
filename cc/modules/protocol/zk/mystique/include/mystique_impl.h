@@ -17,8 +17,8 @@
 // ==============================================================================
 #pragma once
 #include "cc/modules/protocol/public/include/protocol_base.h"
-#include "cc/modules/protocol/zk/wolverine/include/zk_int_fp.h"
-#include "cc/modules/protocol/zk/wolverine/include/zk_int_fp_eigen.h"
+#include "cc/modules/protocol/zk/mystique/include/zk_int_fp.h"
+#include "cc/modules/protocol/zk/mystique/include/zk_int_fp_eigen.h"
 #include <iostream>
 #include "emp-tool/emp-tool.h"
 #if defined(__linux__)
@@ -33,16 +33,16 @@
 using namespace emp;
 using namespace std;
 
-#include "cc/modules/protocol/zk/wolverine/include/wvr_util.h"
+#include "cc/modules/protocol/zk/mystique/include/wvr_util.h"
 
 namespace rosetta {
 class RosettaConfig;
-class WolverineProtocol : public ProtocolBase {
+class MystiqueProtocol : public ProtocolBase {
  public:
-  WolverineProtocol(const string task_id="") : ProtocolBase("Wolverine", 2, task_id) {}
+  MystiqueProtocol(const string task_id="") : ProtocolBase("Mystique", 2, task_id) {}
 
  public:
-  virtual ~WolverineProtocol() = default;
+  virtual ~MystiqueProtocol() = default;
 
  public:
   virtual int Init();
@@ -66,12 +66,12 @@ class WolverineProtocol : public ProtocolBase {
   shared_ptr<RosettaConfig> config = nullptr;
 };
 
-class WolverineProtocolFactory : public IProtocolFactory {
+class MystiqueProtocolFactory : public IProtocolFactory {
  public:
-  WolverineProtocolFactory() {}
+  MystiqueProtocolFactory() {}
 
  public:
-  shared_ptr<ProtocolBase> Create(const string& task_id) { return std::make_shared<WolverineProtocol>(task_id); }
+  shared_ptr<ProtocolBase> Create(const string& task_id) { return std::make_shared<MystiqueProtocol>(task_id); }
 };
 
 } // namespace rosetta

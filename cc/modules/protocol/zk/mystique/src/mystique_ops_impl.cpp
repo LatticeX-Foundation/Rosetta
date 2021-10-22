@@ -22,18 +22,18 @@
 #include <iostream>
 #include <algorithm>
 
-#include "cc/modules/protocol/zk/wolverine/include/wolverine_impl.h"
+#include "cc/modules/protocol/zk/mystique/include/mystique_impl.h"
 
-#include "cc/modules/protocol/zk/wolverine/include/wolverine_ops_impl.h"
+#include "cc/modules/protocol/zk/mystique/include/mystique_ops_impl.h"
 #include "cc/modules/common/include/utils/rtt_logger.h"
 #include "cc/modules/protocol/utility/include/util.h"
 // #include "cc/modules/protocol/utility/include/config.h"
 
-#include "cc/modules/protocol/zk/wolverine/include/wvr_util.h"
-#include "cc/modules/protocol/zk/wolverine/include/wolverine_internal.h"
+#include "cc/modules/protocol/zk/mystique/include/wvr_util.h"
+#include "cc/modules/protocol/zk/mystique/include/mystique_internal.h"
 #include "cc/modules/protocol/utility/include/prg.h"
 #include "cc/modules/common/include/utils/perf_stats.h"
-#include "cc/modules/protocol/zk/wolverine/include/wolverine_plain_internal.h"
+#include "cc/modules/protocol/zk/mystique/include/mystique_plain_internal.h"
 
 using namespace rosetta::zk;
 using emp::block;
@@ -51,16 +51,16 @@ extern int64_t matmul_proof_time; //us
 
 namespace rosetta {
 
-int WolverineOpsImpl::PrivateInput(const string& node_id, const vector<double>& in_x, vector<string>& out_x){
+int MystiqueOpsImpl::PrivateInput(const string& node_id, const vector<double>& in_x, vector<string>& out_x){
     int p = io->GetPartyId(node_id);
     return  PrivateInput(p,in_x,out_x);
 }
 
-int WolverineOpsImpl::PrivateInput(
+int MystiqueOpsImpl::PrivateInput(
   int party_id,
   const vector<double>& in_x,
   vector<string>& out_x) {
-  tlog_debug << "calling WolverineOpsImpl::PrivateInput" << ENDL;
+  tlog_debug << "calling MystiqueOpsImpl::PrivateInput" << ENDL;
 
   int vec_size = in_x.size();
   out_x.resize(vec_size);
@@ -87,12 +87,12 @@ int WolverineOpsImpl::PrivateInput(
   return 0;
 }
 
-int WolverineOpsImpl::PublicInput(const string& node_id, const vector<double>& in_x, vector<string>& out_x){
+int MystiqueOpsImpl::PublicInput(const string& node_id, const vector<double>& in_x, vector<string>& out_x){
     int p = io->GetPartyId(node_id);
     return  PublicInput(p,in_x,out_x);
 }
 
-int WolverineOpsImpl::PublicInput(int party_id, const vector<double>& in_x, vector<string>& out_x) {
+int MystiqueOpsImpl::PublicInput(int party_id, const vector<double>& in_x, vector<string>& out_x) {
   int64_t size = in_x.size();
 
 #if LOCAL_SIMULATE
@@ -108,16 +108,16 @@ int WolverineOpsImpl::PublicInput(int party_id, const vector<double>& in_x, vect
   return 0;
 }
 
-int WolverineOpsImpl::PublicInput(const string& node_id, const vector<double>& in_x, vector<ZkIntFp>& out_x){
+int MystiqueOpsImpl::PublicInput(const string& node_id, const vector<double>& in_x, vector<ZkIntFp>& out_x){
     int p = io->GetPartyId(node_id);
     return  PublicInput(p,in_x,out_x);
 }
 
-int WolverineOpsImpl::PublicInput(
+int MystiqueOpsImpl::PublicInput(
   int party_id,
   const vector<double>& in_x,
   vector<ZkIntFp>& out_x) {
-  tlog_debug << "calling WolverineOpsImpl::PublicInput" << ENDL;
+  tlog_debug << "calling MystiqueOpsImpl::PublicInput" << ENDL;
   int size = in_x.size();
   out_x.clear();
   out_x.resize(size);
@@ -130,12 +130,12 @@ int WolverineOpsImpl::PublicInput(
   return 0;
 }
 
-int WolverineOpsImpl::Broadcast(const string& from_node, const char* msg, char* result, size_t size){
+int MystiqueOpsImpl::Broadcast(const string& from_node, const char* msg, char* result, size_t size){
       int from_party = io->GetPartyId(from_node);
     return  Broadcast(from_party,msg,result,size);
 }
 
-int WolverineOpsImpl::Broadcast(int from_party, const char* msg, char* result, size_t size) {
+int MystiqueOpsImpl::Broadcast(int from_party, const char* msg, char* result, size_t size) {
   // from_party \in {0,1}
   // result must be allocate outside!
   if (from_party + 1 == zk_party_id) {
@@ -146,21 +146,21 @@ int WolverineOpsImpl::Broadcast(int from_party, const char* msg, char* result, s
   return 0;
 }
 
-int WolverineOpsImpl::Broadcast(const string& from_node, const string& msg, string& result){
+int MystiqueOpsImpl::Broadcast(const string& from_node, const string& msg, string& result){
     int from_party = io->GetPartyId(from_node);
     return  Broadcast(from_party,msg,result);
 }
 
-int WolverineOpsImpl::Broadcast(int from_party, const string& msg, string& result) {
+int MystiqueOpsImpl::Broadcast(int from_party, const string& msg, string& result) {
   return Broadcast(from_party, msg.data(), (char*)result.data(), msg.size());
 }
 
-int WolverineOpsImpl::Add(
+int MystiqueOpsImpl::Add(
   const vector<string>& a,
   const vector<string>& b,
   vector<string>& output,
   const attr_type* attr_info) {
-  tlog_debug << "-----> Wolverine Add";
+  tlog_debug << "-----> Mystique Add";
   int size = a.size();
   int a_scale = 1;
   int b_scale = 1;
@@ -228,17 +228,17 @@ int WolverineOpsImpl::Add(
   #endif
 
   convert_mac_to_string(c_zks, output, humanable, output_scale_multiplier);
-  tlog_debug << "Wolverine Add ok. <----";
+  tlog_debug << "Mystique Add ok. <----";
   return 0;
 }
 
-int WolverineOpsImpl::Matmul(
+int MystiqueOpsImpl::Matmul(
   const vector<string>& a,
   const vector<string>& b,
   vector<string>& output,
   const attr_type* attr_info) {
   SimpleTimer timer_proof;
-  tlog_debug << "----> Wolverine Matmul";
+  tlog_debug << "----> Mystique Matmul";
   int m = 0, k = 0, n = 0;
   int a_scale = 1;
   int out_scale_multiplier = 1;
@@ -249,7 +249,7 @@ int WolverineOpsImpl::Matmul(
     k = std::stoi(attr_info->at("k"));
     n = std::stoi(attr_info->at("n"));
   } else {
-    throw std::runtime_error("please fill m, k, n for Wolverine Matmul");
+    throw std::runtime_error("please fill m, k, n for Mystique Matmul");
   }
 
   bool transpose_a = false, transpose_b = false, rh_is_const = false;
@@ -260,7 +260,7 @@ int WolverineOpsImpl::Matmul(
   if (attr_info->count("rh_is_const") > 0 && attr_info->at("rh_is_const") == "1")
     rh_is_const = true;
 
-  tlog_info << "Wolverine Matmul m, k, n: " << m << ", " << k << ", " << n
+  tlog_info << "Mystique Matmul m, k, n: " << m << ", " << k << ", " << n
             << ", rh_is_const: " << rh_is_const;
 
 #if LOCAL_SIMULATE
@@ -287,7 +287,7 @@ int WolverineOpsImpl::Matmul(
 
     timer_proof.start();
     // todo: FIX this !!
-    wolverine_plain_matmul_proof_r_const(a_fps, db, c_fps, !_OUTPUT_WITH_HIGH_SCALE);
+    mystique_plain_matmul_proof_r_const(a_fps, db, c_fps, !_OUTPUT_WITH_HIGH_SCALE);
     
     matmul_proof_time += timer_proof.ns_elapse();
   } else {
@@ -305,7 +305,7 @@ int WolverineOpsImpl::Matmul(
 
     timer_proof.start();
     // todo: FIX this !!
-    wolverine_plain_matmul_proof(a_fps, b_fps, c_fps, !_OUTPUT_WITH_HIGH_SCALE);
+    mystique_plain_matmul_proof(a_fps, b_fps, c_fps, !_OUTPUT_WITH_HIGH_SCALE);
 
     matmul_proof_time += timer_proof.ns_elapse();
   }
@@ -319,9 +319,9 @@ int WolverineOpsImpl::Matmul(
   output.resize(c_fps.size());
   convert_mac_to_string((uint64_t*)c_fps.data(), output, c_fps.size(), humanable, out_scale_multiplier);
   //! cout << "c_fps: \n" << c_fps << ENDL;
-  tlog_info << "wolverine_matmul_fp_with_proof elapse (us):  " << timer_proof.ns_elapse() / 1000
+  tlog_info << "mystique_matmul_fp_with_proof elapse (us):  " << timer_proof.ns_elapse() / 1000
            << " us, proof accumulate: " << matmul_proof_time / 1000 << " us." << ENDL;
-  tlog_info << "Wolverine Matmul ok. <---- " << zk_party_id << ",  m, k, n: " << m << ", " << k
+  tlog_info << "Mystique Matmul ok. <---- " << zk_party_id << ",  m, k, n: " << m << ", " << k
            << ", " << n;
   return 0;
 #endif
@@ -349,7 +349,7 @@ int WolverineOpsImpl::Matmul(
 
     timer_proof.start();
     // todo: FIX this !!
-    wolverine_matmul_proof_r_const(za, db, zc, !_OUTPUT_WITH_HIGH_SCALE);
+    mystique_matmul_proof_r_const(za, db, zc, !_OUTPUT_WITH_HIGH_SCALE);
     
     matmul_proof_time += timer_proof.ns_elapse();
   } else {
@@ -367,7 +367,7 @@ int WolverineOpsImpl::Matmul(
 
     timer_proof.start();
     // todo: FIX this !!
-    wolverine_matmul_proof(za, zb, zc, !_OUTPUT_WITH_HIGH_SCALE);
+    mystique_matmul_proof(za, zb, zc, !_OUTPUT_WITH_HIGH_SCALE);
 
     matmul_proof_time += timer_proof.ns_elapse();
   }
@@ -380,26 +380,26 @@ int WolverineOpsImpl::Matmul(
   }
   convert_mac_to_string((__uint128_t*)zc.data(), output, zc.size(), humanable, out_scale_multiplier);
   //! cout << "zc: \n" << zc << ENDL;
-  tlog_info << "wolverine_matmul_fp_with_proof elapse (us):  " << timer_proof.ns_elapse() / 1000
+  tlog_info << "mystique_matmul_fp_with_proof elapse (us):  " << timer_proof.ns_elapse() / 1000
            << " us, proof accumulate: " << matmul_proof_time / 1000 << " us." << ENDL;
-  tlog_info << "Wolverine Matmul ok. <---- " << zk_party_id << ",  m, k, n: " << m << ", " << k
+  tlog_info << "Mystique Matmul ok. <---- " << zk_party_id << ",  m, k, n: " << m << ", " << k
            << ", " << n;
   return 0;
 }
 
-int WolverineOpsImpl::Square(
+int MystiqueOpsImpl::Square(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
-  tlog_debug << "-----> Wolverine Square";
+  tlog_debug << "-----> Mystique Square";
   // Not the most efficient one, but works fine.
   // vector<string> b = a;
   int ret = this->Mul(a, a, output, attr_info);
-  tlog_debug << "Wolverine Square ok. <----";
+  tlog_debug << "Mystique Square ok. <----";
   return ret;
 }
 
-int WolverineOpsImpl::Negative(
+int MystiqueOpsImpl::Negative(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
@@ -411,11 +411,11 @@ int WolverineOpsImpl::Negative(
   a_scale = convert_string_to_mac(a.data(), (uint64_t*)a_fps.data(), a.size());
 
   for (int i = 0; i < size; ++i) {
-    a_fps[i] = wolverine_plain_neg(a_fps[i]);
+    a_fps[i] = mystique_plain_neg(a_fps[i]);
   }
 
   convert_mac_to_string(a_fps, output, humanable, a_scale);
-  tlog_debug << "Wolverine Negate ok. <----";
+  tlog_debug << "Mystique Negate ok. <----";
   return 0;
 #endif
 
@@ -427,16 +427,16 @@ int WolverineOpsImpl::Negative(
   }
 
   convert_mac_to_string(a_zks, output, humanable, a_scale);
-  tlog_debug << "Wolverine Negate ok. <----";
+  tlog_debug << "Mystique Negate ok. <----";
   return 0;
 }
 
-int WolverineOpsImpl::Sub(
+int MystiqueOpsImpl::Sub(
   const vector<string>& a,
   const vector<string>& b,
   vector<string>& output,
   const attr_type* attr_info) {
-  tlog_debug << "-----> Wolverine Sub";
+  tlog_debug << "-----> Mystique Sub";
   int size = a.size();
   int a_scale = 1;
   int b_scale = 1;
@@ -496,16 +496,16 @@ int WolverineOpsImpl::Sub(
     output_scale_multiplier = 2;
   }
   convert_mac_to_string(c_zks, output, humanable, output_scale_multiplier);
-  tlog_debug << "Wolverine Sub ok. <----";
+  tlog_debug << "Mystique Sub ok. <----";
   return 0;
 }
 
-int WolverineOpsImpl::Mul(
+int MystiqueOpsImpl::Mul(
   const vector<string>& a,
   const vector<string>& b,
   vector<string>& output,
   const attr_type* attr_info) {
-  tlog_debug << "-----> Wolverine Mul";
+  tlog_debug << "-----> Mystique Mul";
   bool rh_is_const = false;
   if (attr_info && attr_info->count("rh_is_const") > 0 && attr_info->at("rh_is_const") == "1") {
     rh_is_const = true;
@@ -635,11 +635,11 @@ int WolverineOpsImpl::Mul(
   }
   #endif
 
-  tlog_debug << "Wolverine Mul ok. <----";
+  tlog_debug << "Mystique Mul ok. <----";
   return ret;
 }
 
-int WolverineOpsImpl::Mean(
+int MystiqueOpsImpl::Mean(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
@@ -654,7 +654,7 @@ int WolverineOpsImpl::Mean(
     return -1;
   }
 
-  tlog_info << "Wolverine Mean ----> rows: " << rows << ", cols: " << cols;
+  tlog_info << "Mystique Mean ----> rows: " << rows << ", cols: " << cols;
   int a_scale = 1;
 #if LOCAL_SIMULATE
   vector<ZkUint64> a_fps(a.size());
@@ -679,7 +679,7 @@ int WolverineOpsImpl::Mean(
   // tlog_info << "inv_fps: " << inv_fp[0].value << ", result: " << result_fps[i].value << ", fl: " << fl << " cast_float: " << (float((int64_t)(c_fps[i]))) << ", c_fps: " << c_fps[i];
  
   convert_mac_to_string(c_fps, output, humanable, a_scale);
-  tlog_info << "Wolverine Mean ok. <---- a_scale: " << a_scale;
+  tlog_info << "Mystique Mean ok. <---- a_scale: " << a_scale;
   return 0;
 #endif//
 
@@ -737,11 +737,11 @@ int WolverineOpsImpl::Mean(
   // print_vec(scaled_res, 20, "Debug revealed scaled Mean plain B:");
   // print_vec(debug_res, 20, "Debug revealed Mean plain:");
 
-  tlog_info << "Wolverine Mean ok. <---- ";
+  tlog_info << "Mystique Mean ok. <---- ";
   return 0;
 }
 
-int WolverineOpsImpl::Max(
+int MystiqueOpsImpl::Max(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
@@ -750,21 +750,21 @@ int WolverineOpsImpl::Max(
     rows = (size_t)std::stoul(attr_info->at("rows"));
     cols = (size_t)std::stoul(attr_info->at("cols"));
   } else {
-    tlog_error << "please fill rows,cols for wolverine_max(x, rows, cols) ";
+    tlog_error << "please fill rows,cols for mystique_max(x, rows, cols) ";
     return -1;
   }
   int a_scale = 0;
-  tlog_debug << "Wolverine Max ----> rows: " << rows << ", cols: " << cols;
+  tlog_debug << "Mystique Max ----> rows: " << rows << ", cols: " << cols;
 
 #if LOCAL_SIMULATE
   vector<ZkUint64> a_fps(a.size());
   a_scale = convert_string_to_mac(a.data(), a_fps.data(), a.size(), humanable);
 
   vector<ZkUint64> result_fps;
-  wolverine_plain_max_matrix(a_fps, rows, cols, result_fps);
+  mystique_plain_max_matrix(a_fps, rows, cols, result_fps);
 
   convert_mac_to_string(result_fps, output, humanable, a_scale);
-  tlog_debug << "Wolverine Max ok. <----  ";
+  tlog_debug << "Mystique Max ok. <----  ";
   return 0;
 #endif
 
@@ -772,14 +772,14 @@ int WolverineOpsImpl::Max(
   a_scale = convert_string_to_mac(a, a_zks);
 
   vector<ZkIntFp> results;
-  wolverine_max_matrix(a_zks, rows, cols, results);
+  mystique_max_matrix(a_zks, rows, cols, results);
 
   convert_mac_to_string(results, output, humanable, a_scale);
-  tlog_debug << "Wolverine Max ok. <----  ";
+  tlog_debug << "Mystique Max ok. <----  ";
   return 0;
 }
 
-int WolverineOpsImpl::Relu(
+int MystiqueOpsImpl::Relu(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
@@ -787,7 +787,7 @@ int WolverineOpsImpl::Relu(
   
   int scale_count = 1;
   
-  tlog_info << "-----> Wolverine Relu, scale count: " << scale_count << " element size: " << a.size();
+  tlog_info << "-----> Mystique Relu, scale count: " << scale_count << " element size: " << a.size();
 
 #if LOCAL_SIMULATE
   // JJ
@@ -809,29 +809,29 @@ int WolverineOpsImpl::Relu(
   #else 
   vector<ZkUint64> a_fps(size), c_fps(size);
   scale_count = convert_string_to_mac(a.data(), a_fps.data(), a.size());
-  wolverine_plain_relu(a_fps, c_fps, scale_count);
+  mystique_plain_relu(a_fps, c_fps, scale_count);
 
   convert_mac_to_string(c_fps, output);
-  tlog_debug << "Wolverine Relu ok. <----";
+  tlog_debug << "Mystique Relu ok. <----";
   return 0;
   #endif
 #endif
 
   vector<ZkIntFp> a_zks(size), c_zks(size);
   scale_count = convert_string_to_mac(a, a_zks);
-  wolverine_relu(a_zks, c_zks, scale_count);
+  mystique_relu(a_zks, c_zks, scale_count);
 
   convert_mac_to_string(c_zks, output);
-  tlog_debug << "Wolverine Relu ok. <----";
+  tlog_debug << "Mystique Relu ok. <----";
   return 0;
 }
 
-int WolverineOpsImpl::Div(
+int MystiqueOpsImpl::Div(
   const vector<string>& a,
   const vector<string>& b,
   vector<string>& output,
   const attr_type* attr_info) {
-  tlog_debug << "-----> Wolverine Div";
+  tlog_debug << "-----> Mystique Div";
 
   bool rh_is_const = false;
   size_t size = a.size();
@@ -886,11 +886,11 @@ int WolverineOpsImpl::Div(
   convert_mac_to_string(c_zks, output);
 #endif
 
-  tlog_debug << "Wolverine Div ok. <----";
+  tlog_debug << "Mystique Div ok. <----";
   return ret;
 }
 
-int WolverineOpsImpl::Truediv(
+int MystiqueOpsImpl::Truediv(
   const vector<string>& a,
   const vector<string>& b,
   vector<string>& output,
@@ -899,11 +899,11 @@ int WolverineOpsImpl::Truediv(
   return ret;
 }
 
-int WolverineOpsImpl::Sqrt(
+int MystiqueOpsImpl::Sqrt(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
-  tlog_debug << "calling WolverineOpsImpl::Sqrt string" << ENDL;
+  tlog_debug << "calling MystiqueOpsImpl::Sqrt string" << ENDL;
   int size = a.size();
   output.clear();
   output.resize(size);
@@ -914,24 +914,24 @@ int WolverineOpsImpl::Sqrt(
   _Inner_Sqrt(a_zks, res_zks);
   convert_mac_to_string(a_zks, output);
 
-  tlog_debug << "Wolverine Sqrt ok. <----";
+  tlog_debug << "Mystique Sqrt ok. <----";
   return 0;
 
 }
 
 // get 1/\sqrt{a}
-int WolverineOpsImpl::Rsqrt(
+int MystiqueOpsImpl::Rsqrt(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
-  tlog_debug << "calling WolverineOpsImpl::Rsqrt string" << ENDL;
+  tlog_debug << "calling MystiqueOpsImpl::Rsqrt string" << ENDL;
 
   int size = a.size();
   output.clear();
   output.resize(size);
   int a_scale  = 1;
 #if LOCAL_SIMULATE
-  tlog_info << "calling WolverineOpsImpl::Rsqrt Local simulation!" << ENDL;
+  tlog_info << "calling MystiqueOpsImpl::Rsqrt Local simulation!" << ENDL;
   vector<uint64_t> fp_a(size);
   vector<uint64_t> fp_c(size);
   a_scale = convert_string_to_mac(a.data(), fp_a.data(), size);
@@ -1040,16 +1040,16 @@ int WolverineOpsImpl::Rsqrt(
   // vector<ZkIntFp> ZK_SCALED_ONE(size);
   // PublicInput(PUBLIC, ONE, ZK_SCALED_ONE);
   // _inner_proof_and_check(res_proof, ZK_SCALED_ONE, _TWO_FLOAT_SCALE_ * _FLOAT_SCALE_);
-  // tlog_debug << "Wolverine Rsqrt ok. <----";
+  // tlog_debug << "Mystique Rsqrt ok. <----";
   // return ret;
   // #endif
 }
 
-int WolverineOpsImpl::Invert(
+int MystiqueOpsImpl::Invert(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
-  tlog_debug << "-----> Wolverine Invert" << ENDL;
+  tlog_debug << "-----> Mystique Invert" << ENDL;
 
   int size = a.size();
   output.clear();
@@ -1064,26 +1064,26 @@ int WolverineOpsImpl::Invert(
   return ret; 
 }
 
-int WolverineOpsImpl::Exp(
+int MystiqueOpsImpl::Exp(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
-  tlog_debug << "-----> Wolverine Exp" << ENDL;
+  tlog_debug << "-----> Mystique Exp" << ENDL;
 
 #if USE_EXP_APPROX
   int ret = Exp_Approx(a, output, attr_info);
 #else 
   int ret = Exp_Exact(a, output, attr_info);
 #endif
-  tlog_debug << "Wolverine Exp ok" << ENDL;
+  tlog_debug << "Mystique Exp ok" << ENDL;
   return ret;
 }
 
-int WolverineOpsImpl::Reveal(
+int MystiqueOpsImpl::Reveal(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
-  tlog_debug << "calling WolverineOpsImpl::Reveal string" << ENDL;
+  tlog_debug << "calling MystiqueOpsImpl::Reveal string" << ENDL;
   int vec_size = a.size();
   output.clear();
   output.resize(vec_size);
@@ -1102,11 +1102,11 @@ int WolverineOpsImpl::Reveal(
   return 0;
 }
 
-int WolverineOpsImpl::Reveal(
+int MystiqueOpsImpl::Reveal(
   const vector<string>& a,
   vector<double>& output,
   const attr_type* attr_info) {
-  tlog_debug << "calling WolverineOpsImpl::Reveal[double]" << ENDL;
+  tlog_debug << "calling MystiqueOpsImpl::Reveal[double]" << ENDL;
 
   int vec_size = a.size();
   output.resize(vec_size);
@@ -1199,11 +1199,11 @@ int WolverineOpsImpl::Reveal(
   //   }
 }
 
-int WolverineOpsImpl::Softmax(
+int MystiqueOpsImpl::Softmax(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
-  tlog_debug << "-----> Wolverine Softmax";
+  tlog_debug << "-----> Mystique Softmax";
   assert(attr_info);
   int size = a.size();
   output.clear();
@@ -1319,15 +1319,15 @@ int WolverineOpsImpl::Softmax(
 
   auto switch_time = time_from(start);
   tlog_debug << "softmax ok, costing (us) " << switch_time << " for party" << zk_party_id << ENDL;
-  tlog_debug << "-----> Wolverine Softmax ok";
+  tlog_debug << "-----> Mystique Softmax ok";
   return 0;
 }
 
-int WolverineOpsImpl::Sigmoid(
+int MystiqueOpsImpl::Sigmoid(
   const vector<string>& a,
   vector<string>& output,
   const attr_type* attr_info) {
-  tlog_info << "-----> Wolverine Sigmoid";
+  tlog_info << "-----> Mystique Sigmoid";
   /*************************************
    * 1/(1+e^(-x))
    *************************************/
@@ -1359,11 +1359,11 @@ int WolverineOpsImpl::Sigmoid(
   sync_zk_bool<BoolIO<ZKNetIO>>();
   convert_mac_to_string(a_zks, output);
 
-  tlog_info << "-----> Wolverine Sigmoid ok";
+  tlog_info << "-----> Mystique Sigmoid ok";
   return 0;
 }
 
-int WolverineOpsImpl::Exp_Approx(const vector<string>& a, vector<string>& output, const attr_type* attr_info) {
+int MystiqueOpsImpl::Exp_Approx(const vector<string>& a, vector<string>& output, const attr_type* attr_info) {
   /*****************************************************************
   Approximates the exponential function using a limit approximation:
   exp(x) = (1 + x / n) ^ n
@@ -1393,7 +1393,7 @@ int WolverineOpsImpl::Exp_Approx(const vector<string>& a, vector<string>& output
   // step 1: a' = a * (1/n)
   attr_type attrs;
   attrs.insert(std::make_pair(string("rh_is_const"), string("1")));
-  tlog_info << "-----> Wolverine Exp to Mul_const ..." << ENDL;
+  tlog_info << "-----> Mystique Exp to Mul_const ..." << ENDL;
   int nRet = Mul(a, nInv_str, a_prime_str, &attrs);
   assert(!nRet);
 
@@ -1415,7 +1415,7 @@ int WolverineOpsImpl::Exp_Approx(const vector<string>& a, vector<string>& output
   return nRet;
 }
 
-int WolverineOpsImpl::Exp_Exact(const vector<string>& a, vector<string>& output, const attr_type* attr_info) {
+int MystiqueOpsImpl::Exp_Exact(const vector<string>& a, vector<string>& output, const attr_type* attr_info) {
   int size = a.size();
   vector<ZkIntFp> a_zks(size);
   convert_string_to_mac(a, a_zks);
@@ -1448,7 +1448,7 @@ int WolverineOpsImpl::Exp_Exact(const vector<string>& a, vector<string>& output,
   return 0;
 }
 
-int WolverineOpsImpl::_Inner_Invert(const vector<ZkIntFp>& a, vector<ZkIntFp>& output) {
+int MystiqueOpsImpl::_Inner_Invert(const vector<ZkIntFp>& a, vector<ZkIntFp>& output) {
   // Step 1: FP to Integer
   auto size = a.size();
   vector<Integer> a_Int(size);
@@ -1478,7 +1478,7 @@ int WolverineOpsImpl::_Inner_Invert(const vector<ZkIntFp>& a, vector<ZkIntFp>& o
   return 0;
 }
 
-int WolverineOpsImpl::_Inner_Mul(const vector<uint64_t>& a, const vector<uint64_t>& b, vector<uint64_t>& output, int a_scale, int b_scale) {
+int MystiqueOpsImpl::_Inner_Mul(const vector<uint64_t>& a, const vector<uint64_t>& b, vector<uint64_t>& output, int a_scale, int b_scale) {
   
   auto size = a.size();
   vector<float> float_a(size);
@@ -1518,7 +1518,7 @@ int WolverineOpsImpl::_Inner_Mul(const vector<uint64_t>& a, const vector<uint64_
 
 
 template <typename T>
-int WolverineOpsImpl::_Inner_Mul(const vector<ZkIntFp>& a, const vector<T>& b, vector<ZkIntFp>& output, int extra_scale_multiplier, bool rhs_broadcast) {
+int MystiqueOpsImpl::_Inner_Mul(const vector<ZkIntFp>& a, const vector<T>& b, vector<ZkIntFp>& output, int extra_scale_multiplier, bool rhs_broadcast) {
   // assert(a.size() == b.size());
   // Step 1: a * b => c
   auto size = a.size();
@@ -1632,7 +1632,7 @@ int WolverineOpsImpl::_Inner_Mul(const vector<ZkIntFp>& a, const vector<T>& b, v
   return 0;
 }
 
-int WolverineOpsImpl::_Inner_Div(const vector<ZkIntFp>& a, const vector<ZkIntFp>& b, vector<ZkIntFp>& output) {
+int MystiqueOpsImpl::_Inner_Div(const vector<ZkIntFp>& a, const vector<ZkIntFp>& b, vector<ZkIntFp>& output) {
   assert(a.size() == b.size());
 
   // Step 1: arithmetic to bool for a, b
@@ -1668,7 +1668,7 @@ int WolverineOpsImpl::_Inner_Div(const vector<ZkIntFp>& a, const vector<ZkIntFp>
   return 0;
 }
 
-int WolverineOpsImpl::_Inner_Sqrt(const vector<ZkIntFp>& a, vector<ZkIntFp>& output) {
+int MystiqueOpsImpl::_Inner_Sqrt(const vector<ZkIntFp>& a, vector<ZkIntFp>& output) {
   int size = a.size();
   int gate_num = 0;
 

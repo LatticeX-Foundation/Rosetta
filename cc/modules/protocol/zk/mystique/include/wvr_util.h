@@ -21,7 +21,7 @@
 #include "cc/modules/common/include/utils/rtt_logger.h"
 #include "cc/modules/common/include/utils/helper.h"
 
-#include "cc/modules/protocol/zk/wolverine/include/zk_int_fp.h"
+#include "cc/modules/protocol/zk/mystique/include/zk_int_fp.h"
 
 #include <iostream>
 #include "emp-tool/emp-tool.h"

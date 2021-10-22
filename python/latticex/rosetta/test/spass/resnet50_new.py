@@ -186,7 +186,7 @@ show_all_variables()
 
 #-------------------------------------------
 start_time = time.time()
-protocol = "Wolverine"
+protocol = "Mystique"
 rtt.activate(protocol)
 mpc_player_id = rtt.py_protocol_handler.get_party_id()
 rtt.set_backend_loglevel(2)

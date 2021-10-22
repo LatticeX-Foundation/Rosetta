@@ -68,7 +68,7 @@ except Exception as e:
 
 import latticex.rosetta as rtt
 # rtt.py_protocol_handler.set_loglevel(0)
-# rtt.activate("Wolverine")
+# rtt.activate("Mystique")
 
 protocol="SecureNN"
 

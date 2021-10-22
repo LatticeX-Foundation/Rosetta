@@ -23,15 +23,15 @@
 #include "cc/modules/protocol/public/include/protocol_base.h"
 #include "cc/modules/protocol/public/include/protocol_ops.h"
 
-#include "cc/modules/protocol/zk/wolverine/include/wvr_util.h"
+#include "cc/modules/protocol/zk/mystique/include/wvr_util.h"
 
 namespace rosetta {
-class WolverineOpsImpl : public ProtocolOps {
+class MystiqueOpsImpl : public ProtocolOps {
  public:
-  WolverineOpsImpl(const msg_id_t& msg_id, shared_ptr<ProtocolContext> context)
+  MystiqueOpsImpl(const msg_id_t& msg_id, shared_ptr<ProtocolContext> context)
       : ProtocolOps(msg_id, context) {}
-  // WolverineOpsImpl(const msg_id_t& msg_id) : ProtocolOps(msg_id) {}
-  ~WolverineOpsImpl() = default;
+  // MystiqueOpsImpl(const msg_id_t& msg_id) : ProtocolOps(msg_id) {}
+  ~MystiqueOpsImpl() = default;
 
   virtual int PrivateInput(const string& node_id, const vector<double>& in_x, vector<string>& out_x);
   virtual int PrivateInput(int party_id, const vector<double>& in_x, vector<string>& out_x);

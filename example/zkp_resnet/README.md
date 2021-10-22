@@ -4,7 +4,7 @@
 
 Zero Knowledge Proof (ZKP) is a powerful cryptographic primitive. And Rosetta has integrated some cutting-edge ZKP protocols, such as [Mystique](https://eprint.iacr.org/2021/730).  So in this tutorial, we will show you how to use this functionality in Rosetta.
 
-> For historical reason, the name for the ZKP protocol in Rosetta is called `wolverine`.
+> For historical reason, the name for the ZKP protocol in Rosetta is called `mystique`.
 
 ## Compiling Rosetta with ZKP protocol enabled
 

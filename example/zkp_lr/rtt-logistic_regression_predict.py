@@ -41,7 +41,7 @@ learning_rate = 0.001
 
 start_time0 = time.time()
 start_time = time.time()
-protocol = "Wolverine"
+protocol = "Mystique"
 rtt.activate(protocol)
 if args.model_public:
     rtt.set_restore_model(False)

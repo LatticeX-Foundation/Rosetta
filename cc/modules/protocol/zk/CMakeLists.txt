@@ -12,7 +12,7 @@ SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${ADD_LINK_LIB_FLAGS}")
 #add_subdirectory(zkp-common)
 
 # zkp sub protocols (including internal tests)
-add_subdirectory(wolverine)
+add_subdirectory(mystique)
 
 # mpc test, for all protocols (protocol-level)
 #add_subdirectory(tests)

@@ -17,7 +17,7 @@
 // ==============================================================================
 #pragma once
 
-#include "cc/modules/protocol/zk/wolverine/include/zk_int_fp.h"
+#include "cc/modules/protocol/zk/mystique/include/zk_int_fp.h"
 #include "cc/third_party/eigen/Eigen/Core"
 using namespace rosetta;
 
@@ -63,7 +63,7 @@ struct NumTraits<ZkIntFp>
 };
 } // namespace Eigen
 
-#include "cc/modules/protocol/zk/wolverine/include/zk_uint64_t.h"
+#include "cc/modules/protocol/zk/mystique/include/zk_uint64_t.h"
 using rosetta::zk::ZkUint64;
 
 /* functions need to support for eigen new type   */

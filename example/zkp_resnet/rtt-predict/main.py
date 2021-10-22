@@ -133,7 +133,7 @@ if __name__ == '__main__':
     start_time_all = time.time()
 
     start_time = time.time()
-    protocol = "Wolverine"
+    protocol = "Mystique"
     rtt.activate(protocol)
 
     mpc_player_id = rtt.py_protocol_handler.get_party_id()

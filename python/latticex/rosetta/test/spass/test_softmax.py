@@ -1,7 +1,7 @@
 import tensorflow as tf
 import latticex.rosetta as rtt
 
-protocol = "Wolverine"
+protocol = "Mystique"
 rtt.activate(protocol)
 
 X = tf.Variable([[10.5, 0.23, 8.], [7., 6., -10.73], [-9., 8., 0.125]], name='x')
