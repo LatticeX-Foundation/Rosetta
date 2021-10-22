@@ -109,26 +109,43 @@ python rosetta_demo.py --party_id=2
 
 Then each party will be prompted to input his private matrix, for example P0 may have:
 
-> [2020-07-29 20:10:49.070] [info] Rosetta: Protocol [SecureNN] backend initialization succeeded!
->
+> 2021-10-22 09:46:08.571|info|Rosetta: Protocol [SecureNN] backend initialization succeeded! task: , node id: P0
+> 
 > please input the private data (float or integer, 6 items, separated by space): 2 3 1 7 6 2
+
+while P1 has:
+
+> 2021-10-22 09:46:08.571|info|Rosetta: Protocol [SecureNN] backend initialization succeeded! task: , node id: P1
+>
+> please input the private data (float or integer, 2 items, separated by space): 1 2
+
+while P2 has:
+
+> 2021-10-22 09:46:08.571|info|Rosetta: Protocol [SecureNN] backend initialization succeeded! task: , node id: P2
+>
+> please input the private data (float or integer, 4 items, separated by space): 2 1 4 3
 
 Note that input from console like this is purely for pedagogical purpose in this toy example. See our [Doc](doc/API_DOC.md) for production-ready data APIs.
 
 At the end, P0 and P2 will get the plaintext output while P1 dose not, just as required. Specifically, P0 and P2 may have:
 
-> plaintext matmul result: [[b'8.000000' b'14.000000' b'18.000000' b'4.000000']
-> [b'4.000000' b'7.000000' b'9.000000' b'2.000000']
-> [b'24.000000' b'42.000000' b'54.000000' b'12.000000']]
+> plaintext matmul result: [[b'16.000000' b'8.000000' b'32.000000' b'24.000000']
 >
-> [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
+>  [b'30.000000' b'15.000000' b'60.000000' b'45.000000']
+>
+>  [b'20.000000' b'10.000000' b'40.000000' b'30.000000']]
+>
+> 2021-10-22 09:49:58.888|info|Rosetta: Protocol [SecureNN] backend has been released.
 
 while P1 has:
+
 > plaintext matmul result: [[b'0.000000' b'0.000000' b'0.000000' b'0.000000']
-> [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
-> [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
 >
-> [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
+>  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
+>
+>  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
+>
+> 2021-10-22 09:49:58.887|info|Rosetta: Protocol [SecureNN] backend has been released.
 
 That's all, you can see Rosetta is so easy to use.
 

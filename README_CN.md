@@ -90,47 +90,61 @@ with tf.Session() as sess:
 如上，简单的改动几行代码就可以完全复用 TensorFlow 中的 API 接口了。当然，运行这个隐私计算程序需要三方的协同，在配置好网络拓扑等信息后，三方需要各自执行下面的命令行来启动执行。如果在本地模拟三方的场景，可以用三个bash来实现：
 
 第一个bash模拟P0方：
+
 ```bash
 python rosetta_demo.py --party_id=0
 ```
 
 第二个bash模拟P1方：
+
 ```bash
 python rosetta_demo.py --party_id=1
 ```
 
 第三个bash模拟P2方：
+
 ```bash
 python rosetta_demo.py --party_id=2
 ```
 
 运行时各方会被提示输入自己的隐私数据（注意，这里是为了便于演示采用了这种输入方式，在实际中请采用 Rosetta 中的数据预处理接口），比如 P0 可以在如下提示后输入自己的私有数据：
 
-> [2020-07-29 20:10:49.070] [info] Rosetta: Protocol [SecureNN] backend initialization succeeded!
+> 2021-10-22 09:46:08.571|info|Rosetta: Protocol [SecureNN] backend initialization succeeded! task: , node id: P0
 >
 > please input the private data (float or integer, 6 items, separated by space): 2 3 1 7 6 2
 
-在程序的最后，如我们在程序中特意指定的那样，只有 P0 和 P2 会得到最后的明文结果：
-> plaintext matmul result: 
-> 
-> [[b'8.000000' b'14.000000' b'18.000000' b'4.000000']
-> 
-> [b'4.000000' b'7.000000' b'9.000000' b'2.000000']
-> 
-> [b'24.000000' b'42.000000' b'54.000000' b'12.000000']]
+P1 输入自己的私有数据：
+
+> 2021-10-22 09:46:08.571|info|Rosetta: Protocol [SecureNN] backend initialization succeeded! task: , node id: P1
 >
-> [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
+> please input the private data (float or integer, 2 items, separated by space): 1 2
+
+P2 输入自己的私有数据：
+
+> 2021-10-22 09:46:08.571|info|Rosetta: Protocol [SecureNN] backend initialization succeeded! task: , node id: P2
+>
+> please input the private data (float or integer, 4 items, separated by space): 2 1 4 3
+
+
+在程序的最后，如我们在程序中特意指定的那样，只有 P0 和 P2 会得到最后的明文结果：
+
+> plaintext matmul result: [[b'16.000000' b'8.000000' b'32.000000' b'24.000000']
+>
+>  [b'30.000000' b'15.000000' b'60.000000' b'45.000000']
+>
+>  [b'20.000000' b'10.000000' b'40.000000' b'30.000000']]
+>
+> 2021-10-22 09:49:58.888|info|Rosetta: Protocol [SecureNN] backend has been released.
 
 P1 方不会拿到有意义的明文结果:
-> plaintext matmul result: 
-> 
-> [[b'0.000000' b'0.000000' b'0.000000' b'0.000000']
+
+> plaintext matmul result: [[b'0.000000' b'0.000000' b'0.000000' b'0.000000']
 >
-> [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
-> 
-> [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
+>  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']
 >
-> [2020-07-29 20:11:06.452] [info] Rosetta: Protocol [SecureNN] backend has been released.
+>  [b'0.000000' b'0.000000' b'0.000000' b'0.000000']]
+>
+> 2021-10-22 09:49:58.887|info|Rosetta: Protocol [SecureNN] backend has been released.
 
 就是这样，可以看出 Rosetta 是很方便易用的。
 
