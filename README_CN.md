@@ -148,6 +148,67 @@ P1 方不会拿到有意义的明文结果:
 
 就是这样，可以看出 Rosetta 是很方便易用的。
 
+
+<br/>
+
+那么，如何在 Rosetta 中快速地使用 ZKP呢？与上面的 MPC 类似，下面是一个简单的[示例](example/tutorials/code/rosetta_demo_zkp.py)。
+
+
+```python
+#!/usr/bin/env python3
+
+# Import rosetta package
+import latticex.rosetta as rtt
+import tensorflow as tf
+
+# You can activate a backend protocol, here we use Mystique
+rtt.activate("Mystique")
+
+# P0 is the Prover, providing all the witnesses(private), and
+# P1 is the Verifier
+matrix_a = tf.Variable(rtt.private_console_input(0, shape=(3, 2)))
+matrix_b = tf.Variable(rtt.private_console_input(0, shape=(2, 3)))
+
+# Just use the native tf.matmul operation.
+cipher_result = tf.matmul(matrix_a, matrix_b)
+
+# Start execution
+with tf.Session() as sess:
+    sess.run(tf.global_variables_initializer())
+    # Take a glance at the ciphertext
+    cipher_result_v = sess.run(cipher_result)
+    print('local ciphertext result:', cipher_result_v)
+    # Get the result of Rosetta matmul
+    print('plaintext result:', sess.run(rtt.SecureReveal(cipher_result)))
+
+rtt.deactivate()
+```
+
+
+这里 P0 是证明者，提供所有的 witness (私有的)，其输入如下：
+
+> 2021-10-22 18:12:46.629|info|Rosetta: Protocol [Mystique] backend initialization succeeded! task: , node id: P0
+> 
+> 2021-10-22 18:12:46.629|info|create and activate ok. task:  for protocol: Mystique
+> 
+> please input the private data (float or integer, 6 items, separated by space): 0 1 2 3 4 5
+> 
+> please input the private data (float or integer, 6 items, separated by space): 5 4 3 2 1 0
+
+这里 P1 是验证者，在程序的最后，验证成功，并输出明文结果如下：
+
+> 2021-10-22 18:13:12.860|info|succeed in verifying zk!!
+> 
+> plaintext result: [[b'2.000000' b'1.000000' b'0.000000']
+> 
+>  [b'16.000000' b'11.000000' b'6.000000']
+> 
+>  [b'30.000000' b'21.000000' b'12.000000']]
+> 
+> 2021-10-22 18:13:13.009|info|Rosetta: Protocol [Mystique] backend has been released.
+
+<br/>
+
 想要体验更多的例子，请参考[示例目录](./example)。
 
 > 提示: 当前 Rosetta 版本已经可以支持128-bit的大整数数据类型，这意味着底层的密码协议可以有更高的精度选择空间，你可以通过在环境变量中设置`export ROSETTA_MPC_128=ON`, 并在编译时加上 `--enable-128bit` 选项来开启这一服务。

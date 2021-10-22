@@ -149,6 +149,68 @@ while P1 has:
 
 That's all, you can see Rosetta is so easy to use.
 
+
+<br/>
+
+So, how to use ZKP in Rosetta quickly? Similar to MPC above, here is a simple [example](example/tutorials/code/rosetta_demo_zkp.py).
+
+
+```python
+#!/usr/bin/env python3
+
+# Import rosetta package
+import latticex.rosetta as rtt
+import tensorflow as tf
+
+# You can activate a backend protocol, here we use Mystique
+rtt.activate("Mystique")
+
+# P0 is the Prover, providing all the witnesses(private), and
+# P1 is the Verifier
+matrix_a = tf.Variable(rtt.private_console_input(0, shape=(3, 2)))
+matrix_b = tf.Variable(rtt.private_console_input(0, shape=(2, 3)))
+
+# Just use the native tf.matmul operation.
+cipher_result = tf.matmul(matrix_a, matrix_b)
+
+# Start execution
+with tf.Session() as sess:
+    sess.run(tf.global_variables_initializer())
+    # Take a glance at the ciphertext
+    cipher_result_v = sess.run(cipher_result)
+    print('local ciphertext result:', cipher_result_v)
+    # Get the result of Rosetta matmul
+    print('plaintext result:', sess.run(rtt.SecureReveal(cipher_result)))
+
+rtt.deactivate()
+```
+
+Here P0 is the Prover, providing all the witnesses(private), and the input is as follows:
+
+
+> 2021-10-22 18:12:46.629|info|Rosetta: Protocol [Mystique] backend initialization succeeded! task: , node id: P0
+> 
+> 2021-10-22 18:12:46.629|info|create and activate ok. task:  for protocol: Mystique
+> 
+> please input the private data (float or integer, 6 items, separated by space): 0 1 2 3 4 5
+> 
+> please input the private data (float or integer, 6 items, separated by space): 5 4 3 2 1 0
+
+
+Here P1 is the Verifier, at the end, the verification is successful, and the plaintext result is output as follows:
+
+> 2021-10-22 18:13:12.860|info|succeed in verifying zk!!
+> 
+> plaintext result: [[b'2.000000' b'1.000000' b'0.000000']
+> 
+>  [b'16.000000' b'11.000000' b'6.000000']
+> 
+>  [b'30.000000' b'21.000000' b'12.000000']]
+> 
+> 2021-10-22 18:13:13.009|info|Rosetta: Protocol [Mystique] backend has been released.
+
+<br/>
+
 For more details, please check [Tutorials](doc/TUTORIALS.md) and [Examples](./example).
 
 > Note: Currently Rosetta already supports 128-bit integer data type, which can be enabled by configuring the environment variable `export ROSETTA_MPC_128=ON` and adding option `--enable-128bit` when compiling.
