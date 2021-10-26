@@ -167,7 +167,7 @@ class ProtocolHandler {
   void set_logfile(const std::string& logfile, const std::string& task_id="") { Logger::Get().set_filename(logfile, task_id); }
   void set_logpattern(const std::string& pattern) { Logger::Get().set_pattern(pattern);}
   // Note: LogLevel \in { Trace, Debug, Audit, Info, Warn, Error, Fatal, off };
-  void set_loglevel(int loglevel) { Logger::Get().set_level((int)loglevel % 7); }
+  void set_loglevel(int loglevel) { Logger::Get().set_level((int)loglevel); }
 
   // stats
   void start_perf_stats(const string& task_id) {

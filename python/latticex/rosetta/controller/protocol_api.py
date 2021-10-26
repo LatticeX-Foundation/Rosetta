@@ -176,13 +176,14 @@ def set_backend_loglevel(loglevel: int):
 
     Args:
         loglevel should be as follows ('info' by default),
-        0: all;
-        1: Trace;
-        2: Debug;
+        0: Trace;
+        1: Debug;
+        2: Audit;
         3: Info;
         4: Warn; 
         5: Error;
-        6: Fatal
+        6: Fatal;
+        7: Off
     """
     py_protocol_handler.set_loglevel(loglevel)
 
