@@ -182,6 +182,37 @@ int SnnInternal::PrivateInput(const string& node_id, double v, double& shares) {
   return 0;
 }
 
+void SnnInternal::ConstCommonInput(const vector<double>& v, vector<mpc_t>& shares) {
+  size_t size = v.size();
+  shares.resize(size);
+
+  vector<mpc_t> plain(size);
+  convert_double_to_mpctype(v, plain, GetMpcContext()->FLOAT_PRECISION);
+
+  int partyNum = GetMpcContext()->GetMyRole();
+  if (!PRIMARY)
+    return;
+
+  // P0, P1
+  for (size_t i = 0; i < size; ++i) {
+    shares[i] = partyNum * plain[i];
+  }
+}
+
+void SnnInternal::ConstCommonInput(const vector<mpc_t>& v, vector<mpc_t>& shares) {
+  size_t size = v.size();
+  shares.resize(size);
+
+  int partyNum = GetMpcContext()->GetMyRole();
+  if (!PRIMARY) // NOT P0, P1 just return
+    return;
+
+  // P0, P1
+  for (size_t i = 0; i < size; ++i) {
+    shares[i] = partyNum * v[i];
+  }
+}
+
 
 
 

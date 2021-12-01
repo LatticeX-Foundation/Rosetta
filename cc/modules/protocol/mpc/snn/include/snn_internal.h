@@ -153,6 +153,10 @@ class SnnInternal {
   int PrivateInput(const string& node_id, double v, mpc_t& shares);
   int PrivateInput(const string& node_id, double v, double& shares);
 
+  // Public input const values
+  void ConstCommonInput(const vector<double>& v, vector<mpc_t>& shares);
+  void ConstCommonInput(const vector<mpc_t>& v, vector<mpc_t>& shares);
+
   // Reveal secret sharing data to plain
   int Reconstruct2PC(const mpc_t& a, mpc_t& out, int recv_party) {
     vector<mpc_t> va = {a}, vo(1);
@@ -166,6 +170,12 @@ class SnnInternal {
     const vector<mpc_t>& a,
     vector<mpc_t>& out,
     const vector<string>& recv_parties);
+
+  int Reconstruct2PC(
+    const vector<mpc_t>& a,
+    vector<double>& out,
+    const vector<string>& recv_parties);
+
   int Reconstruct2PC_ex(
     const vector<mpc_t>& a,
     vector<mpc_t>& out,

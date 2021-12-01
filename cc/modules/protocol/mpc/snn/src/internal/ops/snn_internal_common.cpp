@@ -343,6 +343,17 @@ int SnnInternal::Reconstruct2PC(
   return 0;
 }
 
+int SnnInternal::Reconstruct2PC(
+  const vector<mpc_t>& a,
+  vector<double>& out,
+  const vector<string>& recv_parties){
+  vector<mpc_t> outs(a.size());
+  Reconstruct2PC(a, outs, recv_parties);
+  out.resize(a.size());
+  convert_mpctype_to_double(outs, out, GetMpcContext()->FLOAT_PRECISION);
+  return 0;
+}
+
 int SnnInternal::Reconstruct2PC_ex(
   const vector<mpc_t>& a, vector<mpc_t>& out, const string& recv_parties) {
   if (recv_parties.empty())
