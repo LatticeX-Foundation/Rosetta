@@ -50,8 +50,8 @@ int SnnInternal::Exp(const vector<mpc_t>& a, vector<mpc_t>& c) {
   AUDIT("id:{}, P{} Exp, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(a));
 
   size_t a_size = a.size();
-  size_t n = 500;
-  const vector<double_t> n_reciprocal(a_size, 0.002);
+  size_t n = 512;
+  const vector<double_t> n_reciprocal(a_size, 1/double(512));
   vector<mpc_t> m(a_size, 0);
   vector<mpc_t> result(a_size, 0);
 

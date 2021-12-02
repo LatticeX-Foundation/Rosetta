@@ -2528,13 +2528,13 @@ void HelixInternal::Sigmoid(const vector<Share>& X, vector<Share>& Y) {
 
 void HelixInternal::Exp(const vector<Share>& X, vector<Share>& Y) {
   //// version1: exp(x) = (1 + x / n) ^ n, n can be 8, or 16
-  //// actually we expect: exp(x) = (1 + x*0.002) ^ 500
+  //// actually we expect: exp(x) = (1 + x/512) ^ 512
   log_debug << "Exp ...";
   AUDIT("id:{}, P{} Exp(S), compute: Y=Exp(X), input X(Share){}", msgid.get_hex(), player, Vector<Share>(X));
 
   size_t size = X.size();
-  size_t n = 500;
-  const vector<double_t> n_reciprocal(size, 0.002);
+  size_t n = 512;
+  const vector<double_t> n_reciprocal(size, 1/double(512));
   vector<Share> m(size);
   vector<Share> result(size);
 
