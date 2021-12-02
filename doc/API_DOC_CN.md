@@ -795,6 +795,10 @@
   一个 "张量"，具有与`x`相同的类型。
 
 
+  *注意*: 
+  > Newton Raphson方法的初值的计算参考论文《Falcon: Honest-Majority Maliciously Secure Framework for Private Deep Learning》中的算法5和算法7。
+
+
 #### `SecureLog(x, name=None)`
 
   逐元素计算自然对数$ln(x)$。本接口是为常见的 $x$ 处于 $[0.0001, 10]$时进行定制的。$x$不在此定义域内时，请使用`SecureHLog`。
