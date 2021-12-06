@@ -21,7 +21,7 @@ from tensorflow.python.ops import gen_state_ops
 from tensorflow.python.ops import state_ops
 
 
-def _get_rtt_var(refVar):
+def get_rtt_var_from_rtt_tensor(refVar):
         """get rtt variable from rtt tensor"""
         rtt_var_op_def_name  = ("VariableV2", )
         
@@ -39,7 +39,7 @@ def _get_rtt_var(refVar):
 def RttAssign(ref, value, validate_shape=None, use_locking=None, name=None):
     """Update `ref` by assigning `value` to it."""
     value = rtt_ts.convert_to_rtttensor(value)
-    ref = _get_rtt_var(ref)
+    ref = get_rtt_var_from_rtt_tensor(ref)
 
     if ref.dtype._is_ref_dtype:
         return gen_state_ops.assign(
@@ -52,7 +52,7 @@ def RttAssign(ref, value, validate_shape=None, use_locking=None, name=None):
 def RttAssignSub(ref, value, use_locking=None, name=None):
     """Update `ref` by subtracting `value` from it."""
     value = rtt_ts.convert_to_rtttensor(value)
-    ref = _get_rtt_var(ref)
+    ref = get_rtt_var_from_rtt_tensor(ref)
 
     if ref.dtype._is_ref_dtype:
         return rtt_ts.rtt_ops.rtt_assign_sub(ref, value, use_locking=use_locking, name=name)

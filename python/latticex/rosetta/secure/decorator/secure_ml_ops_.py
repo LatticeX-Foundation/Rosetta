@@ -143,7 +143,9 @@ def SecureReluPrime(x, name=None):
 SecureSaveV2 = _secure_ops.secure_save_v2
 SecureRestoreV2 = _secure_ops.secure_restore_v2
 SecureApplyGradientDescent = _secure_ops.secure_apply_gradient_descent
+SecureApplyAdam = _secure_ops.secure_apply_adam
 SecureSigmoidCrossEntropy = _secure_ops.secure_sigmoid_cross_entropy
+
 
 def SecureReveal(x, receive_party = None):
     receive_parties = _encode_party_id(receive_party)
