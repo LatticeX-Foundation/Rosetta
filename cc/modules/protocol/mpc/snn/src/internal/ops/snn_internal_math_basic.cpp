@@ -50,8 +50,8 @@ int SnnInternal::Exp(const vector<mpc_t>& a, vector<mpc_t>& c) {
   AUDIT("id:{}, P{} Exp, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(a));
 
   size_t a_size = a.size();
-  size_t n = 500;
-  const vector<double_t> n_reciprocal(a_size, 0.002);
+  size_t n = 512;
+  const vector<double_t> n_reciprocal(a_size, 1/double(512));
   vector<mpc_t> m(a_size, 0);
   vector<mpc_t> result(a_size, 0);
 
@@ -81,7 +81,7 @@ int SnnInternal::Rsqrt(const vector<mpc_t>& a, vector<mpc_t>& c) {
   const vector<double> float_two_dot_two(size, 2.2);
   const vector<double> float_milli(size, 0.0009765625);
   const vector<double> float_three(size, 3);
-
+#if 0
   vector<mpc_t> inter_Number(size);
 
   // Mul(a, float_half, rsqrt_nr_initial);
@@ -100,13 +100,51 @@ int SnnInternal::Rsqrt(const vector<mpc_t>& a, vector<mpc_t>& c) {
   vector<mpc_t> temp(a.size());
   Mul(a, float_milli, temp); //compute a/1024
   Sub(inter_Number, temp, rsqrt_nr_initial); //rsqrt_nr_initial -=a/1024
+#else
+  // set initial value according to falcon
+  vector<double> alpha(size, 0.0);
+  vector<double> beta(size, 0.0);
+  vector<string> b(size);
+  vector<mpc_t> sub_res(size);
+  vector<mpc_t> relu_prime_res(size);
+  vector<mpc_t> select_res(size);
+  vector<string> recv_parties = {io->GetNodeId(PARTY_A), io->GetNodeId(PARTY_B)};
+  vector<double> reveal_res(size);
+  int float_precision = GetMpcContext()->FLOAT_PRECISION;
+  int bit_len = sizeof(mpc_t) * 8;
+  int nr_iters = ceil(log2(bit_len));
+
+  for (int i = nr_iters - 1; i >= 0; i--) {
+    for (int j = 0; j < size; j++) {
+      beta[j] = pow(2,  i) + alpha[j];
+      double gamma = pow(2, beta[j]);
+      gamma /= pow(2, float_precision);
+      b[j] = to_string(gamma);
+    }
+    Sub(a, b, sub_res);
+    ReluPrime(sub_res, relu_prime_res);
+    Reconstruct2PC(relu_prime_res, reveal_res, recv_parties);
+    
+    for (int j = 0; j < reveal_res.size(); j++) {
+      if (reveal_res[j] == 1) {
+        alpha[j] = beta[j];
+      }
+    }
+  }
+
+  vector<double> vd_initial(size);
+  for (int i = 0; i < size; i++) {
+    vd_initial[i] = pow(2, -(alpha[i] - float_precision) / 2);
+  }
+  ConstCommonInput(vd_initial, rsqrt_nr_initial);
+#endif
 
   vector<mpc_t> temp_number0(size), temp_number1(size), temp_number2(size);
   for (int i = 0; i < sqrt_nr_iters; i++)
   {
     // y.mul_(3 - self * y.square()).div_(2)
-    Mul(rsqrt_nr_initial, rsqrt_nr_initial, temp_number1);
-    Mul(temp_number1, a, temp_number0); //temp_number0 = a * rsqrt_nr_initial^2
+    Mul(rsqrt_nr_initial, a, temp_number1);
+    Mul(temp_number1, rsqrt_nr_initial, temp_number0); //temp_number0 = a * rsqrt_nr_initial^2
     Negative(temp_number0, temp_number1);
 
     Add(temp_number1, float_three, temp_number0);

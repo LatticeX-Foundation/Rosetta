@@ -776,6 +776,10 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
   ​ A `Tensor`. Has the same type as `x`.
 
 
+  *NOTE*:
+  > The initial value of the Newton Raphson method is computed according to `Algorithm 5` and `Algorithm 7` in the paper `Falcon: Honest-Majority Maliciously Secure Framework for Private Deep Learning`.
+
+
 #### `SecureLog(x, name=None)`
 
   Computes natural logarithm of `x` element-wise. This is optimized version for $x \in [0.0001, 10]$, so **DO NOT** use it for other `x`.
