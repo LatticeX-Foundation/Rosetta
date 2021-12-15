@@ -39,7 +39,7 @@ using std::vector;
 
 using namespace tensorflow;
 
-#if 1 //defined(_NDEBUG)
+#if defined(DEBUG)
 #define PRINT_BEG(name)                                                                   \
   cout << "--- " << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << " =>\t" << name \
        << " rtt start ---" << endl                                                            \
@@ -318,7 +318,7 @@ class RttBinaryOp : public OpKernel {
     PRINT_BEG(name_);
     if (!(lh_is_const_ && lh_is_const_))
     {
-      std::cout << "lh_is_const: " << lh_is_const_ << ", rh_is_const: " << rh_is_const_ << endl;
+      // std::cout << "lh_is_const: " << lh_is_const_ << ", rh_is_const: " << rh_is_const_ << endl;
       //throw std::runtime_error(string("please use const for both inputs"));
     }
 
