@@ -80,7 +80,7 @@ def _check_io(task_id):
     if __create_io(task_id):
         print('Create IO ok, task id:', task_id)
     else:
-        print('IO already exists, task id:', task_id)
+        raise Exception('Create IO failed, task id:', task_id)
 
 def __get_io_wrapper(task_id = None):
     if task_id == None:

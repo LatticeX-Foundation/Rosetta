@@ -33,9 +33,13 @@ bool IOManager::CreateChannel(const string& task_id, const string& node_id, cons
   std::unique_lock<std::mutex> lck(ios_mutex_);
   auto iter = ios_.find(task_id);
   if (iter != ios_.end()) {
-    return false;
+    return true;
   }
   IChannel* channel = CreateInternalChannel(task_id.c_str(), node_id.c_str(), io_config_json_str.c_str(), process_error);
+  if (channel == nullptr) {
+    log_error << "create channel failed";
+    return false;
+  }
   shared_ptr<IOWrapper> io = make_shared<IOWrapper>(task_id, channel);
 
   ios_.insert(std::pair<string, shared_ptr<IOWrapper>>(task_id, io));
