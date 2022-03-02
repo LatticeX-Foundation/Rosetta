@@ -12,7 +12,8 @@ int SnnInternal::Truedivision(
   const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c) {
   tlog_debug << "Truedivision ... ";
   
-  int ret = Division(a, b, c);
+  //int ret = Division(a, b, c);
+  int ret = ReciprocalDivfor2(a, b, c);
   tlog_debug << "Truedivision ok.";
   
   return ret;
@@ -831,7 +832,8 @@ int SnnInternal::Reciprocaldivision(
   vector<mpc_t>& c) {
     log_debug << "Reciprocaldivision ...";
 
-    ReciprocalDivfor2(a, b, c);
+    //ReciprocalDivfor2(a, b, c);
+    FastIterationDivionfor2(a, b, c);
 
     log_debug << "Reciprocaldivision ok.";
     return 0;
@@ -873,6 +875,7 @@ int SnnInternal::ReciprocalDivfor2(
   vector<mpc_t>& shared_quotient_vec,
   bool all_less /*= false*/) {
   log_debug << "Reciprocaldiv ...";
+  
   size_t vec_size = shared_numerator_vec.size();
   if (all_less) {
     Division(shared_numerator_vec, shared_denominator_vec, shared_quotient_vec, all_less);
@@ -1040,6 +1043,203 @@ int SnnInternal::ReciprocalDivfor2(
   return 0;
 
 }
+
+int SnnInternal::FastIterationDivision(
+  const vector<mpc_t>& a, 
+  const vector<mpc_t>& b, 
+   vector<mpc_t>& c){
+
+    log_debug << "Reciprocal...";
+
+    FastIterationDivionfor2(a, b, c);
+
+    log_debug << "Reciprocal ok.";
+    return 0;
+
+
+  }
+
+
+int SnnInternal::FastIterationDivision(
+  const vector<string>& a, 
+  const vector<mpc_t>& b, 
+  vector<mpc_t>& c) {  
+  size_t size = a.size();
+  vector<mpc_t> numerator(size, 0);
+  if (partyNum == PARTY_A) {
+    vector<double> da(size, 0.0);
+    rosetta::convert::from_double_str(a, da);
+    convert_double_to_mpctype(da, numerator, GetMpcContext()->FLOAT_PRECISION);
+  }
+
+  return FastIterationDivision(numerator, b, c);
+}
+
+int SnnInternal::FastIterationDivision(
+  const vector<mpc_t>& a, 
+  const vector<string>& b, 
+  vector<mpc_t>& c) {
+  size_t size = b.size();
+  vector<mpc_t> Denominator(size, 0);
+  if (partyNum == PARTY_A) {
+    vector<double> db(size, 0.0);
+    rosetta::convert::from_double_str(b, db);
+    convert_double_to_mpctype(db, Denominator, GetMpcContext()->FLOAT_PRECISION);
+  }
+
+  return FastIterationDivision(a, Denominator, c);
+}
+
+
+int SnnInternal::FastIterationDivionfor2(
+const vector<mpc_t>& shared_numerator_vec, 
+const vector<mpc_t>& shared_denominator_vec, 
+vector<mpc_t>& shared_quotient_vec){
+
+  log_debug << "FastIterationDivision ...";
+ size_t vec_size = shared_denominator_vec.size();
+
+if(THREE_PC){
+
+// vector<mpc_t> shared_denom_sign(vec_size, 0);
+// ComputeMSB(shared_denominator_vec, shared_denom_sign);
+
+// vector<mpc_t> shared_sign_pos(common_vec_size, 0);
+//     if (partyNum == PARTY_A) {
+//         shared_sign_pos = vector<mpc_t>(common_vec_size, FloatToMpcType(1, float_precision));
+//       }
+//       vector<mpc_t> shared_sign_neg(common_vec_size, 0);
+//      if (partyNum == PARTY_A) {
+//         shared_sign_neg = vector<mpc_t>(common_vec_size, FloatToMpcType(-1, float_precision));
+//       }
+// vector<mpc_t>denominator_vec(vec_size, 0);
+// vector<mpc_t>quo_sign(vec_size,0);
+// Select1Of2(shared_sign_neg, shared_sign_pos, shared_denom_sign, quo_sign);
+// DotProduct(shared_denominator_vec,quo_sign,denominator_vec);
+
+    vector<mpc_t> shared_numer_sign(vec_size, 0);
+    ComputeMSB(shared_numerator_vec, shared_numer_sign);
+
+    vector<mpc_t> shared_denom_sign(vec_size, 0);
+    ComputeMSB(shared_denominator_vec, shared_denom_sign);
+
+    vector<mpc_t> shared_sign_pos(vec_size, 0);
+    if (partyNum == PARTY_A) {
+      shared_sign_pos = vector<mpc_t>(vec_size, FloatToMpcType(1, GetMpcContext()->FLOAT_PRECISION));
+	  }
+
+    vector<mpc_t> shared_sign_neg(vec_size, 0);
+    if (partyNum == PARTY_A) {
+      shared_sign_neg = vector<mpc_t>(vec_size, FloatToMpcType(-1, GetMpcContext()->FLOAT_PRECISION));
+    }
+    log_debug << "post1 is ok";
+
+    vector<mpc_t> shared_x_sign(vec_size, 0);
+    Select1Of2(shared_sign_neg, shared_sign_pos, shared_numer_sign, shared_x_sign);
+
+    vector<mpc_t> shared_y_sign(vec_size, 0);
+    Select1Of2(shared_sign_neg, shared_sign_pos, shared_denom_sign, shared_y_sign);
+
+    vector<mpc_t> quotient_sign_bit(vec_size, 0);
+    XorBit(shared_numer_sign, shared_denom_sign, quotient_sign_bit);
+   
+    vector<mpc_t> numerator_vec(vec_size, 0);
+    vector<mpc_t> denominator_vec(vec_size, 0);
+    DotProduct(shared_numerator_vec, shared_x_sign, numerator_vec);
+    DotProduct(shared_denominator_vec, shared_y_sign, denominator_vec);
+
+    vector<mpc_t> quotient_sign(vec_size, 0);
+    Select1Of2(shared_sign_neg, shared_sign_pos, quotient_sign_bit, quotient_sign);
+    Reconstruct2PC(quotient_sign, "quotient_sign");
+
+    vector<mpc_t> quotient_vec = shared_quotient_vec;
+    Reconstruct2PC(shared_quotient_vec, "shared_quotient_vec");
+
+
+
+///we assume that the number of bits is  16, we can set lamda as fangsuoyinzi.
+    vector<mpc_t> lamda(vec_size, 0);
+    if(partyNum == PARTY_A) {
+      lamda = vector<mpc_t>(vec_size, FloatToMpcType(1, GetMpcContext()->FLOAT_PRECISION));
+    }
+    vector<mpc_t> fixed_lamda(vec_size, 0);
+    if(partyNum == PARTY_A) {
+      fixed_lamda = vector<mpc_t>(vec_size, FloatToMpcType(0.0625, GetMpcContext()->FLOAT_PRECISION));
+    }
+    vector<mpc_t> choose_lamda(vec_size,0);
+    vector<mpc_t> lamda_update(vec_size,0);
+    
+    vector<mpc_t>   shared_two(vec_size, 0);
+    if(partyNum == PARTY_A) {
+     shared_two = vector<mpc_t>(vec_size, FloatToMpcType(2, GetMpcContext()->FLOAT_PRECISION));
+    }
+    vector<mpc_t>   shared_one(vec_size, 0);
+    if(partyNum == PARTY_A) {
+     shared_one = vector<mpc_t>(vec_size, FloatToMpcType(1, GetMpcContext()->FLOAT_PRECISION));
+    }
+    vector<mpc_t> compare_two_result(vec_size,0);
+    vector<mpc_t> den_temp(vec_size,0);
+    den_temp = denominator_vec;
+    vector<mpc_t> den_temp_update(vec_size,0);
+
+
+    vector<mpc_t> numerator_vec_temp(vec_size,0);
+    vector<mpc_t> denominator_vec_temp(vec_size,0);
+    for(int i = 1 ; i <= 4 ;i++ ){
+      subtractVectors<mpc_t>(den_temp,shared_two,compare_two_result, vec_size);
+      ComputeMSB(compare_two_result,choose_lamda);
+      Reconstruct2PC(den_temp, "den_temp");
+      Reconstruct2PC(choose_lamda, "choose_lamda");
+      Reconstruct2PC(compare_two_result, "compare_two_result");
+
+      DotProduct(den_temp,fixed_lamda,den_temp_update);
+      Select1Of2(den_temp,den_temp_update,choose_lamda,den_temp);
+      Reconstruct2PC(den_temp_update, "den_temp_update");
+
+      DotProduct(lamda,fixed_lamda,lamda_update);
+      Select1Of2(lamda,lamda_update,choose_lamda,lamda);
+      Reconstruct2PC(choose_lamda, "choose_lamda");
+      Reconstruct2PC(lamda, "lamda");
+    }
+    DotProduct(denominator_vec,lamda,denominator_vec_temp);
+    denominator_vec = denominator_vec_temp;
+    Reconstruct2PC(denominator_vec, "denominator_vec");
+
+// vector<mpc_t> numer(vec_size,0);//the numer of reciprocal is 1
+// if(partyNum == PARTY_A) {
+//   numer = vector<mpc_t>(vec_size, FloatToMpcType(1, GetMpcContext()->FLOAT_PRECISION));
+// }
+vector<mpc_t> y(vec_size,0);//d  = 1 + y
+vector<mpc_t> factor_m(vec_size,0);//m = 1 -y
+
+
+///initial
+subtractVectors<mpc_t>(denominator_vec,shared_one,y, vec_size);
+Reconstruct2PC(y, "y");
+Reconstruct2PC(denominator_vec, "denominator_vec_");
+subtractVectors<mpc_t>(shared_one,y,factor_m, vec_size);
+Reconstruct2PC(factor_m, "factor_m_forproduct");
+
+ for(int i = 1 ; i <= 10 ;i++ ){
+   DotProduct(factor_m,numerator_vec,numerator_vec_temp);
+   DotProduct(factor_m,denominator_vec,denominator_vec_temp);
+   numerator_vec = numerator_vec_temp;
+   denominator_vec = denominator_vec_temp;
+   Reconstruct2PC(denominator_vec, "denominator_vec_iteration");
+   Reconstruct2PC(numerator_vec, "numerator_vec_iteration");
+   subtractVectors<mpc_t>(shared_two,denominator_vec,factor_m, vec_size);
+ }
+vector<mpc_t> result(vec_size,0);
+DotProduct(numerator_vec,lamda,result);
+DotProduct(result,quotient_sign,shared_quotient_vec);
+
+
+}//three pc
+  log_debug << "FastIterationDivision ok.";
+  return 0;
+}
+
+
 
 
 }//snn

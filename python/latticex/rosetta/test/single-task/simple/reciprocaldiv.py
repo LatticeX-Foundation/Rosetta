@@ -1,6 +1,7 @@
 import tensorflow as tf
 import sys
 import numpy as np
+from time import *
 np.set_printoptions(suppress=True)
 
 import logging
@@ -13,7 +14,7 @@ TEST_CASES = []
 val_a = np.array(
     [
         [2000.0, 20000.0],
-        [20000 * 100.0, -200.0]
+        [20000*100, -200.0]
     ], dtype =np.float)
 
 val_b = np.array(
@@ -99,8 +100,14 @@ cipher_var_c_1 = rtt.SecureReciprocaldiv(cipher_var_a,cipher_var_b)
 init = tf.compat.v1.global_variables_initializer() 
 with tf.compat.v1.Session() as rtt_sess:
     rtt_sess.run(init)
+    begin1 = time()
     rtt_res = rtt_sess.run(cipher_var_c)
+    end1 = time()
+    begin = time()
     rtt_res_1 = rtt_sess.run(cipher_var_c_1)
+    end = time()
+    print("reciprocaldiv run"+str(end - begin)+"s")
+    print("truediv run"+str(end1 - begin1)+"s")
     # print("local cipher res:", rtt_res)
     # reveal to get the plaintext result
     rtt_res = rtt_sess.run(rtt.SecureReveal(rtt_res))

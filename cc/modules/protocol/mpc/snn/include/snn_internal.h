@@ -247,6 +247,12 @@ class SnnInternal {
   int Sub(const vector<string>& const_a, const vector<mpc_t>& b, vector<mpc_t>& c);
   int Sub(const vector<mpc_t>& a, const vector<string>& const_b, vector<mpc_t>& c);
 
+///reciprocal///
+  int Reciprocal(const vector<mpc_t>& a, vector<mpc_t>& c);
+  int Reciprocal(const vector<string>& a,  vector<mpc_t>& c);
+  int Reciprocal_Goldschmidt(const vector<mpc_t>& a, vector<mpc_t>& c);
+ 
+
   /////  divisions  /////
   int Truedivision(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c);
   int Truedivision(const vector<string>& a, const vector<mpc_t>& b, vector<mpc_t>& c);
@@ -259,6 +265,14 @@ class SnnInternal {
   int Reciprocaldivision(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c);
   int Reciprocaldivision(const vector<string>& a, const vector<mpc_t>& b, vector<mpc_t>& c);
   int Reciprocaldivision(const vector<mpc_t>& a, const vector<string>& b, vector<mpc_t>& c);
+
+  int FastIterationDivision(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c);
+  int FastIterationDivision(const vector<string>& a, const vector<mpc_t>& b, vector<mpc_t>& c);
+  int FastIterationDivision(const vector<mpc_t>& a, const vector<string>& b, vector<mpc_t>& c);
+  int FastIterationDivionfor2(
+const vector<mpc_t>& shared_numerator_vec, 
+const vector<mpc_t>& shared_denominator_vec, 
+vector<mpc_t>& shared_quotient_vec);
 
   int Division(
     const vector<mpc_t>& shared_numerator_vec,
