@@ -266,10 +266,10 @@ class SnnInternal {
   int Reciprocaldivision(const vector<string>& a, const vector<mpc_t>& b, vector<mpc_t>& c);
   int Reciprocaldivision(const vector<mpc_t>& a, const vector<string>& b, vector<mpc_t>& c);
 
-  int FastIterationDivision(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c);
-  int FastIterationDivision(const vector<string>& a, const vector<mpc_t>& b, vector<mpc_t>& c);
-  int FastIterationDivision(const vector<mpc_t>& a, const vector<string>& b, vector<mpc_t>& c);
-  int FastIterationDivionfor2(
+  int Fastiterationdivision(const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c);
+  int Fastiterationdivision(const vector<string>& a, const vector<mpc_t>& b, vector<mpc_t>& c);
+  int Fastiterationdivision(const vector<mpc_t>& a, const vector<string>& b, vector<mpc_t>& c);
+  int Fastiterationdivionfor2(
 const vector<mpc_t>& shared_numerator_vec, 
 const vector<mpc_t>& shared_denominator_vec, 
 vector<mpc_t>& shared_quotient_vec);

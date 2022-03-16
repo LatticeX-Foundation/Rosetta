@@ -39,6 +39,11 @@ def SecureReciprocaldivGrad(op, grad):
     """The gradient for the Secure Reciprocaldiv operator."""
     return _SecureDivideGrad(op, grad)
 
+@ops.RegisterGradient("SecureFastiterationdiv")
+def SecureFastiterationdivGrad(op, grad):
+    """The gradient for the Secure SecureFastiterationdiv operator."""
+    return _SecureDivideGrad(op, grad)
+
 
 @ops.RegisterGradient("SecureRealdiv")
 def SecureRealDivGrad(op, grad):

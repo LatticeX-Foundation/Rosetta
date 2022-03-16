@@ -95,6 +95,13 @@ def rtt_reciprocaldiv(x, y, name=None):
     _result = rtt_ts.rtt_ops.rtt_reciprocaldiv(x._raw, y._raw, name=name)
     return rtt_ts.RttTensor(_result)
 
+def rtt_fastiterationdiv(x, y, name=None):
+    """Divides x / y elementwise (using Python 2 division operator semantics."""
+    x = rtt_ts.convert_to_rtttensor(x)
+    y = rtt_ts.convert_to_rtttensor(y)
+    _result = rtt_ts.rtt_ops.rtt_fastiterationdiv(x._raw, y._raw, name=name)
+    return rtt_ts.RttTensor(_result)
+
 
 def rtt_equal(x, y, name=None):
     """Returns the truth value of (x == y) element-wise."""
@@ -368,6 +375,7 @@ def static_override_tf_ops_to_rtt_ops():
     tf.multiply = rtt_mul
     tf.div = rtt_div
     tf.reciprocaldiv = rtt_reciprocaldiv
+    tf.fastiterationdiv = rtt_fastiterationdiv
     tf.floordiv = rtt_floordiv
     tf.truediv = rtt_truediv
     tf.realdiv = rtt_realdiv

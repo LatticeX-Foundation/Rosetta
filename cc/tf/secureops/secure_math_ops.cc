@@ -57,6 +57,10 @@ REGISTER_SECURE_BINARY_OP(SecureReciprocaldiv).Doc(R"doc(
     SecureReciprocaldiv
 )doc");
 
+REGISTER_SECURE_BINARY_OP(SecureFastiterationdiv).Doc(R"doc(
+    SecureFastiterationdiv
+)doc");
+
 REGISTER_SECURE_BINARY_OP(SecureTruediv).Doc(R"doc(
     SecureTruediv
 )doc");

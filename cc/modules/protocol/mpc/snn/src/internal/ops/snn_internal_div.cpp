@@ -12,8 +12,8 @@ int SnnInternal::Truedivision(
   const vector<mpc_t>& a, const vector<mpc_t>& b, vector<mpc_t>& c) {
   tlog_debug << "Truedivision ... ";
   
-  //int ret = Division(a, b, c);
-  int ret = ReciprocalDivfor2(a, b, c);
+  int ret = Division(a, b, c);
+
   tlog_debug << "Truedivision ok.";
   
   return ret;
@@ -832,8 +832,8 @@ int SnnInternal::Reciprocaldivision(
   vector<mpc_t>& c) {
     log_debug << "Reciprocaldivision ...";
 
-    //ReciprocalDivfor2(a, b, c);
-    FastIterationDivionfor2(a, b, c);
+    ReciprocalDivfor2(a, b, c);
+    
 
     log_debug << "Reciprocaldivision ok.";
     return 0;
@@ -1044,23 +1044,23 @@ int SnnInternal::ReciprocalDivfor2(
 
 }
 
-int SnnInternal::FastIterationDivision(
+int SnnInternal::Fastiterationdivision(
   const vector<mpc_t>& a, 
   const vector<mpc_t>& b, 
    vector<mpc_t>& c){
 
-    log_debug << "Reciprocal...";
+    log_debug << "Fastiterationdivision...";
 
-    FastIterationDivionfor2(a, b, c);
+    Fastiterationdivionfor2(a,b,c);
 
-    log_debug << "Reciprocal ok.";
+    log_debug << "Fastiterationdivision ok.";
     return 0;
 
 
   }
 
 
-int SnnInternal::FastIterationDivision(
+int SnnInternal::Fastiterationdivision(
   const vector<string>& a, 
   const vector<mpc_t>& b, 
   vector<mpc_t>& c) {  
@@ -1072,10 +1072,10 @@ int SnnInternal::FastIterationDivision(
     convert_double_to_mpctype(da, numerator, GetMpcContext()->FLOAT_PRECISION);
   }
 
-  return FastIterationDivision(numerator, b, c);
+  return Fastiterationdivision(numerator, b, c);
 }
 
-int SnnInternal::FastIterationDivision(
+int SnnInternal::Fastiterationdivision(
   const vector<mpc_t>& a, 
   const vector<string>& b, 
   vector<mpc_t>& c) {
@@ -1087,16 +1087,16 @@ int SnnInternal::FastIterationDivision(
     convert_double_to_mpctype(db, Denominator, GetMpcContext()->FLOAT_PRECISION);
   }
 
-  return FastIterationDivision(a, Denominator, c);
+  return Fastiterationdivision(a, Denominator, c);
 }
 
 
-int SnnInternal::FastIterationDivionfor2(
+int SnnInternal::Fastiterationdivionfor2(
 const vector<mpc_t>& shared_numerator_vec, 
 const vector<mpc_t>& shared_denominator_vec, 
 vector<mpc_t>& shared_quotient_vec){
 
-  log_debug << "FastIterationDivision ...";
+  log_debug << "Fastiterationdivision ...";
  size_t vec_size = shared_denominator_vec.size();
 
 if(THREE_PC){
@@ -1235,7 +1235,7 @@ DotProduct(result,quotient_sign,shared_quotient_vec);
 
 
 }//three pc
-  log_debug << "FastIterationDivision ok.";
+  log_debug << "Fastiterationdivision ok.";
   return 0;
 }
 

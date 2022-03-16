@@ -399,6 +399,15 @@ private:
       ->GetOps(msg_id)
       ->Reciprocaldiv(res1, res2, res3, &attrs);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Reciprocaldiv);
+
+    attrs["lh_is_const"] = "0";
+    attrs["rh_is_const"] = "0";
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Fastiterationdiv);
+    ProtocolManager::Instance()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(ctx->device()->attributes().incarnation()))
+      ->GetOps(msg_id)
+      ->Fastiterationdiv(res1, res2, res3, &attrs);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Fastiterationdiv);
 #else
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Rsqrt);
     ProtocolManager::Instance()

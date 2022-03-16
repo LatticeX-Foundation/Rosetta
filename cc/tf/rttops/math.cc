@@ -452,6 +452,23 @@ class RttReciprocaldivOp : public RttBinaryOp<Device> {
 };
 
 template <typename Device>
+class RttFastiterationdivOp : public RttBinaryOp<Device> {
+ public:
+  explicit RttFastiterationdivOp(OpKernelConstruction* context) : RttBinaryOp<Device>(context, "RttFastiterationdivOp") {}
+
+  std::shared_ptr<MatrixRtt> BinaryCompute(std::shared_ptr<MatrixRtt> matrix0, std::shared_ptr<MatrixRtt> matrix1) override {
+    // RttFastiterationdivOp
+    for (int i = 0; i < matrix0->rows(); ++i) {
+      for (int j = 0; j < matrix0->cols(); ++j) {
+        (*matrix0)(i, j) = ((*matrix0)(i, j)) / ((*matrix1)(i, j));
+      }
+    }
+
+    return matrix0;
+  }
+};
+
+template <typename Device>
 class RttFloordivOp : public RttBinaryOp<Device> {
  public:
   explicit RttFloordivOp(OpKernelConstruction* context) : RttBinaryOp<Device>(context, "RttFloolDivOp") {}
@@ -868,6 +885,7 @@ REGISTER_KERNEL_BUILDER(Name("RttSqrt").Device(DEVICE_CPU), RttSqrtOp<CPUDevice>
 REGISTER_KERNEL_BUILDER(Name("RttSquare").Device(DEVICE_CPU), RttSquareOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttDiv").Device(DEVICE_CPU), RttDivOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttReciprocaldiv").Device(DEVICE_CPU), RttDivOp<CPUDevice>);
+REGISTER_KERNEL_BUILDER(Name("RttFastiterationdiv").Device(DEVICE_CPU), RttDivOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttRealdiv").Device(DEVICE_CPU), RttDivOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttTruediv").Device(DEVICE_CPU), RttDivOp<CPUDevice>);
 REGISTER_KERNEL_BUILDER(Name("RttFloordiv").Device(DEVICE_CPU), RttFloordivOp<CPUDevice>);

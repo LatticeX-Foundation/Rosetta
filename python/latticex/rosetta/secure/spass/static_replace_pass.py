@@ -86,7 +86,8 @@ class StaticReplacePass():
             "rttsub" :        ["SecureSub",                         None,                   secure_ops.SecureSub,           2,  True],
             "rttmul" :        ["SecureMul",                         None,                   secure_ops.SecureMul,           2,  True],
             "rttdiv" :        ["SecureRealDiv",                     None,                   secure_ops.SecureTruediv,       2,  True],
-            "rttreciprocaldiv" : ["SecureReciprocaldiv",            None,                   secure_ops.SecureTruediv,       2,  True],
+            "rttreciprocaldiv" : ["SecureReciprocaldiv",            None,                   secure_ops.SecureReciprocaldiv,       2,  True],
+            "rttfastiterationdiv" : ["SecureFastiterationdiv",            None,                   secure_ops.SecureFastiterationdiv,       2,  True],
             "rtttruediv" :    ["SecureTruediv",                     None,                   secure_ops.SecureTruediv,       2,  True],
             "rttrealdiv" :    ["SecureRealDiv",                     None,                   secure_ops.SecureTruediv,       2,  True],
             "rttfloordiv":    ["SecureFloorDiv",                    None,                   secure_ops.SecureFloorDiv,      2,  True],
@@ -95,7 +96,7 @@ class StaticReplacePass():
 
             # arithmetic unary operation
             "rttnegative" :   ["SecureNegative",                    None,                   secure_ops.SecureNeg,           1,  False],
-            "rttsquare" :     ["SecureSquare",                      None,                   secure_ops.SecureSquare,        1,  False],
+            "rttsquare" :     ["SecureSquare",                      None,                   secure_ops.SecureSquare,        1,  False], 
             "rttlog" :        ["SecureLog",                         None,                   secure_ops.SecureLog,           1,  False],
             "rttlog1p" :      ["SecureLog1p",                       None,                   secure_ops.SecureLog1p,         1,  False],
             "rttabs" :        ["SecureAbs",                         None,                   secure_ops.SecureAbs,           1,  False],

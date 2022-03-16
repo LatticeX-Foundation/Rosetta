@@ -38,6 +38,7 @@
       - [`SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securetruedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securerealdivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureReciprocaldiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securereciprocaldivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+      - [`SecureFastiterationdiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securefastiterationdivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#secureequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureGreater(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securegreaterx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securegreaterequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
@@ -503,7 +504,29 @@
 
   > 通常，输出的精度可以接近1e-4。
 
-  > 这个SecureOp与 "SecureRealDiv "和 "SecureTrueDiv "相同，但事实上，reciprocaldiv算法比 "SecureTrueDiv "快5倍。
+  > 这个SecureOp与 "SecureRealDiv "和 "SecureTrueDiv "相同，但事实上，reciprocaldiv算法比 "SecureTrueDiv "提升了3x。
+
+  #### `SecureFastiterationdiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+
+  通过更加高效的除法迭代来提升运算速度
+
+
+  **参数：**
+
+   - **`x`**:  TensorFlow中的一个`Tensor`，其值处于共享状态。
+   - **`y`**:  TensorFlow中的一个张量，其值处于共享状态， 其必须具有与`x`相同的类型。
+   - **`name（可选）`**:  操作的名称，其默认值为None。
+   - **`lh_is_const(optional)`**:  指示`x'是否为常数的标志。如果它被设置为 "真"，"x "将被加上，就像所有各方共享的输入片的总和一样， 默认值是 "假"。
+   - **`rh_is_const(optional)`**:  指示`y'是否为常数的标志。如果它被设置为 "真"，"y "将被添加到所有各方共享的输入棋子的总和中， 其默认值是 "假"。
+
+  **返回：**
+
+  一个 "张量"，具有与`x`相同的类型。
+
+  
+  *注意:*
+
+  > 这个SecureOp与 "SecureRealDiv "和 "SecureTrueDiv "和''SecureReciprocaldiv ''相同，但事实上，SecureFastiterationdiv算法比 "SecureReciprocaldiv "提升了3x。
 
 
 #### `SecureEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`

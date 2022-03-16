@@ -141,6 +141,10 @@ REGISTER_RTT_BINARY_OP(RttReciprocaldiv).Doc(R"doc(
     RttReciprocaldiv
 )doc");
 
+REGISTER_RTT_BINARY_OP(RttFastiterationdiv).Doc(R"doc(
+    RttFastiterationdiv
+)doc");
+
 REGISTER_RTT_BINARY_OP(RttTruediv).Doc(R"doc(
     RttTruediv
 )doc");

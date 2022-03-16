@@ -244,6 +244,26 @@ class SecureReciprocaldivOp : public SecureBinaryOp<BinaryOpState> {
   }
 };
 
+class SecureFastiterationdivOp : public SecureBinaryOp<BinaryOpState> {
+ private:
+  /* data */
+ public:
+  SecureFastiterationdivOp(OpKernelConstruction* context) : SecureBinaryOp(context) {}
+  ~SecureFastiterationdivOp() {}
+
+  int BinaryCompute(const vector<string>& in1, const vector<string>& in2, vector<string>& output, OpKernelContext* context) {
+    log_debug << "--> Fastiterationdiv OpKernel compute.";
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Fastiterationdiv);
+    ProtocolManager::Instance()
+      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+      ->GetOps(msg_id())
+      ->Fastiterationdiv(in1, in2, output, &attrs_);
+    SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Fastiterationdiv);
+    log_debug << "Fastiterationdiv OpKernel compute ok. <--";
+    return 0;
+  }
+};
+
 class SecureTruedivOp : public SecureBinaryOp<BinaryOpState> {
  private:
   /* data */
@@ -889,6 +909,7 @@ REGISTER_STR_CPU_KERNEL(SecureSub, SecureSubOp);
 REGISTER_STR_CPU_KERNEL(SecureMul, SecureMulOp);
 REGISTER_STR_CPU_KERNEL(SecureDiv, SecureDivOp);
 REGISTER_STR_CPU_KERNEL(SecureReciprocaldiv, SecureReciprocaldivOp);
+REGISTER_STR_CPU_KERNEL(SecureFastiterationdiv, SecureFastiterationdivOp);
 REGISTER_STR_CPU_KERNEL(SecureTruediv, SecureTruedivOp);
 REGISTER_STR_CPU_KERNEL(SecureRealdiv, SecureRealdivOp);
 REGISTER_STR_CPU_KERNEL(SecureFloordiv, SecureFloordivOp);

@@ -38,6 +38,7 @@
       - [`SecureTruediv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securetruedivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureRealDiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securerealdivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureReciprocaldiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securereciprocaldivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
+     - [`SecureFastiterationdiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securefastiterationdivx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#secureequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureGreater(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securegreaterx-y-namenone-lh_is_constfalse-rh_is_constfalse)
       - [`SecureGreaterEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`](#securegreaterequalx-y-namenone-lh_is_constfalse-rh_is_constfalse)
@@ -487,7 +488,31 @@ We will try to represent each `SecureOp` interface in an clear and easy-to-under
 
   > Normally,the precision of output  can get close to 1e-4.
 
-  > This SecureOp is just the same as `SecureRealDiv` and `SecureTrueDiv`, but in fact, the reciprocaldiv algorithm is 5 times faster than the `SecureTrueDiv`.
+  > This SecureOp is just the same as `SecureRealDiv` and `SecureTrueDiv`, but in fact, the reciprocaldiv algorithm is 3x faster than the `SecureTrueDiv`.
+
+
+  #### `SecureFastiterationdiv(x, y, name=None, lh_is_const=False, rh_is_const=False)`
+
+  A faster division with new method of iteration.
+
+  **Args:**
+
+   - **`x`**: A `Tensor` in TensorFlow, whose values are in shared status.
+   - **`y`**: A `Tensor` in TensorFlow, whose values are in shared status. . Must have the same type as `x`.
+   - **`name(optional)`**: A name for the operation, the default value of it is None.
+   - **`lh_is_const(optional)`**: flag indicating whether the `x` is a const number. If it is set as True, the `x` will be added just as the sum of all parties' shared input pieces. The default value is `False`.
+   - **`rh_is_const(optional)`**: flag indicating whether the `y` is a const number. If it is set as True, the `y` will be added just as the sum of all parties' shared input pieces.The default value is `False`.
+
+  **Returns:**
+
+  A `Tensor`. Has the same type as `x`.
+
+  
+  *NOTE:*
+
+  > This SecureOp is just the same as `SecureRealDiv` and `SecureTrueDiv`and `SecureFastiterationdiv` , but in fact, the Fastiterationdiv algorithm is 3x faster than the `SecureTrueDiv`.
+
+
 
 
 #### `SecureEqual(x, y, name=None, lh_is_const=False, rh_is_const=False)`
