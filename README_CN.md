@@ -40,6 +40,7 @@ pip3 install tensorflow==1.14.0
 ```bash
 # clone rosetta git repository
 git clone --recurse https://github.com/LatticeX-Foundation/Rosetta.git
+git submodule update --init --recursive
 cd Rosetta
 # compile, install. You may check more compilation options by checking `./rosetta.sh --help`
 ./rosetta.sh compile --enable-protocol-mpc-securenn; ./rosetta.sh install
