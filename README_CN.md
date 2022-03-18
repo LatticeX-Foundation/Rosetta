@@ -42,7 +42,7 @@ pip3 install tensorflow==1.14.0
 git clone --recurse https://github.com/LatticeX-Foundation/Rosetta.git
 
 或者（github更新了 personal access token使用方法，SSH仍可使用。最新情报请参照github)
-git clone git@github.com:junjiequ123/Rosetta.git
+git clone git@github.com:LatticeX-Foundation/Rosetta.git
 git submodule update --init --recursive
 
 cd Rosetta
