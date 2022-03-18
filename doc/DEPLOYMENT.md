@@ -108,7 +108,9 @@ mkdir millionaire0 millionaire1 millionaire2
 Download the [python script](../example/millionaire/millionaire.py) to `millionaire0`, `millionaire1`, `millionaire2` directory for `P0`, `P1`, `P2` respectively.
 
 ```bash
-wget https://github.com/LatticeX-Foundation/Rosetta/tree/master/example/millionaire/millionaire.py
+## wget https://github.com/LatticeX-Foundation/Rosetta/tree/master/example/millionaire/millionaire.py
+wget https://raw.githubusercontent.com/LatticeX-Foundation/Rosetta/master/example/millionaire/millionaire.py
+
 ```
 
 - Generate server key and certificate

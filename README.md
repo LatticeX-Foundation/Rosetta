@@ -40,6 +40,10 @@ And then build and install Rosetta with our all-in-one script as follows.
 ```bash
 # clone rosetta git repository
 git clone --recurse https://github.com/LatticeX-Foundation/Rosetta.git
+
+or (Note: due to recent github change of personal token, SSH is still working, please refer to github for latest updates)
+git clone git@github.com:junjiequ123/Rosetta.git
+git submodule update --init --recursive
 cd Rosetta
 # compile, install. You may check more compilation options by checking `rosetta.sh --help`
 ./rosetta.sh compile --enable-protocol-mpc-securenn; ./rosetta.sh install
