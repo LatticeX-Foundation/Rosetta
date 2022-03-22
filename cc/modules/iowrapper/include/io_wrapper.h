@@ -21,6 +21,7 @@
 #include "cc/modules/iowrapper/include/stat.h"
 #include "cc/modules/common/include/utils/rtt_logger.h"
 #include "io/channel.h"
+#include "io/internal_channel.h"
 
 #include <vector>
 #include <string>
@@ -136,7 +137,7 @@ class IOWrapper {
     int nodes_ = 0;
     string task_id_ = "";
 
-#ifdef DEBUG
+#if DEBUG_MSG_ID
     std::mutex send_mutex_;
     std::mutex recv_mutex_;
     map<string, map<msg_id_t, int>> send_seq_;
