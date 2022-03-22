@@ -71,6 +71,9 @@ function load_compile_options() {
 # third modules install
 #
 
+# get GLIBCXX ABI FLAGS
+TF_GLIBCXX_USE_CXX11_ABI=$(python3 -c "import tensorflow as tf; print(tf.sysconfig.get_compile_flags()[-1])")
+
 # install emp-toolkit
 function install_emptoolkit() {
     # install emp-tool
@@ -78,7 +81,7 @@ function install_emptoolkit() {
 
     mkdir -p ${third_builddir}/emp-tool
     cd ${third_builddir}/emp-tool
-    cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare" \
+    cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare $TF_GLIBCXX_USE_CXX11_ABI" \
         ${third_code_dir}/emp-toolkit/emp-tool -DCMAKE_INSTALL_PREFIX=${builddir} -DCMAKE_PREFIX_PATH=${builddir} \
         -DCMAKE_BUILD_TYPE=${rtt_build_type} \
         -DENABLE_FLOAT=ON
@@ -94,7 +97,7 @@ function install_emp_zk() {
 
     mkdir -p ${third_builddir}/emp-ot
     cd ${third_builddir}/emp-ot
-    cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare" \
+    cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare $TF_GLIBCXX_USE_CXX11_ABI" \
         ${third_code_dir}/emp-toolkit/emp-ot -DCMAKE_INSTALL_PREFIX=${builddir} -DCMAKE_PREFIX_PATH=${builddir} \
         -DCMAKE_BUILD_TYPE=${rtt_build_type}
     make -j4 && make install
@@ -104,7 +107,7 @@ function install_emp_zk() {
     echo "to install emp-zk..."
     mkdir -p ${third_builddir}/emp-zk
     cd ${third_builddir}/emp-zk
-    cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare" \
+    cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare $TF_GLIBCXX_USE_CXX11_ABI" \
         ${third_code_dir}/emp-toolkit/emp-zk -DCMAKE_INSTALL_PREFIX=${builddir} -DCMAKE_PREFIX_PATH=${builddir} \
         -DCMAKE_BUILD_TYPE=${rtt_build_type}
     make -j && make install
