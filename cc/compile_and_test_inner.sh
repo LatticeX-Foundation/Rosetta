@@ -74,11 +74,8 @@ function load_compile_options() {
 # get GLIBCXX ABI FLAGS
 TF_GLIBCXX_USE_CXX11_ABI=$(python3 -c "import tensorflow as tf; print(tf.sysconfig.get_compile_flags()[-1])")
 
-# install emp-toolkit
 function install_emptoolkit() {
-    # install emp-tool
     echo "to install emp-tool..."
-
     mkdir -p ${third_builddir}/emp-tool
     cd ${third_builddir}/emp-tool
     cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare $TF_GLIBCXX_USE_CXX11_ABI" \
@@ -90,11 +87,8 @@ function install_emptoolkit() {
     echo "install emp-tool ok. Elapsed Time (using \$SECONDS): $SECONDS seconds"
 }
 
-# install emp-zk
-function install_emp_zk() {
-    # install emp-ot
+function install_emp_ot() {
     echo "to install emp-ot..."
-
     mkdir -p ${third_builddir}/emp-ot
     cd ${third_builddir}/emp-ot
     cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare $TF_GLIBCXX_USE_CXX11_ABI" \
@@ -102,15 +96,17 @@ function install_emp_zk() {
         -DCMAKE_BUILD_TYPE=${rtt_build_type}
     make -j4 && make install
     echo "install emp-ot ok"
+}
 
-    # install emp-zk
+
+function install_emp_zk() {
     echo "to install emp-zk..."
     mkdir -p ${third_builddir}/emp-zk
     cd ${third_builddir}/emp-zk
     cmake -DCMAKE_CXX_FLAGS="-Wno-ignored-attributes -Wno-unused-but-set-variable -Wno-attributes -Wno-stringop-overflow -Wno-sign-compare $TF_GLIBCXX_USE_CXX11_ABI" \
         ${third_code_dir}/emp-toolkit/emp-zk -DCMAKE_INSTALL_PREFIX=${builddir} -DCMAKE_PREFIX_PATH=${builddir} \
         -DCMAKE_BUILD_TYPE=${rtt_build_type}
-    make -j && make install
+    make -j4 && make install
     echo "install emp-zk ok."
 }
 
@@ -250,6 +246,10 @@ if [ "${rtt_command}" = "compile" ]; then
 
     # install deps. emp-toolkit, ...
     install_emptoolkit
+    if [ "${rtt_enable_protocol_zk}" = "ON" ]; then
+        install_emp_ot
+    fi
+
     if [ "${rtt_enable_protocol_zk}" = "ON" ]; then
         install_emp_zk
     fi

@@ -90,7 +90,6 @@ else()
 
   SET(COMM_FLAGS "-pthread -msse4.1 -maes -msse2 -mrdseed -Wall -lpthread -fPIC -mpclmul -fpermissive")
   SET(COMM_FLAGS "-pthread -march=native -mrdseed -Wall -lpthread -fPIC -mpclmul")
-  SET(COMM_FLAGS "${COMM_FLAGS} ${OMP_FLAGS} ${PG_FLAGS} ${NO_WARN_FLAGS}")
 
   SET(COMM_C_FLAGS "${COMM_FLAGS} ${OMP_FLAGS} ${PG_FLAGS} ${NO_WARN_FLAGS}")
   SET(EXTRA_FLAGS "-Wno-reorder -fpermissive") # extra, only for c++
