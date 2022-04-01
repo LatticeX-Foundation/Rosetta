@@ -232,11 +232,10 @@ def set_restore_model(is_cipher_model: bool, cipher_model = {}, plain_model = ''
                       computation nodes will restore cipher model locally.
         plain_model: node id of the data node owning plain models. It is valid if and only if is_cipher_model is false.
                      Computation nodes will receive plain models sent from data nodes.
-                     e.g. plain_model = 'P3'. It should not be left empty.
+                     e.g. plain_model = 'P3'. If not specified,
+                     computation nodes will restore plain model locally.
         task_id: task ID for the specified protocol.    
     """
-    if is_cipher_model == False and len(plain_model) == 0:
-        raise ValueError("You choose to restore plain models and the data node containing model is not specified!")
     py_protocol_handler.set_restore_model(is_cipher_model, cipher_model, plain_model, task_id)
 
 def get_float_precision(task_id=None):
