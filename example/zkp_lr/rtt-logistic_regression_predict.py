@@ -46,11 +46,12 @@ rtt.activate(protocol)
 if args.model_public:
     rtt.set_restore_model(False)
 else:
-    rtt.set_restore_model(False, plain_model = 'P0')
+    rtt.set_restore_model(False, plain_model='P0')
 
 mpc_player_id = rtt.py_protocol_handler.get_party_id()
-rtt.set_backend_loglevel(2)
-print("pystats activate elapse:{0} s".format(time.time() - start_time), flush=True)
+rtt.set_backend_loglevel(3)
+print("pystats activate elapse:{0} s".format(
+    time.time() - start_time), flush=True)
 
 
 # ########################################

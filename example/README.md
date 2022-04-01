@@ -39,8 +39,8 @@ Note that we rely on submodule [emp-ot](https://github.com/emp-toolkit/emp-ot), 
 
 <br/>
 
-- [Private Inference on Logistic Regression Model](./zkp_resnet/README.md).
-- [Private Inference on Deep Neural Network Model](./zkp_lr/README.md).
+- [Private Inference on Logistic Regression Model](./zkp_lr/README.md).
+- [Private Inference on Deep Neural Network Model](./zkp_resnet/README.md).
 
 
 

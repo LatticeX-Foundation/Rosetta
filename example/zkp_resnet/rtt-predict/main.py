@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument('--phase', type=str,
                         default='train', help='train or test ?')
     parser.add_argument('--dataset', type=str, default='tiny',
-                        help='[cifar10, cifar100, mnist, fashion-mnist, tiny')
+                        help='cifar10, cifar100, mnist, fashion-mnist, tiny')
 
     parser.add_argument('--epoch', type=int, default=1,
                         help='The number of epochs to run')
@@ -90,11 +90,11 @@ def main():
     args = parse_args()
     if args is None:
         exit()
-        
+
     if args.model_public:
         rtt.set_restore_model(False)
     else:
-        rtt.set_restore_model(False, plain_model = 'P0')
+        rtt.set_restore_model(False, plain_model='P0')
 
     # open session
     # with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:

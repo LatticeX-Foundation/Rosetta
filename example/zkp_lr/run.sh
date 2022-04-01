@@ -46,4 +46,4 @@ wait
 kill_prog
 
 # error
-# python3 relative_error.py
+python3 relative_error.py
