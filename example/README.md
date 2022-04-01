@@ -1,4 +1,4 @@
-# Introduction
+## Examples (tutorials)
 
 These are examples to show you how to use Rosetta.
 
@@ -10,4 +10,41 @@ In order to run the examples smoothly, some dependencies need to be installed, a
 pip3 install matplotlib sklearn --user
 ```
 
-Enjoy it.
+<br/>
+
+
+- [The tutorials of how to use Rosetta](./tutorials/README.md).
+
+
+
+## Examples (zero knowledge proof)
+
+
+Zero Knowledge Proof (ZKP) is a powerful cryptographic primitive. And Rosetta has integrated some cutting-edge ZKP protocols, such as [Mystique](https://eprint.iacr.org/2021/730). So in this tutorial, we will show you how to use this functionality in Rosetta.
+
+
+**Compiling Rosetta with ZKP protocol enabled**
+
+When You compile Rosetta, please make sure the `--enable-protocol-zk`  is enabled, as follows: 
+
+```bash
+./rosetta.sh compile --enable-protocol-zk
+```
+
+Note that we rely on submodule [emp-ot](https://github.com/emp-toolkit/emp-ot), [emp-tool](https://github.com/emp-toolkit/emp-tool) and [emp-zk](https://github.com/emp-toolkit/emp-zk).  So You may need to run command `git submodule init` and `git submodule update`  after cloning from Rosetta repository.
+
+>  During this compilation process, Rosetta will first try to install these libraries in `emp-toolkit` mentioned above. So you may check whether these submodules' codes have been ready.
+
+
+
+<br/>
+
+- [Private Inference on Logistic Regression Model](./zkp_resnet/README.md).
+- [Private Inference on Deep Neural Network Model](./zkp_lr/README.md).
+
+
+
+<br/>
+
+
+**Enjoy it.**
