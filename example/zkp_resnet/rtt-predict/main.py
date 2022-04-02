@@ -137,7 +137,7 @@ if __name__ == '__main__':
     rtt.activate(protocol)
 
     mpc_player_id = rtt.py_protocol_handler.get_party_id()
-    rtt.set_backend_loglevel(2)
+    rtt.set_backend_loglevel(3)
     print("pystats activate elapse:{0} s".format(time.time() - start_time))
 
     main()
