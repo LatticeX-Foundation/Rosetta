@@ -991,7 +991,11 @@ int SnnInternal::LinearMPC(
   out.resize(size);
   for (size_t i = 0; i < size; i++) {
     out[i] = sa * x[i];
-    Truncate(out[i], float_precision, PARTY_A, PARTY_B, partyNum);
+  }
+
+  Truncate(out, size, float_precision, PARTY_A, PARTY_B, partyNum);
+
+  for (size_t i = 0; i < size; i++) {
     out[i] += sb;
   }
 
@@ -1021,8 +1025,12 @@ int SnnInternal::LinearMPC(
   out.resize(size);
   for (size_t i = 0; i < size; i++) {
     out[i] = a * x[i];
-    Truncate(out[i], float_precision, PARTY_A, PARTY_B, partyNum);
-    out[i] = out[i] + sb;
+  }
+
+  Truncate(out, size, float_precision, PARTY_A, PARTY_B, partyNum);
+
+  for (size_t i = 0; i < size; i++) {
+    out[i] += sb;
   }
 
   AUDIT("id:{}, P{} LinerMPC, output(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(out));
