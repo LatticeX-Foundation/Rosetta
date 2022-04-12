@@ -56,6 +56,7 @@ test_op add
 test_op sub
 test_op mul
 test_op div
+test_op fast_div
 test_op reciprocaldiv
 test_op relu
 test_op pow_const

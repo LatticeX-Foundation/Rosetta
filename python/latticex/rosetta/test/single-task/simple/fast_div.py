@@ -1,6 +1,7 @@
 import tensorflow as tf
 import sys
 import numpy as np
+from time import *
 np.set_printoptions(suppress=True)
 
 import logging
@@ -94,15 +95,20 @@ rtt_res_1 = TEST_CASES[case_id]
 cipher_var_a = tf.Variable(rtt.private_input(0, rtt_case["input"][0]))
 cipher_var_b = tf.Variable(rtt.private_input(1, rtt_case["input"][1]))
 cipher_var_c = cipher_var_a / cipher_var_b
-cipher_var_c_1 = rtt.SecureReciprocaldiv(cipher_var_a,cipher_var_b)
-
-
+cipher_var_c_1 = rtt.SecureFastiterationdiv(cipher_var_a,cipher_var_b)
 
 init = tf.compat.v1.global_variables_initializer() 
 with tf.compat.v1.Session() as rtt_sess:
     rtt_sess.run(init)
+    begin1 = time()
     rtt_res = rtt_sess.run(cipher_var_c)
+    end1 = time()
+
+    begin = time()
     rtt_res_1 = rtt_sess.run(cipher_var_c_1)
+    end = time()
+    print("truediv run"+str(end1 - begin1)+"s")
+    print("fastiterationdiv run"+str(end - begin)+"s")
     # print("local cipher res:", rtt_res)
     # reveal to get the plaintext result
     rtt_res = rtt_sess.run(rtt.SecureReveal(rtt_res))
@@ -113,7 +119,7 @@ with tf.compat.v1.Session() as rtt_sess:
     print("first case ciphertext result:---------------------")
     print("div:")
     print(rtt_case["rtt_res"])
-    print("reci_div:")
+    print("fastiterationdiv_div:")
     print(rtt_case["rtt_res_1"])
     print("--------------------------------------------------")
 
@@ -125,7 +131,7 @@ rtt_res_1 = TEST_CASES[case_id]
 cipher_const_a = tf.constant(rtt_case["input"][0])
 cipher_var_b = tf.Variable(rtt.private_input(1, rtt_case["input"][1]))
 cipher_var_c = cipher_const_a / cipher_var_b
-cipher_var_c_1 = rtt.SecureReciprocaldiv(cipher_const_a,cipher_var_b,None,True)
+cipher_var_c_1 = rtt.SecureFastiterationdiv(cipher_const_a,cipher_var_b,None,True)
 
 
 init = tf.compat.v1.global_variables_initializer() 
@@ -142,7 +148,7 @@ with tf.compat.v1.Session() as rtt_sess:
     print("second case ciphertext result:---------------------")
     print("div:")
     print(rtt_case["rtt_res"])
-    print("reci_div:")
+    print("fastiterationdiv_div:")
     print(rtt_case["rtt_res_1"])
     print("--------------------------------------------------")
 
@@ -154,7 +160,7 @@ rtt_res_1 = TEST_CASES[case_id]
 cipher_var_a = tf.Variable(rtt.private_input(0, rtt_case["input"][0]))
 cipher_const_b = tf.constant(rtt_case["input"][1])
 cipher_var_c = cipher_var_a / cipher_const_b
-cipher_var_c_1 = rtt.SecureReciprocaldiv(cipher_var_a,cipher_const_b,None, False, True)
+cipher_var_c_1 = rtt.SecureFastiterationdiv(cipher_var_a,cipher_const_b,None, False, True)
 
 init = tf.compat.v1.global_variables_initializer() 
 with tf.compat.v1.Session() as rtt_sess:
@@ -170,7 +176,7 @@ with tf.compat.v1.Session() as rtt_sess:
     print("third case ciphertext result:---------------------")
     print("div:")
     print(rtt_case["rtt_res"])
-    print("reci_div:")
+    print("fastiterationdiv_div:")
     print(rtt_case["rtt_res_1"])
     print("--------------------------------------------------")
 
@@ -179,10 +185,10 @@ for i in range(len(TEST_CASES)):
     curr_case = TEST_CASES[i]
     try:
         np.testing.assert_allclose(curr_case["native_res"], curr_case["rtt_res_1"], rtol=1e-3, atol=0)
-        print("{}-th case(Reciprocaldiv--rtt_res_1) passed!".format(i))
+        print("{}-th case(Fastiterationdiv--rtt_res_1) passed!".format(i))
         
     except Exception as e:
-        print("{}-th case(Reciprocaldiv--rtt_res_1) failed! And detailed context: 'rtt_res_1':{}".format(i, curr_case["rtt_res_1"]))
+        print("{}-th case(Fastiterationdiv--rtt_res_1) failed! And detailed context: 'rtt_res_1':{}".format(i, curr_case["rtt_res_1"]))
 
     try:
         np.testing.assert_allclose(curr_case["native_res"], curr_case["rtt_res"], rtol=1e-3, atol=0)
@@ -194,4 +200,3 @@ for i in range(len(TEST_CASES)):
 
 print("*" * 69)
 rtt.deactivate()
-

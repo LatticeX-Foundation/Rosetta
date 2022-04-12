@@ -1150,10 +1150,10 @@ if(THREE_PC){
 
     vector<mpc_t> quotient_sign(vec_size, 0);
     Select1Of2(shared_sign_neg, shared_sign_pos, quotient_sign_bit, quotient_sign);
-    Reconstruct2PC(quotient_sign, "quotient_sign");
+    //Reconstruct2PC(quotient_sign, "quotient_sign");
 
     vector<mpc_t> quotient_vec = shared_quotient_vec;
-    Reconstruct2PC(shared_quotient_vec, "shared_quotient_vec");
+    //Reconstruct2PC(shared_quotient_vec, "shared_quotient_vec");
 
 
 
@@ -1188,22 +1188,22 @@ if(THREE_PC){
     for(int i = 1 ; i <= 4 ;i++ ){
       subtractVectors<mpc_t>(den_temp,shared_two,compare_two_result, vec_size);
       ComputeMSB(compare_two_result,choose_lamda);
-      Reconstruct2PC(den_temp, "den_temp");
-      Reconstruct2PC(choose_lamda, "choose_lamda");
-      Reconstruct2PC(compare_two_result, "compare_two_result");
+      //Reconstruct2PC(den_temp, "den_temp");
+      //Reconstruct2PC(choose_lamda, "choose_lamda");
+      //Reconstruct2PC(compare_two_result, "compare_two_result");
 
       DotProduct(den_temp,fixed_lamda,den_temp_update);
       Select1Of2(den_temp,den_temp_update,choose_lamda,den_temp);
-      Reconstruct2PC(den_temp_update, "den_temp_update");
+      //Reconstruct2PC(den_temp_update, "den_temp_update");
 
       DotProduct(lamda,fixed_lamda,lamda_update);
       Select1Of2(lamda,lamda_update,choose_lamda,lamda);
-      Reconstruct2PC(choose_lamda, "choose_lamda");
-      Reconstruct2PC(lamda, "lamda");
+      //Reconstruct2PC(choose_lamda, "choose_lamda");
+      //Reconstruct2PC(lamda, "lamda");
     }
     DotProduct(denominator_vec,lamda,denominator_vec_temp);
     denominator_vec = denominator_vec_temp;
-    Reconstruct2PC(denominator_vec, "denominator_vec");
+    //Reconstruct2PC(denominator_vec, "denominator_vec");
 
 // vector<mpc_t> numer(vec_size,0);//the numer of reciprocal is 1
 // if(partyNum == PARTY_A) {
@@ -1215,18 +1215,18 @@ vector<mpc_t> factor_m(vec_size,0);//m = 1 -y
 
 ///initial
 subtractVectors<mpc_t>(denominator_vec,shared_one,y, vec_size);
-Reconstruct2PC(y, "y");
-Reconstruct2PC(denominator_vec, "denominator_vec_");
+//Reconstruct2PC(y, "y");
+//Reconstruct2PC(denominator_vec, "denominator_vec_");
 subtractVectors<mpc_t>(shared_one,y,factor_m, vec_size);
-Reconstruct2PC(factor_m, "factor_m_forproduct");
+//Reconstruct2PC(factor_m, "factor_m_forproduct");
 
  for(int i = 1 ; i <= 10 ;i++ ){
    DotProduct(factor_m,numerator_vec,numerator_vec_temp);
    DotProduct(factor_m,denominator_vec,denominator_vec_temp);
    numerator_vec = numerator_vec_temp;
    denominator_vec = denominator_vec_temp;
-   Reconstruct2PC(denominator_vec, "denominator_vec_iteration");
-   Reconstruct2PC(numerator_vec, "numerator_vec_iteration");
+   //Reconstruct2PC(denominator_vec, "denominator_vec_iteration");
+   //Reconstruct2PC(numerator_vec, "numerator_vec_iteration");
    subtractVectors<mpc_t>(shared_two,denominator_vec,factor_m, vec_size);
  }
 vector<mpc_t> result(vec_size,0);
