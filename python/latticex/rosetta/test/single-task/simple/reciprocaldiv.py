@@ -1,7 +1,6 @@
 import tensorflow as tf
 import sys
 import numpy as np
-from time import *
 np.set_printoptions(suppress=True)
 
 import logging
@@ -14,7 +13,7 @@ TEST_CASES = []
 val_a = np.array(
     [
         [2000.0, 20000.0],
-        [20000*100, -200.0]
+        [20000 * 100.0, -200.0]
     ], dtype =np.float)
 
 val_b = np.array(
@@ -96,19 +95,12 @@ cipher_var_a = tf.Variable(rtt.private_input(0, rtt_case["input"][0]))
 cipher_var_b = tf.Variable(rtt.private_input(1, rtt_case["input"][1]))
 cipher_var_c = cipher_var_a / cipher_var_b
 cipher_var_c_1 = rtt.SecureReciprocaldiv(cipher_var_a,cipher_var_b)
-##cipher_var_c_1 = rtt.SecureFastiterationdiv(cipher_var_a,cipher_var_b)
 
 init = tf.compat.v1.global_variables_initializer() 
 with tf.compat.v1.Session() as rtt_sess:
     rtt_sess.run(init)
-    begin1 = time()
     rtt_res = rtt_sess.run(cipher_var_c)
-    end1 = time()
-    begin = time()
     rtt_res_1 = rtt_sess.run(cipher_var_c_1)
-    end = time()
-    print("reciprocaldiv run"+str(end - begin)+"s")
-    print("truediv run"+str(end1 - begin1)+"s")
     # print("local cipher res:", rtt_res)
     # reveal to get the plaintext result
     rtt_res = rtt_sess.run(rtt.SecureReveal(rtt_res))
@@ -131,9 +123,7 @@ rtt_res_1 = TEST_CASES[case_id]
 cipher_const_a = tf.constant(rtt_case["input"][0])
 cipher_var_b = tf.Variable(rtt.private_input(1, rtt_case["input"][1]))
 cipher_var_c = cipher_const_a / cipher_var_b
-##cipher_var_c_1 = rtt.SecureReciprocaldiv(cipher_const_a,cipher_var_b,None,True)
-cipher_var_c_1 = rtt.SecureFastiterationdiv(cipher_const_a,cipher_var_b,None,True)
-
+cipher_var_c_1 = rtt.SecureReciprocaldiv(cipher_const_a,cipher_var_b,None,True)
 
 init = tf.compat.v1.global_variables_initializer() 
 with tf.compat.v1.Session() as rtt_sess:
@@ -161,8 +151,7 @@ rtt_res_1 = TEST_CASES[case_id]
 cipher_var_a = tf.Variable(rtt.private_input(0, rtt_case["input"][0]))
 cipher_const_b = tf.constant(rtt_case["input"][1])
 cipher_var_c = cipher_var_a / cipher_const_b
-#cipher_var_c_1 = rtt.SecureReciprocaldiv(cipher_var_a,cipher_const_b,None, False, True)
-cipher_var_c_1 = rtt.SecureFastiterationdiv(cipher_var_a,cipher_const_b,None, False, True)
+cipher_var_c_1 = rtt.SecureReciprocaldiv(cipher_var_a,cipher_const_b,None, False, True)
 
 init = tf.compat.v1.global_variables_initializer() 
 with tf.compat.v1.Session() as rtt_sess:
