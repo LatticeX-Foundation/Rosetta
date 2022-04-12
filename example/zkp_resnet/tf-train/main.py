@@ -2,9 +2,9 @@ from ResNet import ResNet
 import argparse
 from utils import *
 import os
-os.environ['CUDA_VISIBLE_DEVICES']= '2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 # NOT USE GPU
-#os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"  
+#os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 #os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 """parsing and configuration"""
@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument('--phase', type=str,
                         default='train', help='train or test ?')
     parser.add_argument('--dataset', type=str, default='tiny',
-                        help='[cifar10, cifar100, mnist, fashion-mnist, tiny')
+                        help='cifar10, cifar100, mnist, fashion-mnist, tiny')
 
     parser.add_argument('--epoch', type=int, default=1,
                         help='The number of epochs to run')
