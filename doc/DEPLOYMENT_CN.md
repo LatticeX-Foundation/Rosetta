@@ -109,7 +109,8 @@ mkdir millionaire0 millionaire1 millionaire2
 下载范例[Python程序](../example/millionaire/millionaire.py) 到`millionaire0`、`millionaire1`、`millionaire2`工作目录.
 
 ```bash
-wget https://github.com/LatticeX-Foundation/Rosetta/tree/master/example/millionaire/millionaire.py
+### wget https://github.com/LatticeX-Foundation/Rosetta/tree/master/example/millionaire/millionaire.py
+wget https://raw.githubusercontent.com/LatticeX-Foundation/Rosetta/master/example/millionaire/millionaire.py`
 ```
 - 生成证书和key
 `P0`、`P1`、`P2`分别生成ssl服务端证书和key，执行命令: 

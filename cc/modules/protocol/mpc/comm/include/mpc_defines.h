@@ -149,7 +149,7 @@ const __m128i BIT128 = _mm_setr_epi8(128, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 // and by default we will not use this fixup. 
 // If you really need this in your specific application, you can set this macro to '1'. 
 */
-#define FIX_SHARE_TRUNCATION_PROBABILISTIC_ERROR 0
+#define FIX_SHARE_TRUNCATION_PROBABILISTIC_ERROR 1
 
 // some flags
 #define MPC_LOG_DEBUG 		  0

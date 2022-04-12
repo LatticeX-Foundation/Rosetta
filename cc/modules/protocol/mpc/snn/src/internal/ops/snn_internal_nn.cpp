@@ -612,9 +612,12 @@ int SnnInternal::SigmoidChebyshevPolyMPC(const vector<mpc_t>& a, vector<mpc_t>& 
   mpc_t c = 0;
   if (PRIMARY) {
     for (auto i = 0; i < size; ++i) {
-      c = (x1[i] * a1) + (x3[i] * a3) + (x5[i] * a5) + (x7[i] * a7) + (x9[i] * a9);
-      Truncate(c, float_precision, PARTY_A, PARTY_B, partyNum);
-      b[i] = b0 + c;
+      b[i] = (x1[i] * a1) + (x3[i] * a3) + (x5[i] * a5) + (x7[i] * a7) + (x9[i] * a9);
+    }
+
+    Truncate(b, size, float_precision, PARTY_A, PARTY_B, partyNum);
+    for (size_t i = 0; i < size; i++) {
+      b[i] += b0;
     }
   } //if(PRIMARY)
 

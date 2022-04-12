@@ -191,8 +191,8 @@ void SnnInternal::PolynomialLocalConstMul(
   if (PRIMARY) {
     for (int i = 0; i < vec_size; ++i) {
       shared_Y[i] = common_V * shared_X[i];
-      Truncate(shared_Y[i], float_precision, PARTY_A, PARTY_B, partyNum);
     }
+    Truncate(shared_Y, vec_size, float_precision, PARTY_A, PARTY_B, partyNum);
   }
 
   AUDIT("id:{}, P{} PolynomialLocalConstMul, output(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_Y));

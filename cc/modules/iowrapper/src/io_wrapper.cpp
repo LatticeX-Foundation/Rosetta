@@ -86,7 +86,7 @@ IOWrapper::~IOWrapper() {
   data_nodes_.clear();
   result_nodes_.clear();
   connected_nodes_.clear();
-#ifdef DEBUG
+#if DEBUG_MSG_ID
   send_seq_.clear();
   recv_seq_.clear();
 #endif
@@ -99,7 +99,7 @@ ssize_t IOWrapper::recv(int party, char* data, size_t len, const msg_id_t& msg_i
 
 ssize_t IOWrapper::recv(const string& node_id, char* data, size_t len, const msg_id_t& msg_id, int64_t timeout) {
 
-#ifdef DEBUG
+#if DEBUG_MSG_ID
   int recv_seq = 0;
   {
     std::unique_lock<std::mutex> lck(recv_mutex_);
@@ -120,11 +120,10 @@ ssize_t IOWrapper::recv(const string& node_id, char* data, size_t len, const msg
   msg_id_t id(task_id_ + "|" + msg_id.str());
   const char* data_id = id.str().c_str();
 #else
-  msg_id_t id(task_id_ + "|" + msg_id.str());
-  const char* data_id = id.get_hex();
+  const char* data_id = msg_id.get_hex();
 #endif
 
-  log_debug << "begin recv data from " << node_id << " id:" << id << " len:" << len;
+  log_debug << "begin recv data from " << node_id << " id:" << msg_id << " len:" << len;
   if (timeout < 0)
     timeout = 10 * 1000000;
   ssize_t ret = channel_->Recv(node_id.c_str(), data_id, data, len, timeout);
@@ -137,7 +136,7 @@ ssize_t IOWrapper::recv(const string& node_id, char* data, size_t len, const msg
     net_stat_st_.bytes_received += msg_id_t::Size();
     net_stat_st_.bytes_received += len;
   }
-  log_debug << "end recv data from " << node_id << " id:" << id << " len:" << len ;
+  log_debug << "end recv data from " << node_id << " id:" << msg_id << " len:" << len ;
   return ret;
 }
 
@@ -147,7 +146,7 @@ ssize_t IOWrapper::send(int party, const char* data, size_t len, const msg_id_t&
 }
 
 ssize_t IOWrapper::send(const string& node_id, const char* data, size_t len, const msg_id_t& msg_id, int64_t timeout) {
-#ifdef DEBUG
+#if DEBUG_MSG_ID
   int send_seq = 0;
   {
     std::unique_lock<std::mutex> send_mutex_;
@@ -169,10 +168,10 @@ ssize_t IOWrapper::send(const string& node_id, const char* data, size_t len, con
   const char* data_id = id.str().c_str();
 #else
   msg_id_t id(task_id_ + "|" + msg_id.str());
-  const char* data_id = id.get_hex();
+  const char* data_id = msg_id.get_hex();
 #endif
 
-  log_debug << "begin send data to " << node_id << " id:" << id << " len:" << len;
+  log_debug << "begin send data to " << node_id << " id:" << msg_id << " len:" << len;
   if (timeout < 0)
     timeout = 10 * 1000000;
   ssize_t ret = channel_->Send(node_id.c_str(), data_id, data, len, timeout);
@@ -182,7 +181,7 @@ ssize_t IOWrapper::send(const string& node_id, const char* data, size_t len, con
     net_stat_st_.bytes_sent += msg_id_t::Size();
     net_stat_st_.bytes_sent += len;
   }
-  log_debug << "end send data to " << node_id << " id:" << id << " len:" << len;
+  log_debug << "end send data to " << node_id << " id:" << msg_id << " len:" << len;
   return ret;
 }
 
