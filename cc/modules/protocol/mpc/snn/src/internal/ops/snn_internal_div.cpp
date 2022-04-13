@@ -965,14 +965,13 @@ int SnnInternal::ReciprocalDivfor2(
 
       Select1Of2(SHARED_TEN, SHARED_divTEN, judge_val_1_p, factor);
       Select1Of2(SHARED_ONE, factor, judge, factor);
-      // Reconstruct2PC(factor, "factor");
-      // Reconstruct2PC(denominator_vec, "denominator_vec");	
+
 
       DotProduct(factor, denominator_vec, denominator_temp);
       DotProduct(factor, numerator_vec, numerator_temp);
       denominator_vec = denominator_temp;
       numerator_vec = numerator_temp;
-      // Reconstruct2PC(denominator_vec, "denominator_vec");	
+
 	}    
 
     vector<mpc_t> result(vec_size,0);//initial of 1/x
@@ -1009,28 +1008,22 @@ int SnnInternal::ReciprocalDivfor2(
       update = vector<mpc_t>(vec_size, FloatToMpcType(4.074, GetMpcContext()->FLOAT_PRECISION));
     }
 	
-    // Reconstruct2PC(shared_beta, "shared_beta");
+   
     SelectShares(update, shared_beta, update);
-    // Reconstruct2PC(update, "update");
+    
     addVectors<mpc_t>(initial_exp, update, result, vec_size);
 
     // Reconstruct2PC(result, "initial_value");
-    vector<mpc_t> iteraion_temp_2A(vec_size,0);//2*A
-    vector<mpc_t> iteraion_temp_AA(vec_size,0);//A^2
+    vector<mpc_t> iteraion_temp_2A(vec_size,0);
+    vector<mpc_t> iteraion_temp_AA(vec_size,0);
     vector<mpc_t> den_reprocial_temp(vec_size,0);
     vector<mpc_t> quo(vec_size,0);
 
 	  ///get initial foriteration
     for(int i = 0; i <= ITERATION_TIME; i++) {
       DotProduct(result, NUM_ONE, iteraion_temp_2A);
-      // Reconstruct2PC(iteraion_temp_2A, "iteraion_temp_2A");
-      
       Square(result, iteraion_temp_AA);//A*A
-      // Reconstruct2PC(iteraion_temp_AA, "iteraion_temp_AA");
-      // Reconstruct2PC(denominator_vec, "denominator_vec");
-      
       DotProduct(iteraion_temp_AA, denominator_vec, den_reprocial_temp);//A*A*SELF
-      // Reconstruct2PC(den_reprocial_temp, "den_reprocial_temp");
       subtractVectors<mpc_t>(iteraion_temp_2A,den_reprocial_temp,result,vec_size);
     }
 
@@ -1077,17 +1070,46 @@ int SnnInternal::Fastiterationdivision(
 
 int SnnInternal::Fastiterationdivision(
   const vector<mpc_t>& a, 
-  const vector<string>& b, 
+  const vector<string>& sb, 
   vector<mpc_t>& c) {
-  size_t size = b.size();
-  vector<mpc_t> Denominator(size, 0);
-  if (partyNum == PARTY_A) {
-    vector<double> db(size, 0.0);
-    rosetta::convert::from_double_str(b, db);
-    convert_double_to_mpctype(db, Denominator, GetMpcContext()->FLOAT_PRECISION);
+  // std::cout << "debug stub DIV SC" << endl;
+  // locally compute c = a * (1/fb)
+  tlog_debug << "Fastiterationision rh_is_const ..";
+  
+  size_t size = a.size();
+  vector<double> fb(size, 0.0);
+  vector<double> inv_b(size, 0);
+  int float_precision = GetMpcContext()->FLOAT_PRECISION;
+  rosetta::convert::from_double_str(sb, fb);
+
+  vector<size_t> power_list(size, float_precision);
+  for (size_t i = 0; i < size; i++) {
+    inv_b[i] = 1.0 / fb[i];
+    // This is for dealing with big constant denominator, part I:
+    //  scale it up by left-shifting
+    double abs_v = abs(fb[i]);
+    if (abs_v > 1) {
+      power_list[i] = ceil(log2(abs_v));
+      inv_b[i] = inv_b[i] * (1 << power_list[i]);
+      power_list[i] = power_list[i] + float_precision;
+    }
   }
 
-  return Fastiterationdivision(a, Denominator, c);
+  vector<mpc_t> b(inv_b.size(), 0);
+  convert_double_to_mpctype(inv_b, b, float_precision);
+  c.resize(size);
+  for (size_t i = 0; i < size; ++i) {
+    c[i] = a[i] * b[i];
+  }
+
+  if (PRIMARY) {
+    Truncate_many(c, power_list, size, PARTY_A, PARTY_B, partyNum);
+  }
+
+  tlog_debug << "Fastiterationision rh_is_const ok.";
+  
+  return 0;
+
 }
 
 
@@ -1100,23 +1122,6 @@ vector<mpc_t>& shared_quotient_vec){
  size_t vec_size = shared_denominator_vec.size();
 
 if(THREE_PC){
-
-// vector<mpc_t> shared_denom_sign(vec_size, 0);
-// ComputeMSB(shared_denominator_vec, shared_denom_sign);
-
-// vector<mpc_t> shared_sign_pos(common_vec_size, 0);
-//     if (partyNum == PARTY_A) {
-//         shared_sign_pos = vector<mpc_t>(common_vec_size, FloatToMpcType(1, float_precision));
-//       }
-//       vector<mpc_t> shared_sign_neg(common_vec_size, 0);
-//      if (partyNum == PARTY_A) {
-//         shared_sign_neg = vector<mpc_t>(common_vec_size, FloatToMpcType(-1, float_precision));
-//       }
-// vector<mpc_t>denominator_vec(vec_size, 0);
-// vector<mpc_t>quo_sign(vec_size,0);
-// Select1Of2(shared_sign_neg, shared_sign_pos, shared_denom_sign, quo_sign);
-// DotProduct(shared_denominator_vec,quo_sign,denominator_vec);
-
     vector<mpc_t> shared_numer_sign(vec_size, 0);
     ComputeMSB(shared_numerator_vec, shared_numer_sign);
 
@@ -1150,14 +1155,14 @@ if(THREE_PC){
 
     vector<mpc_t> quotient_sign(vec_size, 0);
     Select1Of2(shared_sign_neg, shared_sign_pos, quotient_sign_bit, quotient_sign);
-    //Reconstruct2PC(quotient_sign, "quotient_sign");
+    
 
     vector<mpc_t> quotient_vec = shared_quotient_vec;
-    //Reconstruct2PC(shared_quotient_vec, "shared_quotient_vec");
+    
 
 
 
-///we assume that the number of bits is  16, we can set lamda as fangsuoyinzi.
+///we assume that the scale is  16,then set lamda .
     vector<mpc_t> lamda(vec_size, 0);
     if(partyNum == PARTY_A) {
       lamda = vector<mpc_t>(vec_size, FloatToMpcType(1, GetMpcContext()->FLOAT_PRECISION));
@@ -1188,45 +1193,36 @@ if(THREE_PC){
     for(int i = 1 ; i <= 4 ;i++ ){
       subtractVectors<mpc_t>(den_temp,shared_two,compare_two_result, vec_size);
       ComputeMSB(compare_two_result,choose_lamda);
-      //Reconstruct2PC(den_temp, "den_temp");
-      //Reconstruct2PC(choose_lamda, "choose_lamda");
-      //Reconstruct2PC(compare_two_result, "compare_two_result");
+ 
 
       DotProduct(den_temp,fixed_lamda,den_temp_update);
       Select1Of2(den_temp,den_temp_update,choose_lamda,den_temp);
-      //Reconstruct2PC(den_temp_update, "den_temp_update");
+      
 
       DotProduct(lamda,fixed_lamda,lamda_update);
       Select1Of2(lamda,lamda_update,choose_lamda,lamda);
-      //Reconstruct2PC(choose_lamda, "choose_lamda");
-      //Reconstruct2PC(lamda, "lamda");
+
     }
     DotProduct(denominator_vec,lamda,denominator_vec_temp);
     denominator_vec = denominator_vec_temp;
-    //Reconstruct2PC(denominator_vec, "denominator_vec");
+    
 
-// vector<mpc_t> numer(vec_size,0);//the numer of reciprocal is 1
-// if(partyNum == PARTY_A) {
-//   numer = vector<mpc_t>(vec_size, FloatToMpcType(1, GetMpcContext()->FLOAT_PRECISION));
-// }
-vector<mpc_t> y(vec_size,0);//d  = 1 + y
-vector<mpc_t> factor_m(vec_size,0);//m = 1 -y
+
+vector<mpc_t> y(vec_size,0);
+vector<mpc_t> factor_m(vec_size,0);
 
 
 ///initial
 subtractVectors<mpc_t>(denominator_vec,shared_one,y, vec_size);
-//Reconstruct2PC(y, "y");
-//Reconstruct2PC(denominator_vec, "denominator_vec_");
+
 subtractVectors<mpc_t>(shared_one,y,factor_m, vec_size);
-//Reconstruct2PC(factor_m, "factor_m_forproduct");
+
 
  for(int i = 1 ; i <= 10 ;i++ ){
    DotProduct(factor_m,numerator_vec,numerator_vec_temp);
    DotProduct(factor_m,denominator_vec,denominator_vec_temp);
    numerator_vec = numerator_vec_temp;
-   denominator_vec = denominator_vec_temp;
-   //Reconstruct2PC(denominator_vec, "denominator_vec_iteration");
-   //Reconstruct2PC(numerator_vec, "numerator_vec_iteration");
+   denominator_vec = denominator_vec_temp; 
    subtractVectors<mpc_t>(shared_two,denominator_vec,factor_m, vec_size);
  }
 vector<mpc_t> result(vec_size,0);
