@@ -214,7 +214,5 @@ void SnnInternal::ConstCommonInput(const vector<mpc_t>& v, vector<mpc_t>& shares
 }
 
 
-
-
 }//snn
 }//rosetta

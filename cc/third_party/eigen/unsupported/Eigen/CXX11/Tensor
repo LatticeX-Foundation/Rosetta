@@ -109,6 +109,7 @@ typedef unsigned __int64 uint64_t;
 #include "src/Tensor/TensorReduction.h"
 #include "src/Tensor/TensorReductionCuda.h"
 #include "src/Tensor/TensorArgMax.h"
+// #include "src/Tensor/TensorArgMin.h"
 #include "src/Tensor/TensorConcatenation.h"
 #include "src/Tensor/TensorContractionMapper.h"
 #include "src/Tensor/TensorContractionBlocking.h"

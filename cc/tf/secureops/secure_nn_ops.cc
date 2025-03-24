@@ -155,3 +155,18 @@ REGISTER_OP("SecureSoftmax")
     .Doc(R"doc(
 SecureSoftmaxOp
 )doc");
+
+REGISTER_OP("SecurePoolArgmax")
+    .Input("input: string")
+    .Output("value: string")
+    .Output("index: string")
+    .Attr("ksize: list(int) >= 4")
+    .Attr("strides: list(int) >= 4")
+    .Attr(GetPaddingAttrString())
+    .Attr("data_format: {'NHWC', 'NCHW', 'NCHW_VECT_C'} = 'NHWC'")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+    .SetShapeFn(::tensorflow::shape_inference::MaxPoolShape)
+#endif
+    .Doc(R"doc(
+SecureMaxPoolOp
+)doc");

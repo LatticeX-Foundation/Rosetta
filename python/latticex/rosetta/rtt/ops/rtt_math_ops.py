@@ -331,6 +331,13 @@ def rtt_arg_max(input, dimension=None, name=None, output_type=dtypes.string):
     _result = rtt_ts.rtt_ops.rtt_arg_max(input, dimension=dimension, name=name, output_type=output_type)
     return rtt_ts.RttTensor(_result)
 
+# def rtt_arg_min(input, dimension=None, name=None, output_type=dtypes.string):
+#     if dimension is None:
+#         dimension = 0
+#     input = rtt_ts.convert_to_rtttensor(input)
+#     _result = rtt_ts.rtt_ops.rtt_arg_min(input, dimension=dimension, name=name, output_type=output_type)
+#     return rtt_ts.RttTensor(_result)
+
 
 
 def rtt_cast(x, dtype, name=None):
@@ -396,6 +403,7 @@ def static_override_tf_ops_to_rtt_ops():
     tf.reduce_sum = rtt_sum
     tf.cast = rtt_cast
     tf.argmax = rtt_arg_max
+    # tf.argmin = rtt_arg_min
 
     #-------------------------------
     gen_math_ops.mat_mul = rtt_matmul

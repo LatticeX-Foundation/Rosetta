@@ -1,18 +1,19 @@
 #include "cc/modules/protocol/mpc/snn/include/snn_internal.h"
 #include "cc/modules/common/include/utils/str_type_convert.h"
 
-
 namespace rosetta {
 namespace snn {
 
 int SnnInternal::Relu(const vector<mpc_t>& a, vector<mpc_t>& b) {
   assert(THREE_PC && "RELU called in non-3PC mode");
   tlog_debug << "Relu  ...";
-  AUDIT("id:{}, P{} Relu, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(a));
+  AUDIT(
+    "id:{}, P{} Relu, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(),
+    Vector<mpc_t>(a));
 
   size_t size = a.size();
   vector<mpc_t> reluPrime(size);
-  
+
   int ret = ReluPrime(a, reluPrime);
   if (ret != 0) {
     tlog_error << "internal relu_prime failed";
@@ -24,8 +25,10 @@ int SnnInternal::Relu(const vector<mpc_t>& a, vector<mpc_t>& b) {
     tlog_error << "internal select_share failed";
     return -1;
   }
-  
-  AUDIT("id:{}, P{} Relu, output Y(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(b));
+
+  AUDIT(
+    "id:{}, P{} Relu, output Y(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(),
+    Vector<mpc_t>(b));
   tlog_debug << "Relu ok.";
   return 0;
 }
@@ -34,15 +37,19 @@ int SnnInternal::Relu(const vector<string>& as, vector<string>& bs) {
   vector<mpc_t> a, b;
   // rosetta::convert::from_binary_str(as, a);
   convert_string_to_mpctype(as, a);
-  AUDIT("id:{}, P{} Relu, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(a));
+  AUDIT(
+    "id:{}, P{} Relu, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(),
+    Vector<mpc_t>(a));
 
   int ret = Relu(a, b);
 
   if (ret != 0) {
     tlog_error << "internal relu failed";
-    return -1; 
+    return -1;
   }
-  AUDIT("id:{}, P{} Relu, output Y(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(b));
+  AUDIT(
+    "id:{}, P{} Relu, output Y(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(),
+    Vector<mpc_t>(b));
   convert_mpctype_to_string(b, bs);
 
   return 0;
@@ -51,7 +58,9 @@ int SnnInternal::Relu(const vector<string>& as, vector<string>& bs) {
 int SnnInternal::ReluPrime(const vector<mpc_t>& a, vector<mpc_t>& b) {
   assert(THREE_PC && "RELUPrime called in non-3PC mode");
   tlog_debug << "ReluPrime ...";
-  AUDIT("id:{}, P{} ReluPrime, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(a));
+  AUDIT(
+    "id:{}, P{} ReluPrime, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(),
+    Vector<mpc_t>(a));
 
   size_t size = a.size();
   vector<mpc_t> twoA(size, 0);
@@ -75,7 +84,9 @@ int SnnInternal::ReluPrime(const vector<mpc_t>& a, vector<mpc_t>& b) {
       b[i] = j - b[i];
   }
 
-  AUDIT("id:{}, P{} ReluPrime, output Y(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(b));
+  AUDIT(
+    "id:{}, P{} ReluPrime, output Y(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(),
+    Vector<mpc_t>(b));
   tlog_debug << "ReluPrime ok.";
   return 0;
 }
@@ -86,34 +97,48 @@ int SnnInternal::SigmoidCrossEntropy(
   vector<mpc_t>& shared_result,
   size_t vec_size) {
   tlog_debug << "SigmoidCrossEntropy ...";
-  AUDIT("id:{}, P{} SigmoidCrossEntropy, input shared_logits(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_logits));
-  AUDIT("id:{}, P{} SigmoidCrossEntropy, input shared_labels(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_labels));
+  AUDIT(
+    "id:{}, P{} SigmoidCrossEntropy, input shared_logits(mpc_t){}", msg_id().get_hex(),
+    context_->GetMyRole(), Vector<mpc_t>(shared_logits));
+  AUDIT(
+    "id:{}, P{} SigmoidCrossEntropy, input shared_labels(mpc_t){}", msg_id().get_hex(),
+    context_->GetMyRole(), Vector<mpc_t>(shared_labels));
   vector<mpc_t> tmp_part(vec_size, 0);
   // max(logit, 0)
   Relu(shared_logits, tmp_part);
   vector<mpc_t> prod_part(vec_size, 0);
   // logit * label
   DotProduct(shared_logits, shared_labels, prod_part);
-  AUDIT("id:{}, P{} SigmoidCrossEntropy compute: shared_logits*shared_labels, prod_part(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(prod_part));
+  AUDIT(
+    "id:{}, P{} SigmoidCrossEntropy compute: shared_logits*shared_labels, prod_part(mpc_t){}",
+    msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(prod_part));
   // max(logit, 0) - logit * label
   subtractVectors<mpc_t>(tmp_part, prod_part, shared_result, vec_size);
-  AUDIT("id:{}, P{} SigmoidCrossEntropy compute: max(shared_logits, 0)-shared_logits*shared_labels, shared_result(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_result));
+  AUDIT(
+    "id:{}, P{} SigmoidCrossEntropy compute: max(shared_logits, 0)-shared_logits*shared_labels, shared_result(mpc_t){}",
+    msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_result));
   // if(PRIMARY) {
   //     GetMpcOpInner(Reconstruct2PC)->Run(shared_result, shared_result.size(), "curr_X");
   // }
   vector<mpc_t> log_part(vec_size, 0);
   // |X|
   Abs(shared_logits, tmp_part);
-  AUDIT("id:{}, P{} SigmoidCrossEntropy compute: abs(shared_logits), abs_shared_logits(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(tmp_part));
+  AUDIT(
+    "id:{}, P{} SigmoidCrossEntropy compute: abs(shared_logits), abs_shared_logits(mpc_t){}",
+    msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(tmp_part));
   // log(1 + exp(-abs(x)))
   CELog(tmp_part, log_part, vec_size);
-  AUDIT("id:{}, P{} SigmoidCrossEntropy compute: log(1+exp(-abs(shared_logits))), log_part(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(log_part));
+  AUDIT(
+    "id:{}, P{} SigmoidCrossEntropy compute: log(1+exp(-abs(shared_logits))), log_part(mpc_t){}",
+    msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(log_part));
   // if(PRIMARY) {
   //     GetMpcOpInner(Reconstruct2PC)->Run(log_part, log_part.size(), "log part curr_X");
   // }
   addVectors<mpc_t>(shared_result, log_part, shared_result, vec_size);
 
-  AUDIT("id:{}, P{} SigmoidCrossEntropy, output Y{}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_result));
+  AUDIT(
+    "id:{}, P{} SigmoidCrossEntropy, output Y{}", msg_id().get_hex(), context_->GetMyRole(),
+    Vector<mpc_t>(shared_result));
   tlog_debug << "SigmoidCrossEntropy ok.";
   return 0;
 }
@@ -126,8 +151,12 @@ int SnnInternal::SigmoidCrossEntropyBatch(
   // cout << "sigmoid_cross_entropy_batch !" << endl;
   ///********************1. prepare all data for batch-ReluPrime.
   tlog_debug << "SigmoidCrossEntropyBatch ...";
-  AUDIT("id:{}, P{} SigmoidCrossEntropyBatch, input shared_logits(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_logits));
-  AUDIT("id:{}, P{} SigmoidCrossEntropyBatch, input shared_labels(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_labels));
+  AUDIT(
+    "id:{}, P{} SigmoidCrossEntropyBatch, input shared_logits(mpc_t){}", msg_id().get_hex(),
+    context_->GetMyRole(), Vector<mpc_t>(shared_logits));
+  AUDIT(
+    "id:{}, P{} SigmoidCrossEntropyBatch, input shared_labels(mpc_t){}", msg_id().get_hex(),
+    context_->GetMyRole(), Vector<mpc_t>(shared_labels));
   vector<mpc_t> batch_comp_X;
   batch_comp_X.insert(batch_comp_X.end(), shared_logits.begin(), shared_logits.end());
   int float_precision = GetMpcContext()->FLOAT_PRECISION;
@@ -255,7 +284,9 @@ int SnnInternal::SigmoidCrossEntropyBatch(
   subtractVectors<mpc_t>(max_part, prod_part, shared_result, vec_size);
   addVectors<mpc_t>(shared_result, log_part, shared_result, vec_size);
 
-  AUDIT("id:{}, P{} SigmoidCrossEntropy, output(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_result));
+  AUDIT(
+    "id:{}, P{} SigmoidCrossEntropy, output(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(),
+    Vector<mpc_t>(shared_result));
   tlog_debug << "SigmoidCrossEntropyBatch ok.";
   return 0;
 }
@@ -267,7 +298,9 @@ int SnnInternal::SigmoidCrossEntropyBatch(
 */
 int SnnInternal::Abs(const vector<mpc_t>& shared_X, vector<mpc_t>& shared_Y) {
   tlog_debug << "Abs ...";
-  AUDIT("id:{}, P{} Abs, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_X));
+  AUDIT(
+    "id:{}, P{} Abs, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(),
+    Vector<mpc_t>(shared_X));
   size_t vec_size = shared_X.size();
   vector<mpc_t> SHARED_ONE(vec_size, 0);
   if (partyNum == PARTY_A) {
@@ -283,7 +316,9 @@ int SnnInternal::Abs(const vector<mpc_t>& shared_X, vector<mpc_t>& shared_Y) {
   Select1Of2(SHARED_ONE, SHARED_NEG_ONE, shared_cmp, shared_x_multiplier);
   DotProduct(shared_x_multiplier, shared_X, shared_Y);
 
-  AUDIT("id:{}, P{} Abs, output Y(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_Y));
+  AUDIT(
+    "id:{}, P{} Abs, output Y(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(),
+    Vector<mpc_t>(shared_Y));
   tlog_debug << "Abs ok.";
   return 0;
 }
@@ -293,11 +328,11 @@ int SnnInternal::Abs(const vector<mpc_t>& shared_X, vector<mpc_t>& shared_Y) {
             1  if x >=  0 [ in point 0 we set it to 1]
         (-1)  if x < 0
 */
-int SnnInternal::AbsPrime(
-  const vector<mpc_t>& shared_X,
-  vector<mpc_t>& shared_Y) {
+int SnnInternal::AbsPrime(const vector<mpc_t>& shared_X, vector<mpc_t>& shared_Y) {
   tlog_debug << "AbsPrime ...";
-  AUDIT("id:{}, P{} AbsPrime, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_X));
+  AUDIT(
+    "id:{}, P{} AbsPrime, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(),
+    Vector<mpc_t>(shared_X));
   size_t vec_size = shared_X.size();
   vector<mpc_t> SHARED_ONE(vec_size, 0);
   if (partyNum == PARTY_A) {
@@ -311,15 +346,14 @@ int SnnInternal::AbsPrime(
   ReluPrime(shared_X, shared_cmp);
   Select1Of2(SHARED_ONE, SHARED_NEG_ONE, shared_cmp, shared_Y);
 
-  AUDIT("id:{}, P{} AbsPrime, output Y(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(shared_Y));
+  AUDIT(
+    "id:{}, P{} AbsPrime, output Y(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(),
+    Vector<mpc_t>(shared_Y));
   tlog_debug << "AbsPrime ok.";
   return 0;
 }
 
-void SnnInternal::CELog(
-  const vector<mpc_t>& shared_X,
-  vector<mpc_t>& shared_Y,
-  size_t vec_size) {
+void SnnInternal::CELog(const vector<mpc_t>& shared_X, vector<mpc_t>& shared_Y, size_t vec_size) {
   tlog_debug << "CELog ...";
   string my_func = "LOG_CE";
   int float_precision = GetMpcContext()->FLOAT_PRECISION;
@@ -363,7 +397,7 @@ void SnnInternal::CELog(
     vector<mpc_t> LOWER_BOUND(vec_size, FloatToMpcType(0.00015, GetMpcContext()->FLOAT_PRECISION));
     vector<mpc_t> curr_res(vec_size, 0);
     vector<mpc_t> tmp_v(vec_size);
-    tlog_debug << "DEBUG CE LOG, calling vectorization mpc_uni_polynomial" ;
+    tlog_debug << "DEBUG CE LOG, calling vectorization mpc_uni_polynomial";
     UniPolynomial(curr_X, power_list, coff_list, tmp_v);
     for (int i = 0; i < vec_size; ++i) {
       curr_res[i] = CoffDown(tmp_v[i]);
@@ -397,7 +431,7 @@ int SnnInternal::Sigmoid6PieceWise(const vector<mpc_t>& a, vector<mpc_t>& b) {
   if (THREE_PC) {
     int SEG = 5;
     // vector<mpc_t> y = a;
-    //params(a,b): (0.0484792, 0.1998976),  (0.1928931, 0.4761351), (0.1928931, 0.5238649),  
+    //params(a,b): (0.0484792, 0.1998976),  (0.1928931, 0.4761351), (0.1928931, 0.5238649),
     //(0.0484792,0.8001024)
     mpc_t a1 = FloatToMpcType(0.0484792, float_precision);
     mpc_t b1 = FloatToMpcType(0.1998976, float_precision);
@@ -411,12 +445,12 @@ int SnnInternal::Sigmoid6PieceWise(const vector<mpc_t>& a, vector<mpc_t>& b) {
     // vectorization-style to call the costly funcPrivateCompareMPCEx2(ReluPrime) only once.
     //[-4,4]: -4, -2, 0, 2, 4
     vector<mpc_t> batch_cmp_C;
-    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(-4, float_precision)/2);
-    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(-2, float_precision)/2);
-    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(0, float_precision)/2);
-    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(2, float_precision)/2);
-    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(4, float_precision)/2);
-    
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(-4, float_precision) / 2);
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(-2, float_precision) / 2);
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(0, float_precision) / 2);
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(2, float_precision) / 2);
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(4, float_precision) / 2);
+
     const vector<mpc_t>& X = a;
     vector<mpc_t> batch_cmp_X;
     batch_cmp_X.insert(batch_cmp_X.end(), X.begin(), X.end());
@@ -430,7 +464,7 @@ int SnnInternal::Sigmoid6PieceWise(const vector<mpc_t>& a, vector<mpc_t>& b) {
     batch_cmp_X.clear();
     batch_cmp_C.clear();
 
-    // vectorization for calling communication-costly DotProduct only once 
+    // vectorization for calling communication-costly DotProduct only once
     vector<mpc_t> batch_dot_product;
     vector<mpc_t> linear_temp(size);
 
@@ -453,7 +487,7 @@ int SnnInternal::Sigmoid6PieceWise(const vector<mpc_t>& a, vector<mpc_t>& b) {
     if (PRIMARY)
       LinearMPC(X, a4 /*-0*/, b4 - FloatToMpcType(double(1.0), float_precision), linear_temp);
     batch_dot_product.insert(batch_dot_product.end(), linear_temp.begin(), linear_temp.end());
-    
+
     vector<mpc_t> batch_dp_res(batch_dot_product.size());
     DotProduct(batch_cmp_res, batch_dot_product, batch_dp_res);
     batch_cmp_res.clear();
@@ -465,11 +499,11 @@ int SnnInternal::Sigmoid6PieceWise(const vector<mpc_t>& a, vector<mpc_t>& b) {
     out.resize(size);
     for (size_t pos = 0; pos < size; ++pos)
       out[pos] = lastOne;
-    
-    for(int i = 0; i < SEG; ++i) {
+
+    for (int i = 0; i < SEG; ++i) {
       auto iter_begin = batch_dp_res.begin() + i * size;
       for (size_t pos = 0; pos < size; ++pos)
-        out[pos] = out[pos] + *(iter_begin+pos);
+        out[pos] = out[pos] + *(iter_begin + pos);
     }
   }
 
@@ -505,11 +539,11 @@ int SnnInternal::Sigmoid5PieceWise(const vector<mpc_t>& a, vector<mpc_t>& b) {
 
     //[-5,5]: -5, -2.5, 2.5, 5
     vector<mpc_t> batch_cmp_C;
-    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(-5, float_precision)/2);
-    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(-2.5, float_precision)/2);
-    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(2.5, float_precision)/2);
-    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(5, float_precision)/2);
-    
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(-5, float_precision) / 2);
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(-2.5, float_precision) / 2);
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(2.5, float_precision) / 2);
+    batch_cmp_C.insert(batch_cmp_C.end(), size, FloatToMpcType(5, float_precision) / 2);
+
     const vector<mpc_t>& X = a;
     vector<mpc_t> batch_cmp_X;
     batch_cmp_X.insert(batch_cmp_X.end(), X.begin(), X.end());
@@ -522,7 +556,7 @@ int SnnInternal::Sigmoid5PieceWise(const vector<mpc_t>& a, vector<mpc_t>& b) {
     batch_cmp_X.clear();
     batch_cmp_C.clear();
 
-    // vectorization for calling communication-costly DotProduct only once 
+    // vectorization for calling communication-costly DotProduct only once
     vector<mpc_t> batch_dot_product;
     vector<mpc_t> linear_temp(size);
 
@@ -541,7 +575,7 @@ int SnnInternal::Sigmoid5PieceWise(const vector<mpc_t>& a, vector<mpc_t>& b) {
     if (PRIMARY)
       LinearMPC(X, a3 /*-0*/, b3 - FloatToMpcType(1.0, float_precision), linear_temp);
     batch_dot_product.insert(batch_dot_product.end(), linear_temp.begin(), linear_temp.end());
-    
+
     vector<mpc_t> batch_dp_res(batch_dot_product.size());
     DotProduct(batch_cmp_res, batch_dot_product, batch_dp_res);
     batch_cmp_res.clear();
@@ -553,14 +587,14 @@ int SnnInternal::Sigmoid5PieceWise(const vector<mpc_t>& a, vector<mpc_t>& b) {
     out.resize(size);
     for (size_t pos = 0; pos < size; ++pos)
       out[pos] = lastOne;
-    
-    for(int i = 0; i < SEG; ++i) {
+
+    for (int i = 0; i < SEG; ++i) {
       auto iter_begin = batch_dp_res.begin() + i * size;
       for (size_t pos = 0; pos < size; ++pos)
-        out[pos] = out[pos] + *(iter_begin+pos);
+        out[pos] = out[pos] + *(iter_begin + pos);
     }
   }
-  
+
   DEB("Sigmoid5PieceWise end");
   tlog_debug << "Sigmoid5PieceWise right ok.";
   return 0;
@@ -574,7 +608,9 @@ int SnnInternal::Sigmoid5PieceWise(const vector<mpc_t>& a, vector<mpc_t>& b) {
 int SnnInternal::SigmoidChebyshevPolyMPC(const vector<mpc_t>& a, vector<mpc_t>& b) {
   assert(THREE_PC && "non-3pc setting!!!");
   tlog_debug << "SigmoidChebyshevPolyMPC ...";
-  AUDIT("id:{}, P{} SigmoidChebyshevPolyMPC, input X(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(a));
+  AUDIT(
+    "id:{}, P{} SigmoidChebyshevPolyMPC, input X(mpc_t){}", msg_id().get_hex(),
+    context_->GetMyRole(), Vector<mpc_t>(a));
   const int float_precision = GetMpcContext()->FLOAT_PRECISION;
   size_t size = a.size();
 
@@ -590,23 +626,33 @@ int SnnInternal::SigmoidChebyshevPolyMPC(const vector<mpc_t>& a, vector<mpc_t>& 
   auto& x1 = a;
   // x2 = x^2
   Square(x1, x2);
-  AUDIT("id:{}, P{} SigmoidChebyshevPolyMPC, compute x^2, X2(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(x2));
+  AUDIT(
+    "id:{}, P{} SigmoidChebyshevPolyMPC, compute x^2, X2(mpc_t){}", msg_id().get_hex(),
+    context_->GetMyRole(), Vector<mpc_t>(x2));
 
   // x3 = x^3
   DotProduct(x1, x2, x3);
-  AUDIT("id:{}, P{} SigmoidChebyshevPolyMPC, compute x^3, X3(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(x3));
+  AUDIT(
+    "id:{}, P{} SigmoidChebyshevPolyMPC, compute x^3, X3(mpc_t){}", msg_id().get_hex(),
+    context_->GetMyRole(), Vector<mpc_t>(x3));
 
   // x5 = x^5, x5 = x2 * x3
   DotProduct(x2, x3, x5);
-  AUDIT("id:{}, P{} SigmoidChebyshevPolyMPC, compute x^5, X5(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(x5));
+  AUDIT(
+    "id:{}, P{} SigmoidChebyshevPolyMPC, compute x^5, X5(mpc_t){}", msg_id().get_hex(),
+    context_->GetMyRole(), Vector<mpc_t>(x5));
 
   // x7 = x^7,  x7 = x2 * x5
   DotProduct(x2, x5, x7);
-  AUDIT("id:{}, P{} SigmoidChebyshevPolyMPC, compute x^7, X7(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(x7));
+  AUDIT(
+    "id:{}, P{} SigmoidChebyshevPolyMPC, compute x^7, X7(mpc_t){}", msg_id().get_hex(),
+    context_->GetMyRole(), Vector<mpc_t>(x7));
 
   // x9 = x2 * x7
   DotProduct(x2, x7, x9);
-  AUDIT("id:{}, P{} SigmoidChebyshevPolyMPC, compute x^9, X9(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(x9));
+  AUDIT(
+    "id:{}, P{} SigmoidChebyshevPolyMPC, compute x^9, X9(mpc_t){}", msg_id().get_hex(),
+    context_->GetMyRole(), Vector<mpc_t>(x9));
 
   // z = y9 + y7 + y5 + y3 + y1 + w0
   mpc_t c = 0;
@@ -621,10 +667,119 @@ int SnnInternal::SigmoidChebyshevPolyMPC(const vector<mpc_t>& a, vector<mpc_t>& 
     }
   } //if(PRIMARY)
 
-  AUDIT("id:{}, P{} SigmoidChebyshevPolyMPC, output Y(mpc_t){}", msg_id().get_hex(), context_->GetMyRole(), Vector<mpc_t>(b));
+  AUDIT(
+    "id:{}, P{} SigmoidChebyshevPolyMPC, output Y(mpc_t){}", msg_id().get_hex(),
+    context_->GetMyRole(), Vector<mpc_t>(b));
   tlog_debug << "SigmoidChebyshevPolyMPC ok.";
   return 0;
 }
 
-}//snn
-}//rosetta
+// void SnnInternal::DMaxPool(
+//   const vector<mpc_t>& x,
+//   vector<mpc_t>& maxpool,
+//   vector<mpc_t>& maxpool_index,
+//   vector<mpc_t>& maxpool_indicators,
+//   int rows,
+//   int cols) {
+//   if (!(PRIMARY || HELPER)) {
+//     maxpool.resize(rows);
+//     maxpool_index.resize(rows);
+//     maxpool_indicators.resize(x.size());
+//     return;
+//   }
+
+//   //////////////// computation  ////////////////
+//   assert(rows * cols == x.size());
+
+//   auto fill_indicator_E = [=](int rows, int cols, int index, vector<mpc_t>& E) {
+//     vector<double> indicators(rows * cols, 0);
+//     for (size_t j = 0; j < cols; j++) {
+//       if (index == j) {
+//         for (size_t i = 0; i < rows; i++) {
+//           indicators[i * cols + j] = 1;
+//         }
+//         break;
+//       }
+//     }
+
+//     ConstCommonInput(indicators, E);
+//   };
+
+//   auto reveal_print = [&](const vector<mpc_t>& X, std::string msg) {
+//     vector<mpc_t> plain(X.size());
+//     vector<double> reveal_double(X.size());
+//     Reconstruct2PC(X, plain, vector<string>{"P0", "P1", "P2"});
+//     convert_mpctype_to_double(plain, reveal_double, GetMpcContext()->FLOAT_PRECISION);
+//     // /if (context_->GetMyRole() == PARTY_0)
+//     print_vec(reveal_double, reveal_double.size(), msg);
+//   };
+//   //reveal_print(x, "input x: ");
+
+//   size_t size = x.size();
+//   if (maxpool.size() != rows)
+//     maxpool.resize(rows);
+//   if (maxpool_index.size() != rows)
+//     maxpool_index.resize(rows);
+//   maxpool_indicators.resize(size);
+
+//   // 1. init max, max_index, dmax(as indicators) as first element
+//   for (size_t i = 0; i < rows; i++) {
+//     maxpool[i] = x[i * cols];
+//   }
+//   vector<double> temp_index(rows, 0);
+//   ConstCommonInput(temp_index, maxpool_index);
+//   fill_indicator_E(rows, cols, 0, maxpool_indicators);
+
+//   // 2. compare elements sequently and get the compare result
+//   vector<mpc_t> beta(rows), beta_prime(rows * cols);
+//   vector<mpc_t> current_col(rows);
+//   vector<mpc_t> current_index(rows);
+//   vector<mpc_t> current_E(rows * cols);
+//   vector<mpc_t> maxpool_update(rows), maxindex_update(rows), dmax_update(rows * cols);
+//   for (size_t j = 1; j < cols; j++) {
+//     // get a col
+//     for (size_t i = 0; i < rows; i++) {
+//       current_col[i] = x[i * cols + j];
+//     }
+//     ConstCommonInput(vector<double>(rows, j), current_index);
+
+//     // compare adjacent cols
+//     GreaterEqual(current_col, maxpool, beta);
+
+//     // get max
+//     Select1Of2(current_col, maxpool, beta, maxpool_update);
+//     maxpool.assign(maxpool_update.begin(), maxpool_update.end());
+
+//     // get max index
+//     Select1Of2(current_index, maxpool_index, beta, maxindex_update);
+//     maxpool_index.assign(maxindex_update.begin(), maxindex_update.end());
+
+//     // extend beta to beta'(size=rows*cols), then get dmaxpool
+//     fill_indicator_E(rows, cols, j, current_E);
+//     for (size_t i = 0; i < rows; i++) {
+//       for (size_t c = 0; c < cols; c++) {
+//         beta_prime[i * cols + c] = beta[i];
+//       }
+//     }
+//     Select1Of2(current_E, maxpool_indicators, beta_prime, dmax_update);
+//     maxpool_indicators.assign(dmax_update.begin(), dmax_update.end());
+//     // reveal_print(maxpool, "maxpool-"+std::to_string(j));
+//   }
+// }
+
+// void SnnInternal::FillTheIndice(int rows, int cols, int index, vector<mpc_t>& E) {
+//   vector<double> indicators(rows * cols, 0);
+//   for (size_t j = 0; j < cols; j++) {
+//     if (index == j) {
+//       for (size_t i = 0; i < rows; i++) {
+//         indicators[i * cols + j] = 1;
+//       }
+//       break;
+//     }
+//   }
+
+//   ConstCommonInput(indicators, E);
+// }
+
+} // namespace snn
+} // namespace rosetta

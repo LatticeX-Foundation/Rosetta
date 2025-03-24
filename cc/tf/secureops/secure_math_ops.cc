@@ -3,35 +3,32 @@
 #include "tensorflow/core/framework/shape_inference.h"
 
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
-#define SECURE_OP_SET_SHAPE_FN(ShapeFn) \
-    .SetShapeFn(ShapeFn)
+#define SECURE_OP_SET_SHAPE_FN(ShapeFn) .SetShapeFn(ShapeFn)
 #else
-#define SECURE_OP_SET_SHAPE_FN(ShapeFn) 
+#define SECURE_OP_SET_SHAPE_FN(ShapeFn)
 #endif
 
-#define REGISTER_SECURE_BINARY_OP(name)                     \
-  REGISTER_OP(#name)                                        \
-    .Input("x: string")                                     \
-    .Input("y: string")                                     \
-    .Output("z: string")                                    \
-    .Attr("lh_is_const: bool = false")                      \
-    .Attr("rh_is_const: bool = false")                      \
-    SECURE_OP_SET_SHAPE_FN(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn)
+#define REGISTER_SECURE_BINARY_OP(name) \
+  REGISTER_OP(#name)                    \
+    .Input("x: string")                 \
+    .Input("y: string")                 \
+    .Output("z: string")                \
+    .Attr("lh_is_const: bool = false")  \
+    .Attr("rh_is_const: bool = false")  \
+      SECURE_OP_SET_SHAPE_FN(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn)
 
-#define REGISTER_SECURE_BINARY_CONST_OP(name)               \
-  REGISTER_OP(#name)                                        \
-    .Input("x: string")                                     \
-    .Input("y: string")                                     \
-    .Output("z: string")                                    \
-    .Attr("lh_is_const: bool = false")                      \
-    .Attr("rh_is_const: bool = true")                       \
-    SECURE_OP_SET_SHAPE_FN(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn)
+#define REGISTER_SECURE_BINARY_CONST_OP(name) \
+  REGISTER_OP(#name)                          \
+    .Input("x: string")                       \
+    .Input("y: string")                       \
+    .Output("z: string")                      \
+    .Attr("lh_is_const: bool = false")        \
+    .Attr("rh_is_const: bool = true")         \
+      SECURE_OP_SET_SHAPE_FN(::tensorflow::shape_inference::BroadcastBinaryOpShapeFn)
 
-#define UNARY()                                             \
-  Input("x: string")                                        \
-    .Output("y: string")                                    \
-    SECURE_OP_SET_SHAPE_FN(::tensorflow::shape_inference::UnchangedShape)
-
+#define UNARY()      \
+  Input("x: string") \
+    .Output("y: string") SECURE_OP_SET_SHAPE_FN(::tensorflow::shape_inference::UnchangedShape)
 
 REGISTER_SECURE_BINARY_CONST_OP(SecurePow).Doc(R"doc(
     SecurePow
@@ -105,7 +102,6 @@ REGISTER_SECURE_BINARY_OP(SecureLogicalXor).Doc(R"doc(
     SecureLogicalXor
 )doc");
 
-
 REGISTER_OP("SecureLogicalNot").UNARY().Doc(R"doc(
   SecureLogicalNot
 )doc");
@@ -154,7 +150,8 @@ REGISTER_OP("SecureReveal")
   .Input("x: string")
   .Output("res: string")
   .Attr("receive_parties: string")
-  .SetIsStateful();;
+  .SetIsStateful();
+;
 
 REGISTER_OP("SecureAddN")
   .Input("inputs: N * T")
@@ -173,7 +170,7 @@ REGISTER_OP("SecureMatmul")
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
   .SetShapeFn(::tensorflow::shape_inference::MatMulShape)
 #endif
-;
+  ;
 
 REGISTER_OP("SecureReduceMean")
   .Input("input: string")
@@ -184,7 +181,7 @@ REGISTER_OP("SecureReduceMean")
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
   .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
 #endif
-;
+  ;
 
 REGISTER_OP("SecureReduceSum")
   .Input("input: string")
@@ -195,7 +192,7 @@ REGISTER_OP("SecureReduceSum")
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
   .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
 #endif
-;
+  ;
 
 REGISTER_OP("SecureReduceMin")
   .Input("input: string")
@@ -206,7 +203,7 @@ REGISTER_OP("SecureReduceMin")
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
   .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
 #endif
-;
+  ;
 
 REGISTER_OP("SecureReduceMax")
   .Input("input: string")
@@ -217,12 +214,102 @@ REGISTER_OP("SecureReduceMax")
 #if ROSETTA_ENABLES_SHAPE_INFERENCE
   .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
 #endif
-;
+  ;
 
 REGISTER_OP("SecureArgMax")
   .Input("input: string")
   .Input("dimension: Tidx")
   .Output("output: output_type")
   .Attr("Tidx: {int32, int64} = DT_INT32")
-  .Attr("output_type: {string,} = DT_STRING");
-  
+  .Attr("output_type: {string,} = DT_STRING")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+  ;
+
+REGISTER_OP("SecureArgMin")
+  .Input("input: string")
+  .Input("dimension: Tidx")
+  .Output("output: output_type")
+  .Attr("Tidx: {int32, int64} = DT_INT32")
+  .Attr("output_type: {string,} = DT_STRING")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn(::tensorflow::shape_inference::ReductionShape)
+#endif
+  ;
+
+REGISTER_OP("SecureOnes")
+  .Input("shape: string")
+  .Output("output: output_type")
+  .Attr("output_type: {string,} = DT_STRING")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    return ::tensorflow::shape_inference::UnchangedShapeWithRankAtLeast(c, 1);
+  })
+#endif
+  ;
+
+REGISTER_OP("SecureZeros")
+  .Input("shape: string")
+  .Output("output: output_type")
+  .Attr("output_type: {string,} = DT_STRING")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    return ::tensorflow::shape_inference::UnchangedShapeWithRankAtLeast(c, 1);
+  })
+#endif
+  ;
+
+REGISTER_OP("SecureCountUpTo")
+  .Input("ref: string")
+  .Output("output: string")
+  .Attr("limit: int")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn([](InferenceContext* c) {
+    ShapeHandle output;
+    TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 0, &output));
+    c->set_output(0, output);
+    return Status::OK();
+  })
+#endif
+  ;
+
+REGISTER_OP("SecureSign")
+  .Input("logits: string")
+  .Output("sign: string")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    return ::tensorflow::shape_inference::UnchangedShapeWithRankAtLeast(c, 1);
+  })
+#endif
+  ;
+
+REGISTER_OP("SecureElu")
+  .Input("logits: string")
+  .Output("elu: string")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    return ::tensorflow::shape_inference::UnchangedShapeWithRankAtLeast(c, 1);
+  })
+#endif
+  ;
+
+REGISTER_OP("SecureRelu6")
+  .Input("logits: string")
+  .Output("relu6: string")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    return ::tensorflow::shape_inference::UnchangedShapeWithRankAtLeast(c, 1);
+  })
+#endif
+  ;
+
+  REGISTER_OP("SecureLeakyRelu")
+  .Input("logits: string")
+  .Output("leaky_relu: string")
+#if ROSETTA_ENABLES_SHAPE_INFERENCE
+  .SetShapeFn([](::tensorflow::shape_inference::InferenceContext* c) {
+    return ::tensorflow::shape_inference::UnchangedShapeWithRankAtLeast(c, 1);
+  })
+#endif
+  ;

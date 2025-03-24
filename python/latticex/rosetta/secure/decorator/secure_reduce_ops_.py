@@ -88,3 +88,14 @@ def SecureSum(input_tensor,
 def SecureArgMax(input_tensor, dimension=None, output_type=dtypes.string, name=None):
     return _secure_ops.secure_arg_max(input_tensor, dimension=dimension, output_type=output_type, name=name)
 
+def SecureArgMin(input_tensor, dimension=None, output_type=dtypes.string, name=None):
+    return _secure_ops.secure_arg_min(input_tensor, dimension=dimension, output_type=output_type, name=name)
+
+def SecureOnes(shape, output_type=dtypes.string, name=None):
+    return _secure_ops.secure_ones(shape, output_type=dtypes.string, name=None)
+
+def SecureZeros(shape, output_type=dtypes.string, name=None):
+    return _secure_ops.secure_zeros(shape, output_type=dtypes.string, name=None)
+
+def SecureCountUpTo(ref, limit=None, name=None):
+    return _secure_ops.secure_count_up_to(ref, limit=limit, name=None)

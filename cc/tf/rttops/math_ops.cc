@@ -307,3 +307,13 @@ REGISTER_OP("RttArgMax")
 #endif
 ;
 
+// REGISTER_OP("RttArgMin")
+//     .Input("input: string")
+//     .Input("dimension: Tidx")
+//     .Output("output: output_type")
+//     .Attr("Tidx: {int32, int64} = DT_INT32")
+//     .Attr("output_type: {string,} = DT_STRING")
+// #if ROSETTA_ENABLES_SHAPE_INFERENCE
+//     .SetShapeFn(ArgOpShape)
+// #endif
+// ;

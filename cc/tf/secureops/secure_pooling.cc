@@ -29,19 +29,23 @@ namespace tensorflow {
 
 // A helper class to manage sizes and shapes for secure pooling operations.
 struct SecurePoolParameter {
-  SecurePoolParameter(OpKernelContext* context, const std::vector<int32>& ksize,
-                      std::vector<int32>& stride, Padding padding,
-                      TensorFormat data_format, const TensorShape& tensor_in_shape) {
+  SecurePoolParameter(
+    OpKernelContext* context,
+    const std::vector<int32>& ksize,
+    std::vector<int32>& stride,
+    Padding padding,
+    TensorFormat data_format,
+    const TensorShape& tensor_in_shape) {
     // At present only support NHWC (maybe support NCHW soon)
-    OP_REQUIRES(context,
-                GetTensorSpatialDims(tensor_in_shape.dims(), data_format) == 2,
-                errors::InvalidArgument(
-                    "tensor_in_shape must have 2 spatial dimensions. ",
-                    tensor_in_shape.dims(), " ", data_format));
+    OP_REQUIRES(
+      context, GetTensorSpatialDims(tensor_in_shape.dims(), data_format) == 2,
+      errors::InvalidArgument(
+        "tensor_in_shape must have 2 spatial dimensions. ", tensor_in_shape.dims(), " ",
+        data_format));
 
     this->data_format = data_format;
-    depth = GetTensorDim(tensor_in_shape, data_format, 'C') *
-            (data_format == FORMAT_NCHW_VECT_C ? 4 : 1);
+    depth =
+      GetTensorDim(tensor_in_shape, data_format, 'C') * (data_format == FORMAT_NCHW_VECT_C ? 4 : 1);
     tensor_in_cols = GetTensorDim(tensor_in_shape, data_format, 'W');
     tensor_in_rows = GetTensorDim(tensor_in_shape, data_format, 'H');
     tensor_in_batch = GetTensorDim(tensor_in_shape, data_format, 'N');
@@ -54,19 +58,20 @@ struct SecurePoolParameter {
     this->padding = padding;
     // We only support 2D pooling across width/height and depthwise
     // pooling, not a combination.
-    OP_REQUIRES(context,
-                (depth_window == 1 || (window_rows == 1 && window_cols == 1)),
-                errors::Unimplemented(
-                    "MaxPooling supports exactly one of pooling across depth "
-                    "or pooling across width/height."));
+    OP_REQUIRES(
+      context, (depth_window == 1 || (window_rows == 1 && window_cols == 1)),
+      errors::Unimplemented("MaxPooling supports exactly one of pooling across depth "
+                            "or pooling across width/height."));
 
     if (depth_window == 1) {
       OP_REQUIRES_OK(
-          context, GetWindowedOutputSize(tensor_in_rows, window_rows, row_stride,
-                                        padding, &out_height, &pad_rows));
+        context,
+        GetWindowedOutputSize(
+          tensor_in_rows, window_rows, row_stride, padding, &out_height, &pad_rows));
       OP_REQUIRES_OK(
-          context, GetWindowedOutputSize(tensor_in_cols, window_cols, col_stride,
-                                        padding, &out_width, &pad_cols));
+        context,
+        GetWindowedOutputSize(
+          tensor_in_cols, window_cols, col_stride, padding, &out_width, &pad_cols));
       pad_depth = 0;
       out_depth = depth;
     } else {
@@ -74,20 +79,21 @@ struct SecurePoolParameter {
       // any padding, and expects the depth_window to equal the
       // depth_stride (no overlapping).
       OP_REQUIRES(
-          context, depth % depth_window == 0,
-          errors::Unimplemented("Depthwise max pooling requires the depth "
-                                "window to evenly divide the input depth"));
+        context, depth % depth_window == 0,
+        errors::Unimplemented("Depthwise max pooling requires the depth "
+                              "window to evenly divide the input depth"));
       OP_REQUIRES(
-          context, depth_stride == depth_window,
-          errors::Unimplemented("Depthwise max pooling requires the depth "
-                                "window to equal the depth stride"));
+        context, depth_stride == depth_window,
+        errors::Unimplemented("Depthwise max pooling requires the depth "
+                              "window to equal the depth stride"));
 
       // The current version of depthwise max is only implemented on CPU.
-      OP_REQUIRES(context, (DeviceType(static_cast<Device*>(context->device())
-                                  ->attributes()
-                                  .device_type()) == DeviceType(DEVICE_CPU)),
-                  errors::Unimplemented("Depthwise max pooling is currently "
-                                        "only implemented for CPU devices."));
+      OP_REQUIRES(
+        context,
+        (DeviceType(static_cast<Device*>(context->device())->attributes().device_type()) ==
+         DeviceType(DEVICE_CPU)),
+        errors::Unimplemented("Depthwise max pooling is currently "
+                              "only implemented for CPU devices."));
 
       pad_depth = 0;
       out_depth = depth / depth_window;
@@ -98,12 +104,10 @@ struct SecurePoolParameter {
   TensorShape forward_output_shape() {
     if (depth_window == 1) {
       // Spatial pooling
-      return ShapeFromFormat(data_format, tensor_in_batch, out_height, out_width,
-                            depth);
+      return ShapeFromFormat(data_format, tensor_in_batch, out_height, out_width, depth);
     } else {
       // Depthwise pooling
-      return TensorShape(
-          {tensor_in_batch, tensor_in_rows, tensor_in_cols, out_depth});
+      return TensorShape({tensor_in_batch, tensor_in_rows, tensor_in_cols, out_depth});
     }
   }
 
@@ -135,55 +139,57 @@ struct SecurePoolParameter {
 
 class SecurePooling2DOp : public SecureOpKernel {
  public:
-  SecurePooling2DOp(OpKernelConstruction* context)
-      : SecureOpKernel(context) {
+  SecurePooling2DOp(OpKernelConstruction* context) : SecureOpKernel(context) {
     // data_format only support NHWC
     string data_format;
     auto status = context->GetAttr("data_format", &data_format);
     if (status.ok()) {
-      OP_REQUIRES(context, FormatFromString(data_format, &data_format_),
-                  errors::InvalidArgument("Invalid data format"));
       OP_REQUIRES(
-          context, data_format_ == FORMAT_NHWC,
-          errors::InvalidArgument("Default MaxPoolingOp only supports NHWC ",
-                                  "on device type ",
-                                  DeviceTypeString(context->device_type())));
+        context, FormatFromString(data_format, &data_format_),
+        errors::InvalidArgument("Invalid data format"));
+      OP_REQUIRES(
+        context, data_format_ == FORMAT_NHWC,
+        errors::InvalidArgument(
+          "Default MaxPoolingOp only supports NHWC ", "on device type ",
+          DeviceTypeString(context->device_type())));
     } else {
       data_format_ = FORMAT_NHWC;
     }
 
     OP_REQUIRES_OK(context, context->GetAttr("ksize", &ksize_));
-    OP_REQUIRES(context, ksize_.size() == 4,
-                errors::InvalidArgument("Sliding window ksize field must "
-                                        "specify 4 dimensions"));
+    OP_REQUIRES(
+      context, ksize_.size() == 4,
+      errors::InvalidArgument("Sliding window ksize field must "
+                              "specify 4 dimensions"));
     OP_REQUIRES_OK(context, context->GetAttr("strides", &stride_));
-    OP_REQUIRES(context, stride_.size() == 4,
-                errors::InvalidArgument("Sliding window stride field must "
-                                        "specify 4 dimensions"));
+    OP_REQUIRES(
+      context, stride_.size() == 4,
+      errors::InvalidArgument("Sliding window stride field must "
+                              "specify 4 dimensions"));
     OP_REQUIRES_OK(context, context->GetAttr("padding", &padding_));
-    OP_REQUIRES(context, ksize_[0] == 1 && stride_[0] == 1,
-                errors::Unimplemented("Pooling is not yet supported on the batch dimension."));
-    
-    log_debug << "construct SecurePooling2DOp info\n"
-              << "data_format:  " << data_format ;
-              // << "padding: " << padding_ << std::endl 
-              // << "ksize: " << ksize_[0] << "," << ksize_[1] << "," << ksize_[2] < "," << ksize_[3] 
-              // << "strides: " << stride_ ;
+    OP_REQUIRES(
+      context, ksize_[0] == 1 && stride_[0] == 1,
+      errors::Unimplemented("Pooling is not yet supported on the batch dimension."));
 
+    log_debug << "construct SecurePooling2DOp info\n"
+              << "data_format:  " << data_format;
+    // << "padding: " << padding_ << std::endl
+    // << "ksize: " << ksize_[0] << "," << ksize_[1] << "," << ksize_[2] < "," << ksize_[3]
+    // << "strides: " << stride_ ;
   }
 
   void ComputeImpl(OpKernelContext* context) {
     log_info << "PoolOp compuate...";
     const Tensor& tensor_in = context->input(0);
-    SecurePoolParameter params{context,  ksize_,      stride_,
-                          padding_, FORMAT_NHWC, tensor_in.shape()};
+    SecurePoolParameter params{context, ksize_, stride_, padding_, FORMAT_NHWC, tensor_in.shape()};
     if (!context->status().ok()) {
       return;
     }
 
     Tensor* output = nullptr;
     OP_REQUIRES_OK(context, context->allocate_output(0, params.forward_output_shape(), &output));
-    log_info << "--->    input shape: " << tensor_in.shape() << ", output shape: " << output->shape();
+    log_info << "--->    input shape: " << tensor_in.shape()
+             << ", output shape: " << output->shape();
     if (params.depth_window > 1) {
       throw std::runtime_error("not support depth_windows>1 now!");
     } else {
@@ -193,13 +199,16 @@ class SecurePooling2DOp : public SecureOpKernel {
 
  private:
   // "VALID" only ever drops the right-most columns (or bottom-most rows).
-  // "SAME" tries to pad evenly left and right, but if the amount of 
-  // columns to be added is odd, it will add the extra column to the right, 
-  // as is the case in this example (the same logic applies vertically: 
+  // "SAME" tries to pad evenly left and right, but if the amount of
+  // columns to be added is odd, it will add the extra column to the right,
+  // as is the case in this example (the same logic applies vertically:
   // there may be an extra row of zeros at the bottom).
   // during the procedure all window blocks will be handled together
-  void PoolCompuateBatchAll(OpKernelContext* context, Tensor* output,
-                        const Tensor& tensor_in, const SecurePoolParameter& params) {
+  void PoolCompuateBatchAll(
+    OpKernelContext* context,
+    Tensor* output,
+    const Tensor& tensor_in,
+    const SecurePoolParameter& params) {
     const int32_t in_rows = params.tensor_in_rows;
     const int32_t in_cols = params.tensor_in_cols;
     const int32_t in_batches = params.tensor_in_batch;
@@ -216,17 +225,19 @@ class SecurePooling2DOp : public SecureOpKernel {
     // depth of max-pool windows is specified with 1
     auto in_flat = tensor_in.flat<string>();
     auto out_flat = output->flat<string>();
-    
 
-    log_info << "PoolCompuateBatch..., in_num: " << tensor_in.NumElements() << ", out_num: " << output->NumElements();
+    log_info << "PoolCompuateBatch..., in_num: " << tensor_in.NumElements()
+             << ", out_num: " << output->NumElements();
     log_debug << "PoolCompuateBatch..., in_rows: " << in_rows << ", in_cols: " << in_cols;
-    log_debug << "PoolCompuateBatch..., in_batches: " << in_batches << ", in_channels: " << in_channels;
+    log_debug << "PoolCompuateBatch..., in_batches: " << in_batches
+              << ", in_channels: " << in_channels;
     log_debug << "PoolCompuateBatch..., pad_rows: " << pad_rows << ", pad_cols: " << pad_cols;
 
-    
     // vectorization and reshape to data_format: "NCHW"
     // then get the max of row*cols sub-vector
-    vector<string> out_vec(in_batches * out_height * out_width * in_channels);//output will remain the same channel, batches
+    vector<string> out_vec(
+      in_batches * out_height * out_width *
+      in_channels); //output will remain the same channel, batches
     int32_t padding_cols = 0;
     int32_t padding_rows = 0;
     int32_t padding_left = 0;
@@ -235,182 +246,608 @@ class SecurePooling2DOp : public SecureOpKernel {
     int32_t padding_bottom = 0;
     int32_t row_upper = in_rows;
     int32_t col_upper = in_cols;
-    
-    if (params.padding == VALID) {//abandon elements
-      padding_rows = (out_height * row_stride + (window_rows - row_stride)) - in_rows;// padding = stride * out + (window - stride) - input
+
+    if (params.padding == VALID) { //abandon elements
+      padding_rows = (out_height * row_stride + (window_rows - row_stride)) -
+        in_rows; // padding = stride * out + (window - stride) - input
       padding_cols = (out_width * col_stride + (window_cols - col_stride)) - in_cols;
       padding_right = padding_cols;
       padding_bottom = padding_rows;
       row_upper = out_height * row_stride;
       col_upper = out_width * col_stride;
-    } else {//padding element with zeros
-      padding_rows = out_height * row_stride + (window_rows - row_stride) - in_rows;// padding = stride * out + (window - stride) - input
+    } else { //padding element with zeros
+      padding_rows = out_height * row_stride + (window_rows - row_stride) -
+        in_rows; // padding = stride * out + (window - stride) - input
       padding_cols = out_width * col_stride + (window_cols - col_stride) - in_cols;
-      padding_right = (padding_cols+1)/2;
-      padding_left = padding_cols/2;
-      padding_bottom = (padding_rows+1)/2;
-      padding_upper = padding_rows/2;
+      padding_right = (padding_cols + 1) / 2;
+      padding_left = padding_cols / 2;
+      padding_bottom = (padding_rows + 1) / 2;
+      padding_upper = padding_rows / 2;
     }
     const int32_t expand_rows = in_rows + padding_rows;
     const int32_t expand_cols = in_cols + padding_cols;
-    log_debug << "PoolCompuateBatch..., padding_rows: " << padding_rows << ", padding_cols: " << padding_cols 
-            << ", padding_left: " << padding_left << ", padding_upper: "  << padding_upper;
-    log_debug << "PoolCompuateBatch..., expand_rows: " << expand_rows << ", expand_cols: " << expand_cols;
+    log_debug << "PoolCompuateBatch..., padding_rows: " << padding_rows
+              << ", padding_cols: " << padding_cols << ", padding_left: " << padding_left
+              << ", padding_upper: " << padding_upper;
+    log_debug << "PoolCompuateBatch..., expand_rows: " << expand_rows
+              << ", expand_cols: " << expand_cols;
 
     int32_t in_expand_index = 0;
-    vector<string> in_expand_vec(in_batches * expand_rows * expand_cols *in_channels, "0");
+    vector<string> in_expand_vec(in_batches * expand_rows * expand_cols * in_channels, "0");
     // reshape and padding, convert from "NHWC" to "NCHW" data_format
     for (size_t b = 0; b < in_batches; b++) {
       for (size_t n = 0; n < in_channels; n++) {
         for (size_t r = 0; r < expand_rows; r++) {
-          if (r < padding_upper) {// jump one padding line
+          if (r < padding_upper) { // jump one padding line
             in_expand_index += expand_cols;
           }
 
           if (r < in_rows && r < expand_rows) {
             for (size_t c = 0; c < expand_cols; c++) {
-              if (c < padding_left) {// jump left padding (SAME padding)
+              if (c < padding_left) { // jump left padding (SAME padding)
                 in_expand_index += padding_left;
               }
 
-              if (c < in_cols && c < expand_cols) {// handle real input elements
-                size_t in_index = b*in_rows*in_cols*in_channels + r*in_cols*in_channels + c*in_channels + n;
+              if (c < in_cols && c < expand_cols) { // handle real input elements
+                size_t in_index = b * in_rows * in_cols * in_channels + r * in_cols * in_channels +
+                  c * in_channels + n;
                 in_expand_vec[in_expand_index++] = in_flat(in_index);
-              } else if (c < expand_cols-padding_left) {// jump right padding (SAME padding)
+              } else if (c < expand_cols - padding_left) { // jump right padding (SAME padding)
                 in_expand_index++;
               }
-            }//cols
-          } else if (r < expand_rows-padding_upper) {// jump bottom padding with cols steps (SAME padding)
-            in_expand_index += expand_cols;//in_cols;
+            } //cols
+          } else if (
+            r < expand_rows - padding_upper) { // jump bottom padding with cols steps (SAME padding)
+            in_expand_index += expand_cols; //in_cols;
           }
-        }//rows
-      }//channels
-    }//batches
+        } //rows
+      } //channels
+    } //batches
 
     log_debug << "reshape to NCHW data_format and vectorization.";
 
     // calling secure ops, with "NCHW" data_format
     size_t max_batches = in_batches * in_channels * out_width * out_height;
-    vector<string> window_blocks(max_batches * window_rows*window_cols);
+    vector<string> window_blocks(max_batches * window_rows * window_cols);
     vector<string> window_out_blocks(max_batches);
     size_t windows_index = 0;
     vector<size_t> out_indexes(max_batches);
     for (size_t b = 0; b < in_batches; b++) {
       for (size_t n = 0; n < in_channels; n++) {
-        for (size_t r = 0, o_h_index=0; r < row_upper; r += row_stride, o_h_index++) {
-          for (size_t c = 0, o_w_index=0; c < col_upper; c += col_stride, o_w_index++) {
+        for (size_t r = 0, o_h_index = 0; r < row_upper; r += row_stride, o_h_index++) {
+          for (size_t c = 0, o_w_index = 0; c < col_upper; c += col_stride, o_w_index++) {
             // fill a window block
-            size_t block_start_index = b*in_channels*expand_rows*expand_cols + n*expand_rows*expand_cols + r *expand_cols + c;
-            size_t window_blocks_start_index = (b*in_channels*out_height*out_width + n*out_height*out_width + o_h_index*out_width + o_w_index) * window_rows*window_cols;
+            size_t block_start_index = b * in_channels * expand_rows * expand_cols +
+              n * expand_rows * expand_cols + r * expand_cols + c;
+            size_t window_blocks_start_index =
+              (b * in_channels * out_height * out_width + n * out_height * out_width +
+               o_h_index * out_width + o_w_index) *
+              window_rows * window_cols;
             size_t window_index = block_start_index;
             for (size_t win_r = 0; win_r < window_rows; ++win_r) {
               window_index = block_start_index + win_r * expand_cols;
               for (size_t win_c = 0; win_c < window_cols; ++win_c) {
                 // cout <<  "push window, window_blocks_start_index: " << window_blocks_start_index << ", block_start_index:" << block_start_index << ", o_w_index: " << o_w_index << ", window_index: " << window_index << endl;
-                window_blocks[window_blocks_start_index + win_r*window_cols+win_c] = in_expand_vec[window_index++];// window_block will batched
+                window_blocks[window_blocks_start_index + win_r * window_cols + win_c] =
+                  in_expand_vec[window_index++]; // window_block will batched
               }
             }
 
             // output will placed with "NHWC" data_format
-            size_t out_index = b* out_height* out_width * in_channels + (r/row_stride)*out_width*in_channels + (c/col_stride)*in_channels + n;
+            size_t out_index = b * out_height * out_width * in_channels +
+              (r / row_stride) * out_width * in_channels + (c / col_stride) * in_channels + n;
             // log_debug << "pool procedure out_index: " << out_index;
-            if (out_index >=  output->NumElements())
-            {
-              log_error << "!!!!! out_index: " << out_index << " out of range, NumElements: " << output->NumElements();
+            if (out_index >= output->NumElements()) {
+              log_error << "!!!!! out_index: " << out_index
+                        << " out of range, NumElements: " << output->NumElements();
               throw std::runtime_error("out of range, maxpool output index");
             }
-            
+
             out_indexes[windows_index++] = out_index;
           }
-       }
+        }
       }
     }
 
     // batch pooling
     attrs_["rows"] = std::to_string(max_batches);
-    attrs_["cols"] = std::to_string(window_rows*window_cols);
-    PoolMatrixImpl(window_blocks, window_out_blocks, context);// TODO: handle the whole window blocks in batch
-    for (size_t idx = 0; idx < max_batches; idx++)
-    {
+    attrs_["cols"] = std::to_string(window_rows * window_cols);
+    PoolMatrixImpl(
+      window_blocks, window_out_blocks, context); // TODO: handle the whole window blocks in batch
+    for (size_t idx = 0; idx < max_batches; idx++) {
       out_flat(out_indexes[idx]) = std::move(window_out_blocks[idx]);
     }
 
     log_debug << "PoolCompuateBatchAll ok.";
-  }//PoolComputeBatch
+  } //PoolComputeBatch
 
-  virtual void PoolImpl(const vector<string>& window, vector<string>& output, OpKernelContext* context) = 0;
-  virtual void PoolMatrixImpl(const vector<string>& window_blocks, vector<string>& window_out_blocks, OpKernelContext* context) = 0;
+  virtual void PoolImpl(
+    const vector<string>& window,
+    vector<string>& output,
+    OpKernelContext* context) = 0;
+  virtual void PoolMatrixImpl(
+    const vector<string>& window_blocks,
+    vector<string>& window_out_blocks,
+    OpKernelContext* context) = 0;
 
   std::vector<int32> ksize_;
   std::vector<int32> stride_;
   Padding padding_;
   TensorFormat data_format_;
-};//SecurePooling2DOp
+}; //SecurePooling2DOp
 
 class SecureMaxPool2DOp : public SecurePooling2DOp {
  public:
-  SecureMaxPool2DOp(OpKernelConstruction* ctx)
-      : SecurePooling2DOp(ctx) {
-  }
+  SecureMaxPool2DOp(OpKernelConstruction* ctx) : SecurePooling2DOp(ctx) {}
 
-  void PoolImpl(const vector<string>& window, vector<string>& output, OpKernelContext* context) override {
+  void PoolImpl(const vector<string>& window, vector<string>& output, OpKernelContext* context)
+    override {
     // window block calling secure protocol max ops
     log_debug << "SecureMaxPool2DOp...";
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Max);
     ProtocolManager::Instance()
-      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+      ->GetProtocol(
+        ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->Max(window, output, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Max);
     log_debug << "SecureMaxPool2DOp OK.";
   }
 
-  void PoolMatrixImpl(const vector<string>& window_blocks, vector<string>& window_out_blocks, OpKernelContext* context) override {
+  void PoolMatrixImpl(
+    const vector<string>& window_blocks,
+    vector<string>& window_out_blocks,
+    OpKernelContext* context) override {
     // window block calling secure protocol max ops
     log_debug << "SecureMaxPool2DOp, matrix with axis...";
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Max);
     ProtocolManager::Instance()
-      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+      ->GetProtocol(
+        ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->Max(window_blocks, window_out_blocks, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Max);
     log_debug << "SecureMaxPool2DOp, matrix with axis... OK.";
   }
-};//MaxPool2D
-
+}; //MaxPool2D
 
 class SecureAvgPool2DOp : public SecurePooling2DOp {
  public:
-  SecureAvgPool2DOp(OpKernelConstruction* ctx)
-       : SecurePooling2DOp(ctx) {
-  }
+  SecureAvgPool2DOp(OpKernelConstruction* ctx) : SecurePooling2DOp(ctx) {}
 
-  void PoolImpl(const vector<string>& window, vector<string>& output, OpKernelContext* context) override {
+  void PoolImpl(const vector<string>& window, vector<string>& output, OpKernelContext* context)
+    override {
     log_debug << "SecureAvgPool2DOp...";
     // window block calling secure protocol mean ops
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mean);
     ProtocolManager::Instance()
-      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+      ->GetProtocol(
+        ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->Mean(window, output, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mean);
     log_debug << "SecureAvgPool2DOp OK.";
   }
 
-  void PoolMatrixImpl(const vector<string>& window_blocks, vector<string>& window_out_blocks, OpKernelContext* context) override {
+  void PoolMatrixImpl(
+    const vector<string>& window_blocks,
+    vector<string>& window_out_blocks,
+    OpKernelContext* context) override {
     // window block calling secure protocol max ops
     log_debug << "SecureMeanPool2DOp, matrix with axis...";
     SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mean);
     ProtocolManager::Instance()
-      ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+      ->GetProtocol(
+        ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
       ->GetOps(msg_id())
       ->Mean(window_blocks, window_out_blocks, &attrs_);
     SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mean);
     log_debug << "SecureMeanPool2DOp, matrix with axis... OK.";
   }
-};//AvgPool2D
+}; //AvgPool2D
+
+class SecurePoolArgmaxOp : public SecureOpKernel {
+ public:
+  SecurePoolArgmaxOp(OpKernelConstruction* context) : SecureOpKernel(context) {
+    // data_format only support NHWC
+    string data_format;
+    auto status = context->GetAttr("data_format", &data_format);
+    if (status.ok()) {
+      OP_REQUIRES(
+        context, FormatFromString(data_format, &data_format_),
+        errors::InvalidArgument("Invalid data format"));
+      OP_REQUIRES(
+        context, data_format_ == FORMAT_NHWC,
+        errors::InvalidArgument(
+          "Default MaxPoolingOp only supports NHWC ", "on device type ",
+          DeviceTypeString(context->device_type())));
+    } else {
+      data_format_ = FORMAT_NHWC;
+    }
+
+    OP_REQUIRES_OK(context, context->GetAttr("ksize", &ksize_));
+    OP_REQUIRES(
+      context, ksize_.size() == 4,
+      errors::InvalidArgument("Sliding window ksize field must "
+                              "specify 4 dimensions"));
+    OP_REQUIRES_OK(context, context->GetAttr("strides", &stride_));
+    OP_REQUIRES(
+      context, stride_.size() == 4,
+      errors::InvalidArgument("Sliding window stride field must "
+                              "specify 4 dimensions"));
+    OP_REQUIRES_OK(context, context->GetAttr("padding", &padding_));
+    OP_REQUIRES(
+      context, ksize_[0] == 1 && stride_[0] == 1,
+      errors::Unimplemented("Pooling is not yet supported on the batch dimension."));
+
+    log_debug << "construct SecureMaxPoolingwithArgmaxOp info\n"
+              << "data_format:  " << data_format;
+    // << "padding: " << padding_ << std::endl
+    // << "ksize: " << ksize_[0] << "," << ksize_[1] << "," << ksize_[2] < "," << ksize_[3]
+    // << "strides: " << stride_ ;
+  }
+
+  void ComputeImpl(OpKernelContext* context) {
+    log_info << "SecureMaxPoolingwithArgmaxOp compuate...";
+
+    const Tensor& tensor_in = context->input(0);
+    SecurePoolParameter params{context, ksize_, stride_, padding_, FORMAT_NHWC, tensor_in.shape()};
+    if (!context->status().ok()) {
+      return;
+    }
+
+    Tensor* output_value = nullptr;
+    Tensor* output_index = nullptr;
+    OP_REQUIRES_OK(
+      context, context->allocate_output(0, params.forward_output_shape(), &output_value));
+    OP_REQUIRES_OK(
+      context, context->allocate_output(1, params.forward_output_shape(), &output_index));
+    log_info << "--->    input shape: " << tensor_in.shape()
+             << ", output shape: " << output_value->shape();
+    if (params.depth_window > 1) {
+      throw std::runtime_error("not support depth_windows>1 now!");
+    } else {
+      PoolCompuateBatchAllwithArgmax(context, output_value, output_index, tensor_in, params);
+    }
+  }
+
+ private:
+  // "VALID" only ever drops the right-most columns (or bottom-most rows).
+  // "SAME" tries to pad evenly left and right, but if the amount of
+  // columns to be added is odd, it will add the extra column to the right,
+  // as is the case in this example (the same logic applies vertically:
+  // there may be an extra row of zeros at the bottom).
+  // during the procedure all window blocks will be handled together
+  void PoolCompuateBatchAllwithArgmax(
+    OpKernelContext* context,
+    Tensor* output_value,
+    Tensor* output_index,
+    const Tensor& tensor_in,
+    const SecurePoolParameter& params) {
+    // 输入Tensor尺寸，{行，列，批次，通道}
+    const int32_t in_rows = params.tensor_in_rows;
+    const int32_t in_cols = params.tensor_in_cols;
+    const int32_t in_batches = params.tensor_in_batch;
+    const int32_t in_channels = params.depth;
+
+    // 暂不考虑，后续会具体计算相关的数值
+    const int32_t pad_rows = params.pad_rows;
+    const int32_t pad_cols = params.pad_cols;
+
+    // 池化窗口尺寸，{行，列}
+    const int32_t window_rows = params.window_rows;
+    const int32_t window_cols = params.window_cols;
+    // 池化步长，{行，列}
+    const int32_t row_stride = params.row_stride;
+    const int32_t col_stride = params.col_stride;
+
+    // 输出Tensor尺寸
+    // height = ceil(in_rows / window_rows)
+    // width  = ceil(in_cols / window_cols) for SAME padding
+    const int32_t out_height = params.out_height;
+    const int32_t out_width = params.out_width;
+
+    // depth of max-pool windows is specified with 1
+    auto in_flat = tensor_in.flat<string>();
+    auto out_flat = output_value->flat<string>();
+    auto idx_flat = output_index->flat<string>();
+
+    //  log_info << "PoolCompuateBatch..., in_num: " << tensor_in.NumElements() << ", out_num: " << output->NumElements();
+    log_debug << "PoolCompuateBatch..., in_rows: " << in_rows << ", in_cols: " << in_cols;
+    log_debug << "PoolCompuateBatch..., in_batches: " << in_batches
+              << ", in_channels: " << in_channels;
+    log_debug << "PoolCompuateBatch..., pad_rows: " << pad_rows << ", pad_cols: " << pad_cols;
+
+    // vectorization and reshape to data_format: "NCHW"
+    // then get the max of row*cols sub-vector
+
+    // output will remain the same channel and batches
+    // channel=1, batch=1
+    vector<string> out_vec(in_batches * out_height * out_width * in_channels);
+    int32_t padding_cols = 0;
+    int32_t padding_rows = 0;
+    int32_t padding_left = 0;
+    int32_t padding_right = 0;
+    int32_t padding_upper = 0;
+    int32_t padding_bottom = 0;
+    int32_t row_upper = in_rows;
+    int32_t col_upper = in_cols;
+
+    if (params.padding == VALID) { //abandon elements
+      padding_rows = (out_height * row_stride + (window_rows - row_stride)) -
+        in_rows; // padding = stride * out + (window - stride) - input
+      padding_cols = (out_width * col_stride + (window_cols - col_stride)) - in_cols;
+      padding_right = padding_cols;
+      padding_bottom = padding_rows;
+      row_upper = out_height * row_stride;
+      col_upper = out_width * col_stride;
+    } else { //padding element with zeros
+      padding_rows = out_height * row_stride + (window_rows - row_stride) -
+        in_rows; // padding = stride * out + (window - stride) - input
+      padding_cols = out_width * col_stride + (window_cols - col_stride) - in_cols;
+      padding_right = (padding_cols + 1) / 2;
+      padding_left = padding_cols / 2;
+      padding_bottom = (padding_rows + 1) / 2;
+      padding_upper = padding_rows / 2;
+    }
+    // 扩展后的尺寸
+    const int32_t expand_rows = in_rows + padding_rows;
+    const int32_t expand_cols = in_cols + padding_cols;
+    log_debug << "PoolCompuateBatch..., padding_rows: " << padding_rows
+              << ", padding_cols: " << padding_cols << ", padding_left: " << padding_left
+              << ", padding_upper: " << padding_upper;
+    log_debug << "PoolCompuateBatch..., expand_rows: " << expand_rows
+              << ", expand_cols: " << expand_cols;
+
+    // 重新装载输入 Tensor 到新的 in_expand_vec
+    int32_t in_expand_index = 0;
+    vector<string> in_expand_vec(in_batches * expand_rows * expand_cols * in_channels, "0");
+    vector<string> in_expend_indices(in_batches * expand_rows * expand_cols * in_channels, "-1");
+    // reshape and padding, convert from "NHWC" to "NCHW" data_format
+    for (size_t b = 0; b < in_batches; b++) {
+      for (size_t n = 0; n < in_channels; n++) {
+        for (size_t r = 0; r < expand_rows; r++) {
+          if (r < padding_upper) {
+            // jump one padding line
+            in_expand_index += expand_cols;
+          }
+
+          if (r < in_rows && r < expand_rows) {
+            for (size_t c = 0; c < expand_cols; c++) {
+              if (c < padding_left) {
+                // jump left padding (SAME padding)
+                in_expand_index += padding_left;
+              }
+              if (c < in_cols && c < expand_cols) {
+                // handle real input elements
+                size_t in_index = b * in_rows * in_cols * in_channels + r * in_cols * in_channels + c * in_channels + n;
+                in_expand_vec[in_expand_index] = in_flat(in_index);
+                in_expend_indices[in_expand_index] = std::to_string(in_index);
+                in_expand_index++;
+                // std::cout << "in_index:" << in_index << std::endl;
+              } else if (c < expand_cols - padding_left) {
+                // jump right padding (SAME padding)
+                in_expand_index++;
+              }
+            }
+            //cols
+          } else if (r < expand_rows - padding_upper) {
+            // jump bottom padding with cols steps (SAME padding)
+            in_expand_index += expand_cols;
+            //in_cols;
+          }
+        }
+        //rows
+      }
+      //channels
+    }
+    //batches
+    log_debug << "reshape to NCHW data_format and vectorization.";
+
+    // for (int i = 0; i < in_batches * expand_rows * expand_cols * in_channels; ++i) {
+    //   std::cout << i << ":" << in_expend_indices[i] << std::endl;
+    // }
+
+    // calling secure ops, with "NCHW" data_format
+    size_t max_batches = in_batches * in_channels * out_width * out_height;
+    vector<string> window_blocks(max_batches * window_rows * window_cols);
+    vector<string> window_out_blocks(max_batches);
+
+    // argmax_block 保留每个窗口的局部索引
+    //  vector<string> argmax_blocks(max_batches * window_rows * window_cols);
+    //  vector<string> argmax_out_block(max_batches);
+    vector<string> window_flat_indices(max_batches * window_rows * window_cols, "-1");
+    vector<string> argmax_out(max_batches);
+
+    size_t windows_index = 0;
+    vector<size_t> out_indexes(max_batches);
+    for (size_t b = 0; b < in_batches; b++) {
+      for (size_t n = 0; n < in_channels; n++) {
+        for (size_t r = 0, o_h_index = 0; r < row_upper; r += row_stride, o_h_index++) {
+          for (size_t c = 0, o_w_index = 0; c < col_upper; c += col_stride, o_w_index++) {
+            // fill a window block
+            size_t block_start_index = b * in_channels * expand_rows * expand_cols +
+              n * expand_rows * expand_cols + r * expand_cols + c;
+            size_t window_blocks_start_index =
+              (b * in_channels * out_height * out_width + n * out_height * out_width +
+               o_h_index * out_width + o_w_index) *
+              window_rows * window_cols;
+            size_t window_index = block_start_index;
+            for (size_t win_r = 0; win_r < window_rows; ++win_r) {
+              window_index = block_start_index + win_r * expand_cols;
+              for (size_t win_c = 0; win_c < window_cols; ++win_c) {
+                // cout <<  "push window, window_blocks_start_index: " << window_blocks_start_index << ", block_start_index:" << block_start_index << ", o_w_index: " << o_w_index << ", window_index: " << window_index << endl;
+                size_t dest_index = window_blocks_start_index + win_r * window_cols + win_c;
+                window_blocks[dest_index] = in_expand_vec[window_index]; // window_block will batched
+                window_flat_indices[dest_index] = in_expend_indices[window_index];
+                window_index++;
+              }
+            }
+
+            // output will placed with "NHWC" data_format
+            size_t out_index = b * out_height * out_width * in_channels +
+              (r / row_stride) * out_width * in_channels + (c / col_stride) * in_channels + n;
+            // log_debug << "pool procedure out_index: " << out_index;
+            if (out_index >= output_value->NumElements()) {
+              log_error << "!!!!! out_index: " << out_index
+                        << " out of range, NumElements: " << output_value->NumElements();
+              throw std::runtime_error("out of range, maxpool output index");
+            }
+
+            out_indexes[windows_index++] = out_index;
+          }
+        }
+      }
+    }
+
+    // batch pooling
+    //  attrs_["rows"] = std::to_string(max_batches);
+    //  attrs_["cols"] = std::to_string(window_rows*window_cols);
+    //  PoolMatrixImpl(window_blocks, window_flat_indices, window_out_blocks, argmax_out, context);// TODO: handle the whole window blocks in batch
+
+    auto snn_ops = ProtocolManager::Instance()
+                     ->GetProtocol(ProtocolManager::Instance()->QueryMappingID(
+                       context->device()->attributes().incarnation()))
+                     ->GetOps(msg_id());
+    // size_t num_windows = window_blocks.size() / (window_rows * window_cols);
+
+    // std::cout << "------------------loading----------------" << std::endl;
+    // for (int i = 0; i < max_batches * window_rows * window_cols; ++i) {
+      // std::cout << i << ":" << window_blocks[i] << std::endl;
+      // std::cout << i << ":" << window_flat_indices[i] << std::endl;
+    // }
+    // std::cout << "loading......" << std::endl;
+    // std::cout << "max_batches: " << max_batches << std::endl;
+    // std::cout << "window_rows: " << window_rows << std::endl;
+    // std::cout << "window_cols: " << window_cols << std::endl;
+
+    size_t window_size = window_rows * window_cols;
+    for (int i = 0; i < max_batches; ++i) {
+
+      vector<string> select_value(window_size);
+      vector<string> select_index(window_size);
+      for (int j = 0; j < window_size; ++j) {
+        select_value[j] = window_blocks[i * window_size + j];
+        select_index[j] = window_flat_indices[i * window_size + j];
+        // std::cout << i * window_size + j << ":" << select_value[j] << std::endl;
+        // std::cout << i * window_size + j << ":" << select_index[j] << std::endl;
+      }
+
+      vector<string> max_value = {select_value[0]};
+      vector<string> max_index = {std::to_string(0)};
+
+      for (int j = 1; j < window_size; ++j) {
+
+        const vector<string> one_value = {std::to_string(1)};
+        vector<string> current_value = {select_value[j]};
+        vector<string> current_index = {select_index[j]};
+        vector<string> comp_res;
+        vector<string> diff;
+        vector<string> prod1,  prod2,  prod3,  prod4;
+        // vector<string> sum_value, sum_index;
+
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Greater);
+        snn_ops->Greater(current_value, max_value, comp_res, &attrs_);
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Greater);
+
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Sub);
+        snn_ops->Sub(one_value, comp_res, diff, &attrs_);
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Sub);
+
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mul);
+        snn_ops->Mul(current_value, comp_res, prod1, &attrs_);
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mul);
+
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mul);
+        snn_ops->Mul(max_value, diff, prod2, &attrs_);
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mul);
+
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mul);
+        snn_ops->Mul(current_index, comp_res, prod3, &attrs_);
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mul);
+
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Mul);
+        snn_ops->Mul(max_index, diff, prod4, &attrs_);
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Mul);
+
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Add);
+        snn_ops->Add(prod1 , prod2, max_value, &attrs_);
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Add);
+
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Add);
+        snn_ops->Add(prod3, prod4, max_index, &attrs_);
+        SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Add);
+
+      }
+
+      window_out_blocks[i] = std::move(max_value[0]);
+      argmax_out[i] = std::move(max_index[0]);
+
+    }
+
+    // std::cout << "here" << std::endl;
+    for (size_t idx = 0; idx < max_batches; idx++) {
+      out_flat(out_indexes[idx]) = std::move(window_out_blocks[idx]);
+      idx_flat(out_indexes[idx]) = std::move(argmax_out[idx]);
+      // out_flat(out_indexes[idx]) = std::to_string(0);
+      // idx_flat(out_indexes[idx]) = std::to_string(0);
+    }
+
+    log_debug << "PoolCompuateBatchAll ok.";
+  } //PoolComputeBatch
+
+  //  virtual void PoolImpl(const vector<string>& window, const vector<string>& argmax, vector<string>& output_value, vector<string>& output_index, OpKernelContext* context) = 0;
+  //  virtual void PoolMatrixImpl(const vector<string>& window, const vector<string>& argmax, vector<string>& output_value, vector<string>& output_index, OpKernelContext* context) = 0;
+
+  std::vector<int32> ksize_;
+  std::vector<int32> stride_;
+  Padding padding_;
+  TensorFormat data_format_;
+}; //SecurePoolingwithArgmaxOp
+
+//  class SecurePoolArgmaxOp : public SecurePoolingOp {
+//   public:
+//    SecurePoolArgmaxOp(OpKernelConstruction* ctx) : SecurePoolingOp(ctx) {}
+
+//    void PoolImpl(const vector<string>& window, const vector<string>& argmax, vector<string>& output_value, vector<string>& output_index, OpKernelContext* context)
+//      override {
+//      // window block calling secure protocol max ops
+
+//      size_t num_windows = output_value.size();
+//      size_t window_size = window.size() / num_windows;
+//      std::cout << "num_windows: " << num_windows << ", window_size: " << window_size << std::endl;
+
+//      SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Max);
+//      ProtocolManager::Instance()
+//        ->GetProtocol(
+//          ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+//        ->GetOps(msg_id())
+//        ->Max(window, output_value, &attrs_);
+//      SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Max);
+
+//    }
+
+//    void PoolMatrixImpl(const vector<string>& window, const vector<string>& argmax, vector<string>& output_value, vector<string>& output_index, OpKernelContext* context)
+//      override {
+//      // window block calling secure protocol max ops
+
+//      size_t num_windows = output_value.size();
+//      size_t window_size = window.size() / num_windows;
+//      std::cout << "num_windows: " << num_windows << ", window_size: " << window_size << std::endl;
+
+//      SECURE_OP_CALL_PROTOCOL_OP_STATS_BEG(Max);
+//      ProtocolManager::Instance()
+//        ->GetProtocol(
+//          ProtocolManager::Instance()->QueryMappingID(context->device()->attributes().incarnation()))
+//        ->GetOps(msg_id())
+//        ->Max(window, output_value, &attrs_);
+//      SECURE_OP_CALL_PROTOCOL_OP_STATS_END(Max);
+
+//    }
+//  };
 
 REGISTER_STR_CPU_KERNEL(SecureAvgPool, SecureAvgPool2DOp);
 REGISTER_STR_CPU_KERNEL(SecureMaxPool, SecureMaxPool2DOp);
+REGISTER_STR_CPU_KERNEL(SecurePoolArgmax, SecurePoolArgmaxOp);
 
-}
+} // namespace tensorflow

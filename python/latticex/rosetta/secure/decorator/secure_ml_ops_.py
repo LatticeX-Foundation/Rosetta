@@ -182,8 +182,20 @@ def SecureMaxPool(value, ksize, strides, padding, data_format="NHWC", name=None)
     return _secure_ops.secure_max_pool(value, ksize=ksize, strides=strides, padding=padding, 
                                         data_format=data_format, name=name)
 
+def SecurePoolArgmax(value, ksize, strides, padding, data_format="NHWC", name=None):
+    return _secure_ops.secure_pool_argmax(value, ksize=ksize, strides=strides, padding=padding, data_format=data_format, name=name)
 
 def SecureSoftmax(value, name=None):
     return _secure_ops.secure_softmax(value, name=name)
 
+def SecureSign(value, name=None):
+    return _secure_ops.secure_sign(value, name=name)
 
+def SecureElu(value, name=None):
+    return _secure_ops.secure_elu(value, name=name)
+
+def SecureRelu6(value, name=None):
+    return _secure_ops.secure_relu6(value, name=name)
+
+def SecureLeakyRelu(value, name=None):
+    return _secure_ops.secure_leaky_relu(value, name=name)

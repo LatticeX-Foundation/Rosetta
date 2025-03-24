@@ -564,6 +564,13 @@ class ProtocolOps {
     THROW_NOT_IMPL;
   }
 
+  // virtual int ArgMax(
+  //   const vector<string>& a,
+  //   vector<string>& output,
+  //   const attr_type* attr_info = nullptr) {
+  //     THROW_NOT_IMPL;
+  //   }
+
   ////////////////////////////////// training ops //////////////////////////////////
   virtual int Reveal(
     const vector<string>& a,
@@ -606,13 +613,19 @@ class ProtocolOps {
     const attr_type* attr_info = nullptr) {
     THROW_NOT_IMPL;
   }
-
   virtual int Softmax(
     const vector<string>& a,
     vector<string>& output,
     const attr_type* attr_info = nullptr) {
     THROW_NOT_IMPL;
   }
+
+  // virtual int DMaxPool(
+  //   const vector<string>& a,
+  //   vector<string>& output,
+  //   const attr_type* attr_info = nullptr) {
+  //     THROW_NOT_IMPL;
+  //   }
 
   // Sort & Permutation. Only supports A.size() = cols*(2^k)
   /**

@@ -837,14 +837,26 @@ class RttPowOp : public OpKernel {
 
 template <typename Device>
 class RttArgMaxOp : public OpKernel {
- public:
-  explicit RttArgMaxOp(OpKernelConstruction* context) : OpKernel(context) {}
+  public:
+    explicit RttArgMaxOp(OpKernelConstruction* context) : OpKernel(context) {}
   
-  void Compute(OpKernelContext* context) {
-    PRINT_BEG("RttArgMaxOp");
-    throw;
-  }
+    void Compute(OpKernelContext* context) {
+      PRINT_BEG("RttArgMaxOp");
+      throw;
+    }
+
 };
+
+// template <typename Device>
+// class RttArgMinOp : public OpKernel {
+//  public:
+//   explicit RttArgMinOp(OpKernelConstruction* context) : OpKernel(context) {}
+  
+//   void Compute(OpKernelContext* context) {
+//     PRINT_BEG("RttArgMinOp");
+//     throw;
+//   }
+// };
 
 
 ////////////////   register kernels (with string type only)   ////////////////
@@ -856,6 +868,7 @@ REGISTER_KERNEL_BUILDER(Name("RttReduceSum").Device(DEVICE_CPU), RttReduceOp<CPU
 REGISTER_KERNEL_BUILDER(Name("RttReduceMin").Device(DEVICE_CPU), RttReduceOp<CPUDevice, RttMaxFunctor>);
 REGISTER_KERNEL_BUILDER(Name("RttReduceMax").Device(DEVICE_CPU), RttReduceOp<CPUDevice, RttMaxFunctor>);
 REGISTER_KERNEL_BUILDER(Name("RttArgMax").Device(DEVICE_CPU), RttArgMaxOp<CPUDevice>);
+// REGISTER_KERNEL_BUILDER(Name("RttArgMin").Device(DEVICE_CPU), RttArgMinOp<CPUDevice>);
 
 // register kernel builder of basic math ops
 REGISTER_KERNEL_BUILDER(Name("RttNegative").Device(DEVICE_CPU), RttNegOp<CPUDevice>);

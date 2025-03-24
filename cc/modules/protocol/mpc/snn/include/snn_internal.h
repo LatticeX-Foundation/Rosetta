@@ -611,5 +611,24 @@ class SnnInternal {
   int Not(const vector<mpc_t>& X, vector<mpc_t>& Y);
 };
 
+
+// void DMaxPool(const vector<mpc_t>& x, vector<mpc_t>& maxpool, vector<mpc_t>& maxpool_index, vector<mpc_t>& maxpool_indicator, int rows, int cols);
+// void DMaxPoolThreads(const vector<mpc_t>& x, 
+//               vector<mpc_t>& maxval, 
+//               vector<mpc_t>& max_index, 
+//               vector<mpc_t>& dmax, 
+//               size_t rows, size_t cols, int parallel_num/*=-1*/);
+
+// int Softmax(const vector<mpc_t>& a, vector<mpc_t>& b, size_t rows, size_t cols);
+
+// protected:
+// void RippleCarryAdderExtractBit(
+//   const vector<bit_t>& X,
+//   const vector<bit_t>& Y,
+//   const vector<int>& indices,
+//   vector<bit_t>& C);
+
+// void FillTheIndice(int rows, int cols, int index, vector<mpc_t>& E);
+
 }//snn
 }//rosetta
